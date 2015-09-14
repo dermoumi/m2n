@@ -1,0 +1,65 @@
+import org.apache.tools.ant.taskdefs.condition.Os
+
+apply plugin: 'com.android.application'
+
+task ndkBuild(type: Exec) {
+    // Read ndk path from local.properties file
+    Properties properties = new Properties()
+    properties.load(project.rootProject.file('local.properties').newDataInputStream())
+    def ndkDir = properties.getProperty('ndk.dir')
+
+	if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+		commandLine "$ndkDir\\ndk-build.cmd", '-C', file('src/main').absolutePath
+	}
+	else {
+        commandLine "$ndkDir/ndk-build", '-C', file('src/main').absolutePath
+	}
+}
+
+task ndkClean(type: Exec) {
+    // Read ndk path from local.properties file
+    Properties properties = new Properties()
+    properties.load(project.rootProject.file('local.properties').newDataInputStream())
+    def ndkDir = properties.getProperty('ndk.dir')
+
+    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+        commandLine "$ndkDir/ndk-build.bat", '-C', file('src/main').absolutePath, 'clean'
+    }
+    else {
+        commandLine "$ndkDir/ndk-build", '-C', file('src/main').absolutePath, 'clean'
+    }
+}
+
+tasks.withType(JavaCompile) {
+	compileTask -> compileTask.dependsOn ndkBuild
+}
+getTasksByName('clean', true).each {
+    task -> task.dependsOn ndkClean
+}
+
+android {
+    compileSdkVersion 22
+    buildToolsVersion "22.0.1"
+
+    defaultConfig {
+        applicationId "com.nxsie.m2n"
+        minSdkVersion 9
+        targetSdkVersion 22
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    sourceSets.main {
+        jniLibs.srcDir 'src/main/libs'
+        jni.srcDirs = []
+    }
+}
+
+dependencies {
+    compile 'com.android.support:appcompat-v7:22.0.0'
+}

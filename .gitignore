@@ -1,0 +1,46 @@
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Compiled Dynamic libraries
+bin/*.so
+bin/*.dylib
+bin/*.dll
+
+# Compiled Static libraries
+# *.lai
+# *.la
+# *.a
+# *.lib
+
+# Executables
+bin/*.exe
+bin/*.out
+bin/*.app
+
+# Linux executables
+bin/game
+bin/game-d
+
+# Objects directory
+obj/*
+
+# Generated makefiles
+Makefile
+./*.make
+.vs/*
+bin/.vs/*
+
+# Sublime text project files
+*.sublime-project
+*.sublime-workspace
+
+# Android temporary build files
+android/build/*
+android/app/build/*
+android/app/src/main/obj/*
+
+# Android configuration files
+android/local.properties
