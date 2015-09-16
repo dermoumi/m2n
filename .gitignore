@@ -29,7 +29,7 @@ obj/*
 
 # Generated makefiles
 Makefile
-./*.make
+*.make
 .vs/*
 bin/.vs/*
 
@@ -41,6 +41,7 @@ bin/.vs/*
 android/build/*
 android/app/build/*
 android/app/src/main/obj/*
+android/.gradle/*
 
 # Android configuration files
 android/local.properties

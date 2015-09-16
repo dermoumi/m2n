@@ -7,7 +7,3 @@ Compile with
 
 	./gradlew assembleDebug
 	./gradlew installDebug
-
-or
-
-	./gradlew assembleRelease
