@@ -1,8 +1,8 @@
 #include <SDL2/SDL.h>
-#include <lua.hpp>
 #include <string>
 #include <stdexcept>
 #include "config.hpp"
+#include "luavm.hpp"
 
 extern "C" {
 
@@ -12,17 +12,6 @@ NX_EXPORT int testFunc()
 }
 
 }
-
-class LuaState
-{
-public:
-    ~LuaState()
-    {
-        if (state) lua_close(state);
-    }
-
-    lua_State* state {nullptr};
-};
 
 int fatalError(const std::string& message, int retval = 1)
 {
@@ -34,15 +23,11 @@ int fatalError(const std::string& message, int retval = 1)
 
 int main(int, char**)
 {
-    LuaState lua;
+    LuaVM lua;
+    int retval;
 
     // Run the lua code
     {
-        lua.state = luaL_newstate();
-        if (!lua.state) return fatalError("Could not create a Lua State. Aborting...");
-
-        luaL_openlibs(lua.state);
- 
         std::string bootCode = R"(
             local ffi = require 'ffi'
             ffi.cdef[[
@@ -51,20 +36,13 @@ int main(int, char**)
 
             print('hello', 'world', ffi.C.testFunc())
 
-            return true;
+            return 0
         )";
 
-        // Try to load the code into the lua state
-        if (luaL_loadbuffer(lua.state, bootCode.data(), bootCode.size(), "boot.lua") != 0) {
-            const char* luaErr = lua_tostring(lua.state, -1);
-            return fatalError(std::string("Error loading Lua boot script: ") + luaErr);
-        }
-
-        // Try to run the code
-        if (lua_pcall(lua.state, 0, 1, 0) != 0) {
-            return fatalError(std::string("Lua script error: ") + lua_tostring(lua.state, -1));
+        if (!lua.initialize() || !lua.runCode("boot.lua", bootCode, retval)) {
+            return fatalError(lua.getErrorMessage());
         }
     }
 
-    return 1;
+    return retval;
 }
