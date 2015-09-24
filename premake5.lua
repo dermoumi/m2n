@@ -9,8 +9,7 @@ local source_dirs = {
 -- The global files to be compiled
 local include_dirs = {
     'src',
-    'extlibs/include',
-    'extlibs/include/luajit'
+    'extlibs/include'
 }
 
 -- The solution

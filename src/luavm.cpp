@@ -1,5 +1,5 @@
 #include "luavm.hpp"
-#include <lua.hpp>
+#include <luajit/lua.hpp>
 
 LuaVM::~LuaVM()
 {

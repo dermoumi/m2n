@@ -1,7 +1,9 @@
+#pragma once
 #include <string>
+#include "config.hpp"
 
 struct lua_State;
-class LuaVM
+class NX_HIDDEN LuaVM
 {
 public:
     LuaVM() = default;

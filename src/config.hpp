@@ -47,6 +47,7 @@
 #if defined(NX_SYSTEM_WINDOWS) || defined(NX_SYSTEM_WINCE)
     #define NX_EXPORT __declspec(dllexport)
     #define NX_IMPORT __declspec(dllimport)
+    #define NX_HIDDEN
     
     // Turn off annoying C4251 warning on Visual C++ compilers
     #ifdef _MSC_VER
@@ -57,15 +58,22 @@
     #include <jni.h>
     #define NX_EXPORT JNIEXPORT
     #define NX_IMPORT JNIIMPORT
+    #define NX_HIDDEN
 
 #elif __GNUC__ >= 4
     #define NX_EXPORT __attribute__ ((__visibility__ ("default")))
     #define NX_IMPORT __attribute__ ((__visibility__ ("default")))
+    #define NX_HIDDEN __attribute__ ((__visibility__ ("hidden")))
 
 #else
     #define NX_EXPORT
     #define NX_IMPORT
+    #define NX_HIDDEN
 #endif
 
 #include <cstdint> // Integer types
 #include <cstddef> // nullptr_t and size_t
+
+constexpr char GAME_FULLTITLE[]  = "Monsters of 2nd Night";
+constexpr char GAME_SHORTTITLE[] = "m2n";
+constexpr char GAME_ORGNAME[]    = "nxsie";
