@@ -1,7 +1,8 @@
 #pragma once
+#include "config.hpp"
 #include <string>
 
-class Log
+class NX_HIDDEN Log
 {
 public:
     static bool setLogFile(const std::string& filename);
