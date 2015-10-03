@@ -11,8 +11,8 @@ public:
     bool initialize(const char* arg0);
 
     static bool mountDir(const std::string& dir, const std::string& point, bool append = true);
-    static bool mountRes(const std::string& dir, const std::string& point, bool append = true);
     static bool mountArchive(const std::string& file, const std::string& point, bool append = true);
+    static bool mountAssetsDir(const std::string& point = "/assets", bool append = true);
     static bool setWriteDir(const std::string& dir);
 
     static std::string getErrorMessage();

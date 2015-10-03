@@ -15,6 +15,8 @@ int fatalError(const std::string& message, int retval = 1)
 
 int main(int argc, char* argv[])
 {
+    SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER);
+
     Filesystem fs;
 
     // Initialize the filesystem
@@ -26,35 +28,42 @@ int main(int argc, char* argv[])
     if (prefsDir.empty()) {
         return fatalError("Cannot retrieve the preferences directory");
     }
-
     Log::setLogFile(prefsDir + "/log.txt");
-
-    auto baseDir = Filesystem::getBaseDir();
-    if (baseDir.empty()) {
-        return fatalError("Cannot retrieve the base directory of the application");
-    }
 
     Log::info("Mounting preferences directory for writing: " + prefsDir);
     if (!Filesystem::setWriteDir(prefsDir)) {
-        return fatalError("Cannot set writing directory: " + Filesystem::getErrorMessage());
-    }
-
-    Log::info("Mounting base directory for reading: " + baseDir);
-    if (!Filesystem::mountDir(baseDir, "/")) {
-        return fatalError("Cannot mount base directory: " + Filesystem::getErrorMessage());
+        return fatalError("Cannot access preferences directory: " + Filesystem::getErrorMessage());
     }
 
     Log::info("Mounting preferences directory for reading: " + prefsDir);
     if (!Filesystem::mountDir(prefsDir, "/")) {
-        return fatalError("Cannot mount preferences directory: " +
+        return fatalError("Cannot access preferences directory: " +
             Filesystem::getErrorMessage());
     }
 
-    Log::info("Mounting assets archive/directory for reaeding: " + baseDir + "assets");
-    if (!Filesystem::mountDir(baseDir + "assets", "/assets") &&
-        !Filesystem::mountArchive("assets.zip", "/assets")) {
-        return fatalError("Cannot mount assets directory");
-    }
+    #if defined(NX_SYSTEM_ANDROID)
+        Log::info("Mounting assets directory for reading...");
+        if (!Filesystem::mountAssetsDir()) {
+            return fatalError("Cannot access assets directory");
+        }
+
+    #else
+        auto baseDir = Filesystem::getBaseDir();
+        if (baseDir.empty()) {
+            return fatalError("Cannot retrieve the base directory of the application");
+        }
+
+        Log::info("Mounting base directory for reading: " + baseDir);
+        if (!Filesystem::mountDir(baseDir, "/", false)) {
+            return fatalError("Cannot access base directory: " + Filesystem::getErrorMessage());
+        }
+
+        Log::info("Mounting assets archive/directory for reading: " + baseDir + "assets");
+        if (!Filesystem::mountAssetsDir() && !Filesystem::mountArchive("assets.zip", "/assets")) {
+            return fatalError("Cannot access assets directory");
+        }
+
+    #endif
 
     // Run the lua code
     {
