@@ -14,15 +14,15 @@ public class MainActivity extends SDLActivity {
         assetMgr = getApplicationContext().getAssets();
     }
 
-    public static String fsIsDirectory(String path)
+    public static boolean fsIsDirectory(String path)
     {
         try {
             assetMgr.list(path);
-            return "";
+            return true;
         }
         catch (Exception e)
         {
-            return "";
+            return false;
         }
     }
     

@@ -14,40 +14,38 @@ namespace
     static JavaVM* jvm = nullptr;
     static jclass mainClassObj = nullptr;
     static jmethodID fsListAssetDirectoryMID = nullptr;
-
-    PHYSFS_sint64 ioReadFunc(PHYSFS_Io*, void*, PHYSFS_uint64)
-    {
-        Log::info("Read func?");
-        return 0;
-    }
+    static jmethodID fsIsDirectoryMID = nullptr;
 
     int ioSeekFunc(PHYSFS_Io*, PHYSFS_uint64)
     {
-        Log::info("Seek func?");
+        // Nothing to do
         return 1;
     }
 
     PHYSFS_sint64 ioTellFunc(PHYSFS_Io*)
     {
-        Log::info("Tell func?");
-        return 0;
+        // Nothing to do
+        PHYSFS_setErrorCode(PHYSFS_ERR_IO);
+        return -1;
     }
 
     PHYSFS_sint64 ioSizeFunc(PHYSFS_Io*)
     {
-        Log::info("Size func?");
-        return 0;
+        // Nothing to do
+        PHYSFS_setErrorCode(PHYSFS_ERR_IO);
+        return -1;
     }
 
     PHYSFS_Io* ioDuplicateFunc(PHYSFS_Io*)
     {
-        Log::info("Duplicate func?");
+        // Nothing to do
+        PHYSFS_setErrorCode(PHYSFS_ERR_IO);
         return nullptr;
     }
 
     void ioDestroyFunc(PHYSFS_Io*)
     {
-        Log::info("Destroy func");
+        // Nothing to do
     }
 
     struct FileHandle
@@ -137,66 +135,60 @@ namespace
 
     void* openArchiveFunc(PHYSFS_Io*, const char* name, int forWrite)
     {
-        Log::info("Enumerate files func");
         if (forWrite) {
             PHYSFS_setErrorCode(PHYSFS_ERR_READ_ONLY);
             return nullptr;
         }
 
-        Log::info("info3");
         if (std::string("X.__NX_ASSETS_DIR") != name) {
             PHYSFS_setErrorCode(PHYSFS_ERR_OTHER_ERROR);
             return nullptr;
         }
 
-        Log::info("Mounting assets dir :)");
         return new char(); // Return pointer to a dummy value ._.
     }
 
     void enumerateFilesFunc(void* opaque, const char* dirName, PHYSFS_EnumFilesCallback cb,
         const char* origDir, void* callbackData)
     {
-        Log::info("Enumerate files func");
         static std::mutex mutex;
+        bool attachedThread = false;
 
-        Log::info("test1 %s", dirName);
         JNIEnv* env;
         {
             std::lock_guard<std::mutex> lock_guard(mutex);
-            jint rs = jvm->AttachCurrentThread(&env, nullptr);
-            if (rs != JNI_OK) {
-                PHYSFS_setErrorCode(PHYSFS_ERR_OTHER_ERROR);
-                return;
+            if (jvm->GetEnv((void**)&env, JNI_VERSION_1_4) == JNI_EDETACHED) {
+                jint rs = jvm->AttachCurrentThread(&env, nullptr);
+                if (rs != JNI_OK) {
+                    PHYSFS_setErrorCode(PHYSFS_ERR_OTHER_ERROR);
+                    return;
+                }
+
+                attachedThread = true;
             }
         }
-        Log::info("test2");
 
         jstring path = env->NewStringUTF(dirName);
         jstring dirs = (jstring) env->CallStaticObjectMethod(mainClassObj,
             fsListAssetDirectoryMID, path);
         env->DeleteLocalRef(path);
 
-        Log::info("test3");
         if (dirs) {
-            Log::info("test4");
             const char* dirsStr = env->GetStringUTFChars(dirs, 0);
-            Log::info("test5 %s", dirsStr);
             std::istringstream iss(dirsStr);
             env->ReleaseStringUTFChars(dirs, dirsStr);
             env->DeleteLocalRef(dirs);
 
             std::string filename;
             while(std::getline(iss, filename, ';')) {
-                Log::info("File %s", filename.data());
                 cb(callbackData, origDir, filename.data());
             }
         }
         else {
-            Log::info("test6");
             PHYSFS_setErrorCode(PHYSFS_ERR_OTHER_ERROR);
         }
 
-        {
+        if (attachedThread) {
             std::lock_guard<std::mutex> lock_guard(mutex);
             jvm->DetachCurrentThread();
         }
@@ -204,7 +196,6 @@ namespace
 
     PHYSFS_Io* openReadFunc(void* opaque, const char* filename)
     {
-        Log::info("Open read func");
         SDL_RWops* source = SDL_RWFromFile(filename, "rb");
         if (!source) return nullptr;
 
@@ -242,23 +233,67 @@ namespace
 
     int unsupportedIntFunc(void*, const char*)
     {
-        Log::info("Unsupported int func");
+        Log::info("Unsupported IO func");
         PHYSFS_setErrorCode(PHYSFS_ERR_READ_ONLY);
         return 0;
     }
 
-    int statFunc(void* opaque, const char* fn, PHYSFS_Stat* stat)
+    int statFunc(void* opaque, const char* filename, PHYSFS_Stat* stat)
     {
-        Log::info("statFunc");
-
         stat->readonly = 1;
         stat->createtime = 0;
         stat->modtime = 0;
         stat->accesstime = 0;
-        stat->filesize = 0;
-        stat->filetype = PHYSFS_FILETYPE_DIRECTORY;
 
-        return 1;
+        // Try to open file for reading, if can do so, then file is regular
+        SDL_RWops* file = SDL_RWFromFile(filename, "rb");
+        if (file) {
+            stat->filesize = SDL_RWsize(file);
+            stat->filetype = PHYSFS_FILETYPE_REGULAR;
+            SDL_RWclose(file);
+            return 1;
+        }
+
+        // Check if directory
+        {
+            static std::mutex mutex;
+            bool attachedThread = false;
+
+            JNIEnv* env;
+            {
+                std::lock_guard<std::mutex> lock_guard(mutex);
+                if (jvm->GetEnv((void**)&env, JNI_VERSION_1_4) == JNI_EDETACHED) {
+                    jint rs = jvm->AttachCurrentThread(&env, nullptr);
+                    if (rs != JNI_OK) {
+                        PHYSFS_setErrorCode(PHYSFS_ERR_OTHER_ERROR);
+                        return 0;
+                    }
+
+                    attachedThread = true;
+                }
+            }
+
+            jstring path = env->NewStringUTF(filename);
+            jboolean isDir = env->CallStaticBooleanMethod(mainClassObj, fsIsDirectoryMID, path);
+            env->DeleteLocalRef(path);
+
+            if (isDir) {
+                stat->filesize = -1;
+                stat->filetype = PHYSFS_FILETYPE_DIRECTORY;
+            }
+            else {
+                PHYSFS_setErrorCode(PHYSFS_ERR_OTHER_ERROR);
+            }
+
+            if (attachedThread) {
+                std::lock_guard<std::mutex> lock_guard(mutex);
+                jvm->DetachCurrentThread();
+            }
+
+            return 1;
+        }
+
+        return 0;
     }
 
     void closeArchiveFunc(void* opaque)
@@ -318,6 +353,13 @@ bool Filesystem::initialize(const char* arg0)
             return false;
         }
 
+        fsIsDirectoryMID = env->GetStaticMethodID(mainClassObj, "fsIsDirectory",
+            "(Ljava/lang/String;)Z");
+        if (fsIsDirectoryMID == nullptr) {
+            Log::fatal("Error getting method id for fsIsDirectory");
+            return false;
+        }
+
         // Register the android assets "archiver" to Physfs
         PHYSFS_Archiver archiver = {
             0,
@@ -342,7 +384,6 @@ bool Filesystem::initialize(const char* arg0)
         if (!assetsIO) {
             assetsIO = new PHYSFS_Io();
             memset(assetsIO, 0, sizeof(PHYSFS_Io));
-            assetsIO->read = ioReadFunc;
             assetsIO->seek = ioSeekFunc;
             assetsIO->tell = ioTellFunc;
             assetsIO->length = ioSizeFunc;
@@ -371,13 +412,11 @@ bool Filesystem::mountArchive(const std::string& dir, const std::string& point, 
 bool Filesystem::mountAssetsDir(const std::string& point, bool append)
 {
     #if defined(NX_SYSTEM_ANDROID)
-        Log::info("aHello?");
         if(!PHYSFS_mountIo(assetsIO, "X.__NX_ASSETS_DIR", point.data(), append)) {
-            Log::error("thing %s", getErrorMessage().data());
+            Log::error("Cannot mount assets Directory %s", getErrorMessage().data());
             return false;
         }
         return true;
-        Log::info("aHello2");
 
     #else
         std::string assetsDir = getBaseDir() + "assets";
@@ -392,35 +431,23 @@ bool Filesystem::setWriteDir(const std::string& dir)
 
 std::string Filesystem::getErrorMessage()
 {
-    thread_local std::string errorMessage;
-
     const char* message = PHYSFS_getLastError();
-    errorMessage = message ? message : "<unknown error message>";
-
-    return errorMessage;
+    return message ? message : "<unknown error message>";
 }
 
 std::string Filesystem::getPrefsDir()
 {
-    thread_local std::string path;
-
     #if defined(NX_SYSTEM_ANDROID)
         const char* dir = SDL_AndroidGetInternalStoragePath();
     #else
         const char* dir = PHYSFS_getPrefDir(GAME_ORGNAME, GAME_SHORTTITLE);
     #endif
 
-    path = dir ? dir : "";
-
-    return path;
+    return dir ? dir : "";
 }
 
 std::string Filesystem::getBaseDir()
 {
-    thread_local std::string path;
-
     const char* dir = PHYSFS_getBaseDir();
-    path = dir ? dir : "";
-
-    return path;
+    return dir ? dir : "";
 }

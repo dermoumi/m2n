@@ -4,6 +4,7 @@
 #include "filesystem.hpp"
 #include "log.hpp"
 #include <SDL2/SDL.h>
+#include <physfs/physfs.h>
 
 int fatalError(const std::string& message, int retval = 1)
 {
