@@ -63,7 +63,7 @@
 #elif __GNUC__ >= 4
     #define NX_EXPORT __attribute__ ((__visibility__ ("default")))
     #define NX_IMPORT __attribute__ ((__visibility__ ("default")))
-    #define NX_HIDDEN __attribute__ ((__visibility__ ("hiodden")))
+    #define NX_HIDDEN __attribute__ ((__visibility__ ("hidden")))
 
 #else
     #define NX_EXPORT
