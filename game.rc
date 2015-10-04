@@ -8,12 +8,12 @@ BEGIN
     BLOCK "080904E4"
     BEGIN
       VALUE "CompanyName", "nxsie"
-      VALUE "FileDescription", "Monsters of Second Night game executable"
+      VALUE "FileDescription", "M2N game executable"
       VALUE "FileVersion", "1.0"
       VALUE "InternalName", "game"
-      VALUE "LegalCopyright", "Dermoumi Said"
+      VALUE "LegalCopyright", "Dermoumi S."
       VALUE "OriginalFilename", "game.exe"
-      VALUE "ProductName", "m2n"
+      VALUE "ProductName", "M2N"
       VALUE "ProductVersion", "1.0"
     END
   END
