@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
     }
 
     Log::info("Mounting preferences directory for reading: " + prefsDir);
-    if (!Filesystem::mountDir(prefsDir, "/")) {
+    if (!Filesystem::mountDir(prefsDir, "/userdata")) {
         return fatalError("Cannot access preferences directory: " +
             Filesystem::getErrorMessage());
     }

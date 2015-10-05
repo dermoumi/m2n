@@ -33,7 +33,7 @@ else
     file:close()
 end
 
-file, err = Fs.openRead('test.txt')
+file, err = Fs.openRead('userdata/test.txt')
 if not file then
     Log.error('Could not open file: ' .. err)
 else
