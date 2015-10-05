@@ -52,4 +52,11 @@ else
     file:close()
 end
 
+local Nx = require 'nx'
+Log.info('Current time: ' .. tostring(Nx.getSystemTime()))
+local time = Nx.getSystemTime()
+Nx.sleep(0.7)
+Log.info('Time passed: ' .. tostring(Nx.getSystemTime() - time))
+Log.info('Current time: ' .. tostring(Nx.getSystemTime()))
+
 return 0
