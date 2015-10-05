@@ -73,10 +73,27 @@ extern "C"
         if (handle) PHYSFS_close(handle);
     }
 
-    NX_EXPORT size_t nxFsSize(PHYSFS_File* handle)
+    NX_EXPORT bool nxFsSize(PHYSFS_File* handle, size_t* size)
     {
-        auto size = PHYSFS_fileLength(handle);
-        return static_cast<size_t>(size);
+        auto status = PHYSFS_fileLength(handle);
+        if (status < 0) return false;
+
+        *size = static_cast<size_t>(status);
+        return true;
+    }
+
+    NX_EXPORT bool nxFsTell(PHYSFS_File* handle, size_t* position)
+    {
+        auto status = PHYSFS_tell(handle);
+        if (status < 0) return false;
+
+        *position = static_cast<size_t>(status);
+        return true;
+    }
+
+    NX_EXPORT bool nxFsSeek(PHYSFS_File* handle, size_t position)
+    {
+        return PHYSFS_seek(handle, position);
     }
 
     NX_EXPORT bool nxFsRead(PHYSFS_File* handle, void* buffer, size_t length, size_t* readBytes)

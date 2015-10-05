@@ -14,4 +14,42 @@ Log.info("Is assets/scripts a folder? " .. tostring(Fs.isDirectory('assets/scrip
 Log.info("Is main.lua a file? " .. tostring(Fs.isFile('assets/scripts/main.lua')))
 Log.info("Is main.lua a folder? " .. tostring(Fs.isDirectory('assets/scripts/main.lua')))
 
+local file, err = Fs.openWrite('test.txt')
+if not file then
+    Log.error('Could not open file: ' .. err)
+else
+    file:write("hello world?", 12)
+
+    file:writeS8(1)
+    file:writeS16(2)
+    file:writeS32(3)
+    file:writeU8(4)
+    file:writeU16(5)
+    file:writeU32(6)
+    file:writeFloat(7.89)
+    file:writeDouble(10.1112)
+    file:writeString('Héllô Dáñknèss 日本語 !?')
+    
+    file:close()
+end
+
+file, err = Fs.openRead('test.txt')
+if not file then
+    Log.error('Could not open file: ' .. err)
+else
+    Log.info(file:read(12))
+
+    Log.info(file:readS8())
+    Log.info(file:readS16())
+    Log.info(file:readS32())
+    Log.info(file:readU8())
+    Log.info(file:readU16())
+    Log.info(file:readU32())
+    Log.info(file:readFloat())
+    Log.info(file:readDouble())
+    Log.info(file:readString())
+    
+    file:close()
+end
+
 return 0

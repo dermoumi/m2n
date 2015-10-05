@@ -6,7 +6,7 @@ ffi.cdef[[
     void* nxFsOpenRead(const char*);
     void nxFsClose(void*);
     bool nxFsRead(void*, char*, size_t, size_t*);
-    size_t nxFsSize(void*);
+    bool nxFsSize(void*, size_t*);
     void nxLogInfo(const char*);
 ]]
 
@@ -28,14 +28,18 @@ local function readFile(filename)
     local file = C.nxFsOpenRead(filename)
     if file == nil then return nil end
 
-    local size = C.nxFsSize(file)
-    local bufPtr = ffi.new('char[?]', size)
+    local sizePtr = ffi.new('size_t[1]')
+    if not C.nxFsSize(file, sizePtr) then
+        return nil
+    end
 
-    local ok = C.nxFsRead(file, bufPtr, size, nil)
+    local bufPtr = ffi.new('char[?]', sizePtr[0])
+
+    local ok = C.nxFsRead(file, bufPtr, sizePtr[0], nil)
     C.nxFsClose(file)
 
     if not ok then return nil end
-    return ffi.string(bufPtr, size)
+    return ffi.string(bufPtr, sizePtr[0])
 end
 
 -- Load a lua file

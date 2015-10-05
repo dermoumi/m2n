@@ -29,6 +29,8 @@ int main(int argc, char* argv[])
     if (prefsDir.empty()) {
         return fatalError("Cannot retrieve the preferences directory");
     }
+
+    // Set the logs file as soon as possible
     Log::setLogFile(prefsDir + "/log.txt");
 
     Log::info("Mounting preferences directory for writing: " + prefsDir);
@@ -44,7 +46,7 @@ int main(int argc, char* argv[])
 
     #if defined(NX_SYSTEM_ANDROID)
         Log::info("Mounting assets directory for reading...");
-        if (!Filesystem::mountAssetsDir(false)) {
+        if (!Filesystem::mountAssetsDir("/assets", false)) {
             return fatalError("Cannot access assets directory");
         }
 
@@ -60,7 +62,7 @@ int main(int argc, char* argv[])
         }
 
         Log::info("Mounting assets archive/directory for reading: " + baseDir + "assets");
-        if (!Filesystem::mountAssetsDir(false) &&
+        if (!Filesystem::mountAssetsDir("/assets", false) &&
             !Filesystem::mountArchive("assets.zip", "/assets", false)) {
             return fatalError("Cannot access assets directory");
         }
