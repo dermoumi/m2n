@@ -39,9 +39,7 @@ extern "C"
     {
         thread_local std::string message;
 
-        auto errorMessage = PHYSFS_getLastError();
-        message = errorMessage ? errorMessage : "";
-
+        message = Filesystem::getErrorMessage();
         return message.data();
     }
 
@@ -269,7 +267,7 @@ extern "C"
         return nxFsWrite(handle, str, strlen(str) + 1, nullptr);
     }
 
-    NX_EXPORT char** nxFsEnumerate(const char* path)
+    NX_EXPORT char** nxFsEnumerateFiles(const char* path)
     {
         return PHYSFS_enumerateFiles(path);
     }
