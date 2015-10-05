@@ -2,6 +2,8 @@ local ffi = require 'ffi'
 local C = ffi.C
 
 ffi.cdef[[
+    typedef struct PHYSFS_File PHYSFS_File;
+
     const char* nxFsGetError();
 
     char** nxFsEnumerateFiles(const char*);
@@ -9,39 +11,39 @@ ffi.cdef[[
     bool nxFsIsFile(const char*);
     bool nxFsIsDirectory(const char*);
 
-    void* nxFsOpenRead(const char*);
-    void* nxFsOpenWrite(const char*);
-    bool nxFsFlush(void*);
-    void nxFsClose(void*);
-    bool nxFsSize(void*, size_t*);
-    bool nxFsTell(void*, size_t*);
-    bool nxFsSeek(void*, size_t);
+    PHYSFS_File* nxFsOpenRead(const char*);
+    PHYSFS_File* nxFsOpenWrite(const char*);
+    bool nxFsFlush(PHYSFS_File*);
+    void nxFsClose(PHYSFS_File*);
+    bool nxFsSize(PHYSFS_File*, size_t*);
+    bool nxFsTell(PHYSFS_File*, size_t*);
+    bool nxFsSeek(PHYSFS_File*, size_t);
 
-    bool nxFsRead(void*, void*, size_t, size_t*);
-    bool nxFsReadS8(void*, int8_t*);
-    bool nxFsReadS16(void*, int16_t*);
-    bool nxFsReadS32(void*, int32_t*);
-    bool nxFsReadS64(void*, int64_t*);
-    bool nxFsReadU8(void*, uint8_t*);
-    bool nxFsReadU16(void*, uint16_t*);
-    bool nxFsReadU32(void*, uint32_t*);
-    bool nxFsReadU64(void*, uint64_t*);
-    bool nxFsReadFloat(void*, double*);
-    bool nxFsReadDouble(void*, double*);
-    const char* nxFsReadString(void*);
+    bool nxFsRead(PHYSFS_File*, PHYSFS_File*, size_t, size_t*);
+    bool nxFsReadS8(PHYSFS_File*, int8_t*);
+    bool nxFsReadS16(PHYSFS_File*, int16_t*);
+    bool nxFsReadS32(PHYSFS_File*, int32_t*);
+    bool nxFsReadS64(PHYSFS_File*, int64_t*);
+    bool nxFsReadU8(PHYSFS_File*, uint8_t*);
+    bool nxFsReadU16(PHYSFS_File*, uint16_t*);
+    bool nxFsReadU32(PHYSFS_File*, uint32_t*);
+    bool nxFsReadU64(PHYSFS_File*, uint64_t*);
+    bool nxFsReadFloat(PHYSFS_File*, double*);
+    bool nxFsReadDouble(PHYSFS_File*, double*);
+    const char* nxFsReadString(PHYSFS_File*);
 
-    bool nxFsWrite(void*, const char*, size_t, size_t*);
-    bool nxFsWriteS8(void*, int8_t);
-    bool nxFsWriteS16(void*, int16_t);
-    bool nxFsWriteS32(void*, int32_t);
-    bool nxFsWriteS64(void*, int64_t);
-    bool nxFsWriteU8(void*, uint8_t);
-    bool nxFsWriteU16(void*, uint16_t);
-    bool nxFsWriteU32(void*, uint32_t);
-    bool nxFsWriteS64(void*, uint64_t);
-    bool nxFsWriteFloat(void*, double);
-    bool nxFsWriteDouble(void*, double);
-    bool nxFsWriteString(void*, const char*);
+    bool nxFsWrite(PHYSFS_File*, const char*, size_t, size_t*);
+    bool nxFsWriteS8(PHYSFS_File*, int8_t);
+    bool nxFsWriteS16(PHYSFS_File*, int16_t);
+    bool nxFsWriteS32(PHYSFS_File*, int32_t);
+    bool nxFsWriteS64(PHYSFS_File*, int64_t);
+    bool nxFsWriteU8(PHYSFS_File*, uint8_t);
+    bool nxFsWriteU16(PHYSFS_File*, uint16_t);
+    bool nxFsWriteU32(PHYSFS_File*, uint32_t);
+    bool nxFsWriteS64(PHYSFS_File*, uint64_t);
+    bool nxFsWriteFloat(PHYSFS_File*, double);
+    bool nxFsWriteDouble(PHYSFS_File*, double);
+    bool nxFsWriteString(PHYSFS_File*, const char*);
 ]]
 
 -- Shared methods between read and write files ---------------------------------
