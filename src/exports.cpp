@@ -67,16 +67,6 @@ extern "C"
         return message.data();
     }
 
-    NX_EXPORT bool nxFsMountDir(const char* dir, const char* mountPoint, bool append)
-    {
-        return Filesystem::mountDir(dir, mountPoint, append);
-    }
-
-    NX_EXPORT bool nxFsMountArchive(const char* file, const char* mountPoint, bool append)
-    {
-        return Filesystem::mountArchive(file, mountPoint, append);
-    }
-
     NX_EXPORT PHYSFS_File* nxFsOpenRead(const char* fileName)
     {
         return PHYSFS_openRead(fileName);
