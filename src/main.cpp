@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
 
     #if defined(NX_SYSTEM_ANDROID)
         Log::info("Mounting assets directory for reading...");
-        if (!Filesystem::mountAssetsDir()) {
+        if (!Filesystem::mountAssetsDir(false)) {
             return fatalError("Cannot access assets directory");
         }
 
@@ -60,7 +60,8 @@ int main(int argc, char* argv[])
         }
 
         Log::info("Mounting assets archive/directory for reading: " + baseDir + "assets");
-        if (!Filesystem::mountAssetsDir() && !Filesystem::mountArchive("assets.zip", "/assets")) {
+        if (!Filesystem::mountAssetsDir(false) &&
+            !Filesystem::mountArchive("assets.zip", "/assets", false)) {
             return fatalError("Cannot access assets directory");
         }
 
