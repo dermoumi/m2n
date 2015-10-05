@@ -2,10 +2,34 @@
 #include "log.hpp"
 #include "filesystem.hpp"
 #include <physfs/physfs.h>
+#include <sstream>
 #include <cstring>
 
 extern "C"
 {
+    // Guarentees correct values regardless of precision difference.
+    //  eg: no more 2.6f --> 2.59654d
+
+    float d2f(double val)
+    {
+        float ret;
+        std::stringstream ss;
+        ss << val;
+        ss >> ret;
+        return ret;
+    }
+
+    double f2d(float val)
+    {
+        double ret;
+        std::stringstream ss;
+        ss << val;
+        ss >> ret;
+        return ret;
+    }
+
+    //--------------------------------------------------------------------------
+
     NX_EXPORT void nxLogVerbose(const char* message)
     {
         Log::verbose(message);
@@ -150,7 +174,7 @@ extern "C"
         return PHYSFS_readULE64(handle, reinterpret_cast<PHYSFS_uint64*>(val));
     }
 
-    NX_EXPORT bool nxFsReadFloat(PHYSFS_File* handle, float* val)
+    NX_EXPORT bool nxFsReadFloat(PHYSFS_File* handle, double* val)
     {
         static_assert(sizeof(float) == 4, "Float is not 4-bytes long");
 
@@ -164,7 +188,7 @@ extern "C"
 
         if (!nxFsReadU32(handle, &u.u)) return false;
 
-        *val = u.f;
+        *val = f2d(u.f);
         return true;
     }
 
@@ -252,7 +276,7 @@ extern "C"
         return PHYSFS_writeULE64(handle, val);
     }
 
-    NX_EXPORT bool nxFsWriteFloat(PHYSFS_File* handle, float val)
+    NX_EXPORT bool nxFsWriteFloat(PHYSFS_File* handle, double val)
     {
         static_assert(sizeof(float) == 4, "Float is not 4-bytes long");
 
@@ -261,7 +285,7 @@ extern "C"
         {
             float f;
             uint32_t u;
-        } u = {val};
+        } u = {d2f(val)};
 
         return nxFsWriteU32(handle, u.u);
     }

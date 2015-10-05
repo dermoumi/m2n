@@ -26,7 +26,7 @@ ffi.cdef[[
     bool nxFsReadU16(void*, uint16_t*);
     bool nxFsReadU32(void*, uint32_t*);
     bool nxFsReadU64(void*, uint64_t*);
-    bool nxFsReadFloat(void*, float*);
+    bool nxFsReadFloat(void*, double*);
     bool nxFsReadDouble(void*, double*);
     const char* nxFsReadString(void*);
 
@@ -39,7 +39,7 @@ ffi.cdef[[
     bool nxFsWriteU16(void*, uint16_t);
     bool nxFsWriteU32(void*, uint32_t);
     bool nxFsWriteS64(void*, uint64_t);
-    bool nxFsWriteFloat(void*, float);
+    bool nxFsWriteFloat(void*, double);
     bool nxFsWriteDouble(void*, double);
     bool nxFsWriteString(void*, const char*);
 ]]
@@ -187,7 +187,7 @@ end
 function InputFile:readFloat()
     if not self._handle then return nil, 'No file open' end
 
-    local valPtr = ffi.new('float[1]')
+    local valPtr = ffi.new('double[1]')
 
     local ok = C.nxFsReadFloat(self._handle, valPtr)
     if not ok then return nil, ffi.string(C.nxFsGetError()) end
