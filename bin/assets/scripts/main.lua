@@ -52,6 +52,12 @@ else
     file:close()
 end
 
+local LuaVM = require 'nx.luavm'
+local vm = LuaVM:new()
+vm:call(function(a)
+    print('hello ' .. a.b)
+end, {b=2})
+
 local Nx = require 'nx'
 Log.info('Current time: ' .. tostring(Nx.getSystemTime()))
 local time = Nx.getSystemTime()

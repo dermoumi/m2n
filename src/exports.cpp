@@ -6,6 +6,7 @@
 #include <cstring>
 #include <thread>
 #include <chrono>
+#include <luajit/lua.hpp>
 
 extern "C"
 {
@@ -340,5 +341,19 @@ extern "C"
         if (!PHYSFS_stat(path, &stat)) return false;
 
         return stat.filetype == PHYSFS_FILETYPE_REGULAR;
+    }
+
+    //--------------------------------------------------------------------------
+
+    NX_EXPORT bool nxLuaLoadNxLibs(lua_State*)
+    {
+        // TODO
+        return true;
+    }
+
+    NX_EXPORT void* nxLuaToCdata(lua_State* state, int index)
+    {
+        auto ptr = lua_topointer(state, index);
+        return reinterpret_cast<void*>(*reinterpret_cast<const uintptr_t*>(ptr));
     }
 }
