@@ -74,11 +74,19 @@ int main(int argc, char* argv[])
         LuaVM lua;
         int retval;
 
+        std::string nxLibCode (
+            #include "nxlib.luainl"
+        );
+
+        if (!lua.initialize() || !lua.runCode("nxlib.lua", nxLibCode, retval)) {
+            return fatalError(lua.getErrorMessage());
+        }
+
         std::string bootCode (
             #include "boot.luainl"
         );
 
-        if (!lua.initialize() || !lua.runCode("boot.lua", bootCode, retval)) {
+        if (!lua.runCode("boot.lua", bootCode, retval)) {
             return fatalError(lua.getErrorMessage());
         }
 

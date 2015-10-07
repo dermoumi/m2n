@@ -345,9 +345,22 @@ extern "C"
 
     //--------------------------------------------------------------------------
 
-    NX_EXPORT bool nxLuaLoadNxLibs(lua_State*)
+    NX_EXPORT bool nxLuaLoadNxLibs(lua_State* state)
     {
-        // TODO
+        // Load data into a string?
+        std::string code(
+            #include "nxlib.luainl"
+        );
+
+        // Make sure we have a valid Lua state
+        if (!state) return false;
+
+        // Load up the code into the Lua state
+        if (luaL_loadbuffer(state, code.data(), code.size(), "nxlib.lua") != 0) return false;
+
+        // Try to run the code
+        if (lua_pcall(state, 0, 1, 0) != 0) return false;
+
         return true;
     }
 

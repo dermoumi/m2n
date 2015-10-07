@@ -178,15 +178,15 @@ function LuaVM:initialize(cdata)
 
     C.luaL_openlibs(handle)
 
-    self._handle = ffi.gc(handle, C.lua_close)
+    if C.nxLuaLoadNxLibs(handle) then
+        self._handle = ffi.gc(handle, C.lua_close)
+    else
+        C.lua_close(handle)
+    end
 end
 
 function LuaVM:_cdata()
     return self._handle
-end
-
-function LuaVM:loadNxLibs()
-    return C.nxLuaLoadNxLibs(self._handle)
 end
 
 function LuaVM:isOpen()
