@@ -33,12 +33,9 @@ ffi.cdef [[
     void lua_pushvalue(lua_State*, int);
 
     double lua_tonumber(lua_State*, int);
-    const char* lua_tostring(lua_State*, int);
     const char* lua_tolstring(lua_State*, int, size_t*);
     int lua_toboolean(lua_State*, int);
     void* lua_touserdata(lua_State*, int);
-
-    int lua_pcall(void*, int, int, int);
 
     const char* lua_typename(lua_State*, int);
     int lua_type(lua_State*, int);
@@ -83,8 +80,8 @@ local function funcPusher(s, f)
 
     C.lua_getfield(s, -10002, 'loadstring')
     C.lua_pushlstring(s, dump, #dump)
-    if C.lua_pcall(s, 1, 2, 1) == 0 then
-        error('LuaVM Function pusher: ' .. ffi.string(C.lua_tostring(s, -1)))
+    if C.lua_pcall(s, 1, 2, 0) == 0 then
+        error('LuaVM Function pusher: ' .. ffi.string(C.lua_tolstring(s, -1, nil)))
         C.lua_settop(s, -2)
     end
 
@@ -129,13 +126,18 @@ local function funcRetriever(s, i)
     local top = C.lua_gettop(s)
     if i < 0 then i = top + i + 1 end
 
-    C.lua_getglobal(s, 'string')
+    C.lua_getfield(s, -10002, 'string')
     C.lua_getfield(s, -1, 'dump')
     C.lua_pushvalue(s, i)
-    if C.lua_pcall(s, 1, 1, 1) == 0 then
-        error('LuaVM Function pusher: ' .. ffi.string(C.lua_tostring(s, -1)))
+    if C.lua_pcall(s, 1, 1, 0) == 0 then
+        error('LuaVM Function pusher: ' .. ffi.string(C.lua_tolstring(s, -1, nil)))
         C.lua_settop(s, -2)
     end
+
+    local lenB = ffi.new('size_t[1]')
+    local strPtr = C.lua_tolstring(s, -1, lenB)
+    local dump = ffi.string(strPtr, lenB[0])
+    C.lua_settop(s, top)
 
     local func, err = loadstring(dump)
     if func then
@@ -163,9 +165,9 @@ retrievers = {
     ['userdata'] = C.lua_touserdata,
     ['table']    = tableRetriever,
     ['number']   = C.lua_tonumber,
-    ['string']   = function(s, i) return ffi.string(C.lua_tostring(s, i)) end,
+    ['string']   = function(s, i) return ffi.string(C.lua_tolstring(s, i, nil)) end,
     ['boolean']  = function(s, i) return C.lua_toboolean(s, i) == 1 end,
-    ['functin']  = funcRetriever
+    ['function'] = funcRetriever
 }
 
 --------------------------------------------------------------------------------
@@ -246,7 +248,7 @@ function LuaVM:pop(count, returnValues)
             local retriever = retrievers[typename]
 
             if retriever then
-                retval[retCount] = retriever(self._handle, 1)
+                retval[retCount] = retriever(self._handle, i)
             else
                 error('LuaVM:pop(): Type ' .. typename .. 'Unsupported. Skipping...')
                 retval[retCount] = nil
@@ -276,7 +278,7 @@ function LuaVM:call(func, ...)
     local retCount = 0
 
     local ok = C.lua_pcall(self._handle, argc - 1, -1, 0)
-    if not ok then
+    if ok == 0 then
         local err = self:pop(1, true)
         return nil, err
     end

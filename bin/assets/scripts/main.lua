@@ -54,9 +54,14 @@ end
 
 local LuaVM = require 'nx.luavm'
 local vm = LuaVM:new()
-vm:call(function(a)
-    print('hello ' .. a.b)
-end, {b=2})
+local retCount, err = vm:call(function(a, b, c, d)
+    print('hello ' .. a.b .. b .. tostring(c) .. tostring(d))
+    return function() return 42 end
+end, {b=2}, 'test', true, false)
+
+if not retCount then print(err) end
+
+print(vm:pop(retCount, true)())
 
 local Nx = require 'nx'
 Log.info('Current time: ' .. tostring(Nx.getSystemTime()))
