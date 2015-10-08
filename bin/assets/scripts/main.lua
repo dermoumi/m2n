@@ -14,8 +14,10 @@ Log.info("Is assets/scripts a folder? " .. tostring(Fs.isDirectory('assets/scrip
 Log.info("Is main.lua a file? " .. tostring(Fs.isFile('assets/scripts/main.lua')))
 Log.info("Is main.lua a folder? " .. tostring(Fs.isDirectory('assets/scripts/main.lua')))
 
-local file, err = Fs.openWrite('test.txt')
-if not file then
+local OutputFile = require 'nx.outputfile'
+local file = OutputFile:new()
+local ok, err = file:open('test.txt')
+if not ok then
     Log.error('Could not open file: ' .. err)
 else
     file:write("hello world?", 12)
@@ -33,8 +35,11 @@ else
     file:close()
 end
 
-file, err = Fs.openRead('userdata/test.txt')
-if not file then
+
+local InputFile = require 'nx.inputfile'
+local file = InputFile:new()
+ok, err = file:open('userdata/test.txt')
+if not ok then
     Log.error('Could not open file: ' .. err)
 else
     Log.info(file:read(12))
