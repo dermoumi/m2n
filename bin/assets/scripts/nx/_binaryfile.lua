@@ -64,4 +64,8 @@ function BinaryFile:seek(position)
     end
 end
 
+function BinaryFile:_cdata()
+    return self._handle
+end
+
 return BinaryFile

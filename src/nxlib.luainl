@@ -80,6 +80,15 @@ end
 
 table.insert(package.loaders, 2, load)
 
+function NX_LibObject(cdata, classname)
+    local classObj = require('nx.' .. classname)
+    if not classObj then return nil end
+
+    return classObj._fromCData(cdata)
+end
+
+class = require 'middleclass'
+
 -- Return 1 to indicate went smoothly?
 return 1
 

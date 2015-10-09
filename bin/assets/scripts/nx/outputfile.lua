@@ -28,6 +28,12 @@ ffi.cdef[[
 local BinaryFile = require 'nx._binaryfile'
 local OutputFile = class('OutputFile', BinaryFile)
 
+function OutputFile.static._fromCData(data)
+    local file = OutputFile:new()
+    file._handle = ffi.cast('PHYSFS_File*', data)
+    return file
+end
+
 function OutputFile:initialize(filename)
     if type(filename) == 'string' then
         self:open(filename)

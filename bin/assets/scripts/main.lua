@@ -1,5 +1,3 @@
-class = require 'middleclass'
-
 local Log = require 'nx.log'
 Log.error("Hello world " .. 103)
 
@@ -41,7 +39,18 @@ local file = InputFile:new()
 ok, err = file:open('userdata/test.txt')
 if not ok then
     Log.error('Could not open file: ' .. err)
-else
+    return 0
+end
+
+local LuaVM = require 'nx.luavm'
+local vm = LuaVM:new()
+if not vm:isOpen() then
+    error('erm?')
+end
+
+local retCount, err = vm:call(function(file)
+    local Log = require 'nx.log'
+
     Log.info(file:read(12))
 
     Log.info(file:readS8())
@@ -54,19 +63,13 @@ else
     Log.info(file:readDouble())
     Log.info(file:readString())
     
-    file:close()
-end
-
-local LuaVM = require 'nx.luavm'
-local vm = LuaVM:new()
-local retCount, err = vm:call(function(a, b, c, d)
-    print('hello ' .. a.b .. b .. tostring(c) .. tostring(d))
-    return function() return 42 end
-end, {b=2}, 'test', true, false)
+    return ':)'
+end, file)
+file:close()
 
 if not retCount then print(err) end
 
-print(vm:pop(retCount, true)())
+print(vm:pop(retCount, true))
 
 local Nx = require 'nx'
 Log.info('Current time: ' .. tostring(Nx.getSystemTime()))

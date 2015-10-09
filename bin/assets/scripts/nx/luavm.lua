@@ -20,9 +20,7 @@ ffi.cdef [[
     void lua_getfield(lua_State*, int, const char*);
     void lua_rawset(lua_State*, int);
     
-    void lua_call(lua_State*, int, int);
-    void lua_pcall(lua_State*, int, int, int);
-    int lua_type(lua_State*, int);
+    int lua_pcall(lua_State*, int, int, int);
     
     void lua_pushnil(lua_State*);
     void lua_pushnumber(lua_State*, double);
@@ -80,13 +78,29 @@ local function funcPusher(s, f)
 
     C.lua_getfield(s, -10002, 'loadstring')
     C.lua_pushlstring(s, dump, #dump)
-    if C.lua_pcall(s, 1, 2, 0) == 0 then
+    if C.lua_pcall(s, 1, 2, 0) ~= 0 then
         error('LuaVM Function pusher: ' .. ffi.string(C.lua_tolstring(s, -1, nil)))
         C.lua_settop(s, -2)
     end
 
     -- Remove the second return value in case there were no errors
     C.lua_settop(s, -2)
+end
+
+-- Pushes the nxLib object into the lua_State s
+local function nxObjPusher(s, o)
+    local className = tostring(o.class.name):lower()
+    local cdata = o:_cdata()
+
+    C.lua_getfield(s, -10002, 'NX_LibObject')
+    C.lua_pushlightuserdata(s, cdata)
+    C.lua_pushstring(s, className)
+
+    if C.lua_pcall(s, 2, 1, 0) ~= 0 then
+        error('LuaVM nxLib Object pusher: ' .. ffi.string(C.lua_tolstring(s, -1, nil)))
+        C.lua_settop(s, -2)
+    end
+    print('classname: ' .. className)
 end
 
 -- Retrieves the table at index i from the lua_State s
@@ -155,7 +169,8 @@ pushers = {
     ['number']   = C.lua_pushnumber,
     ['string']   = C.lua_pushstring,
     ['boolean']  = C.lua_pushboolean,
-    ['function'] = funcPusher
+    ['function'] = funcPusher,
+    ['nxobj']    = nxObjPusher
 }
 
 -- Wrappers for retrieving values by type
@@ -217,8 +232,7 @@ function LuaVM:push(...)
         -- If has a :_cdata() function, then it's a wrapper class
         -- and we should push the handle instead
         if typename == 'table' and val._cdata and type(val._cdata) == 'function' then
-            val = val:_cdata()
-            typename = type(val)
+            typename = 'nxobj'
         end
 
         local pushFunc = pushers[typename]
@@ -278,7 +292,7 @@ function LuaVM:call(func, ...)
     local retCount = 0
 
     local ok = C.lua_pcall(self._handle, argc - 1, -1, 0)
-    if ok == 0 then
+    if ok ~= 0 then
         local err = self:pop(1, true)
         return nil, err
     end
