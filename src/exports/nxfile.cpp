@@ -1,18 +1,13 @@
-#include "config.hpp"
-#include "log.hpp"
-#include "filesystem.hpp"
+#include "../config.hpp"
+#include "../filesystem.hpp"
 #include <physfs/physfs.h>
 #include <sstream>
 #include <cstring>
-#include <thread>
-#include <chrono>
-#include <luajit/lua.hpp>
 
 extern "C"
 {
     // Guarentees correct values regardless of precision difference.
     //  eg: no more 2.6f --> 2.59654d
-
     float d2f(double val)
     {
         float ret;
@@ -30,53 +25,6 @@ extern "C"
         ss >> ret;
         return ret;
     }
-
-    //--------------------------------------------------------------------------
-
-    NX_EXPORT void nxSysSleep(double s)
-    {
-        auto time = std::chrono::duration<double>(s);
-        std::this_thread::sleep_for(
-            std::chrono::duration_cast<std::chrono::milliseconds>(time)
-        );
-    }
-
-    NX_EXPORT double nxSysGetTime()
-    {
-        auto t = std::chrono::high_resolution_clock::now().time_since_epoch();
-        return std::chrono::duration_cast<std::chrono::milliseconds>(t).count() / 1000.0;
-    }
-
-    //--------------------------------------------------------------------------
-
-    NX_EXPORT void nxLogVerbose(const char* message)
-    {
-        Log::verbose(message);
-    }
-
-    NX_EXPORT void nxLogDebug(const char* message)
-    {
-        Log::debug(message);
-    }
-
-    NX_EXPORT void nxLogInfo(const char* message)
-    {
-        Log::info(message);
-    }
-
-    NX_EXPORT void nxLogError(const char* message)
-    {
-        Log::error(message);
-    }
-
-    NX_EXPORT void nxLogFatal(const char* message)
-    {
-        Log::fatal(message);
-    }
-
-    //--------------------------------------------------------------------------
-
-    struct PHYSFS_File;
 
     NX_EXPORT const char* nxFsGetError()
     {
@@ -315,58 +263,5 @@ extern "C"
     NX_EXPORT bool nxFsWriteString(PHYSFS_File* handle, const char* str)
     {
         return nxFsWrite(handle, str, strlen(str) + 1, nullptr);
-    }
-
-    NX_EXPORT char** nxFsEnumerateFiles(const char* path)
-    {
-        return PHYSFS_enumerateFiles(path);
-    }
-
-    NX_EXPORT void nxFsFreeList(void* listVar)
-    {
-        PHYSFS_freeList(listVar);
-    }
-
-    NX_EXPORT bool nxFsIsDirectory(const char* path)
-    {
-        PHYSFS_Stat stat;
-        if (!PHYSFS_stat(path, &stat)) return false;
-
-        return stat.filetype == PHYSFS_FILETYPE_DIRECTORY;
-    }
-
-    NX_EXPORT bool nxFsIsFile(const char* path)
-    {
-        PHYSFS_Stat stat;
-        if (!PHYSFS_stat(path, &stat)) return false;
-
-        return stat.filetype == PHYSFS_FILETYPE_REGULAR;
-    }
-
-    //--------------------------------------------------------------------------
-
-    NX_EXPORT bool nxLuaLoadNxLibs(lua_State* state)
-    {
-        // Load data into a string?
-        std::string code(
-            #include "nxlib.luainl"
-        );
-
-        // Make sure we have a valid Lua state
-        if (!state) return false;
-
-        // Load up the code into the Lua state
-        if (luaL_loadbuffer(state, code.data(), code.size(), "nxlib.lua") != 0) return false;
-
-        // Try to run the code
-        if (lua_pcall(state, 0, 1, 0) != 0) return false;
-
-        return true;
-    }
-
-    NX_EXPORT void* nxLuaToCdata(lua_State* state, int index)
-    {
-        auto ptr = lua_topointer(state, index);
-        return reinterpret_cast<void*>(*reinterpret_cast<const uintptr_t*>(ptr));
     }
 }
