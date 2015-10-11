@@ -15,6 +15,13 @@ ffi.cdef[[
 -- Shared methods between read and write files ---------------------------------
 local BinaryFile = class 'BinaryFile'
 
+function BinaryFile:initialize(filename)
+    if type(filename) == 'string' then
+        local ok, err = self:open(filename)
+        if not ok then return nil, err end
+    end
+end
+
 function BinaryFile:isOpen()
     return self._handle ~= nil
 end

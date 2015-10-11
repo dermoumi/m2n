@@ -197,7 +197,9 @@ end
 
 function LuaVM:initialize(init)
     local handle = C.luaL_newstate()
-    if handle == nil then return end
+    if handle == nil then
+        return nil, 'Cannot create new Lua VM'
+    end
 
     C.luaL_openlibs(handle)
 

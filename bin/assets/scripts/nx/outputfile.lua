@@ -35,9 +35,7 @@ function OutputFile.static._fromCData(data)
 end
 
 function OutputFile:initialize(filename)
-    if type(filename) == 'string' then
-        self:open(filename)
-    end
+    return BinaryFile.initialize(self, filename)
 end
 
 function OutputFile:open(filename)

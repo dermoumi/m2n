@@ -105,8 +105,8 @@ end
 function Object.static:new(...)
   local instance = self:allocate()
   local ok, err = instance:initialize(...)
-  if ok ~= false then return instance end
-  return nil, err
+  if err then return nil, err end
+  return instance
 end
 
 function Object.static:subclass(name)

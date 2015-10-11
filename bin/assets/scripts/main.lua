@@ -13,9 +13,8 @@ Log.info("Is main.lua a file? " .. tostring(Fs.isFile('assets/scripts/main.lua')
 Log.info("Is main.lua a folder? " .. tostring(Fs.isDirectory('assets/scripts/main.lua')))
 
 local OutputFile = require 'nx.outputfile'
-local file = OutputFile:new()
-local ok, err = file:open('test.txt')
-if not ok then
+local file, err = OutputFile:new('test.txt')
+if not file then
     Log.error('Could not open file: ' .. err)
 else
     file:write("hello world?", 12)
@@ -35,22 +34,21 @@ end
 
 
 local InputFile = require 'nx.inputfile'
-local file = InputFile:new()
-ok, err = file:open('userdata/test.txt')
-if not ok then
+file, err = InputFile:new('userdata/test.txt')
+if not file then
     Log.error('Could not open file: ' .. err)
-    return 0
+    return 1
 end
 
 local LuaVM = require 'nx.luavm'
-local vm = LuaVM:new()
-if not vm:isOpen() then
-    error('erm?')
+local vm, err = LuaVM:new()
+if not vm then
+    error('erm? ' .. err)
 end
 
-local testvm = LuaVM:new()
-if not vm:isOpen() then
-    error('erm?')
+local testvm, err = LuaVM:new()
+if not testvm then
+    error('erm? ' .. err)
 end
 
 local retCount, err = vm:call(function(file, vm)
