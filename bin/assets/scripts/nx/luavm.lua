@@ -189,7 +189,13 @@ retrievers = {
 
 local LuaVM = class 'LuaVM'
 
-function LuaVM:initialize(cdata)
+function LuaVM.static._fromCData(data)
+    local vm = LuaVM:allocate()
+    vm._handle = ffi.cast('lua_State*', data)
+    return vm
+end
+
+function LuaVM:initialize(init)
     local handle = C.luaL_newstate()
     if handle == nil then return end
 
@@ -232,7 +238,12 @@ function LuaVM:push(...)
         -- If has a :_cdata() function, then it's a wrapper class
         -- and we should push the handle instead
         if typename == 'table' and val._cdata and type(val._cdata) == 'function' then
-            typename = 'nxobj'
+            if val == self then
+                C.lua_settop(self._handle, top)
+                return nil, 'Cannot push a LuaVM into itself'
+            else
+                typename = 'nxobj'
+            end
         end
 
         local pushFunc = pushers[typename]

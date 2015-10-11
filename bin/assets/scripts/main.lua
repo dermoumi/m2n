@@ -48,7 +48,12 @@ if not vm:isOpen() then
     error('erm?')
 end
 
-local retCount, err = vm:call(function(file)
+local testvm = LuaVM:new()
+if not vm:isOpen() then
+    error('erm?')
+end
+
+local retCount, err = vm:call(function(file, vm)
     local Log = require 'nx.log'
 
     Log.info(file:read(12))
@@ -63,8 +68,12 @@ local retCount, err = vm:call(function(file)
     Log.info(file:readDouble())
     Log.info(file:readString())
     
+    vm:call(function() print('hello everyone :D') end)
+
     return ':)'
-end, file)
+end, file, testvm)
+
+testvm = nil
 file:close()
 
 if not retCount then print(err) end
