@@ -1,22 +1,62 @@
+local OutputFile = require 'nx.outputfile'
+local InputFile = require 'nx.inputfile'
+local Thread = require 'nx.thread'
 local Log = require 'nx.log'
-Log.error("Hello world " .. 103)
 
-local Fs = require 'nx.filesystem'
-local assets = Fs.enumerateFiles('assets');
-for i,v in ipairs(assets) do
-    Log.info("Asset file: " .. v);
+local thread1, err = Thread:new(function()
+    local Nx = require 'nx'
+    local Log = require 'nx.log'
+
+    for i=0, 20 do
+        Log.info('Thread 1 : ' .. i)
+        Nx.sleep(0.1)
+    end
+
+    return ':D'
+end)
+
+if err then
+    Log.error(err)
+    return 1
 end
 
-Log.info("Is assets/scripts a file? " .. tostring(Fs.isFile('assets/scripts')))
-Log.info("Is assets/scripts a folder? " .. tostring(Fs.isDirectory('assets/scripts')))
-Log.info("Is main.lua a file? " .. tostring(Fs.isFile('assets/scripts/main.lua')))
-Log.info("Is main.lua a folder? " .. tostring(Fs.isDirectory('assets/scripts/main.lua')))
+local thread2, err = Thread:new(function(id)
+    local Nx = require 'nx'
+    local Log = require 'nx.log'
 
-local OutputFile = require 'nx.outputfile'
-local file, err = OutputFile:new('test.txt')
-if not file then
+    for i=0, 10 do
+        Log.info('Thread ' .. id .. ' : ' .. i)
+        Nx.sleep(0.2)
+    end
+
+    return 'D:'
+end, 'a')
+
+if err then
+    Log.error(err)
+    return 1
+end
+
+local result1, err1 = thread1:join()
+if err1 then
+    Log.info('Error 1 ' .. err1)
+    return 1
+end
+
+local result2, err2 = thread2:join()
+if err2 then
+    Log.info('Error 2 ' .. err2)
+    return 1
+end
+
+Log.info('Results: ' .. result1 .. ', ' .. result2)
+
+--[[
+local file1, err = OutputFile:new('test.txt')
+if not file1 then
     Log.error('Could not open file: ' .. err)
-else
+    return 1
+end
     file:write("hello world?", 12)
 
     file:writeS8(1)
@@ -31,7 +71,6 @@ else
     
     file:close()
 end
-
 
 local InputFile = require 'nx.inputfile'
 file, err = InputFile:new('userdata/test.txt')
@@ -84,5 +123,7 @@ local time = Nx.getSystemTime()
 Nx.sleep(0.7)
 Log.info('Time passed: ' .. tostring(Nx.getSystemTime() - time))
 Log.info('Current time: ' .. tostring(Nx.getSystemTime()))
+
+]]--
 
 return 0

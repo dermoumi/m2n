@@ -208,6 +208,8 @@ function LuaVM:initialize(init)
     else
         C.lua_close(handle)
     end
+
+    self:setTop(0)
 end
 
 function LuaVM:_cdata()
@@ -223,7 +225,7 @@ function LuaVM:getTop()
 end
 
 function LuaVM:setTop(index)
-    C.lua_settop(self._handle)
+    C.lua_settop(self._handle, index)
 end
 
 -- Pushes values into the stack
