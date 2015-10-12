@@ -14,7 +14,6 @@ namespace
     void threadCallback(lua_State* state, bool& succeeded)
     {
         int argCount = lua_gettop(state) - 1; // Total elements in stack minus the function itself
-        printf("Arg count: %i\n", argCount);
         succeeded = lua_pcall(state, argCount, -1, 0) == 0;
     }
 }

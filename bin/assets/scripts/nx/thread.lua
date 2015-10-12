@@ -37,7 +37,6 @@ function Thread:initialize(func, ...)
 
     vm:push(func, ...)
 
-    print(vm:_cdata())
     local handle = C.nxThreadCreate(vm:_cdata())
     if handle == nil then
         return nil, 'Cannot create a new thread'
