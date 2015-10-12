@@ -13,7 +13,7 @@ ffi.cdef[[
 ]]
 
 -- Shared methods between read and write files ---------------------------------
-local BinaryFile = class 'BinaryFile'
+local BinaryFile = class 'nx._binaryfile'
 
 function BinaryFile:initialize(filename)
     if type(filename) == 'string' then

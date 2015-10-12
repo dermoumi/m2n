@@ -81,7 +81,7 @@ end
 table.insert(package.loaders, 2, load)
 
 function NX_LibObject(cdata, classname)
-    local classObj = require('nx.' .. classname)
+    local classObj = require(classname)
     if not classObj then return nil end
 
     return classObj._fromCData(cdata)

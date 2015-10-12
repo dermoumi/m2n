@@ -89,7 +89,7 @@ end
 
 -- Pushes the nxLib object into the lua_State s
 local function nxObjPusher(s, o)
-    local className = tostring(o.class.name):lower()
+    local className = tostring(o.class.name)
     local cdata = o:_cdata()
 
     C.lua_getfield(s, -10002, 'NX_LibObject')
@@ -187,7 +187,7 @@ retrievers = {
 
 --------------------------------------------------------------------------------
 
-local LuaVM = class 'LuaVM'
+local LuaVM = class 'nx.luavm'
 
 function LuaVM.static._fromCData(data)
     local vm = LuaVM:allocate()

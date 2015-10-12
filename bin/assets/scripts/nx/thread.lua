@@ -15,7 +15,7 @@ ffi.cdef [[
 ]]
 
 local LuaVM = require 'nx.luavm'
-local Thread = class 'Thread'
+local Thread = class 'nx.thread'
 
 function Thread.static._fromCData(data)
     local thread = Thread:allocate()

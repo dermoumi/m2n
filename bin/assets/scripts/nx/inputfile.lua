@@ -25,7 +25,7 @@ ffi.cdef[[
 
 -- Input File ------------------------------------------------------------------
 local BinaryFile = require 'nx._binaryfile'
-local InputFile = class('InputFile', BinaryFile)
+local InputFile = class('nx.inputfile', BinaryFile)
 
 function InputFile.static._fromCData(data)
     local file = InputFile:new()
