@@ -14,6 +14,7 @@ ffi.cdef [[
     bool nxThreadWait(NxThreadObj*);
 ]]
 
+local class = require 'nx._class'
 local LuaVM = require 'nx.luavm'
 local Thread = class 'nx.thread'
 

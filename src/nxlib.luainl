@@ -87,8 +87,6 @@ function NX_LibObject(cdata, classname)
     return classObj._fromCData(cdata)
 end
 
-class = require 'middleclass'
-
 -- Return 1 to indicate went smoothly?
 return 1
 

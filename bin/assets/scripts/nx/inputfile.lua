@@ -24,6 +24,7 @@ ffi.cdef[[
 ]]
 
 -- Input File ------------------------------------------------------------------
+local class = require 'nx._class'
 local BinaryFile = require 'nx._binaryfile'
 local InputFile = class('nx.inputfile', BinaryFile)
 
