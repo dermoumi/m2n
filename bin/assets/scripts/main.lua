@@ -4,9 +4,11 @@ local Thread = require 'nx.thread'
 local Log = require 'nx.log'
 local Mutex = require 'nx.mutex'
 local ffi = require 'ffi'
+local Timer = require 'nx.timer'
 
 local mutex = Mutex:new()
 local sharedVal = ffi.new('float[1]', {0})
+local timer = Timer:new()
 
 local thread1, err = Thread:new(function(sharedVal, mutex)
     local Nx = require 'nx'
@@ -67,7 +69,8 @@ if err2 then
     return 1
 end
 
-Log.info('Results: ' .. result1 .. ', ' .. result2 .. ', ' .. sharedVal[0])
+Log.info('Results: ' .. result1 .. ', ' .. result2 .. ', ' .. sharedVal[0] ..
+    ', Elapsed time: ' .. timer:elapsedTime())
 
 --[[
 local file1, err = OutputFile:new('test.txt')
