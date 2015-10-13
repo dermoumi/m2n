@@ -31,7 +31,7 @@ local OutputFile = class('nx.outputfile', BinaryFile)
 
 function OutputFile.static._fromCData(data)
     local file = OutputFile:new()
-    file._handle = ffi.cast('PHYSFS_File*', data)
+    file._cdata = ffi.cast('PHYSFS_File*', data)
     return file
 end
 
@@ -46,7 +46,7 @@ function OutputFile:open(filename)
 
     local handle = C.nxFsOpenWrite(filename)
     if handle ~= nil then
-        self._handle = ffi.gc(handle, C.nxFsClose)
+        self._cdata = ffi.gc(handle, C.nxFsClose)
         return true
     else
         return false, ffi.string(C.nxFsGetError())
@@ -54,76 +54,76 @@ function OutputFile:open(filename)
 end
 
 function OutputFile:write(buffer, size)
-    if not self._handle then return nil, 'No file open' end
+    if not self._cdata then return nil, 'No file open' end
     
     local bytesWrittenPtr = ffi.new('size_t[1]')
 
-    local ok = C.nxFsWrite(self._handle, buffer, size, bytesWrittenPtr)
+    local ok = C.nxFsWrite(self._cdata, buffer, size, bytesWrittenPtr)
     if not ok then return false, ffi.string(C.nxFsGetError()) end
 
     return true
 end
 
 function OutputFile:writeS8(val)
-    if not self._handle then return nil, 'No file open' end
+    if not self._cdata then return nil, 'No file open' end
 
-    if C.nxFsWriteS8(self._handle, val) then return true end
+    if C.nxFsWriteS8(self._cdata, val) then return true end
     return false, ffi.string(C.nxFsGetError())
 end
 
 function OutputFile:writeS16(val)
-    if not self._handle then return nil, 'No file open' end
+    if not self._cdata then return nil, 'No file open' end
 
-    if C.nxFsWriteS16(self._handle, val) then return true end
+    if C.nxFsWriteS16(self._cdata, val) then return true end
     return false, ffi.string(C.nxFsGetError())
 end
 
 function OutputFile:writeS32(val)
-    if not self._handle then return nil, 'No file open' end
+    if not self._cdata then return nil, 'No file open' end
 
-    if C.nxFsWriteS32(self._handle, val) then return true end
+    if C.nxFsWriteS32(self._cdata, val) then return true end
     return false, ffi.string(C.nxFsGetError())
 end
 
 function OutputFile:writeU8(val)
-    if not self._handle then return nil, 'No file open' end
+    if not self._cdata then return nil, 'No file open' end
 
-    if C.nxFsWriteU8(self._handle, val) then return true end
+    if C.nxFsWriteU8(self._cdata, val) then return true end
     return false, ffi.string(C.nxFsGetError())
 end
 
 function OutputFile:writeU16(val)
-    if not self._handle then return nil, 'No file open' end
+    if not self._cdata then return nil, 'No file open' end
 
-    if C.nxFsWriteU16(self._handle, val) then return true end
+    if C.nxFsWriteU16(self._cdata, val) then return true end
     return false, ffi.string(C.nxFsGetError())
 end
 
 function OutputFile:writeU32(val)
-    if not self._handle then return nil, 'No file open' end
+    if not self._cdata then return nil, 'No file open' end
 
-    if C.nxFsWriteU32(self._handle, val) then return true end
+    if C.nxFsWriteU32(self._cdata, val) then return true end
     return false, ffi.string(C.nxFsGetError())
 end
 
 function OutputFile:writeFloat(val)
-    if not self._handle then return nil, 'No file open' end
+    if not self._cdata then return nil, 'No file open' end
 
-    if C.nxFsWriteFloat(self._handle, val) then return true end
+    if C.nxFsWriteFloat(self._cdata, val) then return true end
     return false, ffi.string(C.nxFsGetError())
 end
 
 function OutputFile:writeDouble(val)
-    if not self._handle then return nil, 'No file open' end
+    if not self._cdata then return nil, 'No file open' end
 
-    if C.nxFsWriteDouble(self._handle, val) then return true end
+    if C.nxFsWriteDouble(self._cdata, val) then return true end
     return false, ffi.string(C.nxFsGetError())
 end
 
 function OutputFile:writeString(str)
-    if not self._handle then return nil, 'No file open' end
+    if not self._cdata then return nil, 'No file open' end
 
-    if C.nxFsWriteString(self._handle, str) then return true end
+    if C.nxFsWriteString(self._cdata, str) then return true end
     return false, ffi.string(C.nxFsGetError())
 end
 

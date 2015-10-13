@@ -16,28 +16,24 @@ local Mutex = class 'nx.mutex'
 
 function Mutex.static._fromCData(data)
     local mutex = Mutex:allocate()
-    mutex._handle = ffi.cast('NxMutex*', data)
+    mutex._cdata = ffi.cast('NxMutex*', data)
     return mutex
 end
 
 function Mutex:initialize()
-    self._handle = ffi.gc(C.nxMutexCreate(), C.nxMutexRelease)
+    self._cdata = ffi.gc(C.nxMutexCreate(), C.nxMutexRelease)
 end
 
 function Mutex:lock()
-    C.nxMutexLock(self._handle)
+    C.nxMutexLock(self._cdata)
 end
 
 function Mutex:tryLock()
-    return C.nxMutexTryLock(self._handle)
+    return C.nxMutexTryLock(self._cdata)
 end
 
 function Mutex:unlock()
-    C.nxMutexUnlock(self._handle)
-end
-
-function Mutex:_cdata()
-    return self._handle
+    C.nxMutexUnlock(self._cdata)
 end
 
 return Mutex

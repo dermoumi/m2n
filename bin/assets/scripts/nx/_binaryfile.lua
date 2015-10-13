@@ -24,23 +24,23 @@ function BinaryFile:initialize(filename)
 end
 
 function BinaryFile:isOpen()
-    return self._handle ~= nil
+    return self._cdata ~= nil
 end
 
 function BinaryFile:close()
-    if self._handle then
-        C.nxFsClose(ffi.gc(self._handle, nil))
-        self._handle = nil
+    if self._cdata then
+        C.nxFsClose(ffi.gc(self._cdata, nil))
+        self._cdata = nil
     end
 end
 
 function BinaryFile:size()
-    if self._handle then
+    if self._cdata then
         return nil, 'No file open'
     end
 
     local size = ffi.new('size_t[1]')
-    if not C.nxFsSize(self._handle, size) then
+    if not C.nxFsSize(self._cdata, size) then
         return nil, ffi.string(C.nxFsGetError())
     end
 
@@ -48,12 +48,12 @@ function BinaryFile:size()
 end
 
 function BinaryFile:tell()
-    if self._handle then
+    if self._cdata then
         return nil, 'No file open'
     end
 
     local position = ffi.new('size_t[1]')
-    if not C.nxFsTell(self._handle, position) then
+    if not C.nxFsTell(self._cdata, position) then
         return nil, ffi.string(C.nxFsGetError())
     end
 
@@ -61,19 +61,15 @@ function BinaryFile:tell()
 end
 
 function BinaryFile:seek(position)
-    if self._handle then
+    if self._cdata then
         return nil, 'No file open'
     end
 
-    if C.nxFsSeek(self._handle, position) then
+    if C.nxFsSeek(self._cdata, position) then
         return true
     else
         return false, ffi.string(C.nxFsGetError())
     end
-end
-
-function BinaryFile:_cdata()
-    return self._handle
 end
 
 return BinaryFile

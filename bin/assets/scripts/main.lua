@@ -25,7 +25,6 @@ local thread1, err = Thread:new(function(sharedVal, mutex)
 
     return ':D'
 end, sharedVal, mutex)
-print('erm?')
 
 if err then
     Log.error(err)

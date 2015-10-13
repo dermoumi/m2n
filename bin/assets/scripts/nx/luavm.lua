@@ -89,18 +89,14 @@ end
 
 -- Pushes the nxLib object into the lua_State s
 local function nxObjPusher(s, o)
-    local className = tostring(o.class.name)
-    local cdata = o:_cdata()
-
     C.lua_getfield(s, -10002, 'NX_LibObject')
-    C.lua_pushlightuserdata(s, cdata)
-    C.lua_pushstring(s, className)
+    C.lua_pushlightuserdata(s, o._cdata)
+    C.lua_pushstring(s, tostring(o.class.name))
 
     if C.lua_pcall(s, 2, 1, 0) ~= 0 then
         error('LuaVM nxLib Object pusher: ' .. ffi.string(C.lua_tolstring(s, -1, nil)))
         C.lua_settop(s, -2)
     end
-    print('classname: ' .. className)
 end
 
 -- Retrieves the table at index i from the lua_State s
@@ -192,7 +188,7 @@ local LuaVM = class 'nx.luavm'
 
 function LuaVM.static._fromCData(data)
     local vm = LuaVM:allocate()
-    vm._handle = ffi.cast('lua_State*', data)
+    vm._cdata = ffi.cast('lua_State*', data)
     return vm
 end
 
@@ -205,7 +201,7 @@ function LuaVM:initialize(init)
     C.luaL_openlibs(handle)
 
     if C.nxLuaLoadNxLibs(handle) then
-        self._handle = ffi.gc(handle, C.lua_close)
+        self._cdata = ffi.gc(handle, C.lua_close)
     else
         C.lua_close(handle)
     end
@@ -213,20 +209,16 @@ function LuaVM:initialize(init)
     self:setTop(0)
 end
 
-function LuaVM:_cdata()
-    return self._handle
-end
-
 function LuaVM:isOpen()
-    return self._handle ~= nil
+    return self._cdata ~= nil
 end
 
 function LuaVM:getTop()
-    return C.lua_gettop(self._handle)
+    return C.lua_gettop(self._cdata)
 end
 
 function LuaVM:setTop(index)
-    C.lua_settop(self._handle, index)
+    C.lua_settop(self._cdata, index)
 end
 
 -- Pushes values into the stack
@@ -234,7 +226,7 @@ function LuaVM:push(...)
     local args = {...}
     local argc = table.maxn(args)
 
-    local top = C.lua_gettop(self._handle)
+    local top = C.lua_gettop(self._cdata)
 
     for i = 1, argc do
         local val = args[i]
@@ -242,9 +234,9 @@ function LuaVM:push(...)
 
         -- If has a :_cdata() function, then it's a wrapper class
         -- and we should push the handle instead
-        if typename == 'table' and val._cdata and type(val._cdata) == 'function' then
+        if typename == 'table' and val._cdata and type(val._cdata) == 'cdata' then
             if val == self then
-                C.lua_settop(self._handle, top)
+                C.lua_settop(self._cdata, top)
                 return nil, 'Cannot push a LuaVM into itself'
             else
                 typename = 'nxobj'
@@ -253,12 +245,12 @@ function LuaVM:push(...)
 
         local pushFunc = pushers[typename]
         if not pushFunc then
-            C.lua_settop(self._handle, top)
+            C.lua_settop(self._cdata, top)
             return nil, 'Cannot push value to LuaVM: type ' .. typename .. 
                 'is not supported. Aborting'
         end
 
-        pushFunc(self._handle, val)
+        pushFunc(self._cdata, val)
     end
 
     return argc
@@ -274,11 +266,11 @@ function LuaVM:pop(count, returnValues)
         local retCount = 1
 
         for i = -count, -1 do
-            local typename = typeof(self._handle, i)
+            local typename = typeof(self._cdata, i)
             local retriever = retrievers[typename]
 
             if retriever then
-                retval[retCount] = retriever(self._handle, i)
+                retval[retCount] = retriever(self._cdata, i)
             else
                 error('LuaVM:pop(): Type ' .. typename .. 'Unsupported. Skipping...')
                 retval[retCount] = nil
@@ -287,10 +279,10 @@ function LuaVM:pop(count, returnValues)
             retCount = retCount + 1
         end
 
-        C.lua_settop(self._handle, -count - 1)
+        C.lua_settop(self._cdata, -count - 1)
         return unpack(retval, 1, count)
     else
-        C.lua_settop(self._handle, -count - 1)
+        C.lua_settop(self._cdata, -count - 1)
     end
 end
 
@@ -299,7 +291,7 @@ end
 --  Returns the err if a problem occurs at calling
 --  Returned values are pushed to the stack, and their count is returned
 function LuaVM:call(func, ...)
-    local top = C.lua_gettop(self._handle)
+    local top = C.lua_gettop(self._cdata)
 
     local argc, err = self:push(func, ...)
     if not argc then return nil, err end
@@ -307,13 +299,13 @@ function LuaVM:call(func, ...)
     local args = {func, ...}
     local retCount = 0
 
-    local ok = C.lua_pcall(self._handle, argc - 1, -1, 0)
+    local ok = C.lua_pcall(self._cdata, argc - 1, -1, 0)
     if ok ~= 0 then
         local err = self:pop(1, true)
         return nil, err
     end
 
-    return C.lua_gettop(self._handle) - top
+    return C.lua_gettop(self._cdata) - top
 end
 
 return LuaVM

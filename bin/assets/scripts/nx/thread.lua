@@ -20,8 +20,8 @@ local Thread = class 'nx.thread'
 
 function Thread.static._fromCData(data)
     local thread = Thread:allocate()
-    thread._handle = ffi.cast('NxThreadObj*', data)
-    thread._vm = LuaVM._fromCData(thread._handle[0].state);
+    thread._cdata = ffi.cast('NxThreadObj*', data)
+    thread._vm = LuaVM._fromCData(thread._cdata[0].state);
     return thread
 end
 
@@ -37,21 +37,17 @@ function Thread:initialize(func, ...)
 
     vm:push(func, ...)
 
-    local handle = C.nxThreadCreate(vm:_cdata())
+    local handle = C.nxThreadCreate(vm._cdata)
     if handle == nil then
         return nil, 'Cannot create a new thread'
     end
 
     self._vm = vm
-    self._handle = ffi.gc(handle, C.nxThreadRelease)
-end
-
-function Thread:_cdata()
-    return self._handle
+    self._cdata = ffi.gc(handle, C.nxThreadRelease)
 end
 
 function Thread:join()
-    local ok = C.nxThreadWait(self._handle)
+    local ok = C.nxThreadWait(self._cdata)
     if ok then
         local retCount = self._vm:getTop()
         print('retcount', retCount)
