@@ -2,35 +2,54 @@ local OutputFile = require 'nx.outputfile'
 local InputFile = require 'nx.inputfile'
 local Thread = require 'nx.thread'
 local Log = require 'nx.log'
+local Mutex = require 'nx.mutex'
+local ffi = require 'ffi'
 
-local thread1, err = Thread:new(function()
+local mutex = Mutex:new()
+local sharedVal = ffi.new('float[1]', {0})
+
+local thread1, err = Thread:new(function(sharedVal, mutex)
     local Nx = require 'nx'
     local Log = require 'nx.log'
+    local ffi = require 'ffi'
 
-    for i=0, 20 do
+    sharedVal = ffi.cast('float*', sharedVal)
+
+    for i=1, 20 do
         Log.info('Thread 1 : ' .. i)
         Nx.sleep(0.1)
+        mutex:lock()
+        sharedVal[0] = sharedVal[0] + 1
+        mutex:unlock()
     end
 
     return ':D'
-end)
+end, sharedVal, mutex)
+print('erm?')
 
 if err then
     Log.error(err)
     return 1
 end
 
-local thread2, err = Thread:new(function(id)
+local thread2, err = Thread:new(function(id, sharedVal, mutex)
     local Nx = require 'nx'
     local Log = require 'nx.log'
 
-    for i=0, 10 do
+    local ffi = require 'ffi'
+
+    sharedVal = ffi.cast('float*', sharedVal)
+
+    for i=1, 10 do
         Log.info('Thread ' .. id .. ' : ' .. i)
         Nx.sleep(0.2)
+        mutex:lock()
+        sharedVal[0] = sharedVal[0] + 1
+        mutex:unlock()
     end
 
     return 'D:'
-end, 'a')
+end, 'a', sharedVal, mutex)
 
 if err then
     Log.error(err)
@@ -49,7 +68,7 @@ if err2 then
     return 1
 end
 
-Log.info('Results: ' .. result1 .. ', ' .. result2)
+Log.info('Results: ' .. result1 .. ', ' .. result2 .. ', ' .. sharedVal[0])
 
 --[[
 local file1, err = OutputFile:new('test.txt')
