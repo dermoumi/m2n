@@ -5,6 +5,9 @@ local Log = require 'nx.log'
 local Mutex = require 'nx.mutex'
 local ffi = require 'ffi'
 local Timer = require 'nx.timer'
+local Window = require 'nx.window'
+
+Window.create("m2n", 1280, 720, false)
 
 local mutex = Mutex:new()
 local sharedVal = ffi.new('float[1]', {0})
@@ -71,6 +74,8 @@ end
 
 Log.info('Results: ' .. result1 .. ', ' .. result2 .. ', ' .. sharedVal[0] ..
     ', Elapsed time: ' .. timer:elapsedTime())
+
+Window.close()
 
 --[[
 local file1, err = OutputFile:new('test.txt')

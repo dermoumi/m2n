@@ -70,9 +70,9 @@ int main(int argc, char* argv[])
     #endif
 
     // Run the lua code
+    int retval;
     {
         LuaVM lua;
-        int retval;
 
         std::string nxLibCode (
             #include "nxlib.luainl"
@@ -90,6 +90,9 @@ int main(int argc, char* argv[])
             return fatalError(lua.getErrorMessage());
         }
 
-        return retval;
     }
+    
+    SDL_Quit();
+
+    return retval;
 }

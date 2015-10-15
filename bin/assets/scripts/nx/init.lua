@@ -3,6 +3,7 @@ local C = ffi.C
 ffi.cdef [[
     void nxSysSleep(double s);
     double nxSysGetTime();
+    void nxSysGetSDLError();
 ]]
 
 return {
