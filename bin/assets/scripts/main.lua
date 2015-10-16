@@ -6,74 +6,19 @@ local Mutex = require 'nx.mutex'
 local ffi = require 'ffi'
 local Timer = require 'nx.timer'
 local Window = require 'nx.window'
+local Event = require 'nx.event'
+
+local done = false
 
 Window.create("m2n", 1280, 720, false)
 
-local mutex = Mutex:new()
-local sharedVal = ffi.new('float[1]', {0})
-local timer = Timer:new()
-
-local thread1, err = Thread:new(function(sharedVal, mutex)
-    local Nx = require 'nx'
-    local Log = require 'nx.log'
-    local ffi = require 'ffi'
-
-    sharedVal = ffi.cast('float*', sharedVal)
-
-    for i=1, 20 do
-        Log.info('Thread 1 : ' .. i)
-        Nx.sleep(0.1)
-        mutex:lock()
-        sharedVal[0] = sharedVal[0] + 1
-        mutex:unlock()
+while not done do
+    for type, ev in Event.poll() do
+        if type == Event.Quit then
+            done = true
+        end
     end
-
-    return ':D'
-end, sharedVal, mutex)
-
-if err then
-    Log.error(err)
-    return 1
 end
-
-local thread2, err = Thread:new(function(id, sharedVal, mutex)
-    local Nx = require 'nx'
-    local Log = require 'nx.log'
-
-    local ffi = require 'ffi'
-
-    sharedVal = ffi.cast('float*', sharedVal)
-
-    for i=1, 10 do
-        Log.info('Thread ' .. id .. ' : ' .. i)
-        Nx.sleep(0.2)
-        mutex:lock()
-        sharedVal[0] = sharedVal[0] + 1
-        mutex:unlock()
-    end
-
-    return 'D:'
-end, 'a', sharedVal, mutex)
-
-if err then
-    Log.error(err)
-    return 1
-end
-
-local result1, err1 = thread1:join()
-if err1 then
-    Log.info('Error 1 ' .. err1)
-    return 1
-end
-
-local result2, err2 = thread2:join()
-if err2 then
-    Log.info('Error 2 ' .. err2)
-    return 1
-end
-
-Log.info('Results: ' .. result1 .. ', ' .. result2 .. ', ' .. sharedVal[0] ..
-    ', Elapsed time: ' .. timer:elapsedTime())
 
 Window.close()
 
