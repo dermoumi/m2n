@@ -7,7 +7,7 @@ local ffi = require 'ffi'
 local Timer = require 'nx.timer'
 local Window = require 'nx.window'
 local Events = require 'nx.events'
-
+ 
 local done = false
 
 Window.create("m2n", 1280, 720, false)
@@ -16,8 +16,26 @@ while not done do
     for type, ev in Events.poll() do
         if type == Events.Quit or type == Events.TouchEnded then
             done = true
-        elseif type == Events.MouseMoved then
-            print('position: ' .. ev.x .. ', ' .. ev.y)
+        elseif type == Events.Minimized then
+            print('Window minimized')
+        elseif type == Events.Maximized then
+            print('Window maximized')
+        elseif type == Events.Restored then
+            print('Window restored')
+        elseif type == Events.TextEntered then
+            print('Text entered: ' .. ev.text)
+        elseif type == Events.TextEdited then
+            print('Text edited from ' .. ev.start .. ' to ' .. (ev.start + ev.length) .. ': ' .. ev.text)
+        elseif type == Events.MouseLeft then
+            print('Mouse left')
+        elseif type == Events.MouseEntered then
+            print('Mouse entered')
+        elseif type == Events.MouseButtonPressed then
+            print('Mouse button pressed at: ' .. ev.x .. ', ' .. ev.y .. ' Button: ' .. ev.button)
+        elseif type == Events.MouseButtonReleased then
+            print('Mouse button released at: ' .. ev.x .. ', ' .. ev.y .. ' Button: ' .. ev.button)
+        elseif type ~= Events.MouseMoved then
+            print('Event: ' .. tostring(type))
         end
     end
 end

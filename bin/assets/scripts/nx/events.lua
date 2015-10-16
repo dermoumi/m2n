@@ -36,8 +36,8 @@ ffi.cdef [[
     } NxEventType;
 
     typedef struct {
-        double a, b, c;
-        char t[32];
+        double a, b, c, d, e;
+        const char* t;
     } NxEvent;
 
     NxEventType nxEventPoll(NxEvent*);
@@ -76,6 +76,12 @@ Events.static.TouchMoved             = C.NX_TouchMoved
 Events.static.ClipboardUpdated       = C.NX_ClipboardUpdated
 Events.static.FileDropped            = C.NX_FileDropped
 
+Events.static.LeftButton   = 0
+Events.static.RightButton  = 1
+Events.static.MiddleButton = 2
+Events.static.XButton1     = 3
+Events.static.XButton2     = 4
+
 --------------------------------------------------------------------------------
 function Events.static.poll()
     local function pollFunc(t, i)
@@ -108,10 +114,47 @@ function Events.static.poll()
                 -- TODO
             }
         elseif evType == C.NX_MouseMoved then
-            local bit = require("bit")
             return evType, {
                 x = tonumber(event.a),
                 y = tonumber(event.b)
+            }
+        elseif evType == C.NX_MouseButtonPressed or evType == C.NX_MouseButtonReleased then
+            return evType, {
+                x = tonumber(event.a),
+                y = tonumber(event.b),
+                button = tonumber(event.c)
+            }
+        elseif evType == C.NX_MouseWheelScrolled then
+            return evType, {
+                x = tonumber(event.a),
+                y = tonumber(event.b)
+            }
+        elseif evType == C.NX_JoystickMoved then
+            return evType, {
+                which = tonumber(event.a),
+                axis = tonumber(event.b),
+                value = tonumber(event.c)
+            }
+        elseif evType == C.NX_JoystickButtonPressed or evType == C.NX_JoystickButtonReleased then
+            return evType, {
+                which = tonumber(event.a),
+                button = tonumber(event.b)
+            }
+        elseif evType == C.NX_JoystickConnected or evType == C.NX_JoystickDisconnected then
+            return evType, {
+                which = tonumber(event.a)
+            }
+        elseif evType == C.NX_TouchBegan or evType == C.NX_TouchEnded or evType == C.NX_TouchMoved then
+            return evType, {
+                finger = tonumber(event.a),
+                touch = tonumber(event.b),
+                pressure = tonumber(event.c),
+                x = tonumber(event.d),
+                y = tonumber(event.e)
+            }
+        elseif evType == C.NX_FileDropped then
+            return evType, {
+                file = ffi.string(e.t)
             }
         else
             return evType, nil

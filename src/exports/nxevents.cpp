@@ -1,6 +1,6 @@
 #include "../config.hpp"
 #include <SDL2/SDL.h>
-#include <cstring>
+#include <string>
 
 using NxWindow = SDL_Window;
 extern NxWindow* nxWindowGet();
@@ -39,8 +39,8 @@ enum NxEventType {
 };
 
 struct NxEvent {
-    double a, b, c;
-    char t[32];
+    double a, b, c, d, e;
+    const char* t;
 };
 
 namespace
@@ -66,6 +66,8 @@ extern "C"
 {
     NX_EXPORT NxEventType nxEventPoll(NxEvent* e)
     {
+        static std::string strArg;
+
         SDL_Event event;
         int pending = SDL_PollEvent(&event);
 
@@ -104,12 +106,14 @@ extern "C"
             case SDL_APP_LOWMEMORY:
                 return NX_LowMemory;
             case SDL_TEXTINPUT:
-                strcpy(e->t, event.text.text);
+                strArg = event.text.text;
+                e->t = strArg.data();
                 return NX_TextEntered;
             case SDL_TEXTEDITING:
+                strArg = event.text.text;
                 e->a = event.edit.start;
                 e->b = event.edit.length;
-                strcpy(e->t, event.edit.text);
+                e->t = strArg.data();
                 return NX_TextEdited;
             case SDL_KEYDOWN:
                 // TODO
@@ -135,26 +139,55 @@ extern "C"
                 e->c = toNxMouseButtons(event.button.button);
                 return NX_MouseButtonReleased;
             case SDL_MOUSEWHEEL:
+                e->a = event.wheel.x;
+                e->b = event.wheel.y;
                 return NX_MouseWheelScrolled;
             case SDL_CONTROLLERAXISMOTION:
+                e->a = event.caxis.which;
+                e->b = event.caxis.axis;
+                e->c = event.caxis.value;
                 return NX_JoystickMoved;
             case SDL_CONTROLLERBUTTONDOWN:
+                e->a = event.cbutton.which;
+                e->b = event.cbutton.button;
                 return NX_JoystickButtonPressed;
             case SDL_CONTROLLERBUTTONUP:
+                e->a = event.cbutton.which;
+                e->b = event.cbutton.button;
                 return NX_JoystickButtonReleased;
             case SDL_CONTROLLERDEVICEADDED:
+                e->a = event.cdevice.which;
                 return NX_JoystickConnected;
             case SDL_CONTROLLERDEVICEREMOVED:
+                e->a = event.cdevice.which;
                 return NX_JoystickDisconnected;
             case SDL_FINGERDOWN:
+                e->a = event.tfinger.fingerId;
+                e->b = event.tfinger.touchId;
+                e->c = event.tfinger.pressure;
+                e->d = event.tfinger.x;
+                e->e = event.tfinger.y;
                 return NX_TouchBegan;
             case SDL_FINGERUP:
+                e->a = event.tfinger.fingerId;
+                e->b = event.tfinger.touchId;
+                e->c = event.tfinger.pressure;
+                e->d = event.tfinger.x;
+                e->e = event.tfinger.y;
                 return NX_TouchEnded;
             case SDL_FINGERMOTION:
+                e->a = event.tfinger.fingerId;
+                e->b = event.tfinger.touchId;
+                e->c = event.tfinger.pressure;
+                e->d = event.tfinger.x;
+                e->e = event.tfinger.y;
                 return NX_TouchMoved;
             case SDL_CLIPBOARDUPDATE:
                 return NX_ClipboardUpdated;
             case SDL_DROPFILE:
+                strArg = event.drop.file;
+                SDL_free(event.drop.file);
+                e->t = strArg.data();
                 return NX_FileDropped;
             default:
                 return NX_Other;
