@@ -31,14 +31,16 @@ ffi.cdef [[
         NX_TouchBegan,
         NX_TouchEnded,
         NX_TouchMoved,
-        NX_SensorChanged,
         NX_ClipboardUpdated,
-        NX_FileDropped,
-        NX_AudioDeviceAdded,
-        NX_AudioDeviceRemoved
-    } EventType;
+        NX_FileDropped
+    } NxEventType;
 
-    uint32_t nxEventPoll();
+    typedef struct {
+        double a, b, c;
+        char t[32];
+    } NxEvent;
+
+    NxEventType nxEventPoll(NxEvent*);
 ]]
 
 local class = require 'nx._class'
@@ -71,30 +73,48 @@ Event.static.JoystickDisconnected   = C.NX_JoystickDisconnected
 Event.static.TouchBegan             = C.NX_TouchBegan
 Event.static.TouchEnded             = C.NX_TouchEnded
 Event.static.TouchMoved             = C.NX_TouchMoved
-Event.static.SensorChanged          = C.NX_SensorChanged
 Event.static.ClipboardUpdated       = C.NX_ClipboardUpdated
 Event.static.FileDropped            = C.NX_FileDropped
-Event.static.AudioDeviceAdded       = C.NX_AudioDeviceAdded
-Event.static.AudioDeviceRemoved     = C.NX_AudioDeviceRemoved
 
---[[
-local SizeEvent = class 'SizeEvent'
-
-function SizeEvent:initialize(width, height)
-    self.width = width
-    self.height = height
-end
-]]
-
+--------------------------------------------------------------------------------
 function Event.static.poll()
     local function pollFunc(t, i)
         local evType
+        local evPtr = ffi.new('NxEvent[1]')
         repeat
-            evType = C.nxEventPoll()
+            evType = C.nxEventPoll(evPtr)
         until evType ~= NX_Other
+        event = evPtr[0]
 
-        if evType ~= C.NX_NoEvent then
-            return evType, {}
+        if evType == C.NX_NoEvent then
+            return nil
+        elseif evType == C.NX_Resized then
+            return evType, {
+                width = tonumber(event.a),
+                height = tonumber(event.b)
+            }
+        elseif evType == C.NX_TextEntered then
+            return evType, {
+                text = ffi.string(event.t)
+            }
+        elseif evType == C.NX_TextEdited then
+            return evType, {
+                text = ffi.string(event.t),
+                start = tonumber(event.a),
+                length = tonumber(event.b)
+            }
+        elseif evType == C.NX_KeyPressed or evType == C.NX_KeyReleased then
+            return evType, {
+                -- TODO
+            }
+        elseif evType == C.NX_MouseMoved then
+            local bit = require("bit")
+            return evType, {
+                x = tonumber(event.a),
+                y = tonumber(event.b)
+            }
+        else
+            return evType, nil
         end
     end
     return pollFunc, nil, nil

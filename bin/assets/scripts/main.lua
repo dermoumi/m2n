@@ -14,9 +14,10 @@ Window.create("m2n", 1280, 720, false)
 
 while not done do
     for type, ev in Event.poll() do
-        print('event', type)
         if type == Event.Quit or type == Event.TouchEnded then
             done = true
+        elseif type == Event.MouseMoved then
+            print('position: ' .. ev.x .. ', ' .. ev.y)
         end
     end
 end

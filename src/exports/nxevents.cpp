@@ -1,10 +1,11 @@
 #include "../config.hpp"
 #include <SDL2/SDL.h>
+#include <cstring>
 
 using NxWindow = SDL_Window;
 extern NxWindow* nxWindowGet();
 
-enum EventType {
+enum NxEventType {
     NX_NoEvent = 0,
     NX_Other,
     NX_Quit,
@@ -33,16 +34,37 @@ enum EventType {
     NX_TouchBegan,
     NX_TouchEnded,
     NX_TouchMoved,
-    NX_SensorChanged,
     NX_ClipboardUpdated,
-    Nx_FileDropped,
-    NX_AudioDeviceAdded,
-    NX_AudioDeviceRemoved
+    NX_FileDropped
 };
 
+struct NxEvent {
+    double a, b, c;
+    char t[32];
+};
+
+namespace
+{
+    double toNxMouseButtons(uint8_t button)
+    {
+        switch (button) {
+        case SDL_BUTTON_LEFT:
+            return 0.0;
+        case SDL_BUTTON_RIGHT:
+            return 1.0;
+        case SDL_BUTTON_MIDDLE:
+            return 2.0;
+        case SDL_BUTTON_X1:
+            return 3.0;
+        case SDL_BUTTON_X2:
+        default:
+            return 4.0;
+        }
+    }
+}
 extern "C"
 {
-    NX_EXPORT uint32_t nxEventPoll()
+    NX_EXPORT NxEventType nxEventPoll(NxEvent* e)
     {
         SDL_Event event;
         int pending = SDL_PollEvent(&event);
@@ -58,6 +80,9 @@ extern "C"
             case SDL_WINDOWEVENT:
                 switch (event.window.event) {
                     case SDL_WINDOWEVENT_RESIZED:
+                    case SDL_WINDOWEVENT_SIZE_CHANGED:
+                        e->a = event.window.data1;
+                        e->b = event.window.data2;
                         return NX_Resized;
                     case SDL_WINDOWEVENT_MINIMIZED:
                         return NX_Minimized;
@@ -79,18 +104,35 @@ extern "C"
             case SDL_APP_LOWMEMORY:
                 return NX_LowMemory;
             case SDL_TEXTINPUT:
+                strcpy(e->t, event.text.text);
                 return NX_TextEntered;
             case SDL_TEXTEDITING:
+                e->a = event.edit.start;
+                e->b = event.edit.length;
+                strcpy(e->t, event.edit.text);
                 return NX_TextEdited;
             case SDL_KEYDOWN:
+                // TODO
                 return NX_KeyPressed;
             case SDL_KEYUP:
+                // TODO
                 return NX_KeyReleased;
             case SDL_MOUSEMOTION:
+                if (event.motion.which == SDL_TOUCH_MOUSEID) return NX_Other;
+                e->a = event.motion.x;
+                e->b = event.motion.y;
                 return NX_MouseMoved;
             case SDL_MOUSEBUTTONDOWN:
+                if (event.button.which == SDL_TOUCH_MOUSEID) return NX_Other;
+                e->a = event.button.x;
+                e->b = event.button.y;
+                e->c = toNxMouseButtons(event.button.button);
                 return NX_MouseButtonPressed;
             case SDL_MOUSEBUTTONUP:
+                if (event.button.which == SDL_TOUCH_MOUSEID) return NX_Other;
+                e->a = event.button.x;
+                e->b = event.button.y;
+                e->c = toNxMouseButtons(event.button.button);
                 return NX_MouseButtonReleased;
             case SDL_MOUSEWHEEL:
                 return NX_MouseWheelScrolled;
@@ -110,6 +152,10 @@ extern "C"
                 return NX_TouchEnded;
             case SDL_FINGERMOTION:
                 return NX_TouchMoved;
+            case SDL_CLIPBOARDUPDATE:
+                return NX_ClipboardUpdated;
+            case SDL_DROPFILE:
+                return NX_FileDropped;
             default:
                 return NX_Other;
         }
