@@ -51,7 +51,7 @@ end
 
 -- Pushes the table t into the lua_State s
 local function tablePusher(s, t)
-    C.lua_createtable(s, 0, 0)
+    C.lua_createtable(s, #t, 0)
     local top = C.lua_gettop(s)
 
     for k, v in pairs(t) do
