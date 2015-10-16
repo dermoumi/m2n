@@ -14,7 +14,8 @@ Window.create("m2n", 1280, 720, false)
 
 while not done do
     for type, ev in Event.poll() do
-        if type == Event.Quit then
+        print('event', type)
+        if type == Event.Quit or type == Event.TouchEnded then
             done = true
         end
     end
