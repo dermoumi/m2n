@@ -44,40 +44,40 @@ ffi.cdef [[
 ]]
 
 local class = require 'nx._class'
-local Event = class 'Event'
+local Events = class 'Event'
 
 -- SDL Event enum
-Event.static.Quit                   = C.NX_Quit
-Event.static.Resized                = C.NX_Resized
-Event.static.Minimized              = C.NX_Minimized
-Event.static.Maximized              = C.NX_Maximized
-Event.static.Restored               = C.NX_Restored
-Event.static.GainedFocus            = C.NX_GainedFocus
-Event.static.LostFocus              = C.NX_LostFocus
-Event.static.LowMemory              = C.NX_LowMemory
-Event.static.TextEntered            = C.NX_TextEntered
-Event.static.TextEdited             = C.NX_TextEdited
-Event.static.KeyPressed             = C.NX_KeyPressed
-Event.static.KeyReleased            = C.NX_KeyReleased
-Event.static.MouseMoved             = C.NX_MouseMoved
-Event.static.MouseEntered           = C.NX_MouseEntered
-Event.static.MouseLeft              = C.NX_MouseLeft
-Event.static.MouseButtonPressed     = C.NX_MouseButtonPressed
-Event.static.MouseButtonReleased    = C.NX_MouseButtonReleased
-Event.static.MouseWheelScrolled     = C.NX_MouseWheelScrolled
-Event.static.JoystickMoved          = C.NX_JoystickMoved
-Event.static.JoystickButtonPressed  = C.NX_JoystickButtonPressed
-Event.static.JoystickButtonReleased = C.NX_JoystickButtonReleased
-Event.static.JoystickConnected      = C.NX_JoystickConnected
-Event.static.JoystickDisconnected   = C.NX_JoystickDisconnected
-Event.static.TouchBegan             = C.NX_TouchBegan
-Event.static.TouchEnded             = C.NX_TouchEnded
-Event.static.TouchMoved             = C.NX_TouchMoved
-Event.static.ClipboardUpdated       = C.NX_ClipboardUpdated
-Event.static.FileDropped            = C.NX_FileDropped
+Events.static.Quit                   = C.NX_Quit
+Events.static.Resized                = C.NX_Resized
+Events.static.Minimized              = C.NX_Minimized
+Events.static.Maximized              = C.NX_Maximized
+Events.static.Restored               = C.NX_Restored
+Events.static.GainedFocus            = C.NX_GainedFocus
+Events.static.LostFocus              = C.NX_LostFocus
+Events.static.LowMemory              = C.NX_LowMemory
+Events.static.TextEntered            = C.NX_TextEntered
+Events.static.TextEdited             = C.NX_TextEdited
+Events.static.KeyPressed             = C.NX_KeyPressed
+Events.static.KeyReleased            = C.NX_KeyReleased
+Events.static.MouseMoved             = C.NX_MouseMoved
+Events.static.MouseEntered           = C.NX_MouseEntered
+Events.static.MouseLeft              = C.NX_MouseLeft
+Events.static.MouseButtonPressed     = C.NX_MouseButtonPressed
+Events.static.MouseButtonReleased    = C.NX_MouseButtonReleased
+Events.static.MouseWheelScrolled     = C.NX_MouseWheelScrolled
+Events.static.JoystickMoved          = C.NX_JoystickMoved
+Events.static.JoystickButtonPressed  = C.NX_JoystickButtonPressed
+Events.static.JoystickButtonReleased = C.NX_JoystickButtonReleased
+Events.static.JoystickConnected      = C.NX_JoystickConnected
+Events.static.JoystickDisconnected   = C.NX_JoystickDisconnected
+Events.static.TouchBegan             = C.NX_TouchBegan
+Events.static.TouchEnded             = C.NX_TouchEnded
+Events.static.TouchMoved             = C.NX_TouchMoved
+Events.static.ClipboardUpdated       = C.NX_ClipboardUpdated
+Events.static.FileDropped            = C.NX_FileDropped
 
 --------------------------------------------------------------------------------
-function Event.static.poll()
+function Events.static.poll()
     local function pollFunc(t, i)
         local evType
         local evPtr = ffi.new('NxEvent[1]')
@@ -120,4 +120,4 @@ function Event.static.poll()
     return pollFunc, nil, nil
 end
 
-return Event
+return Events

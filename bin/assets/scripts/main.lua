@@ -6,17 +6,17 @@ local Mutex = require 'nx.mutex'
 local ffi = require 'ffi'
 local Timer = require 'nx.timer'
 local Window = require 'nx.window'
-local Event = require 'nx.event'
+local Events = require 'nx.events'
 
 local done = false
 
 Window.create("m2n", 1280, 720, false)
 
 while not done do
-    for type, ev in Event.poll() do
-        if type == Event.Quit or type == Event.TouchEnded then
+    for type, ev in Events.poll() do
+        if type == Events.Quit or type == Events.TouchEnded then
             done = true
-        elseif type == Event.MouseMoved then
+        elseif type == Events.MouseMoved then
             print('position: ' .. ev.x .. ', ' .. ev.y)
         end
     end
