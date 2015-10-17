@@ -10,19 +10,15 @@ enum NxEventType {
     NX_Other,
     NX_Quit,
     NX_Resized,
-    NX_Minimized,
-    NX_Maximized,
-    NX_Restored,
-    NX_GainedFocus,
-    NX_LostFocus,
+    NX_Visible,
+    NX_Focus,
     NX_LowMemory,
     NX_TextEntered,
     NX_TextEdited,
     NX_KeyPressed,
     NX_KeyReleased,
     NX_MouseMoved,
-    NX_MouseEntered,
-    NX_MouseLeft,
+    NX_MouseFocus,
     NX_MouseButtonPressed,
     NX_MouseButtonReleased,
     NX_MouseWheelScrolled,
@@ -39,7 +35,7 @@ enum NxEventType {
 };
 
 struct NxEvent {
-    double a, b, c, d, e;
+    double a, b, c;
     const char* t;
 };
 
@@ -87,19 +83,23 @@ extern "C"
                         e->b = event.window.data2;
                         return NX_Resized;
                     case SDL_WINDOWEVENT_MINIMIZED:
-                        return NX_Minimized;
-                    case SDL_WINDOWEVENT_MAXIMIZED:
-                        return NX_Maximized;
+                        e->a = 0.0;
+                        return NX_Visible;
                     case SDL_WINDOWEVENT_RESTORED:
-                        return NX_Restored;
+                        e->a = 1.0;
+                        return NX_Visible;
                     case SDL_WINDOWEVENT_FOCUS_GAINED:
-                        return NX_GainedFocus;
+                        e->a = 1.0;
+                        return NX_Focus;
                     case SDL_WINDOWEVENT_FOCUS_LOST:
-                        return NX_LostFocus;
+                        e->a = 0.0;
+                        return NX_Focus;
                     case SDL_WINDOWEVENT_ENTER:
-                        return NX_MouseEntered;
+                        e->a = 1.0;
+                        return NX_MouseFocus;
                     case SDL_WINDOWEVENT_LEAVE:
-                        return NX_MouseLeft;
+                        e->b = 0.0;
+                        return NX_MouseFocus;
                     default:
                         return NX_Other;
                 }
@@ -163,24 +163,18 @@ extern "C"
                 return NX_JoystickDisconnected;
             case SDL_FINGERDOWN:
                 e->a = event.tfinger.fingerId;
-                e->b = event.tfinger.touchId;
-                e->c = event.tfinger.pressure;
-                e->d = event.tfinger.x;
-                e->e = event.tfinger.y;
+                e->b = event.tfinger.x;
+                e->c = event.tfinger.y;
                 return NX_TouchBegan;
             case SDL_FINGERUP:
                 e->a = event.tfinger.fingerId;
-                e->b = event.tfinger.touchId;
-                e->c = event.tfinger.pressure;
-                e->d = event.tfinger.x;
-                e->e = event.tfinger.y;
+                e->b = event.tfinger.x;
+                e->c = event.tfinger.y;
                 return NX_TouchEnded;
             case SDL_FINGERMOTION:
                 e->a = event.tfinger.fingerId;
-                e->b = event.tfinger.touchId;
-                e->c = event.tfinger.pressure;
-                e->d = event.tfinger.x;
-                e->e = event.tfinger.y;
+                e->b = event.tfinger.x;
+                e->c = event.tfinger.y;
                 return NX_TouchMoved;
             case SDL_CLIPBOARDUPDATE:
                 return NX_ClipboardUpdated;

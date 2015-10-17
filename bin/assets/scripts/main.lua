@@ -7,35 +7,32 @@ local ffi = require 'ffi'
 local Timer = require 'nx.timer'
 local Window = require 'nx.window'
 local Events = require 'nx.events'
- 
-local done = false
 
 Window.create("m2n", 1280, 720, false)
 
+local done = false
 while not done do
-    for type, ev in Events.poll() do
-        if type == Events.Quit or type == Events.TouchEnded then
+    for e, a, b, c in Events.poll() do
+        if e == 'quit' then
             done = true
-        elseif type == Events.Minimized then
-            print('Window minimized')
-        elseif type == Events.Maximized then
-            print('Window maximized')
-        elseif type == Events.Restored then
-            print('Window restored')
-        elseif type == Events.TextEntered then
-            print('Text entered: ' .. ev.text)
-        elseif type == Events.TextEdited then
-            print('Text edited from ' .. ev.start .. ' to ' .. (ev.start + ev.length) .. ': ' .. ev.text)
-        elseif type == Events.MouseLeft then
-            print('Mouse left')
-        elseif type == Events.MouseEntered then
-            print('Mouse entered')
-        elseif type == Events.MouseButtonPressed then
-            print('Mouse button pressed at: ' .. ev.x .. ', ' .. ev.y .. ' Button: ' .. ev.button)
-        elseif type == Events.MouseButtonReleased then
-            print('Mouse button released at: ' .. ev.x .. ', ' .. ev.y .. ' Button: ' .. ev.button)
-        elseif type ~= Events.MouseMoved then
-            print('Event: ' .. tostring(type))
+        elseif e == 'focus' then
+            print('Window has focus? ' .. tostring(a))
+        elseif e == 'visible' then
+            print('Window is visible? ' .. tostring(a))
+        elseif e == 'textentered' then
+            print('Text entered: ' .. a)
+        elseif e == 'textedited' then
+            print('Text edited from ' .. b .. ' to ' .. (b + c) .. ': ' .. a)
+        elseif e == 'mousefocus' then
+            print('Has mouse focus? ' .. tostring(a))
+        elseif e == 'mousepressed' then
+            print('Mouse button pressed at: ' .. a .. ', ' .. b .. ' Button: ' .. c)
+        elseif e == 'mousereleased' then
+            print('Mouse button released at: ' .. a .. ', ' .. b .. ' Button: ' .. c)
+        elseif e == 'touchbegan' then
+            print('Touch event: ' .. a .. ', ' .. b .. ', ' .. c)
+        elseif e ~= 'mousemoved' then
+            print('Event: ' .. e)
         end
     end
 end

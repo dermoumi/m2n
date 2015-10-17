@@ -7,19 +7,15 @@ ffi.cdef [[
         NX_Other,
         NX_Quit,
         NX_Resized,
-        NX_Minimized,
-        NX_Maximized,
-        NX_Restored,
-        NX_GainedFocus,
-        NX_LostFocus,
+        NX_Visible,
+        NX_Focus,
         NX_LowMemory,
         NX_TextEntered,
         NX_TextEdited,
         NX_KeyPressed,
         NX_KeyReleased,
         NX_MouseMoved,
-        NX_MouseEntered,
-        NX_MouseLeft,
+        NX_MouseFocus,
         NX_MouseButtonPressed,
         NX_MouseButtonReleased,
         NX_MouseWheelScrolled,
@@ -36,7 +32,7 @@ ffi.cdef [[
     } NxEventType;
 
     typedef struct {
-        double a, b, c, d, e;
+        double a, b, c;
         const char* t;
     } NxEvent;
 
@@ -45,36 +41,6 @@ ffi.cdef [[
 
 local class = require 'nx._class'
 local Events = class 'Event'
-
--- SDL Event enum
-Events.static.Quit                   = C.NX_Quit
-Events.static.Resized                = C.NX_Resized
-Events.static.Minimized              = C.NX_Minimized
-Events.static.Maximized              = C.NX_Maximized
-Events.static.Restored               = C.NX_Restored
-Events.static.GainedFocus            = C.NX_GainedFocus
-Events.static.LostFocus              = C.NX_LostFocus
-Events.static.LowMemory              = C.NX_LowMemory
-Events.static.TextEntered            = C.NX_TextEntered
-Events.static.TextEdited             = C.NX_TextEdited
-Events.static.KeyPressed             = C.NX_KeyPressed
-Events.static.KeyReleased            = C.NX_KeyReleased
-Events.static.MouseMoved             = C.NX_MouseMoved
-Events.static.MouseEntered           = C.NX_MouseEntered
-Events.static.MouseLeft              = C.NX_MouseLeft
-Events.static.MouseButtonPressed     = C.NX_MouseButtonPressed
-Events.static.MouseButtonReleased    = C.NX_MouseButtonReleased
-Events.static.MouseWheelScrolled     = C.NX_MouseWheelScrolled
-Events.static.JoystickMoved          = C.NX_JoystickMoved
-Events.static.JoystickButtonPressed  = C.NX_JoystickButtonPressed
-Events.static.JoystickButtonReleased = C.NX_JoystickButtonReleased
-Events.static.JoystickConnected      = C.NX_JoystickConnected
-Events.static.JoystickDisconnected   = C.NX_JoystickDisconnected
-Events.static.TouchBegan             = C.NX_TouchBegan
-Events.static.TouchEnded             = C.NX_TouchEnded
-Events.static.TouchMoved             = C.NX_TouchMoved
-Events.static.ClipboardUpdated       = C.NX_ClipboardUpdated
-Events.static.FileDropped            = C.NX_FileDropped
 
 Events.static.LeftButton   = 0
 Events.static.RightButton  = 1
@@ -90,74 +56,56 @@ function Events.static.poll()
         repeat
             evType = C.nxEventPoll(evPtr)
         until evType ~= NX_Other
-        event = evPtr[0]
+        e = evPtr[0]
 
         if evType == C.NX_NoEvent then
             return nil
+        elseif evType == C.NX_Quit then
+            return 'quit'
         elseif evType == C.NX_Resized then
-            return evType, {
-                width = tonumber(event.a),
-                height = tonumber(event.b)
-            }
+            return 'resized', tonumber(e.a), tonumber(e.b)
+        elseif evType == C.NX_Visible then
+            return 'visible', (e.a == 1.0)
+        elseif evType == C.NX_Focus then
+            return 'focus', (e.a == 1.0)
+        elseif evType == C.NX_MouseFocus then
+            return 'mousefocus', (e.a == 1.0)
         elseif evType == C.NX_TextEntered then
-            return evType, {
-                text = ffi.string(event.t)
-            }
+            return 'textentered', ffi.string(e.t)
         elseif evType == C.NX_TextEdited then
-            return evType, {
-                text = ffi.string(event.t),
-                start = tonumber(event.a),
-                length = tonumber(event.b)
-            }
-        elseif evType == C.NX_KeyPressed or evType == C.NX_KeyReleased then
-            return evType, {
-                -- TODO
-            }
+            return 'textedited', ffi.string(e.t), tonumber(e.a), tonumber(e.b)
+        elseif evType == C.NX_KeyPressed then
+            return 'keypressed', nil -- TODO
+        elseif evType == C.NX_KeyReleased then
+            return 'keyreleased', nil -- TODO
         elseif evType == C.NX_MouseMoved then
-            return evType, {
-                x = tonumber(event.a),
-                y = tonumber(event.b)
-            }
-        elseif evType == C.NX_MouseButtonPressed or evType == C.NX_MouseButtonReleased then
-            return evType, {
-                x = tonumber(event.a),
-                y = tonumber(event.b),
-                button = tonumber(event.c)
-            }
+            return 'mousemoved', tonumber(e.a), tonumber(e.b)
+        elseif evType == C.NX_MouseButtonPressed then
+            return 'mousepressed', tonumber(e.a), tonumber(e.b), tonumber(e.c)
+        elseif evType == C.NX_MouseButtonReleased then
+            return 'mousereleased', tonumber(e.a), tonumber(e.b), tonumber(e.c)
         elseif evType == C.NX_MouseWheelScrolled then
-            return evType, {
-                x = tonumber(event.a),
-                y = tonumber(event.b)
-            }
+            return 'mousewheelscrolled', tonumber(e.a), tonumber(e.b)
         elseif evType == C.NX_JoystickMoved then
-            return evType, {
-                which = tonumber(event.a),
-                axis = tonumber(event.b),
-                value = tonumber(event.c)
-            }
-        elseif evType == C.NX_JoystickButtonPressed or evType == C.NX_JoystickButtonReleased then
-            return evType, {
-                which = tonumber(event.a),
-                button = tonumber(event.b)
-            }
-        elseif evType == C.NX_JoystickConnected or evType == C.NX_JoystickDisconnected then
-            return evType, {
-                which = tonumber(event.a)
-            }
-        elseif evType == C.NX_TouchBegan or evType == C.NX_TouchEnded or evType == C.NX_TouchMoved then
-            return evType, {
-                finger = tonumber(event.a),
-                touch = tonumber(event.b),
-                pressure = tonumber(event.c),
-                x = tonumber(event.d),
-                y = tonumber(event.e)
-            }
+            return 'joymoved', tonumber(e.a), tonumber(e.b), tonumber(e.c)
+        elseif evType == C.NX_JoystickButtonPressed then
+            return 'joybuttonpressed', tonumber(e.a), tonumber(e.b)
+        elseif evType == C.NX_JoystickButtonReleased then
+            return 'joybuttonreleasd', tonumber(e.a), tonumber(e.b)
+        elseif evType == C.NX_JoystickConnected then
+            return 'joyconnected', tonumber(e.a)
+        elseif evType == C.NX_JoystickDisconnected then
+            return 'joydisconnected', tonumber(e.a)
+        elseif evType == C.NX_TouchBegan then
+            return 'touchbegan', tonumber(e.a), tonumber(e.b), tonumber(e.c)
+        elseif evType == C.NX_TouchEnded then
+            return 'touchended', tonumber(e.a), tonumber(e.b), tonumber(e.c)
+        elseif evType == C.NX_TouchMoved then
+            return 'touchmoved', tonumber(e.a), tonumber(e.b), tonumber(e.c)
         elseif evType == C.NX_FileDropped then
-            return evType, {
-                file = ffi.string(e.t)
-            }
+            return 'filedropped', ffi.string(e.t)
         else
-            return evType, nil
+            return 'other'
         end
     end
     return pollFunc, nil, nil
