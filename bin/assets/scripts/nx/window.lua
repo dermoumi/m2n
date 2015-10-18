@@ -12,15 +12,20 @@ ffi.cdef [[
 local Window = {}
 
 function Window.create(title, width, height, fullscreen)
-    local window = C.nxWindowCreate(title, width, height, fullscreen)
-    if window == nil then
+    if C.nxWindowCreate(title, width, height, fullscreen) == nil then
         require 'nx'
         return nil, ffi.string(C.nxSysGetSDLError())
     end
+
+    return true
 end
 
 function Window.close()
     C.nxWindowClose()
+end
+
+function Window.isOpen()
+    return (C.nxWindowGet() ~= nil)
 end
 
 return Window
