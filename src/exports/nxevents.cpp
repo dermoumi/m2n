@@ -39,25 +39,6 @@ struct NxEvent {
     const char* t;
 };
 
-namespace
-{
-    double toNxMouseButtons(uint8_t button)
-    {
-        switch (button) {
-        case SDL_BUTTON_LEFT:
-            return 0.0;
-        case SDL_BUTTON_RIGHT:
-            return 1.0;
-        case SDL_BUTTON_MIDDLE:
-            return 2.0;
-        case SDL_BUTTON_X1:
-            return 3.0;
-        case SDL_BUTTON_X2:
-        default:
-            return 4.0;
-        }
-    }
-}
 extern "C"
 {
     NX_EXPORT NxEventType nxEventPoll(NxEvent* e)
@@ -130,13 +111,13 @@ extern "C"
                 if (event.button.which == SDL_TOUCH_MOUSEID) return NX_Other;
                 e->a = event.button.x;
                 e->b = event.button.y;
-                e->c = toNxMouseButtons(event.button.button);
+                e->c = event.button.button;
                 return NX_MouseButtonPressed;
             case SDL_MOUSEBUTTONUP:
                 if (event.button.which == SDL_TOUCH_MOUSEID) return NX_Other;
                 e->a = event.button.x;
                 e->b = event.button.y;
-                e->c = toNxMouseButtons(event.button.button);
+                e->c = event.button.button;
                 return NX_MouseButtonReleased;
             case SDL_MOUSEWHEEL:
                 e->a = event.wheel.x;

@@ -41,14 +41,13 @@ ffi.cdef [[
 
 local Events = {}
 
-local function toMouseButton(buttonID)
-    if     buttonID == 0 then return 'left'
-    elseif buttonID == 1 then return 'right'
-    elseif buttonID == 2 then return 'middle'
-    elseif buttonID == 3 then return 'xbutton1'
-    else                      return 'xbutton2'
-    end
-end
+local mouseButtons = {
+    'left',
+    'middle',
+    'right',
+    'xbutton1',
+    'xbutton2'
+}
 
 --------------------------------------------------------------------------------
 function Events.poll()
@@ -83,9 +82,9 @@ function Events.poll()
         elseif evType == C.NX_MouseMoved then
             return 'mousemoved', tonumber(e.a), tonumber(e.b)
         elseif evType == C.NX_MouseButtonPressed then
-            return 'mousepressed', tonumber(e.a), tonumber(e.b), toMouseButton(e.c)
+            return 'mousepressed', tonumber(e.a), tonumber(e.b), mouseButtons[e.c]
         elseif evType == C.NX_MouseButtonReleased then
-            return 'mousereleased', tonumber(e.a), tonumber(e.b), toMouseButton(e.c)
+            return 'mousereleased', tonumber(e.a), tonumber(e.b), mouseButtons[e.c]
         elseif evType == C.NX_MouseWheelScrolled then
             return 'mousewheelscrolled', tonumber(e.a), tonumber(e.b)
         elseif evType == C.NX_JoystickMoved then
