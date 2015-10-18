@@ -39,17 +39,19 @@ ffi.cdef [[
     NxEventType nxEventPoll(NxEvent*);
 ]]
 
-local class = require 'nx._class'
-local Events = class 'Event'
+local Events = {}
 
-Events.static.LeftButton   = 0
-Events.static.RightButton  = 1
-Events.static.MiddleButton = 2
-Events.static.XButton1     = 3
-Events.static.XButton2     = 4
+local function toMouseButton(buttonID)
+    if     buttonID == 0 then return 'left'
+    elseif buttonID == 1 then return 'right'
+    elseif buttonID == 2 then return 'middle'
+    elseif buttonID == 3 then return 'xbutton1'
+    else                      return 'xbutton2'
+    end
+end
 
 --------------------------------------------------------------------------------
-function Events.static.poll()
+function Events.poll()
     local function pollFunc(t, i)
         local evType
         local evPtr = ffi.new('NxEvent[1]')
@@ -81,9 +83,9 @@ function Events.static.poll()
         elseif evType == C.NX_MouseMoved then
             return 'mousemoved', tonumber(e.a), tonumber(e.b)
         elseif evType == C.NX_MouseButtonPressed then
-            return 'mousepressed', tonumber(e.a), tonumber(e.b), tonumber(e.c)
+            return 'mousepressed', tonumber(e.a), tonumber(e.b), toMouseButton(e.c)
         elseif evType == C.NX_MouseButtonReleased then
-            return 'mousereleased', tonumber(e.a), tonumber(e.b), tonumber(e.c)
+            return 'mousereleased', tonumber(e.a), tonumber(e.b), toMouseButton(e.c)
         elseif evType == C.NX_MouseWheelScrolled then
             return 'mousewheelscrolled', tonumber(e.a), tonumber(e.b)
         elseif evType == C.NX_JoystickMoved then
