@@ -1,5 +1,5 @@
 local ffi = require 'ffi'
-local class = require 'nx._class'
+local class = require 'nx.class'
 local Nx = require 'nx'
 
 local Timer = class 'nx.timer'

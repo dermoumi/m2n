@@ -183,7 +183,7 @@ retrievers = {
 
 --------------------------------------------------------------------------------
 
-local class = require 'nx._class'
+local class = require 'nx.class'
 local LuaVM = class 'nx.luavm'
 
 function LuaVM.static._fromCData(data)

@@ -11,7 +11,7 @@ ffi.cdef [[
     void nxMutexUnlock(NxMutex*);
 ]]
 
-local class = require 'nx._class'
+local class = require 'nx.class'
 local Mutex = class 'nx.mutex'
 
 function Mutex.static._fromCData(data)

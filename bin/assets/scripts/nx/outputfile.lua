@@ -25,7 +25,7 @@ ffi.cdef[[
 ]]
 
 -- Output File -----------------------------------------------------------------
-local class = require 'nx._class'
+local class = require 'nx.class'
 local BinaryFile = require 'nx._binaryfile'
 local OutputFile = class('nx.outputfile', BinaryFile)
 

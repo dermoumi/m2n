@@ -13,7 +13,7 @@ ffi.cdef[[
 ]]
 
 -- Shared methods between read and write files ---------------------------------
-local class = require 'nx._class'
+local class = require 'nx.class'
 local BinaryFile = class 'nx._binaryfile'
 
 function BinaryFile:initialize(filename)
