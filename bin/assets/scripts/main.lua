@@ -1,20 +1,20 @@
-local OutputFile = require 'nx.outputfile'
-local InputFile = require 'nx.inputfile'
-local Thread = require 'nx.thread'
-local Log = require 'nx.log'
-local Mutex = require 'nx.mutex'
-local ffi = require 'ffi'
 local Timer = require 'nx.timer'
 local Window = require 'nx.window'
 local Events = require 'nx.events'
+local Scene = require 'nx.scene'
+local SceneTitle = require 'scene.title'
 
 Window.create("m2n", 1280, 720, false)
 
-local done = false
-while not done do
+Scene.goTo(SceneTitle:new())
+
+while Window.isOpen() do
+    -- Process events
     for e, a, b, c in Events.poll() do
         if e == 'quit' then
-            done = true
+            if Scene.call('onQuit') then
+                Window.close()
+            end
         elseif e == 'focus' then
             print('Window has focus? ' .. tostring(a))
         elseif e == 'visible' then
@@ -35,9 +35,10 @@ while not done do
             print('Event: ' .. e)
         end
     end
+    
+    Scene.call('update', 0)
+    Scene.call('render') 
 end
-
-Window.close()
 
 --[[
 local file1, err = OutputFile:new('test.txt')

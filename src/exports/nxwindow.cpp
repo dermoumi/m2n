@@ -1,6 +1,6 @@
 #include "../config.hpp"
 #include <SDL2/SDL.h>
-
+#include "../log.hpp"
 using NxWindow = SDL_Window;
 
 namespace
@@ -15,15 +15,16 @@ extern "C"
         return window;
     }
 
-    NX_EXPORT void nxWindowClose(NxWindow* window)
+    NX_EXPORT void nxWindowClose()
     {
         SDL_DestroyWindow(window);
+        window = nullptr;
     }
 
     NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, bool fullscreen)
     {
         if (window) {
-            nxWindowClose(window);
+            nxWindowClose();
         }
 
         Uint32 flags = SDL_WINDOW_OPENGL;
