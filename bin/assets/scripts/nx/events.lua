@@ -22,8 +22,7 @@ ffi.cdef [[
         NX_JoystickMoved,
         NX_JoystickButtonPressed,
         NX_JoystickButtonReleased,
-        NX_JoystickConnected,
-        NX_JoystickDisconnected,
+        NX_JoystickConnect,
         NX_TouchBegan,
         NX_TouchEnded,
         NX_TouchMoved,
@@ -72,37 +71,35 @@ function Events.poll()
         elseif evType == C.NX_MouseFocus then
             return 'mousefocus', (e.a == 1.0)
         elseif evType == C.NX_TextEntered then
-            return 'textentered', ffi.string(e.t)
+            return 'textinput', ffi.string(e.t)
         elseif evType == C.NX_TextEdited then
-            return 'textedited', ffi.string(e.t), tonumber(e.a), tonumber(e.b)
+            return 'textedit', ffi.string(e.t), tonumber(e.a), tonumber(e.b)
         elseif evType == C.NX_KeyPressed then
-            return 'keypressed', nil -- TODO
+            return 'keydown', nil -- TODO
         elseif evType == C.NX_KeyReleased then
-            return 'keyreleased', nil -- TODO
+            return 'keyup', nil -- TODO
         elseif evType == C.NX_MouseMoved then
-            return 'mousemoved', tonumber(e.a), tonumber(e.b)
+            return 'mousemotion', tonumber(e.a), tonumber(e.b)
         elseif evType == C.NX_MouseButtonPressed then
-            return 'mousepressed', tonumber(e.a), tonumber(e.b), mouseButtons[e.c]
+            return 'mousedown', tonumber(e.a), tonumber(e.b), mouseButtons[e.c]
         elseif evType == C.NX_MouseButtonReleased then
-            return 'mousereleased', tonumber(e.a), tonumber(e.b), mouseButtons[e.c]
+            return 'mouseup', tonumber(e.a), tonumber(e.b), mouseButtons[e.c]
         elseif evType == C.NX_MouseWheelScrolled then
-            return 'mousewheelscrolled', tonumber(e.a), tonumber(e.b)
+            return 'wheelscrolled', tonumber(e.a), tonumber(e.b)
         elseif evType == C.NX_JoystickMoved then
-            return 'joymoved', tonumber(e.a), tonumber(e.b), tonumber(e.c)
+            return 'joymotion', tonumber(e.a), tonumber(e.b), tonumber(e.c)
         elseif evType == C.NX_JoystickButtonPressed then
-            return 'joybuttonpressed', tonumber(e.a), tonumber(e.b)
+            return 'joybuttondown', tonumber(e.a), tonumber(e.b)
         elseif evType == C.NX_JoystickButtonReleased then
-            return 'joybuttonreleasd', tonumber(e.a), tonumber(e.b)
-        elseif evType == C.NX_JoystickConnected then
-            return 'joyconnected', tonumber(e.a)
-        elseif evType == C.NX_JoystickDisconnected then
-            return 'joydisconnected', tonumber(e.a)
+            return 'joybuttonup', tonumber(e.a), tonumber(e.b)
+        elseif evType == C.NX_JoystickConnect then
+            return 'joyconnect', tonumber(e.a), (e.b == 1.0)
         elseif evType == C.NX_TouchBegan then
-            return 'touchbegan', tonumber(e.a), tonumber(e.b), tonumber(e.c)
+            return 'touchdown', tonumber(e.a), tonumber(e.b), tonumber(e.c)
         elseif evType == C.NX_TouchEnded then
-            return 'touchended', tonumber(e.a), tonumber(e.b), tonumber(e.c)
+            return 'touchup', tonumber(e.a), tonumber(e.b), tonumber(e.c)
         elseif evType == C.NX_TouchMoved then
-            return 'touchmoved', tonumber(e.a), tonumber(e.b), tonumber(e.c)
+            return 'touchmotion', tonumber(e.a), tonumber(e.b), tonumber(e.c)
         elseif evType == C.NX_FileDropped then
             return 'filedropped', ffi.string(e.t)
         else

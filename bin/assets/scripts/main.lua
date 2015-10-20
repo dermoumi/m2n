@@ -12,27 +12,43 @@ while Window.isOpen() do
     -- Process events
     for e, a, b, c in Events.poll() do
         if e == 'quit' then
-            if Scene.call('onQuit') then
-                Window.close()
-            end
+            if Scene.call('onQuit') then Window.close() end
         elseif e == 'focus' then
-            print('Window has focus? ' .. tostring(a))
+            Scene.call('onFocus', a)
         elseif e == 'visible' then
-            print('Window is visible? ' .. tostring(a))
-        elseif e == 'textentered' then
-            print('Text entered: ' .. a)
-        elseif e == 'textedited' then
-            print('Text edited from ' .. b .. ' to ' .. (b + c) .. ': ' .. a)
+            Scene.call('onVisible', a)
+        elseif e == 'textinput' then
+            Scene.call('onTextInput')
+        elseif e == 'textedit' then
+            Scene.call('onTextEdit', a, b, c)
         elseif e == 'mousefocus' then
-            print('Has mouse focus? ' .. tostring(a))
-        elseif e == 'mousepressed' then
-            print('Mouse button pressed at: ' .. a .. ', ' .. b .. ' Button: ' .. c)
-        elseif e == 'mousereleased' then
-            print('Mouse button released at: ' .. a .. ', ' .. b .. ' Button: ' .. c)
-        elseif e == 'touchbegan' then
-            print('Touch event: ' .. a .. ', ' .. b .. ', ' .. c)
-        elseif e ~= 'mousemoved' then
-            print('Event: ' .. e)
+            Scene.call('onMouseFocus', a)
+        elseif e == 'mousemotion' then
+            Scene.call('onMouseMotion', a, b)
+        elseif e == 'mousedown' then
+            Scene.call('onMouseDown', a, b, c)
+        elseif e == 'mouseup' then
+            Scene.call('onMouseUp', a, b, c)
+        elseif e == 'wheelscrolled' then
+            Scene.call('onWheelScroll', a, b)
+        elseif e == 'joymotion' then
+            Scene.call('onJoyMotion', a, b, c)
+        elseif e == 'joybuttondown' then
+            Scene.call('onJoyButtonDown', a, b)
+        elseif e == 'joybuttonup' then
+            Scene.call('onJoyButtonUp', a, b)
+        elseif e == 'joyconnect' then
+            Scene.call('onJoyConnect', a, b)
+        elseif e == 'touchdown' then
+            Scene.call('onTouchDown', a, b, c)
+        elseif e == 'touchup' then
+            Scene.call('onTouchUp', a, b, c)
+        elseif e == 'touchmotion' then
+            Scene.call('onTouchMotion', a, b, c)
+        elseif e == 'filedrop' then
+            Scene.call('onFileDrop', a)
+        else
+            Scene.call('onEvent', e, a, b, c)
         end
     end
     

@@ -25,8 +25,7 @@ enum NxEventType {
     NX_JoystickMoved,
     NX_JoystickButtonPressed,
     NX_JoystickButtonReleased,
-    NX_JoystickConnected,
-    NX_JoystickDisconnected,
+    NX_JoystickConnect,
     NX_TouchBegan,
     NX_TouchEnded,
     NX_TouchMoved,
@@ -138,10 +137,12 @@ extern "C"
                 return NX_JoystickButtonReleased;
             case SDL_CONTROLLERDEVICEADDED:
                 e->a = event.cdevice.which;
-                return NX_JoystickConnected;
+                e->b = 1.0;
+                return NX_JoystickConnect;
             case SDL_CONTROLLERDEVICEREMOVED:
                 e->a = event.cdevice.which;
-                return NX_JoystickDisconnected;
+                e->b = 0.0;
+                return NX_JoystickConnect;
             case SDL_FINGERDOWN:
                 e->a = event.tfinger.fingerId;
                 e->b = event.tfinger.x;
