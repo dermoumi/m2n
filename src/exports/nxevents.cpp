@@ -96,10 +96,14 @@ extern "C"
                 e->t = strArg.data();
                 return NX_TextEdited;
             case SDL_KEYDOWN:
-                // TODO
+                e->a = event.key.repeat;
+                e->b = event.key.keysym.scancode;
+                e->c = event.key.keysym.sym;
                 return NX_KeyPressed;
             case SDL_KEYUP:
-                // TODO
+                e->a = event.key.repeat;
+                e->b = event.key.keysym.scancode;
+                e->c = event.key.keysym.sym;
                 return NX_KeyReleased;
             case SDL_MOUSEMOTION:
                 if (event.motion.which == SDL_TOUCH_MOUSEID) return NX_Other;

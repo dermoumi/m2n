@@ -48,6 +48,14 @@ local mouseButtons = {
     'xbutton2'
 }
 
+local function fromScanCode(scancode)
+    return tonumber(scancode)
+end
+
+local function fromSym(sym)
+    return tonumber(sym)
+end
+
 --------------------------------------------------------------------------------
 function Events.poll()
     local function pollFunc(t, i)
@@ -75,9 +83,9 @@ function Events.poll()
         elseif evType == C.NX_TextEdited then
             return 'textedit', ffi.string(e.t), tonumber(e.a), tonumber(e.b)
         elseif evType == C.NX_KeyPressed then
-            return 'keydown', nil -- TODO
+            return 'keydown', e.a ~= 0, fromScanCode(e.b), fromSym(e.c)
         elseif evType == C.NX_KeyReleased then
-            return 'keyup', nil -- TODO
+            return 'keyup', e.a ~= 0, fromScanCode(e.b), fromSym(e.c)
         elseif evType == C.NX_MouseMoved then
             return 'mousemotion', tonumber(e.a), tonumber(e.b)
         elseif evType == C.NX_MouseButtonPressed then
