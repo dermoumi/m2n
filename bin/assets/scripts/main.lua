@@ -21,6 +21,10 @@ while Window.isOpen() do
             Scene.call('onTextInput')
         elseif e == 'textedit' then
             Scene.call('onTextEdit', a, b, c)
+        elseif e == 'keydown' then
+            Scene.call('onKeyDown', a, b, c)
+        elseif e == 'keyup' then
+            Scene.call('onKeyUp', a, b, c)
         elseif e == 'mousefocus' then
             Scene.call('onMouseFocus', a)
         elseif e == 'mousemotion' then

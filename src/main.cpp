@@ -17,7 +17,7 @@ int fatalError(const std::string& message, int retval = 1)
 int main(int argc, char* argv[])
 {
     SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER);
-
+    
     Filesystem fs;
 
     // Initialize the filesystem
