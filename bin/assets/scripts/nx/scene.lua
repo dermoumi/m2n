@@ -67,11 +67,11 @@ function Scene:onMouseFocus(hasFocus)
     -- Nothing to do
 end
 
-function Scene:onKeyDown()
+function Scene:onKeyDown(scancode, keysym, repeated)
     -- Nothing to do
 end
 
-function Scene:onKeyUp()
+function Scene:onKeyUp(scancode, keysym, repeated)
     -- Nothing to do
 end
 

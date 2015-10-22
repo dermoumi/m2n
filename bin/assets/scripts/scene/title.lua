@@ -43,7 +43,7 @@ function SceneTitle:onTouchUp(finger, x, y)
     print('Touch released at: ' .. x .. ', ' .. y .. ', finger: ' .. finger)
 end
 
-function SceneTitle:onKeyDown(repeated, scancode, keysym)
+function SceneTitle:onKeyDown(scancode, keysym, repeated)
     print('Key pressed: ' .. scancode .. ' sym: ' .. keysym .. ' isRepeat? ' .. tostring(repeated))
 end
 
