@@ -18,6 +18,9 @@ int main(int argc, char* argv[])
 {
     SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER);
 
+    // Only enable text input when needed?
+    SDL_StopTextInput();
+
     Filesystem fs;
 
     // Initialize the filesystem

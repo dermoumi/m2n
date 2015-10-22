@@ -1,4 +1,5 @@
 local Scene = require 'nx.scene'
+local Keyboard = require 'nx.keyboard'
 local class = require 'nx.class'
 
 local SceneTitle = class('scene.title', Scene)
@@ -15,11 +16,11 @@ function SceneTitle:onVisible(isVisible)
     print('Window is visible? ' .. tostring(isVisible))
 end
 
-function SceneTitle:onTextEntered(text)
+function SceneTitle:onTextInput(text)
     print('Text entered: ' .. text)
 end
 
-function SceneTitle:onTextEdited(text, start, length)
+function SceneTitle:onTextEdit(text, start, length)
     print('Text edited from ' .. start .. ' to ' .. (start + length) .. ': ' .. text)
 end
 
@@ -45,6 +46,18 @@ end
 
 function SceneTitle:onKeyDown(scancode, keysym, repeated)
     print('Key pressed: ' .. scancode .. ' sym: ' .. keysym .. ' isRepeat? ' .. tostring(repeated))
+
+    if scancode == 'Backspace' then
+        print('Ctrl ' .. tostring(Keyboard.modKeyDown('ctrl')) ..
+            '; Alt ' .. tostring(Keyboard.modKeyDown('alt')))
+    elseif scancode == 'Return' then
+        print('text input: ' .. tostring(Keyboard.isTextInputActive()))
+        if (Keyboard.isTextInputActive()) then
+            Keyboard.stopTextInput()
+        else
+            Keyboard.startTextInput(10, 10, 100, 30)
+        end
+    end
 end
 
 return SceneTitle

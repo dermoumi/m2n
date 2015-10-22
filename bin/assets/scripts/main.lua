@@ -18,7 +18,7 @@ while Window.isOpen() do
         elseif e == 'visible' then
             Scene.call('onVisible', a)
         elseif e == 'textinput' then
-            Scene.call('onTextInput')
+            Scene.call('onTextInput', a)
         elseif e == 'textedit' then
             Scene.call('onTextEdit', a, b, c)
         elseif e == 'keydown' then
