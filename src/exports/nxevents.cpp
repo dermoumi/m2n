@@ -38,14 +38,14 @@ struct NxEvent {
     const char* t;
 };
 
-extern "C"
+namespace
 {
-    NX_EXPORT NxEventType nxEventPoll(NxEvent* e)
+    NxEventType nextEvent(NxEvent* e, int (*func)(SDL_Event*))
     {
         static std::string strArg;
 
         SDL_Event event;
-        int pending = SDL_PollEvent(&event);
+        int pending = func(&event);
 
         if (pending == 0) return NX_NoEvent;
 
@@ -172,5 +172,18 @@ extern "C"
             default:
                 return NX_Other;
         }
+    }
+}
+
+extern "C"
+{
+    NX_EXPORT NxEventType nxEventWait(NxEvent* e)
+    {
+        return nextEvent(e, SDL_WaitEvent);
+    }
+
+    NX_EXPORT NxEventType nxEventPoll(NxEvent* e)
+    {
+        return nextEvent(e, SDL_PollEvent);
     }
 }

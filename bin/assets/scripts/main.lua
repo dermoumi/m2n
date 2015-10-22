@@ -10,9 +10,10 @@ Scene.goTo(SceneTitle:new())
 
 while Window.isOpen() do
     -- Process events
-    for e, a, b, c in Events.poll() do
-        if e == 'quit' then
-            if Scene.call('onQuit') then Window.close() end
+    for e, a, b, c in Events.wait() do
+        if e == 'quit' and Scene.call('onQuit') then
+            Window.close()
+            break
         elseif e == 'focus' then
             Scene.call('onFocus', a)
         elseif e == 'visible' then
