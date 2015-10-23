@@ -40,15 +40,8 @@ ffi.cdef [[
 ]]
 
 local Keyboard = require 'nx.keyboard'
+local Mouse = require 'nx.mouse'
 local Events = {}
-
-local mouseButtons = {
-    'left',
-    'middle',
-    'right',
-    'xbutton1',
-    'xbutton2'
-}
 
 --------------------------------------------------------------------------------
 local function nextEvent(func)
@@ -82,9 +75,9 @@ local function nextEvent(func)
     elseif evType == C.NX_MouseMoved then
         return 'mousemotion', tonumber(e.a), tonumber(e.b)
     elseif evType == C.NX_MouseButtonPressed then
-        return 'mousedown', tonumber(e.a), tonumber(e.b), mouseButtons[e.c]
+        return 'mousedown', tonumber(e.a), tonumber(e.b), Mouse._btn[e.c]
     elseif evType == C.NX_MouseButtonReleased then
-        return 'mouseup', tonumber(e.a), tonumber(e.b), mouseButtons[e.c]
+        return 'mouseup', tonumber(e.a), tonumber(e.b), Mouse._btn[e.c]
     elseif evType == C.NX_MouseWheelScrolled then
         return 'wheelscrolled', tonumber(e.a), tonumber(e.b)
     elseif evType == C.NX_JoystickMoved then

@@ -1,5 +1,6 @@
 local Scene = require 'nx.scene'
 local Keyboard = require 'nx.keyboard'
+local Mouse = require 'nx.mouse'
 local class = require 'nx.class'
 
 local SceneTitle = class('scene.title', Scene)
@@ -56,6 +57,12 @@ function SceneTitle:onKeyDown(scancode, keysym, repeated)
             Keyboard.stopTextInput()
         else
             Keyboard.startTextInput(10, 10, 100, 30)
+        end
+    elseif scancode == 'F1' then
+        if Mouse.getCursor() == 'wait' then
+            Mouse.setCursor('default')
+        else
+            Mouse.setCursor('wait')
         end
     end
 end
