@@ -45,6 +45,13 @@ function SceneTitle:onTouchUp(finger, x, y)
     print('Touch released at: ' .. x .. ', ' .. y .. ', finger: ' .. finger)
 end
 
+function SceneTitle:onMouseMotion(x, y)
+    if Mouse.getRelativeMode() then
+        x, y = Mouse.getPosition()
+        print(x .. ' ' .. y)
+    end
+end
+
 function SceneTitle:onKeyDown(scancode, keysym, repeated)
     print('Key pressed: ' .. scancode .. ' sym: ' .. keysym .. ' isRepeat? ' .. tostring(repeated))
 
@@ -59,11 +66,12 @@ function SceneTitle:onKeyDown(scancode, keysym, repeated)
             Keyboard.startTextInput(10, 10, 100, 30)
         end
     elseif scancode == 'F1' then
-        if Mouse.getCursor() == 'wait' then
-            Mouse.setCursor('default')
-        else
-            Mouse.setCursor('wait')
-        end
+        print(tostring(Mouse.isButtonDown('right')) .. ' ' .. tostring(Mouse.isButtonDown('left')))
+    elseif scancode == 'F2' then
+        print('relative mode? ' .. tostring(Mouse.getRelativeMode()))
+        Mouse.setRelativeMode(not Mouse.getRelativeMode())
+    elseif scancode == 'F3' then
+        Mouse.setVisible(not Mouse.isVisible())
     end
 end
 

@@ -2,9 +2,16 @@ local ffi = require 'ffi'
 local C = ffi.C
 
 ffi.cdef [[
-    bool nxMouseCursorVisible(int);
+    bool nxMouseVisible(int);
     void nxMouseSetSystemCursor(int);
     int nxMouseGetCursor();
+    void nxMouseSetPosition(int, int, bool);
+    void nxMouseGetPosition(int*, bool);
+    bool nxMouseSetRelativeMode(bool);
+    bool nxMouseGetRelativeMode();
+    bool nxMouseIsButtonDown(int);
+    bool nxMouseSetGrab(bool);
+    bool nxMouseIsGrabbed();
 ]]
 
 --------------------------------------------------------------------------------
@@ -32,16 +39,22 @@ local buttons = {
     'middle',
     'right',
     'xbutton1',
-    'xbutton2'
+    'xbutton2',
+
+    left = 1,
+    middle = 2,
+    right = 3,
+    xbutton1 = 4,
+    xbutton2 = 5
 }
 Mouse._btn = buttons
 
-function Mouse.setCursorVisible(visible)
-    return C.nxMouseCursorVisible(visible and 1 or 0)
+function Mouse.setVisible(visible)
+    return C.nxMouseVisible(visible and 1 or 0)
 end
 
-function Mouse.isCursorVisible()
-    return C.nxMouseCursorVisible(-1)
+function Mouse.isVisible()
+    return C.nxMouseVisible(-1)
 end
 
 function Mouse.setCursor(cursor, originX, originY)
@@ -63,6 +76,38 @@ end
 
 function Mouse.getCursor()
     return cursors[C.nxMouseGetCursor()]
+end
+
+function Mouse.setPosition(x, y)
+    C.nxMouseSetPosition(x, y, false)
+end
+
+function Mouse.getPosition()
+    local posPtr = ffi.new('int[2]')
+    C.nxMouseGetPosition(posPtr, false)
+    return tonumber(posPtr[0]), tonumber(posPtr[1])
+end
+
+function Mouse.setRelativeMode(relative)
+    return C.nxMouseSetRelativeMode(relative)
+end
+
+function Mouse.getRelativeMode()
+    return C.nxMouseGetRelativeMode()
+end
+
+function Mouse.isButtonDown(button)
+    return C.nxMouseIsButtonDown(buttons[button])
+end
+
+function Mouse.grab(grabbed)
+    -- return C.nxMouseSetGrab(grabbed)
+    return false
+end
+
+function Mouse.isGrabbed()
+    -- return C.nxMouseIsGrabbed()
+    return false
 end
 
 return Mouse
