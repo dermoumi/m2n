@@ -75,4 +75,16 @@ function SceneTitle:onKeyDown(scancode, keysym, repeated)
     end
 end
 
+function SceneTitle:onJoyAxisMotion(joystick, axis, value)
+    print('Joystick: ' .. joystick .. ' Axis: ' .. axis .. ' Value: ' .. value)
+end
+
+function SceneTitle:onJoyButtonDown(joystick, button)
+    print('Joystick: ' .. joystick .. ' Button down: ' .. button)
+end
+
+function SceneTitle:onJoyButtonUp(joystick, button)
+    print('Joystick: ' .. joystick .. ' Button up: ' .. button)
+end
+
 return SceneTitle

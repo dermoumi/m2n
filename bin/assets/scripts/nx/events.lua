@@ -43,6 +43,7 @@ ffi.cdef [[
 
 local Keyboard = require 'nx.keyboard'
 local Mouse = require 'nx.mouse'
+local Joystick = require 'nx.joystick'
 local Events = {}
 
 --------------------------------------------------------------------------------
@@ -93,6 +94,7 @@ local function nextEvent(func)
     elseif evType == C.NX_JoyButtonUp then
         return 'joybuttonup', tonumber(e.a), tonumber(e.b)
     elseif evType == C.NX_JoyConnect then
+        Joystick.__connectEvent(tonumber(e.a), e.b == 1)
         return 'joyconnect', tonumber(e.a), e.b == 1
     elseif evType == C.NX_TouchBegan then
         return 'touchdown', tonumber(e.a), tonumber(e.b), tonumber(e.c)

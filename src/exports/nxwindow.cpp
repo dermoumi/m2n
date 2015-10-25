@@ -1,6 +1,6 @@
 #include "../config.hpp"
 #include <SDL2/SDL.h>
-#include "../log.hpp"
+
 using NxWindow = SDL_Window;
 
 namespace
