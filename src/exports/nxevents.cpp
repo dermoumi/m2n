@@ -13,22 +13,22 @@ enum NxEventType {
     NX_Visible,
     NX_Focus,
     NX_LowMemory,
-    NX_TextEntered,
-    NX_TextEdited,
-    NX_KeyPressed,
-    NX_KeyReleased,
-    NX_MouseMoved,
+    NX_TextInput,
+    NX_TextEdit,
+    NX_KeyDown,
+    NX_KeyUp,
+    NX_MouseMotion,
     NX_MouseFocus,
-    NX_MouseButtonPressed,
-    NX_MouseButtonReleased,
-    NX_MouseWheelScrolled,
-    NX_JoystickMoved,
-    NX_JoystickButtonPressed,
-    NX_JoystickButtonReleased,
+    NX_MouseDown,
+    NX_MouseUp,
+    NX_MouseScroll,
+    NX_JoystickMotion,
+    NX_JoystickDown,
+    NX_JoystickUp,
     NX_JoystickConnect,
     NX_TouchBegan,
     NX_TouchEnded,
-    NX_TouchMoved,
+    NX_TouchMotion,
     NX_ClipboardUpdated,
     NX_FileDropped
 };
@@ -88,57 +88,57 @@ namespace
             case SDL_TEXTINPUT:
                 strArg = event.text.text;
                 e->t = strArg.data();
-                return NX_TextEntered;
+                return NX_TextInput;
             case SDL_TEXTEDITING:
                 strArg = event.text.text;
                 e->a = event.edit.start;
                 e->b = event.edit.length;
                 e->t = strArg.data();
-                return NX_TextEdited;
+                return NX_TextEdit;
             case SDL_KEYDOWN:
                 e->a = event.key.repeat;
                 e->b = event.key.keysym.scancode;
                 e->c = event.key.keysym.sym;
-                return NX_KeyPressed;
+                return NX_KeyDown;
             case SDL_KEYUP:
                 e->a = event.key.repeat;
                 e->b = event.key.keysym.scancode;
                 e->c = event.key.keysym.sym;
-                return NX_KeyReleased;
+                return NX_KeyUp;
             case SDL_MOUSEMOTION:
                 if (event.motion.which == SDL_TOUCH_MOUSEID) return NX_Other;
                 e->a = event.motion.x;
                 e->b = event.motion.y;
-                return NX_MouseMoved;
+                return NX_MouseMotion;
             case SDL_MOUSEBUTTONDOWN:
                 if (event.button.which == SDL_TOUCH_MOUSEID) return NX_Other;
                 e->a = event.button.x;
                 e->b = event.button.y;
                 e->c = event.button.button;
-                return NX_MouseButtonPressed;
+                return NX_MouseDown;
             case SDL_MOUSEBUTTONUP:
                 if (event.button.which == SDL_TOUCH_MOUSEID) return NX_Other;
                 e->a = event.button.x;
                 e->b = event.button.y;
                 e->c = event.button.button;
-                return NX_MouseButtonReleased;
+                return NX_MouseUp;
             case SDL_MOUSEWHEEL:
                 e->a = event.wheel.x;
                 e->b = event.wheel.y;
-                return NX_MouseWheelScrolled;
+                return NX_MouseScroll;
             case SDL_CONTROLLERAXISMOTION:
                 e->a = event.caxis.which;
                 e->b = event.caxis.axis;
                 e->c = event.caxis.value;
-                return NX_JoystickMoved;
+                return NX_JoystickMotion;
             case SDL_CONTROLLERBUTTONDOWN:
                 e->a = event.cbutton.which;
                 e->b = event.cbutton.button;
-                return NX_JoystickButtonPressed;
+                return NX_JoystickDown;
             case SDL_CONTROLLERBUTTONUP:
                 e->a = event.cbutton.which;
                 e->b = event.cbutton.button;
-                return NX_JoystickButtonReleased;
+                return NX_JoystickUp;
             case SDL_CONTROLLERDEVICEADDED:
                 e->a = event.cdevice.which;
                 e->b = 1.0;
@@ -161,7 +161,7 @@ namespace
                 e->a = event.tfinger.fingerId;
                 e->b = event.tfinger.x;
                 e->c = event.tfinger.y;
-                return NX_TouchMoved;
+                return NX_TouchMotion;
             case SDL_CLIPBOARDUPDATE:
                 return NX_ClipboardUpdated;
             case SDL_DROPFILE:

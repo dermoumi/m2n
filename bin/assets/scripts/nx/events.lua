@@ -10,22 +10,22 @@ ffi.cdef [[
         NX_Visible,
         NX_Focus,
         NX_LowMemory,
-        NX_TextEntered,
-        NX_TextEdited,
-        NX_KeyPressed,
-        NX_KeyReleased,
-        NX_MouseMoved,
+        NX_TextInput,
+        NX_TextEdit,
+        NX_KeyDown,
+        NX_KeyUp,
+        NX_MouseMotion,
         NX_MouseFocus,
-        NX_MouseButtonPressed,
-        NX_MouseButtonReleased,
-        NX_MouseWheelScrolled,
-        NX_JoystickMoved,
-        NX_JoystickButtonPressed,
-        NX_JoystickButtonReleased,
+        NX_MouseDown,
+        NX_MouseUp,
+        NX_MouseScrolled,
+        NX_JoystickMotion,
+        NX_JoystickDown,
+        NX_JoystickUp,
         NX_JoystickConnect,
         NX_TouchBegan,
         NX_TouchEnded,
-        NX_TouchMoved,
+        NX_TouchMotion,
         NX_ClipboardUpdated,
         NX_FileDropped
     } NxEventType;
@@ -64,27 +64,27 @@ local function nextEvent(func)
         return 'focus', e.a == 1
     elseif evType == C.NX_MouseFocus then
         return 'mousefocus', (e.a == 1.0)
-    elseif evType == C.NX_TextEntered then
+    elseif evType == C.NX_TextInput then
         return 'textinput', ffi.string(e.t)
-    elseif evType == C.NX_TextEdited then
+    elseif evType == C.NX_TextEdit then
         return 'textedit', ffi.string(e.t), tonumber(e.a), tonumber(e.b)
-    elseif evType == C.NX_KeyPressed then
+    elseif evType == C.NX_KeyDown then
         return 'keydown', Keyboard._sc[e.b], Keyboard._sym[e.c], e.a == 1
-    elseif evType == C.NX_KeyReleased then
+    elseif evType == C.NX_KeyUp then
         return 'keyup', Keyboard._sc[e.b], Keyboard._sym[e.c], e.a == 1
-    elseif evType == C.NX_MouseMoved then
+    elseif evType == C.NX_MouseMotion then
         return 'mousemotion', tonumber(e.a), tonumber(e.b)
-    elseif evType == C.NX_MouseButtonPressed then
+    elseif evType == C.NX_MouseDown then
         return 'mousedown', tonumber(e.a), tonumber(e.b), Mouse._btn[e.c]
-    elseif evType == C.NX_MouseButtonReleased then
+    elseif evType == C.NX_MouseUp then
         return 'mouseup', tonumber(e.a), tonumber(e.b), Mouse._btn[e.c]
-    elseif evType == C.NX_MouseWheelScrolled then
+    elseif evType == C.NX_MouseScrolled then
         return 'wheelscrolled', tonumber(e.a), tonumber(e.b)
-    elseif evType == C.NX_JoystickMoved then
+    elseif evType == C.NX_JoystickMotion then
         return 'joymotion', tonumber(e.a), tonumber(e.b), tonumber(e.c)
-    elseif evType == C.NX_JoystickButtonPressed then
+    elseif evType == C.NX_JoystickDown then
         return 'joybuttondown', tonumber(e.a), tonumber(e.b)
-    elseif evType == C.NX_JoystickButtonReleased then
+    elseif evType == C.NX_JoystickUp then
         return 'joybuttonup', tonumber(e.a), tonumber(e.b)
     elseif evType == C.NX_JoystickConnect then
         return 'joyconnect', tonumber(e.a), e.b == 1
@@ -92,7 +92,7 @@ local function nextEvent(func)
         return 'touchdown', tonumber(e.a), tonumber(e.b), tonumber(e.c)
     elseif evType == C.NX_TouchEnded then
         return 'touchup', tonumber(e.a), tonumber(e.b), tonumber(e.c)
-    elseif evType == C.NX_TouchMoved then
+    elseif evType == C.NX_TouchMotion then
         return 'touchmotion', tonumber(e.a), tonumber(e.b), tonumber(e.c)
     elseif evType == C.NX_FileDropped then
         return 'filedropped', ffi.string(e.t)
