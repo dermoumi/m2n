@@ -91,7 +91,15 @@ function Scene:onWheelScroll(x, y)
     -- Nothing to do
 end
 
-function Scene:onJoyMotion(which, axis, value)
+function Scene:onJoyAxisMotion(which, axis, value)
+    -- Nothing to do
+end
+
+function Scene:onJoyBallMotion(which, ball, xrel, yrel)
+    -- Nothing to do
+end
+
+function Scene:onJoyHatMotion(which, hat, value)
     -- Nothing to do
 end
 

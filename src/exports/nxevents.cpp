@@ -5,7 +5,8 @@
 using NxWindow = SDL_Window;
 extern NxWindow* nxWindowGet();
 
-enum NxEventType {
+enum NxEventType
+{
     NX_NoEvent = 0,
     NX_Other,
     NX_Quit,
@@ -21,11 +22,13 @@ enum NxEventType {
     NX_MouseFocus,
     NX_MouseDown,
     NX_MouseUp,
-    NX_MouseScroll,
-    NX_JoystickMotion,
-    NX_JoystickDown,
-    NX_JoystickUp,
-    NX_JoystickConnect,
+    NX_WheelScroll,
+    NX_JoyAxisMotion,
+    NX_JoyBallMotion,
+    NX_JoyHatMotion,
+    NX_JoyButtonDown,
+    NX_JoyButtonUp,
+    NX_JoyConnect,
     NX_TouchBegan,
     NX_TouchEnded,
     NX_TouchMotion,
@@ -34,7 +37,7 @@ enum NxEventType {
 };
 
 struct NxEvent {
-    double a, b, c;
+    double a, b, c, d;
     const char* t;
 };
 
@@ -48,9 +51,6 @@ namespace
         int pending = func(&event);
 
         if (pending == 0) return NX_NoEvent;
-
-        if (event.type == SDL_WINDOWEVENT) {
-        }
 
         switch (event.type) {
             case SDL_QUIT:
@@ -125,28 +125,57 @@ namespace
             case SDL_MOUSEWHEEL:
                 e->a = event.wheel.x;
                 e->b = event.wheel.y;
-                return NX_MouseScroll;
-            case SDL_CONTROLLERAXISMOTION:
-                e->a = event.caxis.which;
-                e->b = event.caxis.axis;
-                e->c = event.caxis.value;
-                return NX_JoystickMotion;
-            case SDL_CONTROLLERBUTTONDOWN:
-                e->a = event.cbutton.which;
-                e->b = event.cbutton.button;
-                return NX_JoystickDown;
-            case SDL_CONTROLLERBUTTONUP:
-                e->a = event.cbutton.which;
-                e->b = event.cbutton.button;
-                return NX_JoystickUp;
-            case SDL_CONTROLLERDEVICEADDED:
-                e->a = event.cdevice.which;
+                return NX_WheelScroll;
+            case SDL_JOYAXISMOTION:
+                e->a = event.jaxis.which + 1;
+                e->b = event.jaxis.axis;
+                e->c = event.jaxis.value;
+                return NX_JoyAxisMotion;
+            case SDL_JOYBALLMOTION:
+                e->a = event.jball.which + 1;
+                e->b = event.jball.ball;
+                e->c = event.jball.xrel;
+                e->d = event.jball.yrel;
+                return NX_JoyBallMotion;
+            case SDL_JOYHATMOTION:
+                e->a = event.jhat.which + 1;
+                e->b = event.jhat.hat;
+                e->c = event.jhat.value;
+                return NX_JoyHatMotion;
+            case SDL_JOYBUTTONDOWN:
+                e->a = event.jbutton.which + 1;
+                e->b = event.jbutton.button;
+                return NX_JoyButtonDown;
+            case SDL_JOYBUTTONUP:
+                e->a = event.jbutton.which + 1;
+                e->b = event.jbutton.button;
+                return NX_JoyButtonUp;
+            case SDL_JOYDEVICEADDED:
+                e->a = event.jdevice.which + 1;
                 e->b = 1.0;
-                return NX_JoystickConnect;
-            case SDL_CONTROLLERDEVICEREMOVED:
-                e->a = event.cdevice.which;
+                return NX_JoyConnect;
+            case SDL_JOYDEVICEREMOVED:
+                e->a = event.jdevice.which + 1;
                 e->b = 0.0;
-                return NX_JoystickConnect;
+                return NX_JoyConnect;
+            case SDL_CONTROLLERDEVICEADDED:
+                // TODO
+                return NX_Other;
+            case SDL_CONTROLLERDEVICEREMOVED:
+                // TODO
+                return NX_Other;
+            case SDL_CONTROLLERDEVICEREMAPPED:
+                // TODO
+                return NX_Other;
+            case SDL_CONTROLLERAXISMOTION:
+                // TODO
+                return NX_Other;
+            case SDL_CONTROLLERBUTTONDOWN:
+                // TODO
+                return NX_Other;
+            case SDL_CONTROLLERBUTTONUP:
+                // TODO
+                return NX_Other;
             case SDL_FINGERDOWN:
                 e->a = event.tfinger.fingerId;
                 e->b = event.tfinger.x;

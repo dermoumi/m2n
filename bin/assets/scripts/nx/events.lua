@@ -18,11 +18,13 @@ ffi.cdef [[
         NX_MouseFocus,
         NX_MouseDown,
         NX_MouseUp,
-        NX_MouseScrolled,
-        NX_JoystickMotion,
-        NX_JoystickDown,
-        NX_JoystickUp,
-        NX_JoystickConnect,
+        NX_WheelScrolled,
+        NX_JoyAxisMotion,
+        NX_JoyBallMotion,
+        NX_JoyHatMotion,
+        NX_JoyButtonDown,
+        NX_JoyButtonUp,
+        NX_JoyConnect,
         NX_TouchBegan,
         NX_TouchEnded,
         NX_TouchMotion,
@@ -31,7 +33,7 @@ ffi.cdef [[
     } NxEventType;
 
     typedef struct {
-        double a, b, c;
+        double a, b, c, d;
         const char* t;
     } NxEvent;
 
@@ -78,15 +80,19 @@ local function nextEvent(func)
         return 'mousedown', tonumber(e.a), tonumber(e.b), Mouse._btn[e.c]
     elseif evType == C.NX_MouseUp then
         return 'mouseup', tonumber(e.a), tonumber(e.b), Mouse._btn[e.c]
-    elseif evType == C.NX_MouseScrolled then
-        return 'wheelscrolled', tonumber(e.a), tonumber(e.b)
-    elseif evType == C.NX_JoystickMotion then
-        return 'joymotion', tonumber(e.a), tonumber(e.b), tonumber(e.c)
-    elseif evType == C.NX_JoystickDown then
+    elseif evType == C.NX_WheelScrolled then
+        return 'wheelscroll', tonumber(e.a), tonumber(e.b)
+    elseif evType == C.NX_JoyAxisMotion then
+        return 'joyaxismotion', tonumber(e.a), tonumber(e.b), tonumber(e.c)
+    elseif evType == C.NX_JoyBallMotion then
+        return 'joyhatmotion', tonumber(e.a), tonumber(e.b), tonumber(e.c), tonumber(e.d)
+    elseif evType == C.NX_JoyHatMotion then
+        return 'joyballmotion', tonumber(e.a), tonumber(e.b), tonumber(e.c)
+    elseif evType == C.NX_JoyButtonDown then
         return 'joybuttondown', tonumber(e.a), tonumber(e.b)
-    elseif evType == C.NX_JoystickUp then
+    elseif evType == C.NX_JoyButtonUp then
         return 'joybuttonup', tonumber(e.a), tonumber(e.b)
-    elseif evType == C.NX_JoystickConnect then
+    elseif evType == C.NX_JoyConnect then
         return 'joyconnect', tonumber(e.a), e.b == 1
     elseif evType == C.NX_TouchBegan then
         return 'touchdown', tonumber(e.a), tonumber(e.b), tonumber(e.c)

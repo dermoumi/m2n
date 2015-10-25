@@ -10,7 +10,7 @@ Scene.goTo(SceneTitle:new())
 
 while Window.isOpen() do
     -- Process events
-    for e, a, b, c in Events.wait() do
+    for e, a, b, c in Events.poll() do
         if e == 'quit' and Scene.call('onQuit') then
             Window.close()
             break
@@ -34,10 +34,14 @@ while Window.isOpen() do
             Scene.call('onMouseDown', a, b, c)
         elseif e == 'mouseup' then
             Scene.call('onMouseUp', a, b, c)
-        elseif e == 'wheelscrolled' then
+        elseif e == 'wheelscroll' then
             Scene.call('onWheelScroll', a, b)
-        elseif e == 'joymotion' then
-            Scene.call('onJoyMotion', a, b, c)
+        elseif e == 'joyaxismotion' then
+            Scene.call('onJoyAxisMotion', a, b, c)
+        elseif e == 'joyballmotion' then
+            Scene.call('onJoyBallMotion', a, b, c, d)
+        elseif e == 'joyhatmotion' then
+            Scene.call('onJoyHatMotion', a, b, c)
         elseif e == 'joybuttondown' then
             Scene.call('onJoyButtonDown', a, b)
         elseif e == 'joybuttonup' then
