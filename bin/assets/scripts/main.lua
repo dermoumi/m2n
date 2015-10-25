@@ -8,56 +8,39 @@ Window.create("m2n", 1280, 720, false)
 
 Scene.goTo(SceneTitle:new())
 
+local eventMapping = {
+    focus         = 'onFocus',
+    visible       = 'onVisible',
+    textinput     = 'onTextInput',
+    textedit      = 'onTextEdit',
+    keydown       = 'onKeyDown',
+    keyup         = 'onKeyUp',
+    mousefocus    = 'onMouseFocus',
+    mousemotion   = 'onMouseMotion',
+    mousedown     = 'onMouseDown',
+    mouseup       = 'onMouseUp',
+    wheelscroll   = 'onWheelScroll',
+    joyaxismotion = 'onJoyAxisMotion',
+    joyballmotion = 'onJoyBallMotion',
+    joyhatmotion  = 'onJoyHatMotion',
+    joybuttondown = 'onJoyButtonDown',
+    joybuttonup   = 'onJoyButtonUp',
+    joyconnect    = 'onJoyConnect',
+    touchdown     = 'onTouchDown',
+    touchup       = 'onTouchUp',
+    touchmotion   = 'onTouchMotion',
+    filedrop      = 'onFileDrop'
+}
+
 while Window.isOpen() do
     -- Process events
-    for e, a, b, c in Events.poll() do
+    for e, a, b, c, d in Events.poll() do
         if e == 'quit' and Scene.call('onQuit') then
             Window.close()
             break
-        elseif e == 'focus' then
-            Scene.call('onFocus', a)
-        elseif e == 'visible' then
-            Scene.call('onVisible', a)
-        elseif e == 'textinput' then
-            Scene.call('onTextInput', a)
-        elseif e == 'textedit' then
-            Scene.call('onTextEdit', a, b, c)
-        elseif e == 'keydown' then
-            Scene.call('onKeyDown', a, b, c)
-        elseif e == 'keyup' then
-            Scene.call('onKeyUp', a, b, c)
-        elseif e == 'mousefocus' then
-            Scene.call('onMouseFocus', a)
-        elseif e == 'mousemotion' then
-            Scene.call('onMouseMotion', a, b)
-        elseif e == 'mousedown' then
-            Scene.call('onMouseDown', a, b, c)
-        elseif e == 'mouseup' then
-            Scene.call('onMouseUp', a, b, c)
-        elseif e == 'wheelscroll' then
-            Scene.call('onWheelScroll', a, b)
-        elseif e == 'joyaxismotion' then
-            Scene.call('onJoyAxisMotion', a, b, c)
-        elseif e == 'joyballmotion' then
-            Scene.call('onJoyBallMotion', a, b, c, d)
-        elseif e == 'joyhatmotion' then
-            Scene.call('onJoyHatMotion', a, b, c)
-        elseif e == 'joybuttondown' then
-            Scene.call('onJoyButtonDown', a, b)
-        elseif e == 'joybuttonup' then
-            Scene.call('onJoyButtonUp', a, b)
-        elseif e == 'joyconnect' then
-            Scene.call('onJoyConnect', a, b)
-        elseif e == 'touchdown' then
-            Scene.call('onTouchDown', a, b, c)
-        elseif e == 'touchup' then
-            Scene.call('onTouchUp', a, b, c)
-        elseif e == 'touchmotion' then
-            Scene.call('onTouchMotion', a, b, c)
-        elseif e == 'filedrop' then
-            Scene.call('onFileDrop', a)
         else
-            Scene.call('onEvent', e, a, b, c)
+            local event = eventMapping[e] or 'onEvent'
+            Scene.call(event, a, b, c, d)
         end
     end
     
