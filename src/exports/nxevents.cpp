@@ -128,27 +128,27 @@ namespace
                 return NX_WheelScroll;
             case SDL_JOYAXISMOTION:
                 e->a = event.jaxis.which + 1;
-                e->b = event.jaxis.axis;
+                e->b = event.jaxis.axis + 1;
                 e->c = event.jaxis.value;
                 return NX_JoyAxisMotion;
             case SDL_JOYBALLMOTION:
                 e->a = event.jball.which + 1;
-                e->b = event.jball.ball;
+                e->b = event.jball.ball + 1;
                 e->c = event.jball.xrel;
                 e->d = event.jball.yrel;
                 return NX_JoyBallMotion;
             case SDL_JOYHATMOTION:
                 e->a = event.jhat.which + 1;
-                e->b = event.jhat.hat;
+                e->b = event.jhat.hat + 1;
                 e->c = event.jhat.value;
                 return NX_JoyHatMotion;
             case SDL_JOYBUTTONDOWN:
                 e->a = event.jbutton.which + 1;
-                e->b = event.jbutton.button;
+                e->b = event.jbutton.button + 1;
                 return NX_JoyButtonDown;
             case SDL_JOYBUTTONUP:
                 e->a = event.jbutton.which + 1;
-                e->b = event.jbutton.button;
+                e->b = event.jbutton.button + 1;
                 return NX_JoyButtonUp;
             case SDL_JOYDEVICEADDED:
                 e->a = event.jdevice.which + 1;

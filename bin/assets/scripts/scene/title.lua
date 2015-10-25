@@ -1,6 +1,7 @@
 local Scene = require 'nx.scene'
 local Keyboard = require 'nx.keyboard'
 local Mouse = require 'nx.mouse'
+local Joystick = require 'nx.joystick'
 local class = require 'nx.class'
 
 local SceneTitle = class('scene.title', Scene)
@@ -72,19 +73,21 @@ function SceneTitle:onKeyDown(scancode, keysym, repeated)
         Mouse.setRelativeMode(not Mouse.getRelativeMode())
     elseif scancode == 'F3' then
         Mouse.setVisible(not Mouse.isVisible())
+    elseif scancode == 'Space' and Joystick.isConnected(1) then
+        for i=1, Joystick.getButtonCount(1) do
+            print('Button ' .. i .. ' is: ' .. tostring(Joystick.isButtonDown(1, i)))
+        end
+        for i=1, Joystick.getAxisCount(1) do
+            print('Axis ' .. i .. ' is: ' .. Joystick.getAxisPosition(1, i))
+        end
+        for i=1, Joystick.getBallCount(1) do
+            local x, y = Joystick.getBallPosition(1, i)
+            print('Ball ' .. i .. ' is: ' .. x .. ', ' .. y)
+        end
+        for i=1, Joystick.getHatCount(1) do
+            print('Hat ' .. i .. ' is: ' .. Joystick.getHatPosition(1, i))
+        end
     end
-end
-
-function SceneTitle:onJoyAxisMotion(joystick, axis, value)
-    print('Joystick: ' .. joystick .. ' Axis: ' .. axis .. ' Value: ' .. value)
-end
-
-function SceneTitle:onJoyButtonDown(joystick, button)
-    print('Joystick: ' .. joystick .. ' Button down: ' .. button)
-end
-
-function SceneTitle:onJoyButtonUp(joystick, button)
-    print('Joystick: ' .. joystick .. ' Button up: ' .. button)
 end
 
 return SceneTitle

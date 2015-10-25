@@ -17,6 +17,8 @@ int fatalError(const std::string& message, int retval = 1)
 int main(int argc, char* argv[])
 {
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER | SDL_INIT_JOYSTICK);
+
+    // Enable joystick events
     SDL_JoystickEventState(1);
     SDL_GameControllerEventState(1);
 
