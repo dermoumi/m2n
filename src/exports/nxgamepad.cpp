@@ -14,4 +14,14 @@ extern "C"
     {
         SDL_GameControllerClose(gamepad);
     }
+
+    NX_EXPORT bool nxGamepadButtonDown(NxGamepad* gamepad, int btn)
+    {
+        return SDL_GameControllerGetButton(gamepad, static_cast<SDL_GameControllerButton>(btn - 1));
+    }
+
+    NX_EXPORT double nxGamepadGetAxis(NxGamepad* gamepad, int axis)
+    {
+        return SDL_GameControllerGetAxis(gamepad, static_cast<SDL_GameControllerAxis>(axis - 1));
+    }
 }

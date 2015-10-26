@@ -117,27 +117,22 @@ end
 
 function Scene:onGamepadMotion(which, axis, value)
     -- Nothing to do
-    print('GamepadMotion: ' .. which .. ' ' .. axis .. ' ' .. value)
 end
 
 function Scene:onGamepadButtonDown(which, button)
     -- Nothing to do
-    print('GamepadButtonDown: ' .. which .. ' ' .. button)
 end
 
 function Scene:onGamepadButtonUp(which, button)
     -- Nothing to do
-    print('GamepadButtonUp: ' .. which .. ' ' .. button)
 end
 
 function Scene:onGamepadConnect(which, isConnected)
     -- Nothing to do
-    print('GamepadConnect: ' .. which .. ' ' .. tostring(isConnected))
 end
 
 function Scene:onGamepadRemap(which)
     -- Nothing to do
-    print('GamepadRemap: ' .. which)
 end
 
 function Scene:onTouchDown(finger, x, y)

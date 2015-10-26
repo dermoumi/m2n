@@ -5,7 +5,9 @@ ffi.cdef [[
     typedef struct NxGamepad NxGamepad;
 
     NxGamepad* nxGamepadOpen(int);
-    void nxGamepadClose(NxGamepad*);    
+    void nxGamepadClose(NxGamepad*);
+    bool nxGamepadButtonDown(NxGamepad*, int);
+    double nxGamepadGetAxis(NxGamepad*, int);
 ]]
 
 --------------------------------------------------------------------------------
@@ -71,11 +73,13 @@ function Gamepad.isMapped(id)
 end
 
 function Gamepad.isButtonDown(id, button)
-    -- TODO
+    if not gamepads[id] then return false end
+    return C.nxGamepadButtonDown(gamepads[id], buttons[button])
 end
 
 function Gamepad.getAxisPosition(id, axis)
-    -- TODO
+    if not gamepads[id] then return 0 end
+    return C.nxGamepadGetAxis(gamepads[id], axes[axis])
 end
 
 function Gamepad.loadMappings(mappings)
