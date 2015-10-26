@@ -63,8 +63,9 @@ extern "C"
 
     NX_EXPORT const char* nxJoystickGetGUID(NxJoystick* joystick)
     {
-        static std::string guidStr(34, '\0');
+        static std::string guidStr;
 
+        guidStr.resize(64);
         auto guid = SDL_JoystickGetGUID(joystick);
         SDL_JoystickGetGUIDString(guid, &guidStr[0], guidStr.size());
 
