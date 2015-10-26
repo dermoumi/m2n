@@ -12,6 +12,60 @@ ffi.cdef [[
 local Gamepad = {}
 local gamepads = {}
 
+local axes = {
+    [0] = 'invalid',
+    'leftx',
+    'lefty',
+    'rightx',
+    'righty',
+    'ltrigger',
+    'rtrigger',
+    invalid = 0,
+    leftx = 1,
+    lefty = 2,
+    rightx = 3,
+    righty = 4,
+    ltrigger = 5,
+    rtrigger = 6
+}
+Gamepad._axes = axes
+
+local buttons = {
+    [0] = 'invalid',
+    'a',
+    'b',
+    'x',
+    'y',
+    'back',
+    'guide',
+    'start',
+    'lstick',
+    'rstick',
+    'l',
+    'r',
+    'up',
+    'down',
+    'left',
+    'right',
+    invalid = 0,
+    a = 1,
+    b = 2,
+    x = 3,
+    y = 4,
+    back = 5,
+    guide = 6,
+    start = 7,
+    lstick = 8,
+    rstick = 9,
+    l = 10,
+    r = 11,
+    up = 12,
+    down = 13,
+    left = 14,
+    right = 15
+}
+Gamepad._buttons = buttons
+
 function Gamepad.isMapped(id)
     return gamepads[id] ~= nil
 end

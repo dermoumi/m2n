@@ -103,11 +103,11 @@ local function nextEvent(func)
         Joystick.__connectEvent(tonumber(e.a), e.b == 1)
         return 'joyconnect', tonumber(e.a), e.b == 1
     elseif evType == C.NX_GamepadMotion then
-        return 'gamepadmotion', tonumber(e.a), tonumber(e.b), tonumber(e.c) -- TODO: Add axis name
+        return 'gamepadmotion', tonumber(e.a), Gamepad._axes[e.b], tonumber(e.c)
     elseif evType == C.NX_GamepadButtonDown then
-        return 'gamepadbuttondown', tonumber(e.a), tonumber(e.b), tonumber(e.c) -- TODO: Add button name
+        return 'gamepadbuttondown', tonumber(e.a), Gamepad._buttons[e.b], tonumber(e.c)
     elseif evType == C.NX_GamepadButtonUp then
-        return 'gamepadbuttonup', tonumber(e.a), tonumber(e.b), tonumber(e.c) -- TODO: Add button name
+        return 'gamepadbuttonup', tonumber(e.a), Gamepad._buttons[e.b], tonumber(e.c)
     elseif evType == C.NX_GamepadConnect then
         Gamepad.__connectEvent(tonumber(e.a), e.b == 1)
         return 'gamepadconnect', tonumber(e.a), e.b == 1
