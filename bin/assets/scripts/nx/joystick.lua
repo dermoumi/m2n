@@ -41,54 +41,54 @@ function Joystick.isConnected(id)
 end
 
 function Joystick.getButtonCount(id)
-    if not joysticks[id] then return end
+    if not joysticks[id] then return 0 end
     return C.nxJoystickButtonCount(joysticks[id])
 end
 
 function Joystick.getAxisCount(id)
-    if not joysticks[id] then return end
+    if not joysticks[id] then return 0 end
     return C.nxJoystickAxisCount(joysticks[id])
 end
 
 function Joystick.getBallCount(id)
-    if not joysticks[id] then return end
+    if not joysticks[id] then return 0 end
     return C.nxJoystickBallCount(joysticks[id])
 end
 
 function Joystick.getHatCount(id)
-    if not joysticks[id] then return end
+    if not joysticks[id] then return 0 end
     return C.nxJoystickHatCount(joysticks[id])
 end
 
 function Joystick.isButtonDown(id, button)
-    if not joysticks[id] then return end
+    if not joysticks[id] then return false end
     return C.nxJoystickGetButton(joysticks[id], button)
 end
 
 function Joystick.getAxisPosition(id, axis)
-    if not joysticks[id] then return end
+    if not joysticks[id] then return 0 end
     return tonumber(C.nxJoystickGetAxis(joysticks[id], axis))
 end
 
 function Joystick.getBallPosition(id, ball)
-    if not joysticks[id] then return end
+    if not joysticks[id] then return 0, 0 end
     local posPtr = ffi.new('int[2]')
     C.nxJoystickGetBall(joysticks[id], ball, posPtr)
     return tonumber(posPtr[0]), tonumber(posPtr[1])
 end
 
 function Joystick.getHatPosition(id, hat)
-    if not joysticks[id] then return end
+    if not joysticks[id] then return 'centered' end
     return hatPos[C.nxJoystickGetHat(joysticks[id], hat)]
 end
 
 function Joystick.getName(id)
-    if not joysticks[id] then return end
+    if not joysticks[id] then return '' end
     return ffi.string(C.nxJoystickGetName(joysticks[id]))
 end
 
 function Joystick.getGUID(id)
-    if not joysticks[id] then return end
+    if not joysticks[id] then return '' end
     return ffi.string(C.nxJoystickGetGUID(joysticks[id]))
 end
 
