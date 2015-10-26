@@ -8,11 +8,15 @@ ffi.cdef [[
     void nxGamepadClose(NxGamepad*);
     bool nxGamepadButtonDown(NxGamepad*, int);
     double nxGamepadGetAxis(NxGamepad*, int);
+    bool nxGamepadAddMappings(const char* data);
+    const char* nxGamepadGetMappings();
 ]]
 
 --------------------------------------------------------------------------------
 local Gamepad = {}
 local gamepads = {}
+local InputFile = require 'nx.inputfile'
+local OutputFile = require 'nx.outputfile'
 
 local axes = {
     [0] = 'invalid',
@@ -83,11 +87,30 @@ function Gamepad.getAxisPosition(id, axis)
 end
 
 function Gamepad.loadMappings(mappings)
-    -- TODO
+    local mappingsStr = ""
+    local file, err = InputFile:new(mappings)
+    if file then
+        mappingsStr = file:read(file:size())
+        file:close()
+    else
+        mappingsStr = mappings
+    end
+
+    return C.nxGamepadAddMappings(mappings)
 end
 
 function Gamepad.saveMappings(filename)
-    -- TODO
+    local mappings = ffi.string(C.nxGamepadGetMappings())
+
+    if filename then
+        local file, err = OutputFile:new(mappings)
+        if file then
+            file:write(mappings)
+            file:close()
+        end
+    end
+
+    return mappings
 end
 
 function Gamepad.setMapping(guid, target, inputType, inputIndex, hatDir)

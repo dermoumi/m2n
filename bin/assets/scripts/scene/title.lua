@@ -83,6 +83,8 @@ function SceneTitle:onKeyDown(scancode, keysym, repeated)
         print('Back: ' .. tostring(Gamepad.isButtonDown(1, 'back')) .. '\t Start: ' .. tostring(Gamepad.isButtonDown(1, 'start')))
         print('Up: ' .. tostring(Gamepad.isButtonDown(1, 'up')) .. '\t Down: ' .. tostring(Gamepad.isButtonDown(1, 'down')))
         print('Left: ' .. tostring(Gamepad.isButtonDown(1, 'left')) .. '\t Right: ' .. tostring(Gamepad.isButtonDown(1, 'right')))
+    
+        -- print(Gamepad.saveMappings())
     end
 end
 
