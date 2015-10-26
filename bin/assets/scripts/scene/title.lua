@@ -87,6 +87,7 @@ function SceneTitle:onKeyDown(scancode, keysym, repeated)
         for i=1, Joystick.getHatCount(1) do
             print('Hat ' .. i .. ' is: ' .. Joystick.getHatPosition(1, i))
         end
+        print('GUID: ' .. Joystick.getGUID(1))
     end
 end
 

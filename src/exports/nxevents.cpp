@@ -29,6 +29,11 @@ enum NxEventType
     NX_JoyButtonDown,
     NX_JoyButtonUp,
     NX_JoyConnect,
+    NX_GamepadMotion,
+    NX_GamepadButtonDown,
+    NX_GamepadButtonUp,
+    NX_GamepadConnect,
+    NX_GamepadRemap,
     NX_TouchBegan,
     NX_TouchEnded,
     NX_TouchMotion,
@@ -158,24 +163,30 @@ namespace
                 e->a = event.jdevice.which + 1;
                 e->b = 0.0;
                 return NX_JoyConnect;
-            case SDL_CONTROLLERDEVICEADDED:
-                // TODO
-                return NX_Other;
-            case SDL_CONTROLLERDEVICEREMOVED:
-                // TODO
-                return NX_Other;
-            case SDL_CONTROLLERDEVICEREMAPPED:
-                // TODO
-                return NX_Other;
             case SDL_CONTROLLERAXISMOTION:
-                // TODO
-                return NX_Other;
+                e->a = event.caxis.which + 1;
+                e->b = event.caxis.axis + 1;
+                e->c = event.caxis.value;
+                return NX_GamepadMotion;
             case SDL_CONTROLLERBUTTONDOWN:
-                // TODO
-                return NX_Other;
+                e->a = event.cbutton.which + 1;
+                e->b = event.cbutton.button + 1;
+                return NX_GamepadButtonDown;
             case SDL_CONTROLLERBUTTONUP:
-                // TODO
-                return NX_Other;
+                e->a = event.cbutton.which + 1;
+                e->b = event.cbutton.button + 1;
+                return NX_GamepadButtonUp;
+            case SDL_CONTROLLERDEVICEADDED:
+                e->a = event.cdevice.which + 1;
+                e->b = 1.0;
+                return NX_GamepadConnect;
+            case SDL_CONTROLLERDEVICEREMOVED:
+                e->a = event.cdevice.which + 1;
+                e->b = 0.0;
+                return NX_GamepadConnect;
+            case SDL_CONTROLLERDEVICEREMAPPED:
+                e->a = event.cdevice.which + 1;
+                return NX_GamepadRemap;
             case SDL_FINGERDOWN:
                 e->a = event.tfinger.fingerId;
                 e->b = event.tfinger.x;

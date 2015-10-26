@@ -25,6 +25,11 @@ ffi.cdef [[
         NX_JoyButtonDown,
         NX_JoyButtonUp,
         NX_JoyConnect,
+        NX_GamepadMotion,
+        NX_GamepadButtonDown,
+        NX_GamepadButtonUp,
+        NX_GamepadConnect,
+        NX_GamepadRemap,
         NX_TouchBegan,
         NX_TouchEnded,
         NX_TouchMotion,
@@ -44,6 +49,7 @@ ffi.cdef [[
 local Keyboard = require 'nx.keyboard'
 local Mouse = require 'nx.mouse'
 local Joystick = require 'nx.joystick'
+local Gamepad = require 'nx.gamepad'
 local Events = {}
 
 --------------------------------------------------------------------------------
@@ -96,6 +102,17 @@ local function nextEvent(func)
     elseif evType == C.NX_JoyConnect then
         Joystick.__connectEvent(tonumber(e.a), e.b == 1)
         return 'joyconnect', tonumber(e.a), e.b == 1
+    elseif evType == C.NX_GamepadMotion then
+        return 'gamepadmotion', tonumber(e.a), tonumber(e.b), tonumber(e.c) -- TODO: Add axis name
+    elseif evType == C.NX_GamepadButtonDown then
+        return 'gamepadbuttondown', tonumber(e.a), tonumber(e.b), tonumber(e.c) -- TODO: Add button name
+    elseif evType == C.NX_GamepadButtonUp then
+        return 'gamepadbuttonup', tonumber(e.a), tonumber(e.b), tonumber(e.c) -- TODO: Add button name
+    elseif evType == C.NX_GamepadConnect then
+        Gamepad.__connectEvent(tonumber(e.a), e.b == 1)
+        return 'gamepadconnect', tonumber(e.a), e.b == 1
+    elseif evType == C.NX_GamepadRemap then
+        return 'gamepadremap', tonumber(e.a)
     elseif evType == C.NX_TouchBegan then
         return 'touchdown', tonumber(e.a), tonumber(e.b), tonumber(e.c)
     elseif evType == C.NX_TouchEnded then

@@ -115,6 +115,26 @@ function Scene:onJoyConnect(which, isConnected)
     -- Nothing to do
 end
 
+function Scene:onGamepadMotion(which, axis, value)
+    -- Nothing to do
+end
+
+function Scene:onGamepadButtonDown(which, button)
+    -- Nothing to do
+end
+
+function Scene:onGamepadButtonUp(which, button)
+    -- Nothing to do
+end
+
+function Scene:onGamepadConnect(which, isConnected)
+    -- Nothing to do
+end
+
+function Scene:onGamepadRemap(which)
+    -- Nothing to do
+end
+
 function Scene:onTouchDown(finger, x, y)
     -- Nothing to do
 end
