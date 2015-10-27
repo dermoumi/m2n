@@ -35,7 +35,7 @@ function BinaryFile:close()
 end
 
 function BinaryFile:size()
-    if self._cdata then
+    if not self._cdata then
         return nil, 'No file open'
     end
 
@@ -48,7 +48,7 @@ function BinaryFile:size()
 end
 
 function BinaryFile:tell()
-    if self._cdata then
+    if not self._cdata then
         return nil, 'No file open'
     end
 
@@ -61,7 +61,7 @@ function BinaryFile:tell()
 end
 
 function BinaryFile:seek(position)
-    if self._cdata then
+    if not self._cdata then
         return nil, 'No file open'
     end
 

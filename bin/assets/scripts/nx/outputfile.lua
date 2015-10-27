@@ -57,6 +57,7 @@ function OutputFile:write(buffer, size)
     if not self._cdata then return nil, 'No file open' end
     
     local bytesWrittenPtr = ffi.new('size_t[1]')
+    if not size then size = #buffer end
 
     local ok = C.nxFsWrite(self._cdata, buffer, size, bytesWrittenPtr)
     if not ok then return false, ffi.string(C.nxFsGetError()) end
