@@ -96,14 +96,14 @@ function Gamepad.loadMappings(mappings)
         mappingsStr = mappings
     end
 
-    return C.nxGamepadAddMappings(mappings)
+    return C.nxGamepadAddMappings(mappingsStr)
 end
 
 function Gamepad.saveMappings(filename)
     local mappings = ffi.string(C.nxGamepadGetMappings())
 
     if filename then
-        local file, err = OutputFile:new(mappings)
+        local file, err = OutputFile:new(filename)
         if file then
             file:write(mappings)
             file:close()
