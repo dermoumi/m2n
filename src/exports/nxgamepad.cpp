@@ -3,6 +3,7 @@
 #include <map>
 #include <string>
 #include <sstream>
+#include "../log.hpp"
 
 using NxGamepad = SDL_GameController;
 
@@ -15,7 +16,18 @@ extern "C"
 {
     NX_EXPORT NxGamepad* nxGamepadOpen(int id)
     {
-        return SDL_GameControllerOpen(id - 1);
+        NxGamepad* gamepad = SDL_GameControllerOpen(id - 1);
+        if (gamepad) {
+            // TODO add GUID for recentGUIDs
+            auto guid = SDL_JoystickGetDeviceGUID(id);
+
+            std::string guidStr(64, '\0');
+            SDL_JoystickGetGUIDString(guid, &guidStr[0], guidStr.size());
+            recentGUIDs[guidStr.data()] = true;
+            Log::info("Registered: '%s'", guidStr.data());
+        }
+        
+        return gamepad;
     }
 
     NX_EXPORT void nxGamepadClose(NxGamepad* gamepad)
