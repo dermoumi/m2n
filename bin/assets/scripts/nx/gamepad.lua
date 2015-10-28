@@ -8,7 +8,9 @@ ffi.cdef [[
     void nxGamepadClose(NxGamepad*);
     bool nxGamepadButtonDown(NxGamepad*, int);
     double nxGamepadGetAxis(NxGamepad*, int);
-    bool nxGamepadAddMappings(const char* data);
+    bool nxGamepadAddMapping(const char*);
+    const char* nxGamepadGetMapping(const char*);
+    bool nxGamepadAddMappings(const char*);
     const char* nxGamepadGetMappings();
 ]]
 
@@ -72,6 +74,48 @@ local buttons = {
 }
 Gamepad._buttons = buttons
 
+local mappingTarget = {
+    a = 'a',
+    b = 'b',
+    x = 'x',
+    y = 'y',
+    back = 'back',
+    guide = 'guide',
+    start = 'start',
+    left = 'dpleft',
+    right = 'dpright',
+    up = 'dpup',
+    down = 'dpdown',
+    l = 'leftshoulder',
+    r = 'rightshoulder',
+    lstick = 'leftstick',
+    rstick = 'rightstick',
+    ltrigger = 'lefttrigger',
+    rtrigger = 'righttrigger',
+    leftx = 'leftx',
+    lefty = 'lefty',
+    rightx = 'rightx',
+    righty = 'righty'
+}
+
+local mappingType = {
+    button = 'b',
+    hat = 'h',
+    axis = 'a'
+}
+
+local mappingHat = {
+    centered  = 0,
+    up        = 1,
+    right     = 2,
+    down      = 4,
+    left      = 8,
+    rightup   = 3,
+    rightdown = 6,
+    leftup    = 9,
+    leftdown  = 12
+}
+
 function Gamepad.isMapped(id)
     return gamepads[id] ~= nil
 end
@@ -113,8 +157,62 @@ function Gamepad.saveMappings(filename)
     return mappings
 end
 
-function Gamepad.setMapping(guid, target, inputType, inputIndex, hatDir)
-    -- TODO
+function Gamepad.setMapping(guid, mappings)
+    -- Get the GUID if we're given the joystick ID
+    if type(guid) == 'number' then
+        local Joystick = require 'nx.joystick'
+        guid = Joystick.getGUID(id)
+        if guid == '' then return false, 'Invalid Joystick ID' end
+    end
+
+    -- Build up the mappings string if 'mappings' is an array
+    local mappingsStr = ''
+    if type(mappings) == 'string' then
+        mappingsStr = guid .. ',Controller,' .. mappings
+    elseif type(mappings) == 'table' then
+        mappingsStr = guid .. ',Controller,'
+        for target, data in pairs(mappings) do
+            target = mappingTarget[target]
+            if target then
+                -- Make sure all needed data is valid
+                if type(data) == 'table' and mappingType[data.type] and
+                    type(data.index) == 'number' and
+                    (data.type ~= 'hat' or mappingHat[data.hat])
+                then
+                    local dataStr = mappingType[data.type] .. data.index
+                    if data.type == 'hat' then
+                        dataStr = dataStr .. '.' .. mappingHat[data.hat]
+                    end
+
+                    -- Override data
+                    data = dataStr
+                end
+
+                -- Make sure the data to add is an actual string and not some invalid table
+                if type(data) == 'string' then
+                    mappingsStr = mappingsStr .. target .. ':' .. data .. ','
+                end
+            end
+        end
+    end
+
+    return C.nxGamepadAddMapping(mappingsStr)
+end
+
+function Gamepad.getMapping(guid)
+    -- Get the GUID if we're given the joystick ID
+    if type(guid) == 'number' then
+        local Joystick = require 'nx.joystick'
+        guid = Joystick.getGUID(id)
+        if guid == '' then return nil, 'Invalid Joystick ID' end
+    end
+
+    local mapping = C.nxGamepadGetMapping(guid)
+    if mapping == nil then return nil end
+    mapping = ffi.string(mapping)
+
+    -- TODO: Parse it into data
+    return mapping
 end
 
 function Gamepad.__connectEvent(id, isConnected)
@@ -125,5 +223,4 @@ function Gamepad.__connectEvent(id, isConnected)
         gamepads[id] = nil
     end
 end
-
 return Gamepad

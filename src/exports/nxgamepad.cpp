@@ -46,6 +46,17 @@ extern "C"
         return SDL_GameControllerGetAxis(gamepad, static_cast<SDL_GameControllerAxis>(axis - 1));
     }
 
+    NX_EXPORT bool nxGamepadAddMapping(const char* mappingStr)
+    {
+        return SDL_GameControllerAddMapping(mappingStr) != -1;
+    }
+
+    NX_EXPORT const char* nxGamepadGetMapping(const char* guidStr)
+    {
+        auto guid = SDL_JoystickGetGUIDFromString(guidStr);
+        return SDL_GameControllerMappingForGUID(guid);
+    }
+
     NX_EXPORT bool nxGamepadAddMappings(const char* data)
     {
         // Add to recent GUIDs
@@ -78,8 +89,8 @@ extern "C"
         std::stringstream ss;
 
         for (auto& it : recentGUIDs) {
-            auto guid = SDL_JoystickGetGUIDFromString(it.first.data());
-            ss << SDL_GameControllerMappingForGUID(guid) << '\n';
+            const char* mapping = nxGamepadGetMapping(it.first.data());
+            if (mapping) ss << mapping << '\n';
         }
 
         str = ss.str();
