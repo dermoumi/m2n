@@ -1,6 +1,7 @@
 #include "../config.hpp"
 #include <SDL2/SDL.h>
 #include <map>
+#include <cstring>
 #include <string>
 #include <sstream>
 #include "../log.hpp"
