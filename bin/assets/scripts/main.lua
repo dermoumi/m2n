@@ -4,6 +4,14 @@ local Events = require 'nx.events'
 local Scene = require 'nx.scene'
 local SceneTitle = require 'scene.title'
 
+local Thread = require 'nx.thread'
+print('main: is main? ' .. tostring(Thread.isMain()))
+local thread = Thread:new(function()
+    local Thread = require 'nx.thread'
+    print('thread: is main? ' .. tostring(Thread.isMain()))
+end)
+thread:join()
+
 Window.create("m2n", 1280, 720, false)
 
 Scene.goTo(SceneTitle:new())

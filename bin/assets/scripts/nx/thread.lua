@@ -12,6 +12,7 @@ ffi.cdef [[
     NxThreadObj* nxThreadCreate(lua_State*);
     void nxThreadRelease(NxThreadObj*);
     bool nxThreadWait(NxThreadObj*);
+    bool nxThreadIsMain();
 ]]
 
 local class = require 'nx.class'
@@ -23,6 +24,10 @@ function Thread.static._fromCData(data)
     thread._cdata = ffi.cast('NxThreadObj*', data)
     thread._vm = LuaVM._fromCData(thread._cdata[0].state);
     return thread
+end
+
+function Thread.static.isMain()
+    return C.nxThreadIsMain()
 end
 
 function Thread:initialize(func, ...)

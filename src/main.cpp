@@ -5,6 +5,7 @@
 #include "log.hpp"
 #include <SDL2/SDL.h>
 #include <physfs/physfs.h>
+#include "thread.hpp"
 
 int fatalError(const std::string& message, int retval = 1)
 {
@@ -18,12 +19,6 @@ int main(int argc, char* argv[])
 {
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER | SDL_INIT_JOYSTICK);
 
-    // Enable joystick events
-    SDL_JoystickEventState(1);
-    SDL_GameControllerEventState(1);
-
-    // Only enable text input when needed?
-    SDL_StopTextInput();
 
     Filesystem fs;
 
@@ -75,6 +70,16 @@ int main(int argc, char* argv[])
         }
 
     #endif
+
+    // Set the current thread as the main thread
+    Thread::setMain();
+    
+    // Enable joystick events
+    SDL_JoystickEventState(1);
+    SDL_GameControllerEventState(1);
+
+    // Only enable text input when needed?
+    SDL_StopTextInput();
 
     // Run the lua code
     int retval;

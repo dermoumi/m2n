@@ -1,4 +1,5 @@
 #include "../config.hpp"
+#include "../thread.hpp"
 #include <thread>
 #include <luajit/lua.hpp>
 
@@ -38,5 +39,10 @@ extern "C"
     {
         threadObj->handle->join();
         return threadObj->succeeded;
+    }
+
+    NX_EXPORT bool nxThreadIsMain()
+    {
+        return Thread::isMain();
     }
 }
