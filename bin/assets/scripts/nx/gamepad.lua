@@ -98,11 +98,20 @@ local mappingTarget = {
     righty = 'righty'
 }
 
+local mappingFromTarget = {}
+for i, v in pairs(mappingTarget) do
+    mappingFromTarget[v] = i
+end
+
 local mappingType = {
     button = 'b',
     hat = 'h',
     axis = 'a'
 }
+local mappingFromType = {}
+for i, v in pairs(mappingType) do
+    mappingFromType[v] = i
+end
 
 local mappingHat = {
     centered  = 0,
@@ -199,7 +208,7 @@ function Gamepad.setMapping(guid, mappings)
     return C.nxGamepadAddMapping(mappingsStr)
 end
 
-function Gamepad.getMapping(guid)
+function Gamepad.getMapping(guid, raw)
     -- Get the GUID if we're given the joystick ID
     if type(guid) == 'number' then
         local Joystick = require 'nx.joystick'
@@ -211,8 +220,39 @@ function Gamepad.getMapping(guid)
     if mapping == nil then return nil end
     mapping = ffi.string(mapping)
 
-    -- TODO: Parse it into data
-    return mapping
+    -- Return it as is if requested raw
+    if raw then return mapping end
+
+    -- Parse it into a lua table
+    local data = {}
+    local dataParsed = 0
+    local target, type, index, hat
+
+    -- Split by comma :/
+    for i in mapping:gmatch('[^,]+') do
+        if dataParsed < 2 then
+            dataParsed = dataParsed + 1
+        else
+            _target, _type, _index = i:match('^(.+):([ba])(%d+)$')
+            if _target then
+                data[mappingFromTarget[_target]] = {
+                    type = mappingFromType[_type],
+                    index = _index
+                }
+            else
+                _target, _type, _index, _hat = i:match('^(.+):(h)(%d+)%.(%d+)$')
+                if _target then
+                    data[mappingFromTarget[_target]] = {
+                        type = 'hat',
+                        index = _index,
+                        hat = _hat
+                    }
+                end
+            end
+        end
+    end
+
+    return data
 end
 
 function Gamepad.__connectEvent(id, isConnected)

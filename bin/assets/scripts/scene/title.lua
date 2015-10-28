@@ -77,7 +77,11 @@ function SceneTitle:onKeyDown(scancode, keysym, repeated)
         Gamepad.loadMappings('assets/gamecontrollerdb.txt')
         Gamepad.saveMappings('gamecontrollerdb.txt')
     elseif scancode == 'F5' then
-        print(Gamepad.getMapping('03000000de280000ff11000001000000'))
+        local mapping = Gamepad.getMapping('03000000de280000ff11000001000000', true)
+        -- print (mapping)
+        for target, data in pairs(mapping) do
+            print(target, data.type, data.index, data.hat)
+        end
     elseif scancode == 'Space' and Gamepad.isMapped(1) then
         print('Left Stick: ' .. Gamepad.getAxisPosition(1, 'leftx') .. ' ' .. Gamepad.getAxisPosition(1, 'lefty'))
         print('Right Stick: ' .. Gamepad.getAxisPosition(1, 'rightx') .. ' ' .. Gamepad.getAxisPosition(1, 'righty'))
