@@ -77,7 +77,7 @@ function SceneTitle:onKeyDown(scancode, keysym, repeated)
         Gamepad.loadMappings('assets/gamecontrollerdb.txt')
         Gamepad.saveMappings('gamecontrollerdb.txt')
     elseif scancode == 'F5' then
-        local mapping = Gamepad.getMapping('03000000de280000ff11000001000000', true)
+        local mapping = Gamepad.getMapping('03000000de280000ff11000001000000')
         -- print (mapping)
         for target, data in pairs(mapping) do
             print(target, data.type, data.index, data.hat)

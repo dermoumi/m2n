@@ -49,7 +49,8 @@ extern "C"
         window = SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
             width, height, flags);
 
-        GlContext::create(0, 0, 0);
+        auto* context = GlContext::create(0, 0, 0);
+        context->setVSyncEnabled(false);
 
         return window;
     }
@@ -67,5 +68,10 @@ extern "C"
     NX_EXPORT void nxWindowReleaseContext()
     {
         if (!Thread::isMain()) GlContext::release();
+    }
+
+    NX_EXPORT void nxWindowSetTitle(const char* title)
+    {
+        SDL_SetWindowTitle(window, title);
     }
 }

@@ -2,15 +2,8 @@ local Timer = require 'nx.timer'
 local Window = require 'nx.window'
 local Events = require 'nx.events'
 local Scene = require 'nx.scene'
+local Nx = require 'nx'
 local SceneTitle = require 'scene.title'
-
-local InputFile = require 'nx.inputfile'
-local file, err = InputFile:new('/sysroot/home/sid/test')
-if not file then
-    print('Cannot open file: ' .. err)
-else
-    print('File content: ' .. file:read())
-end
 
 Window.create("m2n", 1280, 720, false)
 
@@ -45,7 +38,18 @@ local eventMapping = {
     filedrop          = 'onFileDrop'
 }
 
+-- Handling FPS
+local maxFPS = 60
+local framerate = 1 / maxFPS
+
+local totalElapsedTime, frameCount = 0, 0
+local lastTime = Nx.getSystemTime()
+
 while Window.isOpen() do
+    local currentTime = Nx.getSystemTime()
+    local elapsedTime = currentTime - lastTime
+    lastTime = currentTime
+
     -- Process events
     for e, a, b, c, d in Events.poll() do
         if e == 'quit' and Scene.call('onQuit') then
@@ -57,9 +61,24 @@ while Window.isOpen() do
         end
     end
     
-    Scene.call('update', 0)
+    Scene.call('update', elapsedTime)
     Scene.call('render') 
     Window.display()
+
+    -- Calculating FPS every minute
+    totalElapsedTime = totalElapsedTime + elapsedTime
+    frameCount       = frameCount + 1
+    if totalElapsedTime > 1 then
+        Window.setTitle('m2n [' .. math.floor(1 / (totalElapsedTime / frameCount) + .5) .. ']')
+        totalElapsedTime = totalElapsedTime % 1
+        frameCount = 0
+    end
+
+    -- Waiting
+    local sysTime = Nx.getSystemTime()
+    if currentTime + framerate > sysTime then
+        Nx.sleep(currentTime - sysTime + framerate)
+    end
 end
 
 return 0

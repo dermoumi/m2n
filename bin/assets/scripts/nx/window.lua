@@ -8,6 +8,7 @@ ffi.cdef [[
     bool nxWindowCreate(const char*, int, int, bool);
     void nxWindowClose();
     void nxWindowDisplay();
+    void nxWindowSetTitle(const char*);
 ]]
 
 local Window = {}
@@ -31,6 +32,10 @@ end
 
 function Window.display()
     C.nxWindowDisplay()
+end
+
+function Window.setTitle(title)
+    C.nxWindowSetTitle(title)
 end
 
 return Window
