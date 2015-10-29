@@ -24,4 +24,9 @@ extern "C"
         errorMessage = SDL_GetError();
         return errorMessage.data();
     }
+
+    NX_EXPORT const char* nxSysGetPlatform()
+    {
+        return SDL_GetPlatform();
+    }
 }
