@@ -36,14 +36,16 @@ namespace
     thread_local GlContextPtr currentContext {nullptr};
 }
 
-void GlContext::create(unsigned int depth, unsigned int stencil, unsigned int msaa)
+GlContext* GlContext::create(unsigned int depth, unsigned int stencil, unsigned int msaa)
 {
     currentContext = GlContextPtr(new GlContext(depth, stencil, msaa));
+    return currentContext.get();
 }
 
-void GlContext::ensure()
+GlContext* GlContext::ensure()
 {
     if (!currentContext) create();
+    return currentContext.get();
 }
 
 void GlContext::release()

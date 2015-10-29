@@ -49,8 +49,10 @@ while Window.isOpen() do
         end
     end
     
+    Window.clear()
     Scene.call('update', 0)
     Scene.call('render') 
+    Window.display()
 end
 
 return 0

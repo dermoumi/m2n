@@ -3,8 +3,8 @@
 class GlContext
 {
 public:
-    static void create(unsigned int depth = 0u, unsigned int stencil = 0, unsigned int msaa = 0u);
-    static void ensure();
+    static GlContext* create(unsigned int depth = 0u, unsigned int stencil = 0, unsigned int msaa = 0u);
+    static GlContext* ensure();
     static void release();
     
     ~GlContext();
@@ -16,7 +16,7 @@ public:
     void getGLVersion(unsigned int* major, unsigned int* minor) const;
 
 private:
-    GlContext(unsigned int depth = 0u, unsigned int stencil = 0u, unsigned int msaa = 0u);
+    GlContext(unsigned int depth, unsigned int stencil, unsigned int msaa);
 
 private:
     mutable void* mContext {nullptr};
