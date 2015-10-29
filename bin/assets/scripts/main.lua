@@ -38,8 +38,18 @@ local eventMapping = {
     filedrop          = 'onFileDrop'
 }
 
+-- Helper function to determine what the default FPS should be
+function getMaxFPS()
+    local platform = Nx.getPlatform()
+    if platform == 'android' or platform == 'ios' then
+        return 30
+    else
+        return 60
+    end
+end
+
 -- Handling FPS
-local maxFPS = 60
+local maxFPS = getMaxFPS()
 local framerate = 1 / maxFPS
 
 local totalElapsedTime, frameCount = 0, 0
@@ -69,7 +79,9 @@ while Window.isOpen() do
     totalElapsedTime = totalElapsedTime + elapsedTime
     frameCount       = frameCount + 1
     if totalElapsedTime > 1 then
-        Window.setTitle('m2n [' .. math.floor(1 / (totalElapsedTime / frameCount) + .5) .. ']')
+        local currentFPS = math.floor(1 / (totalElapsedTime / frameCount) + .5)
+        Window.setTitle('m2n [' .. currentFPS .. ']')
+        print('Current FPS: ' .. currentFPS)
         totalElapsedTime = totalElapsedTime % 1
         frameCount = 0
     end
