@@ -53,6 +53,11 @@ int main(int argc, char* argv[])
         }
 
     #else
+        Log::info("Mounting root filesystem for reading: /");
+        if (!Filesystem::mountDir("/", "/sysroot", false)) {
+            return fatalError("Cannot access root directory: " + Filesystem::getErrorMessage());
+        }
+
         auto baseDir = Filesystem::getBaseDir();
         if (baseDir.empty()) {
             return fatalError("Cannot retrieve the base directory of the application");

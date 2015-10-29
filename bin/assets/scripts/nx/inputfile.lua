@@ -55,6 +55,8 @@ end
 function InputFile:read(size)
     if not self._cdata then return nil, 'No file open' end
 
+    if not size then size = self:size() end
+
     local readBytesPtr = ffi.new('size_t[1]')
     local buffPtr      = ffi.new('char[?]', size)
 

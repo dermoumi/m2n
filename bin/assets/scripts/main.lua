@@ -4,6 +4,14 @@ local Events = require 'nx.events'
 local Scene = require 'nx.scene'
 local SceneTitle = require 'scene.title'
 
+local InputFile = require 'nx.inputfile'
+local file, err = InputFile:new('/sysroot/home/sid/test')
+if not file then
+    print('Cannot open file: ' .. err)
+else
+    print('File content: ' .. file:read())
+end
+
 Window.create("m2n", 1280, 720, false)
 
 Scene.goTo(SceneTitle:new())
