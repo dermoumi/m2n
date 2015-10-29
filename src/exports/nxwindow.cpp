@@ -3,13 +3,6 @@
 #include "../thread.hpp"
 #include <SDL2/SDL.h>
 
-
-#if defined(NX_OPENGL_ES)
-    #include <SDL2/SDL_opengles2.h>
-#else
-    #include <SDL2/SDL_opengl.h>
-#endif
-
 using NxWindow = SDL_Window;
 
 namespace
@@ -59,12 +52,6 @@ extern "C"
         GlContext::create(0, 0, 0);
 
         return window;
-    }
-
-    NX_EXPORT void nxWindowClear()
-    {
-        glClearColor(1, 0, 0, 0);
-        glClear(GL_COLOR_BUFFER_BIT);
     }
 
     NX_EXPORT void nxWindowDisplay()

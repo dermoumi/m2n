@@ -3,7 +3,7 @@ local Keyboard = require 'nx.keyboard'
 local Mouse = require 'nx.mouse'
 local Gamepad = require 'nx.gamepad'
 local class = require 'nx.class'
-
+local Renderer = require 'nx.renderer'
 local SceneTitle = class('scene.title', Scene)
 
 function SceneTitle:onQuit()
@@ -92,6 +92,14 @@ function SceneTitle:onKeyDown(scancode, keysym, repeated)
         print('Back: ' .. tostring(Gamepad.isButtonDown(1, 'back')) .. '\t Start: ' .. tostring(Gamepad.isButtonDown(1, 'start')))
         print('Up: ' .. tostring(Gamepad.isButtonDown(1, 'up')) .. '\t Down: ' .. tostring(Gamepad.isButtonDown(1, 'down')))
         print('Left: ' .. tostring(Gamepad.isButtonDown(1, 'left')) .. '\t Right: ' .. tostring(Gamepad.isButtonDown(1, 'right')))
+    end
+end
+
+function SceneTitle:render()
+    if Mouse.isButtonDown('left') then
+        Renderer.clear(128, 255, 0)
+    else
+        Renderer.clear(255, 128, 0)
     end
 end
 

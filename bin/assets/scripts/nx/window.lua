@@ -8,7 +8,6 @@ ffi.cdef [[
     bool nxWindowCreate(const char*, int, int, bool);
     void nxWindowClose();
     void nxWindowDisplay();
-    void nxWindowClear();
 ]]
 
 local Window = {}
@@ -28,10 +27,6 @@ end
 
 function Window.isOpen()
     return (C.nxWindowGet() ~= nil)
-end
-
-function Window.clear()
-    C.nxWindowClear()
 end
 
 function Window.display()
