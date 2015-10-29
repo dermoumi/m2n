@@ -77,3 +77,11 @@
 constexpr char GAME_FULLTITLE[]  = "Monsters of 2nd Night";
 constexpr char GAME_SHORTTITLE[] = "m2n";
 constexpr char GAME_ORGNAME[]    = "nxsie";
+
+#if defined(NX_OPENGL_ES)
+    constexpr unsigned int NX_GL_MAJOR = 2u;
+    constexpr unsigned int NX_GL_MINOR = 0u;
+#else
+    constexpr unsigned int NX_GL_MAJOR = 2u;
+    constexpr unsigned int NX_GL_MINOR = 1u;
+#endif
