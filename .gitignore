@@ -41,6 +41,7 @@ bin/.vs/*
 android/build/*
 android/app/build/*
 android/app/src/main/obj/*
+android/app/src/main/libs/*
 android/.gradle/*
 
 # Android configuration files
