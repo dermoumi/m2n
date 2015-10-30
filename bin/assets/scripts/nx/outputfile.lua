@@ -1,3 +1,33 @@
+--[[----------------------------------------------------------------------------
+    This is free and unencumbered software released into the public domain.
+
+    Anyone is free to copy, modify, publish, use, compile, sell, or
+    distribute this software, either in source code form or as a compiled
+    binary, for any purpose, commercial or non-commercial, and by any
+    means.
+
+    In jurisdictions that recognize copyright laws, the author or authors
+    of this software dedicate any and all copyright interest in the
+    software to the public domain. We make this dedication for the benefit
+    of the public at large and to the detriment of our heirs and
+    successors. We intend this dedication to be an overt act of
+    relinquishment in perpetuity of all present and future rights to this
+    software under copyright law.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+    IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+    OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+    ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+    OTHER DEALINGS IN THE SOFTWARE.
+
+    For more information, please refer to <http://unlicense.org>
+--]]----------------------------------------------------------------------------
+
+------------------------------------------------------------
+-- ffi C declarations
+------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
@@ -24,24 +54,35 @@ ffi.cdef[[
     bool nxFsWriteString(PHYSFS_File*, const char*);
 ]]
 
--- Output File -----------------------------------------------------------------
+------------------------------------------------------------
+-- A class to write onto files
+------------------------------------------------------------
 local class = require 'nx.class'
 local BinaryFile = require 'nx._binaryfile'
 local OutputFile = class('nx.outputfile', BinaryFile)
 
+------------------------------------------------------------
 function OutputFile.static._fromCData(data)
     local file = OutputFile:new()
     file._cdata = ffi.cast('PHYSFS_File*', data)
     return file
 end
 
+------------------------------------------------------------
 function OutputFile:initialize(filename)
     return BinaryFile.initialize(self, filename)
 end
 
+------------------------------------------------------------
 function OutputFile:open(filename)
+    -- If already open, close it
     if self:isOpen() then
         self:close()
+    end
+
+    -- Make sure the arguments are valid
+    if type(filename) ~= 'string' or filename == '' then
+        return false, 'Invalid arguments'
     end
 
     local handle = C.nxFsOpenWrite(filename)
@@ -53,79 +94,126 @@ function OutputFile:open(filename)
     end
 end
 
+------------------------------------------------------------
 function OutputFile:write(buffer, size)
-    if not self._cdata then return nil, 'No file open' end
+    -- Make sure the file is open
+    if not self._cdata then
+        return nil, 'No file open'
+    end
     
+    -- If no size supplied, assume size of buffer string
+    if not size then
+        size = #buffer
+    end
+
     local bytesWrittenPtr = ffi.new('size_t[1]')
-    if not size then size = #buffer end
 
     local ok = C.nxFsWrite(self._cdata, buffer, size, bytesWrittenPtr)
-    if not ok then return false, ffi.string(C.nxFsGetError()) end
+    if not ok then
+        return false, ffi.string(C.nxFsGetError())
+    end
 
     return true
 end
 
+------------------------------------------------------------
 function OutputFile:writeS8(val)
-    if not self._cdata then return nil, 'No file open' end
+    -- Make sure the file is open
+    if not self._cdata then
+        return nil, 'No file open'
+    end
 
     if C.nxFsWriteS8(self._cdata, val) then return true end
     return false, ffi.string(C.nxFsGetError())
 end
 
+------------------------------------------------------------
 function OutputFile:writeS16(val)
-    if not self._cdata then return nil, 'No file open' end
+    -- Make sure the file is open
+    if not self._cdata then
+        return nil, 'No file open'
+    end
 
     if C.nxFsWriteS16(self._cdata, val) then return true end
     return false, ffi.string(C.nxFsGetError())
 end
 
+------------------------------------------------------------
 function OutputFile:writeS32(val)
-    if not self._cdata then return nil, 'No file open' end
+    -- Make sure the file is open
+    if not self._cdata then
+        return nil, 'No file open'
+    end
 
     if C.nxFsWriteS32(self._cdata, val) then return true end
     return false, ffi.string(C.nxFsGetError())
 end
 
+------------------------------------------------------------
 function OutputFile:writeU8(val)
-    if not self._cdata then return nil, 'No file open' end
+    -- Make sure the file is open
+    if not self._cdata then
+        return nil, 'No file open'
+    end
 
     if C.nxFsWriteU8(self._cdata, val) then return true end
     return false, ffi.string(C.nxFsGetError())
 end
 
+------------------------------------------------------------
 function OutputFile:writeU16(val)
-    if not self._cdata then return nil, 'No file open' end
+    -- Make sure the file is open
+    if not self._cdata then
+        return nil, 'No file open'
+    end
 
     if C.nxFsWriteU16(self._cdata, val) then return true end
     return false, ffi.string(C.nxFsGetError())
 end
 
+------------------------------------------------------------
 function OutputFile:writeU32(val)
-    if not self._cdata then return nil, 'No file open' end
+    -- Make sure the file is open
+    if not self._cdata then
+        return nil, 'No file open'
+    end
 
     if C.nxFsWriteU32(self._cdata, val) then return true end
     return false, ffi.string(C.nxFsGetError())
 end
 
+------------------------------------------------------------
 function OutputFile:writeFloat(val)
-    if not self._cdata then return nil, 'No file open' end
+    -- Make sure the file is open
+    if not self._cdata then
+        return nil, 'No file open'
+    end
 
     if C.nxFsWriteFloat(self._cdata, val) then return true end
     return false, ffi.string(C.nxFsGetError())
 end
 
+------------------------------------------------------------
 function OutputFile:writeDouble(val)
-    if not self._cdata then return nil, 'No file open' end
+    -- Make sure the file is open
+    if not self._cdata then
+        return nil, 'No file open'
+    end
 
     if C.nxFsWriteDouble(self._cdata, val) then return true end
     return false, ffi.string(C.nxFsGetError())
 end
 
+------------------------------------------------------------
 function OutputFile:writeString(str)
-    if not self._cdata then return nil, 'No file open' end
+    -- Make sure the file is open
+    if not self._cdata then
+        return nil, 'No file open'
+    end
 
     if C.nxFsWriteString(self._cdata, str) then return true end
     return false, ffi.string(C.nxFsGetError())
 end
 
+------------------------------------------------------------
 return OutputFile

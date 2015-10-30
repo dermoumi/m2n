@@ -1,3 +1,33 @@
+--[[----------------------------------------------------------------------------
+    This is free and unencumbered software released into the public domain.
+
+    Anyone is free to copy, modify, publish, use, compile, sell, or
+    distribute this software, either in source code form or as a compiled
+    binary, for any purpose, commercial or non-commercial, and by any
+    means.
+
+    In jurisdictions that recognize copyright laws, the author or authors
+    of this software dedicate any and all copyright interest in the
+    software to the public domain. We make this dedication for the benefit
+    of the public at large and to the detriment of our heirs and
+    successors. We intend this dedication to be an overt act of
+    relinquishment in perpetuity of all present and future rights to this
+    software under copyright law.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+    IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+    OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+    ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+    OTHER DEALINGS IN THE SOFTWARE.
+
+    For more information, please refer to <http://unlicense.org>
+--]]----------------------------------------------------------------------------
+
+------------------------------------------------------------
+-- ffi C declarations
+------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
@@ -39,8 +69,13 @@ ffi.cdef [[
     int lua_type(lua_State*, int);
 ]]
 
---------------------------------------------------------------------------------
+------------------------------------------------------------
+-- A class to create and manage a standalone Lua VM
+------------------------------------------------------------
+local class = require 'nx.class'
+local LuaVM = class 'nx.luavm'
 
+-- Helpers -------------------------------------------------
 local pushers = {}
 local retrievers = {}
 
@@ -181,18 +216,15 @@ retrievers = {
     ['function'] = funcRetriever
 }
 
---------------------------------------------------------------------------------
-
-local class = require 'nx.class'
-local LuaVM = class 'nx.luavm'
-
+------------------------------------------------------------
 function LuaVM.static._fromCData(data)
     local vm = LuaVM:allocate()
     vm._cdata = ffi.cast('lua_State*', data)
     return vm
 end
 
-function LuaVM:initialize(init)
+------------------------------------------------------------
+function LuaVM:initialize()
     local handle = C.luaL_newstate()
     if handle == nil then
         return nil, 'Cannot create new Lua VM'
@@ -206,26 +238,31 @@ function LuaVM:initialize(init)
         C.lua_close(handle)
     end
 
+    -- Empty the stack
     self:setTop(0)
 end
 
+------------------------------------------------------------
 function LuaVM:isOpen()
     return self._cdata ~= nil
 end
 
+------------------------------------------------------------
 function LuaVM:getTop()
     return C.lua_gettop(self._cdata)
 end
 
+------------------------------------------------------------
 function LuaVM:setTop(index)
     C.lua_settop(self._cdata, index)
 end
 
--- Pushes values into the stack
+-- Pushes values into the stack ----------------------------
 function LuaVM:push(...)
     local args = {...}
     local argc = table.maxn(args)
 
+    -- Needed to revert to initial state in case of error
     local top = C.lua_gettop(self._cdata)
 
     for i = 1, argc do
@@ -256,7 +293,7 @@ function LuaVM:push(...)
     return argc
 end
 
--- Pops values from th stack, if returnValues is true, popped values are returned
+-- popped values are returned if returnValues is true ------
 function LuaVM:pop(count, returnValues)
     if count == 0 then return end
     count = count or 1 -- if count == nil
@@ -308,4 +345,5 @@ function LuaVM:call(func, ...)
     return C.lua_gettop(self._cdata) - top
 end
 
+------------------------------------------------------------
 return LuaVM

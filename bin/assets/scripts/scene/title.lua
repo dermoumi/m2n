@@ -1,100 +1,42 @@
-local Scene = require 'nx.scene'
-local Keyboard = require 'nx.keyboard'
-local Mouse = require 'nx.mouse'
-local Gamepad = require 'nx.gamepad'
+--[[----------------------------------------------------------------------------
+    This is free and unencumbered software released into the public domain.
+
+    Anyone is free to copy, modify, publish, use, compile, sell, or
+    distribute this software, either in source code form or as a compiled
+    binary, for any purpose, commercial or non-commercial, and by any
+    means.
+
+    In jurisdictions that recognize copyright laws, the author or authors
+    of this software dedicate any and all copyright interest in the
+    software to the public domain. We make this dedication for the benefit
+    of the public at large and to the detriment of our heirs and
+    successors. We intend this dedication to be an overt act of
+    relinquishment in perpetuity of all present and future rights to this
+    software under copyright law.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+    IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+    OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+    ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+    OTHER DEALINGS IN THE SOFTWARE.
+
+    For more information, please refer to <http://unlicense.org>
+--]]----------------------------------------------------------------------------
+
+------------------------------------------------------------
+-- A Title scene, probably the first scene the user sees
+------------------------------------------------------------
 local class = require 'nx.class'
-local Renderer = require 'nx.renderer'
+local Scene = require 'scene'
 local SceneTitle = class('scene.title', Scene)
 
-function SceneTitle:onQuit()
-    print('quitting?')
-end
+------------------------------------------------------------
+local Mouse = require 'nx.mouse'
+local Renderer = require 'nx.renderer'
 
-function SceneTitle:onFocus(hasFocus)
-    print('Window has focus? ' .. tostring(hasFocus))
-end
-
-function SceneTitle:onVisible(isVisible)
-    print('Window is visible? ' .. tostring(isVisible))
-end
-
-function SceneTitle:onTextInput(text)
-    print('Text entered: ' .. text)
-end
-
-function SceneTitle:onTextEdit(text, start, length)
-    print('Text edited from ' .. start .. ' to ' .. (start + length) .. ': ' .. text)
-end
-
-function SceneTitle:onMouseFocus(hasFocus)
-    print('Has mouse focus? ' .. tostring(hasFocus))
-end
-
-function SceneTitle:onMouseDown(x, y, button)
-    print('Mouse button pressed at: ' .. x .. ', ' .. y .. ' Button: ' .. button)
-end
-
-function SceneTitle:onMouseUp(x, y, button)
-    print('Mouse button released at: ' .. x .. ', ' .. y .. ' Button: ' .. button)
-end
-
-function SceneTitle:onTouchDown(finger, x, y)
-    print('Touch pressed at: ' .. x .. ', ' .. y .. ', finger: ' .. finger)
-end
-
-function SceneTitle:onTouchUp(finger, x, y)
-    print('Touch released at: ' .. x .. ', ' .. y .. ', finger: ' .. finger)
-end
-
-function SceneTitle:onMouseMotion(x, y)
-    if Mouse.getRelativeMode() then
-        x, y = Mouse.getPosition()
-        print(x .. ' ' .. y)
-    end
-end
-
-function SceneTitle:onKeyDown(scancode, keysym, repeated)
-    print('Key pressed: ' .. scancode .. ' sym: ' .. keysym .. ' isRepeat? ' .. tostring(repeated))
-
-    if scancode == 'Backspace' then
-        print('Ctrl ' .. tostring(Keyboard.modKeyDown('ctrl')) ..
-            '; Alt ' .. tostring(Keyboard.modKeyDown('alt')))
-    elseif scancode == 'Return' then
-        print('text input: ' .. tostring(Keyboard.isTextInputActive()))
-        if (Keyboard.isTextInputActive()) then
-            Keyboard.stopTextInput()
-        else
-            Keyboard.startTextInput(10, 10, 100, 30)
-        end
-    elseif scancode == 'F1' then
-        print(tostring(Mouse.isButtonDown('right')) .. ' ' .. tostring(Mouse.isButtonDown('left')))
-    elseif scancode == 'F2' then
-        print('relative mode? ' .. tostring(Mouse.getRelativeMode()))
-        Mouse.setRelativeMode(not Mouse.getRelativeMode())
-    elseif scancode == 'F3' then
-        Mouse.setVisible(not Mouse.isVisible())
-    elseif scancode == 'F4' then
-        Gamepad.loadMappings('assets/gamecontrollerdb.txt')
-        Gamepad.saveMappings('gamecontrollerdb.txt')
-    elseif scancode == 'F5' then
-        local mapping = Gamepad.getMapping('03000000de280000ff11000001000000')
-        -- print (mapping)
-        for target, data in pairs(mapping) do
-            print(target, data.type, data.index, data.hat)
-        end
-    elseif scancode == 'Space' and Gamepad.isMapped(1) then
-        print('Left Stick: ' .. Gamepad.getAxisPosition(1, 'leftx') .. ' ' .. Gamepad.getAxisPosition(1, 'lefty'))
-        print('Right Stick: ' .. Gamepad.getAxisPosition(1, 'rightx') .. ' ' .. Gamepad.getAxisPosition(1, 'righty'))
-        print('Triggers: ' .. Gamepad.getAxisPosition(1, 'ltrigger') .. ' ' .. Gamepad.getAxisPosition(1, 'rtrigger'))
-
-        print('A: ' .. tostring(Gamepad.isButtonDown(1, 'a')) .. '\t B: ' .. tostring(Gamepad.isButtonDown(1, 'b')))
-        print('X: ' .. tostring(Gamepad.isButtonDown(1, 'x')) .. '\t Y: ' .. tostring(Gamepad.isButtonDown(1, 'y')))
-        print('Back: ' .. tostring(Gamepad.isButtonDown(1, 'back')) .. '\t Start: ' .. tostring(Gamepad.isButtonDown(1, 'start')))
-        print('Up: ' .. tostring(Gamepad.isButtonDown(1, 'up')) .. '\t Down: ' .. tostring(Gamepad.isButtonDown(1, 'down')))
-        print('Left: ' .. tostring(Gamepad.isButtonDown(1, 'left')) .. '\t Right: ' .. tostring(Gamepad.isButtonDown(1, 'right')))
-    end
-end
-
+------------------------------------------------------------
 function SceneTitle:render()
     if Mouse.isButtonDown('left') then
         Renderer.clear(128, 255, 0)
@@ -103,4 +45,5 @@ function SceneTitle:render()
     end
 end
 
+------------------------------------------------------------
 return SceneTitle
