@@ -1,15 +1,40 @@
+/*//============================================================================
+    This is free and unencumbered software released into the public domain.
+
+    Anyone is free to copy, modify, publish, use, compile, sell, or
+    distribute this software, either in source code form or as a compiled
+    binary, for any purpose, commercial or non-commercial, and by any
+    means.
+
+    In jurisdictions that recognize copyright laws, the author or authors
+    of this software dedicate any and all copyright interest in the
+    software to the public domain. We make this dedication for the benefit
+    of the public at large and to the detriment of our heirs and
+    successors. We intend this dedication to be an overt act of
+    relinquishment in perpetuity of all present and future rights to this
+    software under copyright law.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+    IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+    OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+    ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+    OTHER DEALINGS IN THE SOFTWARE.
+
+    For more information, please refer to <http://unlicense.org>
+*///============================================================================
 #include "glcontext.hpp"
-#include "config.hpp"
+#include "gl.hpp"
+    
 #include <SDL2/SDL.h>
+
 #include <memory>
 #include <mutex>
 
-#if defined(NX_OPENGL_ES)
-    #include <SDL2/SDL_opengles2.h>
-#else
-    #include <SDL2/SDL_opengl.h>
-#endif
-
+//----------------------------------------------------------
+// Defining missing defines
+//----------------------------------------------------------
 #if !defined(GL_MAJOR_VERSION)
     #define GL_MAJOR_VERSION 0x821B
 #endif
@@ -22,12 +47,17 @@
     #define GL_MULTISAMPLE 0x809D
 #endif
 
+//----------------------------------------------------------
+// Include from exports
+//----------------------------------------------------------
 extern "C"
 {
-    // Exported by src/exports/nxwindow.cpp
     SDL_Window* nxWindowGet();
 }
 
+//----------------------------------------------------------
+// Locals
+//----------------------------------------------------------
 namespace
 {
     using GlContextPtr = std::unique_ptr<GlContext>;
@@ -36,23 +66,27 @@ namespace
     thread_local GlContextPtr currentContext {nullptr};
 }
 
+//----------------------------------------------------------
 GlContext* GlContext::create(unsigned int depth, unsigned int stencil, unsigned int msaa)
 {
     currentContext = GlContextPtr(new GlContext(depth, stencil, msaa));
     return currentContext.get();
 }
 
+//----------------------------------------------------------
 GlContext* GlContext::ensure()
 {
     if (!currentContext) create();
     return currentContext.get();
 }
 
+//----------------------------------------------------------
 void GlContext::release()
 {
     currentContext = nullptr;
 }
 
+//----------------------------------------------------------
 GlContext::GlContext(unsigned int depth, unsigned int stencil, unsigned int msaa) :
     mDepth(depth),
     mStencil(stencil),
@@ -120,6 +154,7 @@ GlContext::GlContext(unsigned int depth, unsigned int stencil, unsigned int msaa
     if (mMSAA > 0) glEnable(GL_MULTISAMPLE);
 }
 
+//----------------------------------------------------------
 GlContext::~GlContext()
 {
     if (!mContext) return;
@@ -128,6 +163,7 @@ GlContext::~GlContext()
     SDL_GL_DeleteContext(static_cast<SDL_GLContext>(mContext));
 }
 
+//----------------------------------------------------------
 bool GlContext::setActive(bool active)
 {
     if (!mContext) return false;
@@ -142,6 +178,7 @@ bool GlContext::setActive(bool active)
     }
 }
 
+//----------------------------------------------------------
 void GlContext::display()
 {
     ensure();
@@ -150,11 +187,13 @@ void GlContext::display()
     SDL_GL_SwapWindow(nxWindowGet());
 }
 
+//----------------------------------------------------------
 bool GlContext::isVSyncEnabled() const
 {
     return SDL_GL_GetSwapInterval() > 0;
 }
 
+//----------------------------------------------------------
 void GlContext::setVSyncEnabled(bool enable)
 {
     if (enable) {
@@ -169,6 +208,7 @@ void GlContext::setVSyncEnabled(bool enable)
     }
 }
 
+//----------------------------------------------------------
 void GlContext::getSettings(unsigned int* depth, unsigned int* stencil, unsigned int* msaa) const
 {
     if (depth)   *depth   = mDepth;
@@ -176,8 +216,11 @@ void GlContext::getSettings(unsigned int* depth, unsigned int* stencil, unsigned
     if (msaa)    *msaa    = mMSAA;
 }
 
+//----------------------------------------------------------
 void GlContext::getGLVersion(unsigned int* major, unsigned int* minor) const
 {
     if (major) *major = mGLMajor;
     if (minor) *minor = mGLMinor;
 }
+
+//==============================================================================
