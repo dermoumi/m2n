@@ -115,7 +115,7 @@ namespace glExt
 //----------------------------------------------------------
 namespace
 {
-    NX_HIDDEN bool isExtensionSupported(const std::string extName)
+    NX_HIDDEN bool isExtensionSupported(const std::string& extName)
     {
         static std::string extensions = (char*)glGetString(GL_EXTENSIONS) + std::string(" ");
         return extensions.find(extName + " ") != std::string::npos;
@@ -152,7 +152,7 @@ namespace
 
 //----------------------------------------------------------
 
-bool initOpenGLExtensions()
+NX_HIDDEN bool initOpenGLExtensions()
 {
     getOpenGLVersion();
 

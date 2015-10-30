@@ -169,7 +169,7 @@ bool initOpenGLExtensions();
 // Extensions
 //----------------------------------------------------------
 
-// GL_OES_texture_3D ---------------------------------------
+//- GL_OES_texture_3D --------------------------------------
 #ifndef GL_OES_texture_3D
     #define GL_OES_texture_3D 1
     #define NXGL_OES_texture_3D 1
@@ -193,7 +193,7 @@ bool initOpenGLExtensions();
     GLAPI PFNGLCOMPRESSEDTEXSUBIMAGE3DOESPROC glCompressedTexSubImage3DOES;
 #endif
 
-// GL_EXT_shadow_samplers ----------------------------------
+//- GL_EXT_shadow_samplers ---------------------------------
 #ifndef GL_EXT_shadow_samplers
     #define GL_TEXTURE_COMPARE_MODE_EXT                   0x884C
     #define GL_TEXTURE_COMPARE_FUNC_EXT                   0x884D
@@ -201,7 +201,7 @@ bool initOpenGLExtensions();
     #define GL_SAMPLER_2D_SHADOW_EXT                      0x8B62
 #endif
 
-// GL_EXT_occlusion_query_boolean --------------------------
+//- GL_EXT_occlusion_query_boolean -------------------------
 #ifndef GL_EXT_occlusion_query_boolean
     #define GL_EXT_occlusion_query_boolean 1
     #define NXGL_EXT_occlusion_query_boolean 1
@@ -229,14 +229,14 @@ bool initOpenGLExtensions();
     GLAPI PFNGLGETQUERYOBJECTUIVEXTPROC glGetQueryObjectuivEXT;
 #endif
     
-// EXT_texture_filter_anisotropic --------------------------
+//- EXT_texture_filter_anisotropic -------------------------
 #ifndef GL_EXT_texture_filter_anisotropic
     #define GL_EXT_texture_filter_anisotropic 1
     #define GL_TEXTURE_MAX_ANISOTROPY_EXT                 0x84FE
     #define GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT             0x84FF
 #endif
 
-// EXT_texture_compression_s3tc ----------------------------
+//- EXT_texture_compression_s3tc ---------------------------
 #ifndef GL_EXT_texture_compression_s3tc
     #define GL_EXT_texture_compression_s3tc 1
 
@@ -246,7 +246,7 @@ bool initOpenGLExtensions();
     #define GL_COMPRESSED_RGBA_S3TC_DXT5_EXT              0x83F3
 #endif
 
-// GL_IMG_texture_compression_pvrtc ------------------------
+//- GL_IMG_texture_compression_pvrtc -----------------------
 #ifndef GL_IMG_texture_compression_pvrtc
     #define GL_IMG_texture_compression_pvrtc 1
     #define GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG            0x8C00
@@ -255,13 +255,13 @@ bool initOpenGLExtensions();
     #define GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG           0x8C03
 #endif 
 
-// GL_OES_compressed_ETC1 ----------------------------------
+//- GL_OES_compressed_ETC1 ---------------------------------
 #ifndef GL_OES_compressed_ETC1_RGB8_texture
     #define GL_OES_compressed_ETC1_RGB8_texture
     #define GL_ETC1_RGB8_OES                              0x8D64
 #endif 
 
-// GL_EXT_multisampled_render_to_texture -------------------
+//- GL_EXT_multisampled_render_to_texture ------------------
 #ifndef GL_EXT_multisampled_render_to_texture
     #define GL_EXT_multisampled_render_to_texture 1
     #define NXGL_EXT_multisampled_render_to_texture 1
@@ -278,7 +278,7 @@ bool initOpenGLExtensions();
     GLAPI PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEEXTPROC glFramebufferTexture2DMultisampleEXT;
 #endif
 
-// GL_ANGLE_framebuffer_blit -------------------------------
+//- GL_ANGLE_framebuffer_blit ------------------------------
 #ifndef GL_ANGLE_framebuffer_blit
     #define GL_ANGLE_framebuffer_blit 1
     #define NXGL_ANGLE_framebuffer_blit 1
@@ -293,7 +293,7 @@ bool initOpenGLExtensions();
     GLAPI PFNGLBLITFRAMEBUFFERANGLEPROC glBlitFramebufferANGLE;
 #endif
 
-// GL_ANGLE_framebuffer_multisample ------------------------
+//- GL_ANGLE_framebuffer_multisample -----------------------
 #ifndef GL_ANGLE_framebuffer_multisample
     #define GL_ANGLE_framebuffer_multisample 1
     #define NXGL_ANGLE_framebuffer_multisample 1
@@ -306,14 +306,14 @@ bool initOpenGLExtensions();
     GLAPI PFNGLRENDERBUFFERSTORAGEMULTISAMPLEANGLEPROC glRenderbufferStorageMultisampleANGLE;
 #endif
 
-// GL_OES_rgb8_rgba8 ---------------------------------------
+//- GL_OES_rgb8_rgba8 --------------------------------------
 #ifndef GL_OES_rgb8_rgba8
     #define GL_OES_rgb8_rgba8
     #define GL_RGB8_OES                                   0x8051
     #define GL_RGBA8_OES                                  0x8058
 #endif
 
-// EXT_disjoint_timer_query --------------------------------
+//- EXT_disjoint_timer_query -------------------------------
 #ifndef GL_EXT_disjoint_timer_query
     #define GL_EXT_disjoint_timer_query 1
     #define NXGL_EXT_disjoint_timer_query 1

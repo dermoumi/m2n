@@ -29,6 +29,6 @@
 #if defined(NX_OPENGL_ES)
     #include "opengles2.hpp"
 #else
-    #include <SDL2/SDL_opengl.h>
+    #include "opengl.hpp"
 #endif
 //==============================================================================

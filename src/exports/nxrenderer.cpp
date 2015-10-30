@@ -26,13 +26,8 @@
 *///============================================================================
 #include "../config.hpp"
 
-// TODO: Proper OpenGL inclusion
-#if defined(NX_OPENGL_ES)
-    #include <SDL2/SDL_opengles2.h>
-#else
-    #include <SDL2/SDL_opengl.h>
-#endif
-
+#include "../graphics/gl.hpp"
+    
 //----------------------------------------------------------
 // Exported functions
 //----------------------------------------------------------

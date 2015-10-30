@@ -26,26 +26,11 @@
 *///============================================================================
 #include "glcontext.hpp"
 #include "gl.hpp"
-    
+
 #include <SDL2/SDL.h>
 
 #include <memory>
 #include <mutex>
-
-//----------------------------------------------------------
-// Defining missing defines
-//----------------------------------------------------------
-#if !defined(GL_MAJOR_VERSION)
-    #define GL_MAJOR_VERSION 0x821B
-#endif
-
-#if !defined(GL_MINOR_VERSION)
-    #define GL_MINOR_VERSION 0x821C
-#endif
-
-#if !defined(GL_MULTISAMPLE)
-    #define GL_MULTISAMPLE 0x809D
-#endif
 
 //----------------------------------------------------------
 // Include from exports
