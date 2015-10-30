@@ -24,49 +24,30 @@
 
     For more information, please refer to <http://unlicense.org>
 *///============================================================================
-#include "../config.hpp"
-
-#include <mutex>
+#include "thread.hpp"
 
 //----------------------------------------------------------
-// Declarations
+// Locals
 //----------------------------------------------------------
-using NxMutex = std::mutex;
+namespace
+{
+    thread_local bool isMainThread = false;
+}
 
 //----------------------------------------------------------
-// Exported functions
-//----------------------------------------------------------
-extern "C"
+namespace Thread
 {
     //------------------------------------------------------
-    NX_EXPORT NxMutex* nxMutexCreate()
+    void setMain()
     {
-        return new std::mutex();
+        isMainThread = true;
     }
 
     //------------------------------------------------------
-    NX_EXPORT void nxMutexRelease(NxMutex* mutex)
+    bool isMain()
     {
-        delete mutex;
-    }
-
-    //------------------------------------------------------
-    NX_EXPORT void nxMutexLock(NxMutex* mutex)
-    {
-        mutex->lock();
-    }
-
-    //------------------------------------------------------
-    NX_EXPORT bool nxMutexTryLock(NxMutex* mutex)
-    {
-        return mutex->try_lock();
-    }
-
-    //------------------------------------------------------
-    NX_EXPORT void nxMutexUnlock(NxMutex* mutex)
-    {
-        mutex->unlock();
+        return isMainThread;
     }
 }
 
-//==============================================================================
+//==========================================================

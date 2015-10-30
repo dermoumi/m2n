@@ -24,49 +24,30 @@
 
     For more information, please refer to <http://unlicense.org>
 *///============================================================================
+#pragma once
 #include "../config.hpp"
+    
+#include <string>
 
-#include <mutex>
+struct lua_State;
 
-//----------------------------------------------------------
-// Declarations
-//----------------------------------------------------------
-using NxMutex = std::mutex;
-
-//----------------------------------------------------------
-// Exported functions
-//----------------------------------------------------------
-extern "C"
+//==========================================================
+// A class to create and manage a standalone Lua VM
+//==========================================================
+class NX_HIDDEN LuaVM
 {
-    //------------------------------------------------------
-    NX_EXPORT NxMutex* nxMutexCreate()
-    {
-        return new std::mutex();
-    }
+public:
+    LuaVM() = default;
+    ~LuaVM();
 
-    //------------------------------------------------------
-    NX_EXPORT void nxMutexRelease(NxMutex* mutex)
-    {
-        delete mutex;
-    }
+    bool initialize();
+    bool runCode(const std::string& filename, const std::string& code, int& retval);
 
-    //------------------------------------------------------
-    NX_EXPORT void nxMutexLock(NxMutex* mutex)
-    {
-        mutex->lock();
-    }
+    const std::string& getErrorMessage() const;
 
-    //------------------------------------------------------
-    NX_EXPORT bool nxMutexTryLock(NxMutex* mutex)
-    {
-        return mutex->try_lock();
-    }
-
-    //------------------------------------------------------
-    NX_EXPORT void nxMutexUnlock(NxMutex* mutex)
-    {
-        mutex->unlock();
-    }
-}
+private:
+    lua_State* mState {nullptr};
+    std::string mErrorMessage;
+};
 
 //==============================================================================

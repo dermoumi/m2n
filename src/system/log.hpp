@@ -24,49 +24,54 @@
 
     For more information, please refer to <http://unlicense.org>
 *///============================================================================
+#pragma once
 #include "../config.hpp"
 
-#include <mutex>
+#include <string>
 
-//----------------------------------------------------------
-// Declarations
-//----------------------------------------------------------
-using NxMutex = std::mutex;
-
-//----------------------------------------------------------
-// Exported functions
-//----------------------------------------------------------
-extern "C"
+//==========================================================
+// A set of functions to handle logging information
+//==========================================================
+class NX_HIDDEN Log
 {
-    //------------------------------------------------------
-    NX_EXPORT NxMutex* nxMutexCreate()
+public:
+    static bool setLogFile(const std::string& filename);
+    
+    static void verbose(const char* format, ...);
+    static void verbose(const std::string& message)
     {
-        return new std::mutex();
+        verbose(message.data());
     }
 
-    //------------------------------------------------------
-    NX_EXPORT void nxMutexRelease(NxMutex* mutex)
+    static void debug(const char* format, ...);
+    static void debug(const std::string& message)
     {
-        delete mutex;
+        debug(message.data());
     }
 
-    //------------------------------------------------------
-    NX_EXPORT void nxMutexLock(NxMutex* mutex)
+    static void info(const char* format, ...);
+    static void info(const std::string& message)
     {
-        mutex->lock();
+        info(message.data());
     }
 
-    //------------------------------------------------------
-    NX_EXPORT bool nxMutexTryLock(NxMutex* mutex)
+    static void warning(const char* format, ...);
+    static void warning(const std::string& message)
     {
-        return mutex->try_lock();
+        warning(message.data());
     }
 
-    //------------------------------------------------------
-    NX_EXPORT void nxMutexUnlock(NxMutex* mutex)
+    static void error(const char* format, ...);
+    static void error(const std::string& message)
     {
-        mutex->unlock();
+        error(message.data());
     }
-}
+
+    static void fatal(const char* format, ...);
+    static void fatal(const std::string& message)
+    {
+        fatal(message.data());
+    }
+};
 
 //==============================================================================

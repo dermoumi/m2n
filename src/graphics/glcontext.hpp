@@ -24,49 +24,37 @@
 
     For more information, please refer to <http://unlicense.org>
 *///============================================================================
+#pragma once
 #include "../config.hpp"
 
-#include <mutex>
-
-//----------------------------------------------------------
-// Declarations
-//----------------------------------------------------------
-using NxMutex = std::mutex;
-
-//----------------------------------------------------------
-// Exported functions
-//----------------------------------------------------------
-extern "C"
+//==========================================================
+// Handles context creation
+//==========================================================
+class NX_HIDDEN GlContext
 {
-    //------------------------------------------------------
-    NX_EXPORT NxMutex* nxMutexCreate()
-    {
-        return new std::mutex();
-    }
+public:
+    static GlContext* create(unsigned int depth = 0u, unsigned int stencil = 0, unsigned int msaa = 0u);
+    static GlContext* ensure();
+    static void release();
+    
+    ~GlContext();
+    bool setActive(bool active);
+    void display();
+    bool isVSyncEnabled() const;
+    void setVSyncEnabled(bool enable);
+    void getSettings(unsigned int* depth, unsigned int* stencil, unsigned int* msaa) const;
+    void getGLVersion(unsigned int* major, unsigned int* minor) const;
 
-    //------------------------------------------------------
-    NX_EXPORT void nxMutexRelease(NxMutex* mutex)
-    {
-        delete mutex;
-    }
+private:
+    GlContext(unsigned int depth, unsigned int stencil, unsigned int msaa);
 
-    //------------------------------------------------------
-    NX_EXPORT void nxMutexLock(NxMutex* mutex)
-    {
-        mutex->lock();
-    }
-
-    //------------------------------------------------------
-    NX_EXPORT bool nxMutexTryLock(NxMutex* mutex)
-    {
-        return mutex->try_lock();
-    }
-
-    //------------------------------------------------------
-    NX_EXPORT void nxMutexUnlock(NxMutex* mutex)
-    {
-        mutex->unlock();
-    }
-}
+private:
+    mutable void* mContext {nullptr};
+    unsigned int  mDepth;
+    unsigned int  mStencil;
+    unsigned int  mMSAA;
+    unsigned int  mGLMajor;
+    unsigned int  mGLMinor;
+};
 
 //==============================================================================

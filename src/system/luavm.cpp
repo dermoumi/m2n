@@ -24,49 +24,69 @@
 
     For more information, please refer to <http://unlicense.org>
 *///============================================================================
-#include "../config.hpp"
+#include "luavm.hpp"
 
-#include <mutex>
-
-//----------------------------------------------------------
-// Declarations
-//----------------------------------------------------------
-using NxMutex = std::mutex;
+#include <luajit/lua.hpp>
 
 //----------------------------------------------------------
-// Exported functions
-//----------------------------------------------------------
-extern "C"
+LuaVM::~LuaVM()
 {
-    //------------------------------------------------------
-    NX_EXPORT NxMutex* nxMutexCreate()
-    {
-        return new std::mutex();
+    if (mState) lua_close(mState);
+}
+
+//----------------------------------------------------------
+bool LuaVM::initialize()
+{
+    if (mState) return true;
+
+    lua_State* state = luaL_newstate();
+    if (!state) {
+        mErrorMessage = "Could not create new Lua state";
+        return false;
     }
 
-    //------------------------------------------------------
-    NX_EXPORT void nxMutexRelease(NxMutex* mutex)
-    {
-        delete mutex;
+    luaL_openlibs(state);
+
+    mState = state;
+    return true;
+}
+
+//----------------------------------------------------------
+bool LuaVM::runCode(const std::string& filename, const std::string& code, int& retval)
+{
+    // Make sure we have a valid Lua state
+    if (!mState) {
+        mErrorMessage = "Cannot run code on invalid Lua state";
+        return false;
     }
 
-    //------------------------------------------------------
-    NX_EXPORT void nxMutexLock(NxMutex* mutex)
-    {
-        mutex->lock();
+    // Load up the code into the Lua state
+    if (luaL_loadbuffer(mState, code.data(), code.size(), filename.data()) != 0) {
+        mErrorMessage = lua_tostring(mState, -1);
+        return false;
     }
 
-    //------------------------------------------------------
-    NX_EXPORT bool nxMutexTryLock(NxMutex* mutex)
-    {
-        return mutex->try_lock();
+    // Try to run the code
+    if (lua_pcall(mState, 0, 1, 0) != 0) {
+        mErrorMessage = lua_tostring(mState, -1);
+        return false;
     }
 
-    //------------------------------------------------------
-    NX_EXPORT void nxMutexUnlock(NxMutex* mutex)
-    {
-        mutex->unlock();
+    // Try to retrieve the return value
+    if (lua_isnumber(mState, -1)) {
+        retval = lua_tonumber(mState, -1);
+        return true;
     }
+    else {
+        mErrorMessage = "Invalid return value";
+        return false;
+    }
+}
+
+//----------------------------------------------------------
+const std::string& LuaVM::getErrorMessage() const
+{
+    return mErrorMessage;
 }
 
 //==============================================================================

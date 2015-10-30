@@ -24,49 +24,30 @@
 
     For more information, please refer to <http://unlicense.org>
 *///============================================================================
+#pragma once
 #include "../config.hpp"
+    
+#include <string>
 
-#include <mutex>
-
-//----------------------------------------------------------
-// Declarations
-//----------------------------------------------------------
-using NxMutex = std::mutex;
-
-//----------------------------------------------------------
-// Exported functions
-//----------------------------------------------------------
-extern "C"
+//==========================================================
+// A seet of functions to interact with the filesystem
+//==========================================================
+class NX_HIDDEN Filesystem
 {
-    //------------------------------------------------------
-    NX_EXPORT NxMutex* nxMutexCreate()
-    {
-        return new std::mutex();
-    }
+public:
+    Filesystem() = default;
+    ~Filesystem();
 
-    //------------------------------------------------------
-    NX_EXPORT void nxMutexRelease(NxMutex* mutex)
-    {
-        delete mutex;
-    }
+    bool initialize(const char* arg0);
 
-    //------------------------------------------------------
-    NX_EXPORT void nxMutexLock(NxMutex* mutex)
-    {
-        mutex->lock();
-    }
+    static bool mountDir(const std::string& dir, const std::string& point, bool append = true);
+    static bool mountArchive(const std::string& file, const std::string& point, bool append = true);
+    static bool mountAssetsDir(const std::string& point = "/assets", bool append = true);
+    static bool setWriteDir(const std::string& dir);
 
-    //------------------------------------------------------
-    NX_EXPORT bool nxMutexTryLock(NxMutex* mutex)
-    {
-        return mutex->try_lock();
-    }
-
-    //------------------------------------------------------
-    NX_EXPORT void nxMutexUnlock(NxMutex* mutex)
-    {
-        mutex->unlock();
-    }
-}
+    static std::string getErrorMessage();
+    static std::string getPrefsDir();
+    static std::string getBaseDir();
+};
 
 //==============================================================================

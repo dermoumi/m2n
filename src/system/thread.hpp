@@ -24,49 +24,14 @@
 
     For more information, please refer to <http://unlicense.org>
 *///============================================================================
+#pragma once
 #include "../config.hpp"
 
-#include <mutex>
-
 //----------------------------------------------------------
-// Declarations
-//----------------------------------------------------------
-using NxMutex = std::mutex;
-
-//----------------------------------------------------------
-// Exported functions
-//----------------------------------------------------------
-extern "C"
+namespace Thread
 {
-    //------------------------------------------------------
-    NX_EXPORT NxMutex* nxMutexCreate()
-    {
-        return new std::mutex();
-    }
-
-    //------------------------------------------------------
-    NX_EXPORT void nxMutexRelease(NxMutex* mutex)
-    {
-        delete mutex;
-    }
-
-    //------------------------------------------------------
-    NX_EXPORT void nxMutexLock(NxMutex* mutex)
-    {
-        mutex->lock();
-    }
-
-    //------------------------------------------------------
-    NX_EXPORT bool nxMutexTryLock(NxMutex* mutex)
-    {
-        return mutex->try_lock();
-    }
-
-    //------------------------------------------------------
-    NX_EXPORT void nxMutexUnlock(NxMutex* mutex)
-    {
-        mutex->unlock();
-    }
+    NX_HIDDEN void setMain();
+    NX_HIDDEN bool isMain();
 }
 
 //==============================================================================
