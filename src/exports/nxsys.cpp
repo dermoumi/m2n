@@ -28,8 +28,11 @@
 
 #include <SDL2/SDL.h>
 #include <string>
-#include <thread>
 #include <chrono>
+#if defined(NX_SYSTEM_WINDOWS) || defined(NX_SYSTEM_WINCE)
+    #include <windows.h>
+    #include <mmsystem.h>
+#endif
 
 //----------------------------------------------------------
 // Exported functions
@@ -38,8 +41,24 @@
 //------------------------------------------------------
 NX_EXPORT void nxSysSleep(double s)
 {
-    auto time = std::chrono::duration<double>(s);
-    std::this_thread::sleep_for(time);
+    #if defined(NX_SYSTEM_WINDOWS) || defined(NX_SYSTEM_WINCE)
+        // Taken from SFML ._.
+
+        // Get the supported timer resolutions on this system
+        TIMECAPS tc;
+        timeGetDevCaps(&tc, sizeof(TIMECAPS));
+
+        // Set the timer resolution to the minimum for the Sleep call
+        timeBeginPeriod(tc.wPeriodMin);
+
+        // Wait...
+        Sleep(s * 1000);
+
+        // Reset the timer resolution back to the system default
+        timeEndPeriod(tc.wPeriodMin);
+    #else
+        SDL_Delay(s * 1000);
+    #endif
 }
 
 //------------------------------------------------------

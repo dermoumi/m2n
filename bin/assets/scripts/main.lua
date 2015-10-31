@@ -117,7 +117,7 @@ while Window.isOpen() do
     Scene.call('render') 
     Window.display()
 
-    -- Calculating FPS every minute
+    -- Calculating FPS every whole second
     totalElapsedTime = totalElapsedTime + elapsedTime
     frameCount       = frameCount + 1
     if totalElapsedTime > 1 then
@@ -134,9 +134,9 @@ while Window.isOpen() do
     end
 
     -- Waiting
-    local sysTime = Nx.getSystemTime()
-    if currentTime + framerate > sysTime then
-        Nx.sleep(currentTime - sysTime + framerate)
+    local sleepTime = currentTime - Nx.getSystemTime() + framerate;
+    if sleepTime > 0 then
+        Nx.sleep(sleepTime)
     end
 end
 
