@@ -255,19 +255,17 @@ namespace
 //----------------------------------------------------------
 // Exported functions
 //----------------------------------------------------------
-extern "C"
-{
-    //------------------------------------------------------
-    NX_EXPORT NxEventType nxEventWait(NxEvent* e)
-    {
-        return nextEvent(e, SDL_WaitEvent);
-    }
 
-    //------------------------------------------------------
-    NX_EXPORT NxEventType nxEventPoll(NxEvent* e)
-    {
-        return nextEvent(e, SDL_PollEvent);
-    }
+//------------------------------------------------------
+NX_EXPORT NxEventType nxEventWait(NxEvent* e)
+{
+    return nextEvent(e, SDL_WaitEvent);
+}
+
+//------------------------------------------------------
+NX_EXPORT NxEventType nxEventPoll(NxEvent* e)
+{
+    return nextEvent(e, SDL_PollEvent);
 }
 
 //==============================================================================

@@ -74,7 +74,7 @@
 // Portable Export/Import macros
 //----------------------------------------------------------
 #if defined(NX_SYSTEM_WINDOWS) || defined(NX_SYSTEM_WINCE)
-    #define NX_EXPORT __declspec(dllexport)
+    #define NX_EXPORT extern "C" __declspec(dllexport)
     #define NX_IMPORT __declspec(dllimport)
     #define NX_HIDDEN
     
@@ -85,17 +85,17 @@
 
 #elif defined(NX_SYSTEM_ANDROID)
     #include <jni.h>
-    #define NX_EXPORT JNIEXPORT
+    #define NX_EXPORT extern "C" JNIEXPORT
     #define NX_IMPORT JNIIMPORT
     #define NX_HIDDEN
 
 #elif __GNUC__ >= 4
-    #define NX_EXPORT __attribute__ ((__visibility__ ("default")))
+    #define NX_EXPORT extern "C" __attribute__ ((__visibility__ ("default")))
     #define NX_IMPORT __attribute__ ((__visibility__ ("default")))
     #define NX_HIDDEN __attribute__ ((__visibility__ ("hidden")))
 
 #else
-    #define NX_EXPORT
+    #define NX_EXPORT extern "C"
     #define NX_IMPORT
     #define NX_HIDDEN
 #endif
