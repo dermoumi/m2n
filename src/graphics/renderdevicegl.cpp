@@ -114,10 +114,31 @@ void RenderDeviceGL::initStates()
 void RenderDeviceGL::resetStates()
 {
     // TODO: Commit new states
+    mPendingMask = 0xFFFFFFFFu;
 
     // Bind buffers
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, mDefaultFBO);
+}
+
+//----------------------------------------------------------
+void RenderDeviceGL::commitStates(uint32_t filter)
+{
+    uint32_t mask = mPendingMask & filter;
+    if (mask) {
+        // Set viewport
+        if (mask & PMViewport) {
+            glViewport(mVpX, mVpY, mVpWidth, mVpHeight);
+            mPendingMask &= ~PMViewport;
+        }
+
+        // Set scissor rect
+        if (mask & PMScissor)
+        {
+            glScissor(mScX, mScY, mScWidth, mScHeight);
+            mPendingMask &= ~PMScissor;
+        }
+    }
 }
 
 //----------------------------------------------------------
@@ -208,6 +229,52 @@ uint32_t RenderDeviceGL::getBufferMemory() const
 RenderDeviceGL::RDIBuffer& RenderDeviceGL::getBuffer(uint32_t handle)
 {
     return mBuffers.getRef(handle);
+}
+
+//----------------------------------------------------------
+void RenderDeviceGL::setViewport(int x, int y, int width, int height)
+{
+    mVpX      = x;
+    mVpY      = y;
+    mVpWidth  = width;
+    mVpHeight = height;
+
+    mPendingMask |= PMViewport;
+}
+
+//----------------------------------------------------------
+void RenderDeviceGL::setScissorRect(int x, int y, int width, int height)
+{
+    mScX      = x;
+    mScY      = y;
+    mScWidth  = width;
+    mScHeight = height;
+
+    mPendingMask |= PMScissor;
+}
+
+//----------------------------------------------------------
+void RenderDeviceGL::setIndexBuffer(uint32_t, RDIIndexFormat)
+{
+    // TODO
+}
+
+//----------------------------------------------------------
+void RenderDeviceGL::setVertexBuffer(uint32_t, uint32_t, uint32_t, uint32_t)
+{
+    // TODO
+}
+
+//----------------------------------------------------------
+void RenderDeviceGL::setVertexLayout(uint32_t)
+{
+    // TODO
+}
+
+//----------------------------------------------------------
+void RenderDeviceGL::setTexture(uint32_t, uint32_t, uint16_t)
+{
+    // TODO
 }
 
 //------------------------------------------------------------------------------

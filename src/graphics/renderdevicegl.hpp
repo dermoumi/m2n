@@ -42,6 +42,7 @@ public:
 
     void initStates();
     void resetStates();
+    void commitStates(uint32_t filter = 0xFFFFFFFFu);
 
     // Buffers
     void beginRendering();
@@ -52,6 +53,14 @@ public:
     bool updateBufferData(uint32_t buffer, uint32_t offset, uint32_t size, const void* data);
     uint32_t getBufferMemory() const;
 
+    // GL States
+    void setViewport(int x, int y, int width, int height);
+    void setScissorRect(int x, int y, int width, int height);
+    void setIndexBuffer(uint32_t bufObj, RDIIndexFormat idxFmt);
+    void setVertexBuffer(uint32_t slot, uint32_t vbObj, uint32_t offset, uint32_t stride);
+    void setVertexLayout(uint32_t vlObj);
+    void setTexture(uint32_t slot, uint32_t texObj, uint16_t samplerState);
+
 private:
     struct RDIBuffer
     {
@@ -60,14 +69,28 @@ private:
         uint32_t size;
     };
 
+    enum PendingMask : uint32_t
+    {
+        PMViewport     = 1 << 0,
+        PMIndexBuffer  = 1 << 1,
+        PMVertexLayout = 1 << 2,
+        PMTextures     = 1 << 3,
+        PMScissor      = 1 << 4,
+        PMRenderStates = 1 << 5
+    };
+
 private:
     RDIBuffer& getBuffer(uint32_t handle);
 
 private:
+    int mVpX {0}, mVpY {0}, mVpWidth {1}, mVpHeight {1};
+    int mScX {0}, mScY {0}, mScWidth {1}, mScHeight {1};
     uint32_t mBufferMemory  {0u};
 
     int mDefaultFBO {0};
     RDIObjects<RDIBuffer> mBuffers;
+
+    uint32_t mPendingMask {0xFFFFFFFFu};
 };
 
 //------------------------------------------------------------------------------

@@ -31,13 +31,20 @@
 #include <mutex>
 
 //==========================================================
-// Render device capabilities struct
+// Structures and enums
 //==========================================================
 struct DeviceCaps
 {
     bool texFloat;
     bool texNPOT;
     bool rtMultisampling;
+};
+
+//----------------------------------------------------------
+enum class RDIIndexFormat : int
+{
+    U16,
+    U32
 };
 
 //==========================================================
@@ -98,8 +105,10 @@ public:
     virtual ~RenderDevice() = default;
     virtual bool initialize() = 0;
     virtual void clear(const float* color) = 0;
+
     virtual void initStates() = 0;
     virtual void resetStates() = 0;
+    virtual void commitStates(uint32_t filter = 0xFFFFFFFFu) = 0;
 
     // Buffers
     virtual void beginRendering() = 0;
@@ -110,6 +119,15 @@ public:
     virtual bool updateBufferData(uint32_t buffer, uint32_t offset, uint32_t size,
         const void* data) = 0;
     virtual uint32_t getBufferMemory() const = 0;
+
+    // GL States
+    virtual void setViewport(int x, int y, int width, int height) = 0;
+    virtual void setScissorRect(int x, int y, int width, int height) = 0;
+    virtual void setIndexBuffer(uint32_t bufObj, RDIIndexFormat idxFmt) = 0;
+    virtual void setVertexBuffer(uint32_t slot, uint32_t vbObj, uint32_t offset,
+        uint32_t stride) = 0;
+    virtual void setVertexLayout(uint32_t vlObj) = 0;
+    virtual void setTexture(uint32_t slot, uint32_t texObj, uint16_t samplerState) = 0;
 
     const DeviceCaps& getCapabilities() const;
 

@@ -36,6 +36,7 @@ ffi.cdef [[
     void nxRendererClear(uint8_t, uint8_t, uint8_t, uint8_t);
     void nxRendererBegin();
     void nxRendererFinish();
+    void nxRendererSetupViewport(int, int, int, int);
 ]]
 
 ------------------------------------------------------------
@@ -60,6 +61,11 @@ end
 ------------------------------------------------------------
 function Renderer.finish()
     C.nxRendererFinish()
+end
+
+------------------------------------------------------------
+function Renderer.setupViewport(x, y, w, h)
+    C.nxRendererSetupViewport(x, y, w, h)
 end
 
 ------------------------------------------------------------

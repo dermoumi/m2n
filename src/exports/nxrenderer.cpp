@@ -76,4 +76,11 @@ NX_EXPORT void nxRendererFinish()
     rdi->finishRendering();
 }
 
+//----------------------------------------------------------
+NX_EXPORT void nxRendererSetupViewport(int x, int y, int width, int height)
+{
+    rdi->setViewport(x, y, width, height);
+    rdi->setScissorRect(x, y, width, height);
+}
+
 //==============================================================================
