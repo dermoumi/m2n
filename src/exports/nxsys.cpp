@@ -32,6 +32,8 @@
 #if defined(NX_SYSTEM_WINDOWS) || defined(NX_SYSTEM_WINCE)
     #include <windows.h>
     #include <mmsystem.h>
+#else
+    #include <thread>
 #endif
 
 //----------------------------------------------------------
@@ -57,7 +59,8 @@ NX_EXPORT void nxSysSleep(double s)
         // Reset the timer resolution back to the system default
         timeEndPeriod(tc.wPeriodMin);
     #else
-        SDL_Delay(s * 1000);
+        auto time = std::chrono::duration<double>(s);
+        std::this_thread::sleep_for(time);
     #endif
 }
 
