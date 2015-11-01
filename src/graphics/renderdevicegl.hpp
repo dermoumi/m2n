@@ -27,31 +27,20 @@
 #pragma once
 #include "../config.hpp"
 
+#if !defined(NX_OPENGL_ES)
+//------------------------------------------------------------------------------
+#include "renderdevice.hpp"
+
 //==========================================================
-// Handles context creation
+// OpenGL implementation of RenderDevice
 //==========================================================
-class NX_HIDDEN GlContext
+class RenderDeviceGL : public RenderDevice
 {
 public:
-    static GlContext* create(unsigned int depth = 0u, unsigned int stencil = 0, unsigned int msaa = 0u);
-    static GlContext* ensure();
-    static void release();
-    
-    ~GlContext();
-    bool setActive(bool active);
-    void display();
-    bool isVSyncEnabled() const;
-    void setVSyncEnabled(bool enable);
-    void getSettings(unsigned int* depth, unsigned int* stencil, unsigned int* msaa) const;
-
-private:
-    GlContext(unsigned int depth, unsigned int stencil, unsigned int msaa);
-
-private:
-    mutable void* mContext {nullptr};
-    unsigned int  mDepth;
-    unsigned int  mStencil;
-    unsigned int  mMSAA;
+    bool initialize();
+    void clear(const float* color);
 };
 
+//------------------------------------------------------------------------------
+#endif
 //==============================================================================

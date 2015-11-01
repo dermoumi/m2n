@@ -25,9 +25,10 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-local Nx     = require 'nx'
-local Window = require 'nx.window'
-local Events = require 'nx.events'
+local Nx       = require 'nx'
+local Window   = require 'nx.window'
+local Events   = require 'nx.events'
+local Renderer = require 'nx.renderer'
 local Scene      = require 'scene'
 local SceneTitle = require 'scene.title'
 
@@ -65,20 +66,23 @@ local eventMapping = {
     filedrop          = 'onFileDrop'
 }
 
--- Helper function to determine what the default FPS should be
-function getMaxFPS()
-    local platform = Nx.getPlatform()
-    if platform == 'android' or platform == 'ios' then
-        return 30
-    else
-        return 60
-    end
+------------------------------------------------------------
+-- Renderer setup
+------------------------------------------------------------
+
+-- Create window
+local ok, err = Window.create("m2n", 1280, 720, false)
+if not ok then
+    Log.error('Cannot initialize window: ' + err)
+    return 1
 end
 
-------------------------------------------------------------
--- Window creation
-------------------------------------------------------------
-Window.create("m2n", 1280, 720, false)
+-- Initialize renderer
+ok = Renderer.init()
+if not ok then
+    Log.error('Cannot initialize renderer.')
+    return 1
+end
 
 ------------------------------------------------------------
 -- Startup scene
@@ -88,11 +92,16 @@ Scene.goTo(SceneTitle:new())
 ------------------------------------------------------------
 -- Handling FPS
 ------------------------------------------------------------
-local maxFPS = getMaxFPS()
-local framerate = 1 / maxFPS
+local framerateLimit
+if Nx.getPlatform() == 'android' or Nx.getPlatform() == 'ios' then
+    framerateLimit = 1/30
+else
+    framerateLimit = 1/60
+end
 
-local totalElapsedTime, frameCount = 0, 0
-local lastTime = Nx.getSystemTime()
+local totalElapsedTime = 0
+local frameCount       = 0
+local lastTime         = Nx.getSystemTime()
 
 ------------------------------------------------------------
 -- Main loop
@@ -133,8 +142,8 @@ while Window.isOpen() do
         frameCount = 0
     end
 
-    -- Waiting
-    local sleepTime = currentTime - Nx.getSystemTime() + framerate;
+    -- Waiting out left time of the frame
+    local sleepTime = currentTime - Nx.getSystemTime() + framerateLimit;
     if sleepTime > 0 then
         Nx.sleep(sleepTime)
     end

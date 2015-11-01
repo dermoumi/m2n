@@ -25,7 +25,6 @@
     For more information, please refer to <http://unlicense.org>
 *///============================================================================
 #include "glcontext.hpp"
-#include "gl.hpp"
 
 #include <SDL2/SDL.h>
 
@@ -109,34 +108,6 @@ GlContext::GlContext(unsigned int depth, unsigned int stencil, unsigned int msaa
 
     // Activate the context
     setActive(true);
-
-    // Retrieve the actual context version
-    int majorVersion {0};
-    int minorVersion {0};
-    glGetIntegerv(GL_MAJOR_VERSION, &majorVersion);
-    glGetIntegerv(GL_MINOR_VERSION, &minorVersion);
-
-    if (glGetError() != GL_INVALID_ENUM) {
-        mGLMajor = static_cast<unsigned int>(majorVersion);
-        mGLMinor = static_cast<unsigned int>(minorVersion);
-    }
-    else {
-        // Try the "old" way
-        const GLubyte* version {glGetString(GL_VERSION)};
-        if (version) {
-            // The returned string starts with major.minor (it's a standard)
-            mGLMajor = version[0] - '0';
-            mGLMinor = version[2] - '0';
-        }
-        else {
-            // Can't get the version number, assume 1.1
-            mGLMajor = 1;
-            mGLMinor = 1;
-        }
-    }
-
-    // Enable antialiasing
-    if (mMSAA > 0) glEnable(GL_MULTISAMPLE);
 }
 
 //----------------------------------------------------------
@@ -199,13 +170,6 @@ void GlContext::getSettings(unsigned int* depth, unsigned int* stencil, unsigned
     if (depth)   *depth   = mDepth;
     if (stencil) *stencil = mStencil;
     if (msaa)    *msaa    = mMSAA;
-}
-
-//----------------------------------------------------------
-void GlContext::getGLVersion(unsigned int* major, unsigned int* minor) const
-{
-    if (major) *major = mGLMajor;
-    if (minor) *minor = mGLMinor;
 }
 
 //==============================================================================

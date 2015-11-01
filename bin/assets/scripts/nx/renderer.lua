@@ -32,12 +32,18 @@ local ffi = require 'ffi'
 local C = ffi.C
 
 ffi.cdef [[
+    bool nxRendererInit();
     void nxRendererClear(uint8_t, uint8_t, uint8_t, uint8_t);
 ]]
 
 ------------------------------------------------------------
 -- A set of functions about on-screen rendering
 local Renderer = {}
+
+------------------------------------------------------------
+function Renderer.init()
+    return C.nxRendererInit();
+end
 
 ------------------------------------------------------------
 function Renderer.clear(r, g, b, a)

@@ -24,34 +24,33 @@
 
     For more information, please refer to <http://unlicense.org>
 *///============================================================================
-#pragma once
-#include "../config.hpp"
+#include "renderdevicegl.hpp"
+
+#if !defined(NX_OPENGL_ES)
+//------------------------------------------------------------------------------
+#include "opengl.hpp"
 
 //==========================================================
-// Handles context creation
+// Locals
 //==========================================================
-class NX_HIDDEN GlContext
+bool extensionsInitialized {false};
+
+//----------------------------------------------------------
+bool RenderDeviceGL::initialize()
 {
-public:
-    static GlContext* create(unsigned int depth = 0u, unsigned int stencil = 0, unsigned int msaa = 0u);
-    static GlContext* ensure();
-    static void release();
-    
-    ~GlContext();
-    bool setActive(bool active);
-    void display();
-    bool isVSyncEnabled() const;
-    void setVSyncEnabled(bool enable);
-    void getSettings(unsigned int* depth, unsigned int* stencil, unsigned int* msaa) const;
+    // Init OpenGL extensions
+    if (!extensionsInitialized && !initOpenGLExtensions()) return false;
 
-private:
-    GlContext(unsigned int depth, unsigned int stencil, unsigned int msaa);
+    return true;
+}
 
-private:
-    mutable void* mContext {nullptr};
-    unsigned int  mDepth;
-    unsigned int  mStencil;
-    unsigned int  mMSAA;
-};
+//----------------------------------------------------------
+void RenderDeviceGL::clear(const float* color)
+{
+    glClearColor(color[0], color[1], color[2], color[3]);
+    glClear(GL_COLOR_BUFFER_BIT);
+}
 
+//------------------------------------------------------------------------------
+#endif
 //==============================================================================

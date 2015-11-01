@@ -24,11 +24,17 @@
 
     For more information, please refer to <http://unlicense.org>
 *///============================================================================
-#include "../config.hpp"
+#pragma once
 
-#if defined(NX_OPENGL_ES)
-    #include "opengles2.hpp"
-#else
-    #include "opengl.hpp"
-#endif
+//==========================================================
+// Base class for Render Devices
+//==========================================================
+class RenderDevice
+{
+public:
+    virtual ~RenderDevice() = default;
+    virtual bool initialize() = 0;
+    virtual void clear(const float* color) = 0;
+};
+
 //==============================================================================
