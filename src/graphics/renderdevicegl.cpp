@@ -225,9 +225,12 @@ uint32_t RenderDeviceGL::createShader(const char* vertexShaderSrc, const char* f
 }
 
 //----------------------------------------------------------
-void RenderDeviceGL::destroyShader(uint32_t)
+void RenderDeviceGL::destroyShader(uint32_t shaderID)
 {
-    // TODO
+    if (shaderID == 0) return;
+    RDIShader &shader = mShaders.getRef(shaderID);
+    glDeleteProgram(shader.oglProgramObj);
+    mShaders.remove(shaderID);
 }
 
 //----------------------------------------------------------
