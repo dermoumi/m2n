@@ -34,6 +34,8 @@ local C = ffi.C
 ffi.cdef [[
     bool nxRendererInit();
     void nxRendererClear(uint8_t, uint8_t, uint8_t, uint8_t);
+    void nxRendererBegin();
+    void nxRendererFinish();
 ]]
 
 ------------------------------------------------------------
@@ -48,6 +50,16 @@ end
 ------------------------------------------------------------
 function Renderer.clear(r, g, b, a)
     C.nxRendererClear(r or 0, g or 0, b or 0, a or 255)
+end
+
+------------------------------------------------------------
+function Renderer.begin()
+    C.nxRendererBegin()
+end
+
+------------------------------------------------------------
+function Renderer.finish()
+    C.nxRendererFinish()
 end
 
 ------------------------------------------------------------

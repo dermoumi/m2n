@@ -25,6 +25,7 @@
     For more information, please refer to <http://unlicense.org>
 *///============================================================================
 #include "renderdevicegl.hpp"
+#include "../system/log.hpp"
 
 #if !defined(NX_OPENGL_ES)
 //------------------------------------------------------------------------------
@@ -34,12 +35,80 @@
 // Locals
 //==========================================================
 bool extensionsInitialized {false};
+#include <iostream>
 
 //----------------------------------------------------------
 bool RenderDeviceGL::initialize()
 {
-    // Init OpenGL extensions
-    if (!extensionsInitialized && !initOpenGLExtensions()) return false;
+    bool failed {false};
+
+    std::string vendor   {(const char*)(glGetString(GL_VENDOR))};
+    std::string renderer {(const char*)(glGetString(GL_RENDERER))};
+    std::string version  {(const char*)(glGetString(GL_VERSION))};
+    Log::info("Initializing OpenGL2 Backend using OpenGL driver '" + version + "'"
+        " by '" + vendor + "' on '" + renderer + "'");
+
+    // Initialize extensions
+    if (!initOpenGLExtensions()) {
+        Log::error("Could not find all required OpenGL function entry points");
+        failed = true;
+    }
+    
+    // Check that OpenGL 2.0 is available
+    if (glExt::majorVersion < 2) {
+        Log::error("OpenGL 2.0 is not available");
+        failed = true;
+    }
+
+    // Check that required extensions are supported
+    if (!glExt::EXT_framebuffer_object) {
+        Log::error("Extension EXT_framebuffer_object not supported");
+        failed = true;
+    }
+    if (!glExt::EXT_texture_filter_anisotropic) {
+        Log::error("Extension EXT_texture_filter_anisotropic not supported");
+        failed = true;
+    }
+    if (!glExt::EXT_texture_sRGB) {
+        Log::error("Extension EXT_texture_sRGB not supported");
+        failed = true;
+    }
+
+    // Something went wrong
+    if (failed) {
+        Log::fatal("Failed to init renderer backend, debug info following");
+
+        std::string extensions {reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS))};
+        Log::info("Supported OpenGL extensions: '" + extensions + "'");
+
+        return false;
+    }
+
+    // Get capabilities
+    mCaps.texDXT    = glExt::EXT_texture_compression_s3tc;
+    mCaps.texPVRTCI = false;
+    mCaps.texETC1   = false;
+
+    mCaps.texFloat         = glExt::ARB_texture_float;
+    mCaps.texDepth         = true;
+    mCaps.texShadowCompare = true;
+
+    mCaps.tex3D   = true;
+    mCaps.texNPOT = glExt::ARB_texture_non_power_of_two;
+    mCaps.texSRGB = glExt::EXT_texture_sRGB;
+
+    GLint maxColorAttachments;
+    glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS_EXT, &maxColorAttachments);
+    mCaps.rtMultisampling = glExt::EXT_framebuffer_multisample;
+    mCaps.rtMaxColBufs = std::min(4, maxColorAttachments);
+
+    mCaps.occQuery = true;
+    mCaps.timerQuery = glExt::ARB_timer_query;
+
+    // TODO: Find supported depth format (some old ATI cards only support 16 bit depth for FBOs)
+
+    initStates();
+    resetStates();
 
     return true;
 }
@@ -49,6 +118,37 @@ void RenderDeviceGL::clear(const float* color)
 {
     glClearColor(color[0], color[1], color[2], color[3]);
     glClear(GL_COLOR_BUFFER_BIT);
+}
+
+//----------------------------------------------------------
+void RenderDeviceGL::initStates()
+{
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+}
+
+//----------------------------------------------------------
+void RenderDeviceGL::resetStates()
+{
+    // TODO: Commit new states
+
+    // Bind buffers
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, mDefaultFBO);
+}
+
+//----------------------------------------------------------
+void RenderDeviceGL::beginRendering()
+{
+    // Get the currently bound frame buffer object. 
+    glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &mDefaultFBO);
+
+    resetStates();
+}
+
+//----------------------------------------------------------
+void RenderDeviceGL::finishRendering()
+{
+    // Nothing to do
 }
 
 //------------------------------------------------------------------------------

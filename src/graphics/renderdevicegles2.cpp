@@ -25,6 +25,7 @@
     For more information, please refer to <http://unlicense.org>
 *///============================================================================
 #include "renderdevicegles2.hpp"
+#include "../system/log.hpp"
 
 #if defined(NX_OPENGL_ES)
 //------------------------------------------------------------------------------

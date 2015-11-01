@@ -39,6 +39,15 @@ class RenderDeviceGL : public RenderDevice
 public:
     bool initialize();
     void clear(const float* color);
+
+    void initStates();
+    void resetStates();
+
+    void beginRendering();
+    void finishRendering();
+
+private:
+    int mDefaultFBO {0};
 };
 
 //------------------------------------------------------------------------------

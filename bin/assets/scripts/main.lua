@@ -123,7 +123,11 @@ while Window.isOpen() do
     end
     
     Scene.call('update', elapsedTime)
+
+    Renderer.begin()
     Scene.call('render') 
+    Renderer.finish()
+
     Window.display()
 
     -- Calculating FPS every whole second

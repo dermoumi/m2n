@@ -24,54 +24,10 @@
 
     For more information, please refer to <http://unlicense.org>
 *///============================================================================
-#pragma once
-#include "../config.hpp"
+#include "renderdevice.hpp"
 
-//==========================================================
-// Render device capabilities struct
-//==========================================================
-struct DeviceCaps
+//----------------------------------------------------------
+const DeviceCaps& RenderDevice::getCapabilities()
 {
-    // Compressed formats
-    bool texDXT;
-    bool texPVRTCI; 
-    bool texETC1;
-
-    // other texture caps
-    bool texFloat;
-    bool texDepth;
-    bool texShadowCompare;
-    bool tex3D;
-    bool texNPOT;   // non power of two textures
-    bool texSRGB;
-
-    // rendertarget caps
-    bool rtMultisampling;
-    uint32_t rtMaxColBufs;
-
-    // queries
-    bool occQuery;
-    bool timerQuery;
-};
-
-//==========================================================
-// Base class for Render Devices
-//==========================================================
-class RenderDevice
-{
-public:
-    virtual ~RenderDevice() = default;
-    virtual bool initialize() = 0;
-    virtual void clear(const float* color) = 0;
-    virtual void initStates() = 0;
-    virtual void resetStates() = 0;
-    virtual void beginRendering() = 0;
-    virtual void finishRendering() = 0;
-
-    const DeviceCaps& getCapabilities();
-
-protected:
-    DeviceCaps mCaps;
-};
-
-//==============================================================================
+    return mCaps;
+}

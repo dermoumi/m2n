@@ -53,13 +53,14 @@ namespace
     void logToFile(const char* prefix, const char* format, va_list args)
     {
         std::lock_guard<std::mutex> lock(logFileMutex);
-        if (!logFile)
-            return;
+        if (!logFile) return;
 
-        fprintf (logFile.get(), "%s: ", prefix); // Write prefix
-        vfprintf(logFile.get(), format, args);   // Write message
-        fprintf (logFile.get(), "\r\n");         // New line
-        fflush  (logFile.get());                 // Flush
+        auto* file = logFile.get();
+
+        fprintf (file, "%s: ", prefix); // Write prefix
+        vfprintf(file, format, args);   // Write message
+        fprintf (file, "\r\n");         // New line
+        fflush  (file);                 // Flush
     }
 }
 

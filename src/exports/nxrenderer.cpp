@@ -64,4 +64,16 @@ NX_EXPORT void nxRendererClear(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
     rdi->clear(clearColor);
 }
 
+//----------------------------------------------------------
+NX_EXPORT void nxRendererBegin()
+{
+    rdi->beginRendering();
+}
+
+//----------------------------------------------------------
+NX_EXPORT void nxRendererFinish()
+{
+    rdi->finishRendering();
+}
+
 //==============================================================================
