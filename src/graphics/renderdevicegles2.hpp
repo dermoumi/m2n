@@ -24,44 +24,23 @@
 
     For more information, please refer to <http://unlicense.org>
 *///============================================================================
+#pragma once
 #include "../config.hpp"
-#include "../graphics/renderdevice.hpp"
 
-#if !defined(NX_OPENGL_ES)
-    #include "../graphics/renderdevicegl.hpp"
-#else
-    #include "../graphics/renderdevicegles2.hpp"
+#if defined(NX_OPENGL_ES)
+//------------------------------------------------------------------------------
+#include "renderdevice.hpp"
+
+//==========================================================
+// OpenGL implementation of RenderDevice
+//==========================================================
+class RenderDeviceGLES2 : public RenderDevice
+{
+public:
+    bool initialize();
+    void clear(const float* color);
+};
+
+//------------------------------------------------------------------------------
 #endif
-
-//----------------------------------------------------------
-// Locals
-//----------------------------------------------------------
-static RenderDevice* rdi {nullptr};
-    
-//----------------------------------------------------------
-// Exported functions
-//----------------------------------------------------------
-NX_EXPORT bool nxRendererInit()
-{
-    // Delete the render device if reinitiazing
-    if (rdi) delete rdi;
-
-    // Instanciate the proper render device
-    #if !defined(NX_OPENGL_ES)
-        rdi = new RenderDeviceGL();
-    #else
-        rdi = new RenderDeviceGLES2();
-    #endif
-
-    return rdi->initialize();
-}
-
-//----------------------------------------------------------
-NX_EXPORT void nxRendererClear(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
-{
-    float clearColor[] = {r/255.f, g/255.f, b/255.f, a/255.f};
-
-    rdi->clear(clearColor);
-}
-
 //==============================================================================

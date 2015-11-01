@@ -24,44 +24,33 @@
 
     For more information, please refer to <http://unlicense.org>
 *///============================================================================
-#include "../config.hpp"
-#include "../graphics/renderdevice.hpp"
+#include "renderdevicegles2.hpp"
 
-#if !defined(NX_OPENGL_ES)
-    #include "../graphics/renderdevicegl.hpp"
-#else
-    #include "../graphics/renderdevicegles2.hpp"
-#endif
+#if defined(NX_OPENGL_ES)
+//------------------------------------------------------------------------------
+#include "opengles2.hpp"
 
-//----------------------------------------------------------
+//==========================================================
 // Locals
+//==========================================================
+bool extensionsInitialized {false};
+
 //----------------------------------------------------------
-static RenderDevice* rdi {nullptr};
-    
-//----------------------------------------------------------
-// Exported functions
-//----------------------------------------------------------
-NX_EXPORT bool nxRendererInit()
+bool RenderDeviceGLES2::initialize()
 {
-    // Delete the render device if reinitiazing
-    if (rdi) delete rdi;
+    // Init OpenGL extensions
+    if (!extensionsInitialized && !initOpenGLExtensions()) return false;
 
-    // Instanciate the proper render device
-    #if !defined(NX_OPENGL_ES)
-        rdi = new RenderDeviceGL();
-    #else
-        rdi = new RenderDeviceGLES2();
-    #endif
-
-    return rdi->initialize();
+    return true;
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxRendererClear(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+void RenderDeviceGLES2::clear(const float* color)
 {
-    float clearColor[] = {r/255.f, g/255.f, b/255.f, a/255.f};
-
-    rdi->clear(clearColor);
+    glClearColor(color[0], color[1], color[2], color[3]);
+    glClear(GL_COLOR_BUFFER_BIT);
 }
 
+//------------------------------------------------------------------------------
+#endif
 //==============================================================================
