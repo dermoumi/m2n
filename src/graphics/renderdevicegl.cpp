@@ -142,11 +142,35 @@ bool RenderDeviceGL::commitStates(uint32_t filter)
             mPendingMask &= ~PMViewport;
         }
 
+        // Update renderstates
+        if (mask & PMRenderStates) {
+            // TODO
+            mPendingMask &= ~PMRenderStates;
+        }
+
         // Set scissor rect
         if (mask & PMScissor)
         {
             glScissor(mScX, mScY, mScWidth, mScHeight);
             mPendingMask &= ~PMScissor;
+        }
+
+        // Bind index buffer
+        if (mask & PMIndexBuffer) {
+            // TODO
+            mPendingMask &= ~PMIndexBuffer;
+        }
+
+        // Bind textures and set sampler state
+        if (mask & PMTextures) {
+            // TODO
+            mPendingMask &= ~PMTextures;
+        }
+
+        // Bind vertex buffers
+        if (mask & PMVertexLayout) {
+            // TODO
+            mPendingMask &= ~PMVertexLayout;
         }
     }
 
@@ -234,9 +258,18 @@ void RenderDeviceGL::destroyShader(uint32_t shaderID)
 }
 
 //----------------------------------------------------------
-void RenderDeviceGL::bindShader(uint32_t)
+void RenderDeviceGL::bindShader(uint32_t shaderID)
 {
-    // TODO
+    if (shaderID == 0) {
+        glUseProgram(0);
+    }
+    else {
+        RDIShader& shader = mShaders.getRef(shaderID);
+        glUseProgram(shader.oglProgramObj);
+    }
+
+    mCurShaderID = shaderID;
+    mPendingMask |= PMVertexLayout;
 }
 
 //----------------------------------------------------------

@@ -130,6 +130,7 @@ private:
     RDIObjects<RDIBuffer> mBuffers;
     RDIObjects<RDIShader> mShaders;
 
+    uint32_t mPrevShaderID, mCurShaderID;
     uint32_t mPendingMask {0xFFFFFFFFu};
 };
 
