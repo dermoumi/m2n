@@ -47,9 +47,40 @@ template <class T>
 class RDIObjects
 {
 public:
-    uint32_t add(const T& obj);
-    void remove(uint32_t handle);
-    T& getRef(uint32_t handle);
+    uint32_t add(const T& obj)
+    {
+        std::lock_guard<std::mutex> lock(mMutex);
+        
+        if (mFreeList.empty()) {
+            mObjects.push_back(obj);
+            return static_cast<uint32_t>(mObjects.size());
+        }
+        else {
+            auto index = mFreeList.back();
+            mFreeList.pop_back();
+            mObjects[index] = obj;
+            return index + 1;
+        }
+    }
+
+    void remove(uint32_t handle)
+    {
+        if (handle <= 0 || handle > mObjects.size()) return;
+        std::lock_guard<std::mutex> lock(mMutex);
+
+        mObjects[handle - 1] = T(); // Destruct and replace with an invalid object
+        mFreeList.push_back(handle - 1);
+    }
+
+    T& getRef(uint32_t handle)
+    {
+        thread_local T invalidObj;
+
+        if (handle <= 0 || handle > mObjects.size()) return invalidObj;
+        std::lock_guard<std::mutex> lock(mMutex);
+        
+        return mObjects[handle - 1];
+    }
 
 private:
     friend class RenderDevice;
@@ -69,8 +100,12 @@ public:
     virtual void clear(const float* color) = 0;
     virtual void initStates() = 0;
     virtual void resetStates() = 0;
+
+    // Buffers
     virtual void beginRendering() = 0;
     virtual void finishRendering() = 0;
+    virtual uint32_t createVertexBuffer(uint32_t size, const void* data) = 0;
+    virtual uint32_t createIndexBuffer(uint32_t size, const void* data) = 0;
 
     const DeviceCaps& getCapabilities();
 

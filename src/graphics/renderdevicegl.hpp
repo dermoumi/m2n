@@ -43,11 +43,28 @@ public:
     void initStates();
     void resetStates();
 
+    // Buffers
     void beginRendering();
     void finishRendering();
+    uint32_t createVertexBuffer(uint32_t size, const void* data);
+    uint32_t createIndexBuffer(uint32_t size, const void* data);
 
 private:
+    struct RDIBuffer
+    {
+        uint32_t type;
+        uint32_t glObj;
+        uint32_t size;
+    };
+
+private:
+    RDIBuffer& getBuffer(uint32_t handle);
+
+private:
+    uint32_t mBufferMemory  {0u};
+
     int mDefaultFBO {0};
+    RDIObjects<RDIBuffer> mBuffers;
 };
 
 //------------------------------------------------------------------------------

@@ -135,6 +135,44 @@ void RenderDeviceGL::finishRendering()
     // Nothing to do
 }
 
+//----------------------------------------------------------
+uint32_t RenderDeviceGL::createVertexBuffer(uint32_t size, const void* data)
+{
+    RDIBuffer buf;
+
+    buf.type = GL_ARRAY_BUFFER;
+    buf.size = size;
+    glGenBuffers(1, &buf.glObj);
+    glBindBuffer(buf.type, buf.glObj);
+    glBufferData(buf.type, size, data, GL_DYNAMIC_DRAW);
+    glBindBuffer(buf.type, 0);
+
+    mBufferMemory += size;
+    return mBuffers.add(buf);
+}
+
+//----------------------------------------------------------
+uint32_t RenderDeviceGL::createIndexBuffer(uint32_t size, const void* data)
+{
+    RDIBuffer buf;
+
+    buf.type = GL_ELEMENT_ARRAY_BUFFER;
+    buf.size = size;
+    glGenBuffers(1, &buf.glObj);
+    glBindBuffer(buf.type, buf.glObj);
+    glBufferData(buf.type, size, data, GL_DYNAMIC_DRAW);
+    glBindBuffer(buf.type, 0);
+
+    mBufferMemory += size;
+    return mBuffers.add(buf);
+}
+
+//----------------------------------------------------------
+RenderDeviceGL::RDIBuffer& RenderDeviceGL::getBuffer(uint32_t handle)
+{
+    return mBuffers.getRef(handle);
+}
+
 //------------------------------------------------------------------------------
 #endif
 //==============================================================================
