@@ -32,26 +32,9 @@
 //==========================================================
 struct DeviceCaps
 {
-    // Compressed formats
-    bool texDXT;
-    bool texPVRTCI; 
-    bool texETC1;
-
-    // other texture caps
     bool texFloat;
-    bool texDepth;
-    bool texShadowCompare;
-    bool tex3D;
-    bool texNPOT;   // non power of two textures
-    bool texSRGB;
-
-    // rendertarget caps
+    bool texNPOT;
     bool rtMultisampling;
-    uint32_t rtMaxColBufs;
-
-    // queries
-    bool occQuery;
-    bool timerQuery;
 };
 
 //==========================================================

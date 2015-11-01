@@ -26,6 +26,7 @@
 --]]----------------------------------------------------------------------------
 
 local Nx       = require 'nx'
+local Log      = require 'nx.log'
 local Window   = require 'nx.window'
 local Events   = require 'nx.events'
 local Renderer = require 'nx.renderer'

@@ -85,25 +85,9 @@ bool RenderDeviceGL::initialize()
     }
 
     // Get capabilities
-    mCaps.texDXT    = glExt::EXT_texture_compression_s3tc;
-    mCaps.texPVRTCI = false;
-    mCaps.texETC1   = false;
-
     mCaps.texFloat         = glExt::ARB_texture_float;
-    mCaps.texDepth         = true;
-    mCaps.texShadowCompare = true;
-
-    mCaps.tex3D   = true;
     mCaps.texNPOT = glExt::ARB_texture_non_power_of_two;
-    mCaps.texSRGB = glExt::EXT_texture_sRGB;
-
-    GLint maxColorAttachments;
-    glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS_EXT, &maxColorAttachments);
     mCaps.rtMultisampling = glExt::EXT_framebuffer_multisample;
-    mCaps.rtMaxColBufs = std::min(4, maxColorAttachments);
-
-    mCaps.occQuery = true;
-    mCaps.timerQuery = glExt::ARB_timer_query;
 
     // TODO: Find supported depth format (some old ATI cards only support 16 bit depth for FBOs)
 
