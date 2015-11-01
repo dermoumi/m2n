@@ -122,7 +122,7 @@ public:
 
     virtual void initStates() = 0;
     virtual void resetStates() = 0;
-    virtual void commitStates(uint32_t filter = 0xFFFFFFFFu) = 0;
+    virtual bool commitStates(uint32_t filter = 0xFFFFFFFFu) = 0;
 
     // Drawcalls and clears
     virtual void clear(const float* color) = 0;

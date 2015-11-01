@@ -119,7 +119,7 @@ void RenderDeviceGL::resetStates()
 }
 
 //----------------------------------------------------------
-void RenderDeviceGL::commitStates(uint32_t filter)
+bool RenderDeviceGL::commitStates(uint32_t filter)
 {
     uint32_t mask = mPendingMask & filter;
     if (mask) {
@@ -136,6 +136,8 @@ void RenderDeviceGL::commitStates(uint32_t filter)
             mPendingMask &= ~PMScissor;
         }
     }
+
+    return true;
 }
 
 //----------------------------------------------------------

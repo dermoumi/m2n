@@ -44,7 +44,7 @@ public:
 
     void initStates();
     void resetStates();
-    void commitStates(uint32_t filter = 0xFFFFFFFFu);
+    bool commitStates(uint32_t filter = 0xFFFFFFFFu);
 
     // Drawcalls and clears
     void clear(const float* color);
