@@ -27,6 +27,47 @@
 #include "renderdevice.hpp"
 
 //----------------------------------------------------------
+template <class T>
+uint32_t RDIObjects<T>::add(const T& obj)
+{
+    std::lock_guard<std::mutex> lock(mMutex);
+    
+    if (mFreeList.empty()) {
+        mObjects.push_back(obj);
+        return static_cast<uint32_t>(mObjects.size());
+    }
+    else {
+        auto index = mFreeList.back();
+        mFreeList.pop_back();
+        mObjects[index] = obj;
+        return index + 1;
+    }
+}
+
+//----------------------------------------------------------
+template <class T>
+void RDIObjects<T>::remove(uint32_t handle)
+{
+    if (handle <= 0 || handle > mObjects.size()) return;
+    std::lock_guard<std::mutex> lock(mMutex);
+
+    mObjects[handle - 1] = T(); // Destruct and replace with an invalid object
+    mFreeList.push_back(handle - 1);
+}
+
+//----------------------------------------------------------
+template <class T>
+T& RDIObjects<T>::getRef(uint32_t handle)
+{
+    thread_local T invalidObj;
+
+    if (handle <= 0 || handle > mObjects.size()) return invalidObj;
+    std::lock_guard<std::mutex> lock(mMutex);
+    
+    return mObjects[handle - 1];
+}
+
+//----------------------------------------------------------
 const DeviceCaps& RenderDevice::getCapabilities()
 {
     return mCaps;

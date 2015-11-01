@@ -27,6 +27,9 @@
 #pragma once
 #include "../config.hpp"
 
+#include <vector>
+#include <mutex>
+
 //==========================================================
 // Render device capabilities struct
 //==========================================================
@@ -35,6 +38,24 @@ struct DeviceCaps
     bool texFloat;
     bool texNPOT;
     bool rtMultisampling;
+};
+
+//==========================================================
+// Container for different objects used by the device
+//==========================================================
+template <class T>
+class RDIObjects
+{
+public:
+    uint32_t add(const T& obj);
+    void remove(uint32_t handle);
+    T& getRef(uint32_t handle);
+
+private:
+    friend class RenderDevice;
+    std::vector<T>        mObjects;
+    std::vector<uint32_t> mFreeList;
+    std::mutex            mMutex;
 };
 
 //==========================================================
