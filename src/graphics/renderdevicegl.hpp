@@ -52,6 +52,18 @@ public:
     // Vertex layouts
     uint32_t registerVertexLayout(uint32_t numAttribs, const VertexLayoutAttrib* attribs);
 
+    // Shaders
+    uint32_t createShader(const char* vertexShaderSrc, const char* fragmentShaderSrc);
+    void destroyShader(uint32_t shaderID);
+    void bindShader(uint32_t shaderID);
+    const std::string& getShaderLog();
+    int getShaderConstLoc(uint32_t shaderID, const char* name);
+    int getShaderSamplerLoc(uint32_t shaderID, const char* name);
+    void setShaderConst(int loc, RDIShaderConstType type, void* values, uint32_t count = 1);
+    void setShaderSampler(int loc, uint32_t texUnit);
+    const char* getDefaultVSCode();
+    const char* getDefaultFSCode();
+
     // Buffers
     void beginRendering();
     void finishRendering();
@@ -88,11 +100,13 @@ private:
     };
 
 private:
-    RDIBuffer& getBuffer(uint32_t handle);
+    uint32_t createShaderProgram(const char* vertexShaderSrc, const char* fragmentShaderSrc);
+    bool linkShaderProgram(uint32_t programObj);
 
 private:
     int mVpX {0}, mVpY {0}, mVpWidth {1}, mVpHeight {1};
     int mScX {0}, mScY {0}, mScWidth {1}, mScHeight {1};
+    std::string mShaderLog;
     uint32_t mBufferMemory  {0u};
 
     int mDefaultFBO {0};

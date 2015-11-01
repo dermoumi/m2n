@@ -34,6 +34,19 @@
 //==========================================================
 // Locals
 //==========================================================
+static const char* defaultShaderVS =
+    "uniform mat4 viewProjMat;\n"
+    "uniform mat4 worldMat;\n"
+    "attribute vec3 vertPos;\n"
+    "void main() {\n"
+    "   gl_Position = viewProjMat * worldMat * vec4(vertPos, 1.0);\n"
+    "}\n";
+
+static const char* defaultShaderFS =
+    "uniform vec4 color;\n"
+    "void main() {\n"
+    "   gl_FragColor = color;\n"
+    "}\n";
 
 //----------------------------------------------------------
 RenderDeviceGL::RenderDeviceGL()
@@ -148,6 +161,69 @@ void RenderDeviceGL::clear(const float* color)
 }
 
 //----------------------------------------------------------
+uint32_t RenderDeviceGL::createShader(const char*, const char*)
+{
+    // TODO
+    return 0;
+}
+
+//----------------------------------------------------------
+void RenderDeviceGL::destroyShader(uint32_t)
+{
+    // TODO
+}
+
+//----------------------------------------------------------
+void RenderDeviceGL::bindShader(uint32_t)
+{
+    // TODO
+}
+
+//----------------------------------------------------------
+const std::string& RenderDeviceGL::getShaderLog()
+{
+    return mShaderLog;
+}
+
+//----------------------------------------------------------
+int RenderDeviceGL::getShaderConstLoc(uint32_t, const char*)
+{
+    // TODO
+    return -1;
+}
+
+//----------------------------------------------------------
+int RenderDeviceGL::getShaderSamplerLoc(uint32_t, const char*)
+{
+    // TODO
+    return -1;
+}
+
+//----------------------------------------------------------
+void RenderDeviceGL::setShaderConst(int, RDIShaderConstType, void*, uint32_t)
+{
+    // TODO
+}
+
+//----------------------------------------------------------
+void RenderDeviceGL::setShaderSampler(int, uint32_t)
+{
+    // TODO
+}
+
+//----------------------------------------------------------
+const char* RenderDeviceGL::getDefaultVSCode()
+{
+    return defaultShaderVS;
+}
+
+//----------------------------------------------------------
+const char* RenderDeviceGL::getDefaultFSCode()
+{
+    return defaultShaderFS;
+}
+
+//----------------------------------------------------------
 uint32_t RenderDeviceGL::registerVertexLayout(uint32_t numAttribs,
     const VertexLayoutAttrib* attribs)
 {
@@ -247,12 +323,6 @@ uint32_t RenderDeviceGL::getBufferMemory() const
 }
 
 //----------------------------------------------------------
-RenderDeviceGL::RDIBuffer& RenderDeviceGL::getBuffer(uint32_t handle)
-{
-    return mBuffers.getRef(handle);
-}
-
-//----------------------------------------------------------
 void RenderDeviceGL::setViewport(int x, int y, int width, int height)
 {
     mVpX      = x;
@@ -296,6 +366,93 @@ void RenderDeviceGL::setVertexLayout(uint32_t)
 void RenderDeviceGL::setTexture(uint32_t, uint32_t, uint16_t)
 {
     // TODO
+}
+
+//----------------------------------------------------------
+uint32_t RenderDeviceGL::createShaderProgram(const char* vertexShaderSrc,
+    const char* fragmentShaderSrc)
+{
+    int infoLogLength {0};
+    int charsWritten  {0};
+    char* infoLog     {nullptr};
+    int status;
+
+    mShaderLog = "";
+
+    // Vertex shader
+    uint32_t vs = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vs, 1, &vertexShaderSrc, nullptr);
+    glCompileShader(vs);
+    glGetShaderiv(vs, GL_COMPILE_STATUS, &status);
+    if (!status) {
+        // Get info
+        glGetShaderiv(vs, GL_INFO_LOG_LENGTH, &infoLogLength);
+        if (infoLogLength > 1) {
+            infoLog = new char[infoLogLength];
+            glGetShaderInfoLog(vs, infoLogLength, &charsWritten, infoLog);
+            mShaderLog = mShaderLog + "[Vertex Shader]\n" + infoLog;
+            delete[] infoLog;
+            infoLog = nullptr;
+        }
+
+        glDeleteShader(vs);
+        return 0;
+    }
+
+    // Fragment shader
+    uint32_t fs = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fs, 1, &fragmentShaderSrc, nullptr);
+    glCompileShader(fs);
+    glGetShaderiv(fs, GL_COMPILE_STATUS, &status);
+    if (!status) {
+        glGetShaderiv(fs, GL_INFO_LOG_LENGTH, &infoLogLength);
+        if (infoLogLength > 1) {
+            infoLog = new char[infoLogLength];
+            glGetShaderInfoLog(fs, infoLogLength, &charsWritten, infoLog);
+            mShaderLog = mShaderLog + "[Fragment Shader]\n" + infoLog;
+            delete[] infoLog;
+            infoLog = nullptr;
+        }
+
+        glDeleteShader(vs);
+        glDeleteShader(fs);
+        return 0;
+    }
+
+    // Shader program
+    uint32_t program = glCreateProgram();
+    glAttachShader(program, vs);
+    glAttachShader(program, fs);
+    glDeleteShader(vs);
+    glDeleteShader(fs);
+
+    return program;
+}
+
+//----------------------------------------------------------
+bool RenderDeviceGL::linkShaderProgram(uint32_t programObj)
+{
+    int infoLogLength {0};
+    int charsWritten {0};
+    char* infoLog {nullptr};
+    int status;
+
+    mShaderLog = "";
+
+    glLinkProgram(programObj);
+    glGetProgramiv(programObj, GL_INFO_LOG_LENGTH, &infoLogLength);
+    if (infoLogLength > 1) {
+        infoLog = new char[infoLogLength];
+        glGetProgramInfoLog(programObj, infoLogLength, &charsWritten, infoLog);
+        mShaderLog = mShaderLog + "[Linking]\n" + infoLog;
+        delete[] infoLog;
+        infoLog = nullptr;
+    }
+
+    glGetProgramiv(programObj, GL_LINK_STATUS, &status);
+    if (!status) return false;
+
+    return true;
 }
 
 //------------------------------------------------------------------------------

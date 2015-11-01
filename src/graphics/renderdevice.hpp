@@ -41,6 +41,7 @@ struct DeviceCaps
     bool rtMultisampling;
 };
 
+//----------------------------------------------------------
 struct VertexLayoutAttrib
 {
     std::string semanticName;
@@ -49,6 +50,7 @@ struct VertexLayoutAttrib
     uint32_t    offset;
 };
 
+//----------------------------------------------------------
 struct RDIVertexLayout
 {
     uint32_t           numAttribs;
@@ -56,10 +58,21 @@ struct RDIVertexLayout
 };
 
 //----------------------------------------------------------
-enum class RDIIndexFormat : int
+enum RDIIndexFormat : int
 {
-    U16,
-    U32
+    IDXFMT_16,
+    IDXFMT_32
+};
+
+//----------------------------------------------------------
+enum RDIShaderConstType
+{
+    CONST_FLOAT,
+    CONST_FLOAT2,
+    CONST_FLOAT3,
+    CONST_FLOAT4,
+    CONST_FLOAT44,
+    CONST_FLOAT33
 };
 
 //==========================================================
@@ -140,6 +153,19 @@ public:
     virtual bool updateBufferData(uint32_t buffer, uint32_t offset, uint32_t size,
         const void* data) = 0;
     virtual uint32_t getBufferMemory() const = 0;
+
+    // Shaders
+    virtual uint32_t createShader(const char* vertexShaderSrc, const char* fragmentShaderSrc) = 0;
+    virtual void destroyShader(uint32_t shaderID) = 0;
+    virtual void bindShader(uint32_t shaderID) = 0;
+    virtual const std::string& getShaderLog() = 0;
+    virtual int getShaderConstLoc(uint32_t shaderID, const char* name) = 0;
+    virtual int getShaderSamplerLoc(uint32_t shaderID, const char* name) = 0;
+    virtual void setShaderConst(int loc, RDIShaderConstType type, void* values,
+        uint32_t count = 1) = 0;
+    virtual void setShaderSampler(int loc, uint32_t texUnit) = 0;
+    virtual const char* getDefaultVSCode() = 0;
+    virtual const char* getDefaultFSCode() = 0;
 
     // GL States
     virtual void setViewport(int x, int y, int width, int height) = 0;
