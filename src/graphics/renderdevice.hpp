@@ -106,8 +106,12 @@ public:
     virtual void finishRendering() = 0;
     virtual uint32_t createVertexBuffer(uint32_t size, const void* data) = 0;
     virtual uint32_t createIndexBuffer(uint32_t size, const void* data) = 0;
+    virtual void destroyBuffer(uint32_t buffer) = 0;
+    virtual bool updateBufferData(uint32_t buffer, uint32_t offset, uint32_t size,
+        const void* data) = 0;
+    virtual uint32_t getBufferMemory() const = 0;
 
-    const DeviceCaps& getCapabilities();
+    const DeviceCaps& getCapabilities() const;
 
 protected:
     DeviceCaps mCaps;

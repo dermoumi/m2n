@@ -168,6 +168,43 @@ uint32_t RenderDeviceGL::createIndexBuffer(uint32_t size, const void* data)
 }
 
 //----------------------------------------------------------
+void RenderDeviceGL::destroyBuffer(uint32_t buffer)
+{
+    if (buffer == 0) return;
+
+    RDIBuffer& buf = mBuffers.getRef(buffer);
+    glDeleteBuffers(1, &buf.glObj);
+
+    mBufferMemory -= buf.size;
+    mBuffers.remove(buffer);
+}
+
+//----------------------------------------------------------
+bool RenderDeviceGL::updateBufferData(uint32_t buffer, uint32_t offset, uint32_t size,
+    const void* data)
+{
+    const RDIBuffer& buf = mBuffers.getRef(buffer);
+    if (offset + size > buf.size) return false;
+
+    glBindBuffer(buf.type, buf.glObj);
+    if (offset == 0 && size == buf.size) {
+        // Replacing the whole buffer can help the driver to avoid pipeline stalls
+        glBufferData(buf.type, size, data, GL_DYNAMIC_DRAW);
+    }
+    else {
+        glBufferSubData(buf.type, offset, size, data);
+    }
+
+    return true;
+}
+
+//----------------------------------------------------------
+uint32_t RenderDeviceGL::getBufferMemory() const
+{
+    return mBufferMemory;
+}
+
+//----------------------------------------------------------
 RenderDeviceGL::RDIBuffer& RenderDeviceGL::getBuffer(uint32_t handle)
 {
     return mBuffers.getRef(handle);

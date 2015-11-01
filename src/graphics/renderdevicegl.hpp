@@ -48,6 +48,9 @@ public:
     void finishRendering();
     uint32_t createVertexBuffer(uint32_t size, const void* data);
     uint32_t createIndexBuffer(uint32_t size, const void* data);
+    void destroyBuffer(uint32_t buffer);
+    bool updateBufferData(uint32_t buffer, uint32_t offset, uint32_t size, const void* data);
+    uint32_t getBufferMemory() const;
 
 private:
     struct RDIBuffer

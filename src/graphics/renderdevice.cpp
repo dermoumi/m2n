@@ -27,7 +27,7 @@
 #include "renderdevice.hpp"
 
 //----------------------------------------------------------
-const DeviceCaps& RenderDevice::getCapabilities()
+const DeviceCaps& RenderDevice::getCapabilities() const
 {
     return mCaps;
 }
