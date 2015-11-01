@@ -161,10 +161,67 @@ void RenderDeviceGL::clear(const float* color)
 }
 
 //----------------------------------------------------------
-uint32_t RenderDeviceGL::createShader(const char*, const char*)
+uint32_t RenderDeviceGL::registerVertexLayout(uint32_t numAttribs,
+    const VertexLayoutAttrib* attribs)
 {
-    // TODO
-    return 0;
+    if (mNumVertexLayouts == MaxNumVertexLayouts) return 0;
+
+    mVertexLayouts[mNumVertexLayouts].numAttribs = numAttribs;
+    for (uint32_t i = 0; i < numAttribs; ++i) {
+        mVertexLayouts[mNumVertexLayouts].attribs[i] = attribs[i];
+    }
+
+    return ++mNumVertexLayouts;
+}
+
+//----------------------------------------------------------
+uint32_t RenderDeviceGL::createShader(const char* vertexShaderSrc, const char* fragmentShaderSrc)
+{
+    // Compile and link shader
+    uint32_t programObj = createShaderProgram(vertexShaderSrc, fragmentShaderSrc);
+    if (programObj == 0) return 0;
+    if (!linkShaderProgram(programObj)) return 0;
+
+
+    uint32_t shaderID = mShaders.add({});
+    RDIShader& shader = mShaders.getRef(shaderID);
+    shader.oglProgramObj = programObj;
+
+    int attribCount;
+    glGetProgramiv(programObj, GL_ACTIVE_ATTRIBUTES, &attribCount);
+
+    for (uint32_t i = 0; i < mNumVertexLayouts; ++i) {
+        RDIVertexLayout& v1 = mVertexLayouts[i];
+        bool allAttribsFound = true;
+
+        for (uint32_t j = 0; j < 16; ++j) {
+            shader.inputLayouts[i].attribIndices[j] = -1;
+        }
+
+        for (int j = 0; j < attribCount; ++j)
+        {
+            char name[32];
+            uint32_t size, type;
+            glGetActiveAttrib(programObj, j, 32, nullptr, (int*)&size, &type, name);
+
+            bool attribFound = false;
+            for (uint32_t k = 0; k < v1.numAttribs; ++k) {
+                if (v1.attribs[j].semanticName == name) {
+                    shader.inputLayouts[i].attribIndices[k] = glGetAttribLocation(programObj, name);
+                    attribFound = true;
+                }
+            }
+
+            if (!attribFound) {
+                allAttribsFound = false;
+                break;
+            }
+        }
+
+        shader.inputLayouts[i].valid = allAttribsFound;
+    }
+
+    return shaderID;
 }
 
 //----------------------------------------------------------
@@ -221,21 +278,6 @@ const char* RenderDeviceGL::getDefaultVSCode()
 const char* RenderDeviceGL::getDefaultFSCode()
 {
     return defaultShaderFS;
-}
-
-//----------------------------------------------------------
-uint32_t RenderDeviceGL::registerVertexLayout(uint32_t numAttribs,
-    const VertexLayoutAttrib* attribs)
-{
-    mVertexLayouts.emplace_back();
-    auto& vertexLayout = mVertexLayouts.back();
-
-    vertexLayout.numAttribs = numAttribs;
-    for (uint32_t i = 0; i < numAttribs; ++i) {
-        vertexLayout.attribs[i] = attribs[i];
-    }
-
-    return mVertexLayouts.size();
 }
 
 //----------------------------------------------------------

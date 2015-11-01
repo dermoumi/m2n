@@ -33,6 +33,7 @@
 
 #include <vector>
 
+
 //==========================================================
 // OpenGL implementation of RenderDevice
 //==========================================================
@@ -82,11 +83,25 @@ public:
     void setTexture(uint32_t slot, uint32_t texObj, uint16_t samplerState);
 
 private:
+    constexpr static uint32_t MaxNumVertexLayouts = 16;
+
     struct RDIBuffer
     {
         uint32_t type;
         uint32_t glObj;
         uint32_t size;
+    };
+
+    struct RDIInputLayout
+    {
+        bool valid;
+        int8_t attribIndices[16];
+    };
+
+    struct RDIShader
+    {
+        uint32_t oglProgramObj;
+        RDIInputLayout inputLayouts[MaxNumVertexLayouts];
     };
 
     enum PendingMask : uint32_t
@@ -110,8 +125,10 @@ private:
     uint32_t mBufferMemory  {0u};
 
     int mDefaultFBO {0};
-    std::vector<RDIVertexLayout> mVertexLayouts;
-    RDIObjects<RDIBuffer>        mBuffers;
+    uint32_t              mNumVertexLayouts{0};
+    RDIVertexLayout       mVertexLayouts[MaxNumVertexLayouts];
+    RDIObjects<RDIBuffer> mBuffers;
+    RDIObjects<RDIShader> mShaders;
 
     uint32_t mPendingMask {0xFFFFFFFFu};
 };
