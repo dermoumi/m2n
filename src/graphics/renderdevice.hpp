@@ -28,6 +28,7 @@
 #include "../config.hpp"
 
 #include <vector>
+#include <string>
 #include <mutex>
 
 //==========================================================
@@ -38,6 +39,20 @@ struct DeviceCaps
     bool texFloat;
     bool texNPOT;
     bool rtMultisampling;
+};
+
+struct VertexLayoutAttrib
+{
+    std::string semanticName;
+    uint32_t    vbSlot;
+    uint32_t    size;
+    uint32_t    offset;
+};
+
+struct RDIVertexLayout
+{
+    uint32_t           numAttribs;
+    VertexLayoutAttrib attribs[16];
 };
 
 //----------------------------------------------------------
@@ -104,11 +119,17 @@ class RenderDevice
 public:
     virtual ~RenderDevice() = default;
     virtual bool initialize() = 0;
-    virtual void clear(const float* color) = 0;
 
     virtual void initStates() = 0;
     virtual void resetStates() = 0;
     virtual void commitStates(uint32_t filter = 0xFFFFFFFFu) = 0;
+
+    // Drawcalls and clears
+    virtual void clear(const float* color) = 0;
+
+    // Vertex layouts
+    virtual uint32_t registerVertexLayout(uint32_t numAttribs,
+        const VertexLayoutAttrib* attribs) = 0;
 
     // Buffers
     virtual void beginRendering() = 0;

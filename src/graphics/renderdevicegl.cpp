@@ -34,8 +34,12 @@
 //==========================================================
 // Locals
 //==========================================================
-bool extensionsInitialized {false};
-#include <iostream>
+
+//----------------------------------------------------------
+RenderDeviceGL::RenderDeviceGL()
+{
+    // Nothing else to do (yet)
+}
 
 //----------------------------------------------------------
 bool RenderDeviceGL::initialize()
@@ -98,13 +102,6 @@ bool RenderDeviceGL::initialize()
 }
 
 //----------------------------------------------------------
-void RenderDeviceGL::clear(const float* color)
-{
-    glClearColor(color[0], color[1], color[2], color[3]);
-    glClear(GL_COLOR_BUFFER_BIT);
-}
-
-//----------------------------------------------------------
 void RenderDeviceGL::initStates()
 {
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -139,6 +136,28 @@ void RenderDeviceGL::commitStates(uint32_t filter)
             mPendingMask &= ~PMScissor;
         }
     }
+}
+
+//----------------------------------------------------------
+void RenderDeviceGL::clear(const float* color)
+{
+    glClearColor(color[0], color[1], color[2], color[3]);
+    glClear(GL_COLOR_BUFFER_BIT);
+}
+
+//----------------------------------------------------------
+uint32_t RenderDeviceGL::registerVertexLayout(uint32_t numAttribs,
+    const VertexLayoutAttrib* attribs)
+{
+    mVertexLayouts.emplace_back();
+    auto& vertexLayout = mVertexLayouts.back();
+
+    vertexLayout.numAttribs = numAttribs;
+    for (uint32_t i = 0; i < numAttribs; ++i) {
+        vertexLayout.attribs[i] = attribs[i];
+    }
+
+    return mVertexLayouts.size();
 }
 
 //----------------------------------------------------------

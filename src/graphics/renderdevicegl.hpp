@@ -31,18 +31,26 @@
 //------------------------------------------------------------------------------
 #include "renderdevice.hpp"
 
+#include <vector>
+
 //==========================================================
 // OpenGL implementation of RenderDevice
 //==========================================================
 class RenderDeviceGL : public RenderDevice
 {
 public:
+    RenderDeviceGL();
     bool initialize();
-    void clear(const float* color);
 
     void initStates();
     void resetStates();
     void commitStates(uint32_t filter = 0xFFFFFFFFu);
+
+    // Drawcalls and clears
+    void clear(const float* color);
+
+    // Vertex layouts
+    uint32_t registerVertexLayout(uint32_t numAttribs, const VertexLayoutAttrib* attribs);
 
     // Buffers
     void beginRendering();
@@ -88,7 +96,8 @@ private:
     uint32_t mBufferMemory  {0u};
 
     int mDefaultFBO {0};
-    RDIObjects<RDIBuffer> mBuffers;
+    std::vector<RDIVertexLayout> mVertexLayouts;
+    RDIObjects<RDIBuffer>        mBuffers;
 
     uint32_t mPendingMask {0xFFFFFFFFu};
 };
