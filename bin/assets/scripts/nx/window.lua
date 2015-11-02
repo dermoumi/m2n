@@ -47,7 +47,7 @@ ffi.cdef [[
     const int* nxWindowGetDisplayModes(int, size_t*);
     void nxWindowGetSize(int*);
     void nxWindowGetPosition(int*);
-    const char*nxWindowGetTitle();
+    const char* nxWindowGetTitle();
     void nxWindowMinimize();
     void nxWindowSetPosition(int, int);
     void nxWindowSetSize(int, int);
@@ -55,6 +55,16 @@ ffi.cdef [[
     void nxWindowSimpleMessageBox(const char*, const char*, uint32_t, bool);
     void nxWindowDrawableSize(int*);
 ]]
+
+
+------------------------------------------------------------
+-- Constants
+------------------------------------------------------------
+local MsgBoxType = {
+    ['error']   = 16,
+    ['warning'] = 32,
+    ['info']    = 64
+}
 
 ------------------------------------------------------------
 -- A set of functions to manage the main window
@@ -91,6 +101,23 @@ function Window.size()
     local sizePtr = ffi.new('int[2]')
     C.nxWindowGetSize(sizePtr)
     return tonumber(sizePtr[0]), tonumber(sizePtr[1])
+end
+
+------------------------------------------------------------
+function Window.position()
+    local posPtr = ffi.new('int[2]')
+    C.nxWindowGetPosition(posPtr)
+    return tonumber(posPtr[0]), tonumber(posPtr[1])
+end
+
+------------------------------------------------------------
+function Window.title()
+    return ffi.string(C.nxWindowGetTitle())
+end
+
+------------------------------------------------------------
+function Window.setPosition(x, y)
+    C.nxWindowSetPosition(x, y)
 end
 
 ------------------------------------------------------------
@@ -150,6 +177,18 @@ function Window.displayModes(display)
     end
 
     return modes
+end
+
+------------------------------------------------------------
+function Window.minimize()
+    C.nxWindowMinimize()
+end
+
+------------------------------------------------------------
+function Window.showMessageBox(title, message, type, attach)
+    if not attach then attach = false end
+
+    C.nxWindowSimpleMessageBox(title, message, MsgBoxType[type] or MsgBoxType.error, attach)
 end
 
 ------------------------------------------------------------

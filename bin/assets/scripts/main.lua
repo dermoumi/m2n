@@ -87,11 +87,6 @@ end
 
 Renderer.setupViewport(0, 0, Window.size())
 
-local displayModes = Window.displayModes()
-for i, v in ipairs(displayModes) do
-    print('Mode ' .. i .. ' - width: ' .. v.width .. ' height: ' .. v.height)
-end
-
 ------------------------------------------------------------
 -- Startup scene
 ------------------------------------------------------------
