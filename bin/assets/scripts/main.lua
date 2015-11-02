@@ -31,7 +31,6 @@ local Window   = require 'nx.window'
 local Events   = require 'nx.events'
 local Renderer = require 'nx.renderer'
 local Scene      = require 'scene'
-local SceneTitle = require 'scene.title'
 
 ------------------------------------------------------------
 -- Helpers
@@ -91,7 +90,7 @@ Renderer.setupViewport(0, 0, 1280, 720)
 ------------------------------------------------------------
 -- Startup scene
 ------------------------------------------------------------
-Scene.goTo(SceneTitle:new())
+Scene.goTo('scene.title')
 
 ------------------------------------------------------------
 -- Handling FPS
@@ -115,21 +114,23 @@ while Window.isOpen() do
     local elapsedTime = currentTime - lastTime
     lastTime = currentTime
 
+    local scene = Scene.currentScene()
+
     -- Process events
     for e, a, b, c, d in Events.poll() do
-        if e == 'quit' and Scene.call('onQuit') then
+        if e == 'quit' and scene:_onEvent('onQuit') then
             Window.close()
             break
         else
             local event = eventMapping[e] or 'onEvent'
-            Scene.call(event, a, b, c, d)
+            scene:_onEvent(event, a, b, c, d)
         end
     end
     
-    Scene.call('update', elapsedTime)
+    scene:_update(elapsedTime)
 
     Renderer.begin()
-    Scene.call('render')
+    scene:_render()
     Renderer.finish()
 
     Window.display()

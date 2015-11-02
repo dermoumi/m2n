@@ -38,7 +38,6 @@ local Renderer = require 'nx.renderer'
 
 ------------------------------------------------------------
 function SceneTitle:load()
-    print('loaded?')
     Renderer.testInit()
 end
 

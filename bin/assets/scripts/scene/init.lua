@@ -40,29 +40,46 @@ function Scene.static.currentScene()
 end
 
 ------------------------------------------------------------
-function Scene.static.goTo(scene)
-    sceneStack = {scene}
-    scene:load()
+function Scene.static.goTo(sceneName)
+    sceneStack = {}
+    return Scene.push(sceneName)
 end
 
 ------------------------------------------------------------
-function Scene.static.push(scene)
+function Scene.static.push(sceneName)
+    local sceneClass = require(sceneName)
+
+    if not sceneClass or not class.Object.isSubclassOf(sceneClass, Scene) then
+        return false
+    end
+
+    local scene  = sceneClass:new()
+    scene.parent = sceneStack[#sceneStack]
+
     sceneStack[#sceneStack + 1] = scene
-    scene:load()
+    return scene:load()
 end
 
 ------------------------------------------------------------
-function Scene.static.call(func, ...)
-    local currentScene = Scene.currentScene()
+function Scene:_update(dt)
+    if self:processParent() and self.parent then self.parent:_update(dt) end
 
-    if not currentScene:processWholeStack() then
-        return currentScene[func](currentScene, ...) ~= false
-    else
-        for i = #sceneStack, 1, -1 do
-            if sceneStack[i][func](sceneStack[i], ...) == false then
-                return false
-            end
-        end
+    self:update(dt)
+end
+
+------------------------------------------------------------
+function Scene:_render()
+    if self:processParent() and self.parent then self.parent:_render() end
+
+    self:render()
+end
+
+------------------------------------------------------------
+function Scene:_onEvent(e, a, b, c, d)
+    if self[e](self, a, b, c, d) == false then
+        return false
+    elseif self:processParent() and self.parent then
+        return self.parent:_onEvent(e, a, b, c, d)
     end
 
     return true
@@ -230,7 +247,7 @@ function Scene:onEvent(e, a, b, c, d)
 end
 
 ------------------------------------------------------------
-function Scene:processWholeStack()
+function Scene:processParent()
     return true
 end
 
