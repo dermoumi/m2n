@@ -99,4 +99,58 @@ function Window.setTitle(title)
 end
 
 ------------------------------------------------------------
+function Window.displayCount()
+    return C.nxWindowGetDisplayCount()
+end
+
+------------------------------------------------------------
+function Window.desktopSize(display)
+    display = display or 1
+
+    local sizePtr = ffi.new('int[2]')
+    if not C.nxWindowGetDesktopSize(display, sizePtr) then return end
+    return tonumber(sizePtr[0]), tonumber(sizePtr[1])
+end
+
+------------------------------------------------------------
+function Window.displayName(display)
+    display = display or 1
+
+    local name = C.nxWindowGetDisplayName(display)
+    if name == nil then return '' end
+
+    return ffi.string(name)
+end
+
+------------------------------------------------------------
+function Window.isFullscreen()
+    local fs = C.nxWindowGetFullscreen()
+    if fs == 2 then
+        return true, 'desktop'
+    elseif fs == 1 then
+        return true, 'normal'
+    else
+        return false
+    end
+end
+
+------------------------------------------------------------
+function Window.displayModes(display)
+    display = display or 1
+
+    local countPtr = ffi.new('size_t[1]')
+    local modesPtr = C.nxWindowGetDisplayModes(display, countPtr)
+
+    local modes = {}
+    for i = 1, tonumber(countPtr[0]) / 2 do
+        modes[i] = {
+            width  = tonumber(modesPtr[(i - 1) * 2]),
+            height = tonumber(modesPtr[(i - 1) * 2 + 1])
+        }
+    end
+
+    return modes
+end
+
+------------------------------------------------------------
 return Window

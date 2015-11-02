@@ -49,8 +49,6 @@ namespace
 //----------------------------------------------------------
 // Exported functions
 //----------------------------------------------------------
-
-//------------------------------------------------------
 NX_EXPORT NxWindow* nxWindowGet()
 {
     return window;
@@ -115,12 +113,6 @@ NX_EXPORT void nxWindowReleaseContext()
 }
 
 //------------------------------------------------------
-NX_EXPORT void nxWindowGetSize(int* sizePtr)
-{
-    SDL_GetWindowSize(window, &sizePtr[0], &sizePtr[1]);
-}
-
-//------------------------------------------------------
 NX_EXPORT bool nxWindowGetDesktopSize(int displayIndex, int* sizePtr)
 {
     if (displayIndex < 1 || displayIndex > SDL_GetNumVideoDisplays()) return false;
@@ -144,7 +136,9 @@ NX_EXPORT int nxWindowGetDisplayCount()
 //------------------------------------------------------
 NX_EXPORT const char* nxWindowGetDisplayName(int displayIndex)
 {
-    return SDL_GetDisplayName(displayIndex);
+    if (displayIndex < 1 || displayIndex > SDL_GetNumVideoDisplays()) return nullptr;
+
+    return SDL_GetDisplayName(displayIndex - 1);
 }
 
 //------------------------------------------------------
@@ -168,25 +162,31 @@ NX_EXPORT const int* nxWindowGetDisplayModes(int displayIndex, size_t* count)
     static std::vector<int> modes;
 
     if (displayIndex < 1 || displayIndex > SDL_GetNumVideoDisplays()) {
-        *count = 0;
-        return modes.data();
+        modes.clear();
     }
+    else {
+        size_t displayCount = SDL_GetNumDisplayModes(displayIndex - 1);
+        modes.resize(displayCount * 2);
+        for (size_t i = 0u; i < displayCount; ++i) {
+            SDL_DisplayMode dm;
+            if (SDL_GetDisplayMode(displayIndex - 1, i, &dm) != 0) {
+                modes.clear();
+                break;
+            }
 
-    size_t displayCount = SDL_GetNumDisplayModes(displayIndex);
-    modes.resize(displayCount * 2);
-    for (size_t i = 0u; i < displayCount; ++i) {
-        SDL_DisplayMode dm;
-        if (SDL_GetDisplayMode(displayIndex, i, &dm) != 0) {
-            modes.clear();
-            break;
+            modes[i*2]     = dm.w;
+            modes[i*2 + 1] = dm.h;
         }
-
-        modes[i]     = dm.w;
-        modes[i + 1] = dm.h;
     }
 
     *count = modes.size();
     return modes.data();
+}
+
+//------------------------------------------------------
+NX_EXPORT void nxWindowGetSize(int* sizePtr)
+{   
+    SDL_GetWindowSize(window, &sizePtr[0], &sizePtr[1]);
 }
 
 //------------------------------------------------------
