@@ -38,6 +38,7 @@ ffi.cdef [[
     bool nxWindowCreate(const char*, int, int, bool);
     void nxWindowClose();
     void nxWindowDisplay();
+    void nxWindowGetSize(int*);
     void nxWindowSetTitle(const char*);
 ]]
 
@@ -69,6 +70,13 @@ end
 ------------------------------------------------------------
 function Window.display()
     C.nxWindowDisplay()
+end
+
+------------------------------------------------------------
+function Window.size()
+    local sizePtr = ffi.new('int[2]')
+    C.nxWindowGetSize(sizePtr)
+    return tonumber(sizePtr[0]), tonumber(sizePtr[1])
 end
 
 ------------------------------------------------------------

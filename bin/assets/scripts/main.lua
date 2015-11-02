@@ -85,7 +85,7 @@ if not ok then
     return 1
 end
 
-Renderer.setupViewport(0, 0, 1280, 720)
+Renderer.setupViewport(0, 0, Window.size())
 
 ------------------------------------------------------------
 -- Startup scene

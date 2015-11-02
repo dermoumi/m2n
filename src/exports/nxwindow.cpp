@@ -113,6 +113,12 @@ NX_EXPORT void nxWindowReleaseContext()
     if (!Thread::isMain()) GlContext::release();
 }
 
+//----------------------------------------------------------
+NX_EXPORT void nxWindowGetSize(int* sizePtr)
+{
+    SDL_GetWindowSize(window, &sizePtr[0], &sizePtr[1]);
+}
+
 //------------------------------------------------------
 NX_EXPORT void nxWindowSetTitle(const char* title)
 {
