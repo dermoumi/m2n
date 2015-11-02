@@ -26,36 +26,53 @@
 --]]----------------------------------------------------------------------------
 
 ------------------------------------------------------------
--- A Title scene, probably the first scene the user sees
+-- A test scene to be pushed over title
 ------------------------------------------------------------
 local class = require 'nx.class'
 local Scene = require 'scene'
-local SceneTitle = class('scene.title', Scene)
+local SceneSubtitle = class('scene.subtitle', Scene)
 
 ------------------------------------------------------------
 local Mouse = require 'nx.mouse'
 local Renderer = require 'nx.renderer'
 
 ------------------------------------------------------------
-function SceneTitle:render()
-    if Mouse.isButtonDown('left') then
-        Renderer.clear(128, 255, 0)
-    else
-        Renderer.clear(255, 128, 0)
+function SceneSubtitle:load()
+    print('hello?')
+
+    Renderer.testInit()
+    self._processParent = true
+end
+
+------------------------------------------------------------
+function SceneSubtitle:release()
+    print('bye?')
+end
+
+------------------------------------------------------------
+function SceneSubtitle:render()
+    Renderer.testRender()
+end
+
+------------------------------------------------------------
+function SceneSubtitle:onQuit()
+    Renderer.testRelease()
+end
+
+------------------------------------------------------------
+function SceneSubtitle:onKeyDown(scancode)
+    if scancode == 'f2' then
+        Scene.back()
+        return false
+    elseif scancode == 'f3' then
+        self._processParent = not self._processParent
     end
 end
 
 ------------------------------------------------------------
-function SceneTitle:onResize(w, h)
-    Renderer.setupViewport(0, 0, w, h)
+function SceneSubtitle:processParent()
+    return self._processParent
 end
 
 ------------------------------------------------------------
-function SceneTitle:onKeyDown(scancode)
-    if scancode == 'f1' then
-        Scene.push('scene.subtitle')
-    end
-end
-
-------------------------------------------------------------
-return SceneTitle
+return SceneSubtitle

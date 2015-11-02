@@ -41,7 +41,11 @@ end
 
 ------------------------------------------------------------
 function Scene.static.goTo(sceneName)
-    sceneStack = {}
+    for i = #sceneStack, 1, -1 do
+        sceneStack[i]:release()
+        sceneStack[i] = nil
+    end
+
     return Scene.push(sceneName)
 end
 
@@ -58,6 +62,14 @@ function Scene.static.push(sceneName)
 
     sceneStack[#sceneStack + 1] = scene
     return scene:load()
+end
+
+------------------------------------------------------------
+function Scene.static.back()
+    local scene = sceneStack[#sceneStack]
+    scene:release()
+
+    sceneStack[#sceneStack] = nil
 end
 
 ------------------------------------------------------------
@@ -97,6 +109,11 @@ end
 
 ------------------------------------------------------------
 function Scene:render()
+    -- Nothing to do
+end
+
+------------------------------------------------------------
+function Scene:release()
     -- Nothing to do
 end
 
