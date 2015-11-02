@@ -103,6 +103,13 @@ private:
         RDIInputLayout inputLayouts[MaxNumVertexLayouts];
     };
 
+    struct RDIVertBufSlot
+    {
+        uint32_t vbObj;
+        uint32_t offset;
+        uint32_t stride;
+    };
+
     enum PendingMask : uint32_t
     {
         PMViewport     = 1 << 0,
@@ -131,10 +138,12 @@ private:
     RDIObjects<RDIBuffer> mBuffers;
     RDIObjects<RDIShader> mShaders;
 
+    RDIVertBufSlot mVertBufSlots[16];
     uint32_t mPrevShaderID {0u},    mCurShaderID {0u};
     uint32_t mCurVertexLayout {0u}, mNewVertexLayout {0u};
     uint32_t mCurIndexBuffer {0u},  mNewIndexBuffer {0u};
     uint32_t mIndexFormat {0u};
+    uint32_t mActiveVertexAttribsMask {0u};
     uint32_t mPendingMask {0u};
 };
 

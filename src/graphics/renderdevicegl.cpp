@@ -105,6 +105,7 @@ bool RenderDeviceGL::initialize()
 
     // Set some default values
     mIndexFormat = GL_UNSIGNED_SHORT;
+    mActiveVertexAttribsMask = 0;
 
     // TODO: Find supported depth format (some old ATI cards only support 16 bit depth for FBOs)
 
@@ -458,9 +459,16 @@ void RenderDeviceGL::setIndexBuffer(uint32_t bufObj, RDIIndexFormat format)
 }
 
 //----------------------------------------------------------
-void RenderDeviceGL::setVertexBuffer(uint32_t, uint32_t, uint32_t, uint32_t)
+void RenderDeviceGL::setVertexBuffer(uint32_t slot, uint32_t vbObj, uint32_t offset,
+    uint32_t stride)
 {
-    // TODO
+    if (slot >= 16) {
+        Log::warning("Attempting to set Vertex buffer at slot >= 16");
+        return;
+    }
+
+    mVertBufSlots[slot] = {vbObj, offset, stride};
+    mPendingMask |= PMVertexLayout;
 }
 
 //----------------------------------------------------------
@@ -565,26 +573,53 @@ bool RenderDeviceGL::linkShaderProgram(uint32_t programObj)
 //------------------------------------------------------------------------------
 bool RenderDeviceGL::applyVertexLayout()
 {
-    // uint32_t newVertexAttribMask {0u};
+    uint32_t newVertexAttribMask {0u};
 
-    // if (mNewVertexLayout != 0) {
-    //     if (mCurShaderID == 0) return false;
+    if (mNewVertexLayout != 0) {
+        if (mCurShaderID == 0) return false;
 
-    //     RDIVertexLayout& v1         = mVertexLayouts[mNewVertexLayout - 1];
-    //     RDIShader& shader           = mShaders.getRef(mCurShaderID);
-    //     RDIInputLayout& inputLayout = shader.inputLayout[mNewVertexLayout - 1];
+        RDIVertexLayout& v1         = mVertexLayouts[mNewVertexLayout - 1];
+        RDIShader& shader           = mShaders.getRef(mCurShaderID);
+        RDIInputLayout& inputLayout = shader.inputLayouts[mNewVertexLayout - 1];
 
-    //     if (!inputLayout.valid) return false;
+        if (!inputLayout.valid) return false;
 
-    //     // Set vertex attrib pointers
-    //     for (uint32_t i = 0; i < v1.numAttribs; ++i) {
-    //         int8_t attribIndex = inputLayout.attribIndices[i];
-    //         if (attribIndex >= 0) {
-    //             VertexLayoutAttrib& attrib = v1.attribs[i];
-    //             cnst RDIVertBufSlot& vbSlot = mVertB
-    //         }
-    //     }
-    // }
+        // Set vertex attrib pointers
+        for (uint32_t i = 0; i < v1.numAttribs; ++i) {
+            int8_t attribIndex = inputLayout.attribIndices[i];
+            if (attribIndex >= 0) {
+                VertexLayoutAttrib& attrib = v1.attribs[i];
+                const auto& vbSlot = mVertBufSlots[attrib.vbSlot];
+
+                if (mBuffers.getRef(vbSlot.vbObj).glObj == 0 ||
+                    mBuffers.getRef(vbSlot.vbObj).type != GL_ARRAY_BUFFER) {
+                    Log::error("Attempting to reference an invalid vertex buffer");
+                    return false;
+                }
+
+                glBindBuffer(GL_ARRAY_BUFFER, mBuffers.getRef(vbSlot.vbObj).glObj);
+                glVertexAttribPointer(attribIndex, attrib.size, GL_FLOAT, GL_FALSE,
+                    vbSlot.stride, (char*)0 + vbSlot.offset + attrib.offset);
+
+                newVertexAttribMask |= 1 << attribIndex;
+            }
+        }
+
+        for (uint32_t i = 0; i < 16u; ++i) {
+            uint32_t curBit = 1 << i;
+            if ((newVertexAttribMask & curBit) != (mActiveVertexAttribsMask & curBit)) {
+                if (newVertexAttribMask & curBit) {
+                    glEnableVertexAttribArray(i);
+                }
+                else {
+                    glDisableVertexAttribArray(i);
+                }
+            }
+        }
+        mActiveVertexAttribsMask = newVertexAttribMask;
+
+        return true;
+    }
 
     // TODO
     return true;
