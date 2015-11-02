@@ -194,6 +194,26 @@ void RenderDeviceGL::clear(const float* color)
 }
 
 //----------------------------------------------------------
+void RenderDeviceGL::draw(RDIPrimType primType, uint32_t firstVert, uint32_t vertCount)
+{
+    if (commitStates()) {
+        glDrawArrays(toPrimType[primType], firstVert, vertCount);
+    }
+}
+
+//----------------------------------------------------------
+void RenderDeviceGL::draw(RDIPrimType primType, uint32_t firstIndex, uint32_t indexCount,
+        uint32_t firstVert, uint32_t vertCount)
+{
+    if (commitStates()) {
+        firstIndex *= (mIndexFormat == GL_UNSIGNED_SHORT) ? sizeof(short) : sizeof(int);
+
+        glDrawRangeElements(toPrimType[primType], firstVert, firstVert + vertCount,
+            indexCount, mIndexFormat, (char*)0 + firstIndex);
+    }
+}
+
+//----------------------------------------------------------
 uint32_t RenderDeviceGL::registerVertexLayout(uint32_t numAttribs,
     const VertexLayoutAttrib* attribs)
 {
