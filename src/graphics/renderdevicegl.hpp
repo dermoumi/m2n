@@ -40,7 +40,6 @@
 class RenderDeviceGL : public RenderDevice
 {
 public:
-    RenderDeviceGL();
     bool initialize();
 
     void initStates();
@@ -60,7 +59,7 @@ public:
     const std::string& getShaderLog();
     int getShaderConstLoc(uint32_t shaderID, const char* name);
     int getShaderSamplerLoc(uint32_t shaderID, const char* name);
-    void setShaderConst(int loc, RDIShaderConstType type, void* values, uint32_t count = 1);
+    void setShaderConst(int loc, RDIShaderConstType type, float* values, uint32_t count = 1);
     void setShaderSampler(int loc, uint32_t texUnit);
     const char* getDefaultVSCode();
     const char* getDefaultFSCode();
@@ -118,6 +117,8 @@ private:
     uint32_t createShaderProgram(const char* vertexShaderSrc, const char* fragmentShaderSrc);
     bool linkShaderProgram(uint32_t programObj);
 
+    bool applyVertexLayout();
+
 private:
     int mVpX {0}, mVpY {0}, mVpWidth {1}, mVpHeight {1};
     int mScX {0}, mScY {0}, mScWidth {1}, mScHeight {1};
@@ -130,8 +131,11 @@ private:
     RDIObjects<RDIBuffer> mBuffers;
     RDIObjects<RDIShader> mShaders;
 
-    uint32_t mPrevShaderID, mCurShaderID;
-    uint32_t mPendingMask {0xFFFFFFFFu};
+    uint32_t mPrevShaderID {0u},    mCurShaderID {0u};
+    uint32_t mCurVertexLayout {0u}, mNewVertexLayout {0u};
+    uint32_t mCurIndexBuffer {0u},  mNewIndexBuffer {0u};
+    uint32_t mIndexFormat {0u};
+    uint32_t mPendingMask {0u};
 };
 
 //------------------------------------------------------------------------------

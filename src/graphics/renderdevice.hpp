@@ -161,7 +161,7 @@ public:
     virtual const std::string& getShaderLog() = 0;
     virtual int getShaderConstLoc(uint32_t shaderID, const char* name) = 0;
     virtual int getShaderSamplerLoc(uint32_t shaderID, const char* name) = 0;
-    virtual void setShaderConst(int loc, RDIShaderConstType type, void* values,
+    virtual void setShaderConst(int loc, RDIShaderConstType type, float* values,
         uint32_t count = 1) = 0;
     virtual void setShaderSampler(int loc, uint32_t texUnit) = 0;
     virtual const char* getDefaultVSCode() = 0;

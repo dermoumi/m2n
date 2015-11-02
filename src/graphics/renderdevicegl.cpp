@@ -48,11 +48,8 @@ static const char* defaultShaderFS =
     "   gl_FragColor = color;\n"
     "}\n";
 
-//----------------------------------------------------------
-RenderDeviceGL::RenderDeviceGL()
-{
-    // Nothing else to do (yet)
-}
+static uint32_t toIndexFormat[] = {GL_UNSIGNED_SHORT, GL_UNSIGNED_INT};
+static uint32_t toPrimType[]    = {GL_TRIANGLES, GL_TRIANGLE_STRIP};
 
 //----------------------------------------------------------
 bool RenderDeviceGL::initialize()
@@ -106,6 +103,9 @@ bool RenderDeviceGL::initialize()
     mCaps.texNPOT = glExt::ARB_texture_non_power_of_two;
     mCaps.rtMultisampling = glExt::EXT_framebuffer_multisample;
 
+    // Set some default values
+    mIndexFormat = GL_UNSIGNED_SHORT;
+
     // TODO: Find supported depth format (some old ATI cards only support 16 bit depth for FBOs)
 
     initStates();
@@ -123,8 +123,13 @@ void RenderDeviceGL::initStates()
 //----------------------------------------------------------
 void RenderDeviceGL::resetStates()
 {
-    // TODO: Commit new states
+    // TODO: complete this
+
+    mCurVertexLayout = 1; mNewVertexLayout = 0;
+    mCurIndexBuffer = 1;  mNewIndexBuffer = 0;
+
     mPendingMask = 0xFFFFFFFFu;
+    commitStates();
 
     // Bind buffers
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -169,7 +174,10 @@ bool RenderDeviceGL::commitStates(uint32_t filter)
 
         // Bind vertex buffers
         if (mask & PMVertexLayout) {
-            // TODO
+            if (!applyVertexLayout()) return false;
+
+            mCurVertexLayout = mNewVertexLayout;
+            mPrevShaderID    = mCurShaderID;
             mPendingMask &= ~PMVertexLayout;
         }
     }
@@ -279,29 +287,48 @@ const std::string& RenderDeviceGL::getShaderLog()
 }
 
 //----------------------------------------------------------
-int RenderDeviceGL::getShaderConstLoc(uint32_t, const char*)
+int RenderDeviceGL::getShaderConstLoc(uint32_t shaderID, const char* name)
 {
-    // TODO
-    return -1;
+    RDIShader& shader = mShaders.getRef(shaderID);
+    return glGetUniformLocation(shader.oglProgramObj, name);
 }
 
 //----------------------------------------------------------
-int RenderDeviceGL::getShaderSamplerLoc(uint32_t, const char*)
+int RenderDeviceGL::getShaderSamplerLoc(uint32_t shaderID, const char* name)
 {
-    // TODO
-    return -1;
+    RDIShader& shader = mShaders.getRef(shaderID);
+    return glGetUniformLocation(shader.oglProgramObj, name);
 }
 
 //----------------------------------------------------------
-void RenderDeviceGL::setShaderConst(int, RDIShaderConstType, void*, uint32_t)
+void RenderDeviceGL::setShaderConst(int loc, RDIShaderConstType type, float* values, uint32_t count)
 {
-    // TODO
+    switch(type) {
+    case CONST_FLOAT:
+        glUniform1fv(loc, count, values);
+        break;
+    case CONST_FLOAT2:
+        glUniform2fv(loc, count, values);
+        break;
+    case CONST_FLOAT3:
+        glUniform3fv(loc, count, values);
+        break;
+    case CONST_FLOAT4:
+        glUniform4fv(loc, count, values);
+        break;
+    case CONST_FLOAT44:
+        glUniformMatrix4fv(loc, count, false, values);
+        break;
+    case CONST_FLOAT33:
+        glUniformMatrix4fv(loc, count, false, values);
+        break;
+    }
 }
 
 //----------------------------------------------------------
-void RenderDeviceGL::setShaderSampler(int, uint32_t)
+void RenderDeviceGL::setShaderSampler(int loc, uint32_t texUnit)
 {
-    // TODO
+    glUniform1i(loc, (int)texUnit);
 }
 
 //----------------------------------------------------------
@@ -423,9 +450,11 @@ void RenderDeviceGL::setScissorRect(int x, int y, int width, int height)
 }
 
 //----------------------------------------------------------
-void RenderDeviceGL::setIndexBuffer(uint32_t, RDIIndexFormat)
+void RenderDeviceGL::setIndexBuffer(uint32_t bufObj, RDIIndexFormat format)
 {
-    // TODO
+    mIndexFormat = toIndexFormat[format];
+    mNewIndexBuffer = bufObj;
+    mPendingMask |= PMIndexBuffer;
 }
 
 //----------------------------------------------------------
@@ -435,9 +464,9 @@ void RenderDeviceGL::setVertexBuffer(uint32_t, uint32_t, uint32_t, uint32_t)
 }
 
 //----------------------------------------------------------
-void RenderDeviceGL::setVertexLayout(uint32_t)
+void RenderDeviceGL::setVertexLayout(uint32_t vlObj)
 {
-    // TODO
+    mNewVertexLayout = vlObj;
 }
 
 //----------------------------------------------------------
@@ -530,6 +559,34 @@ bool RenderDeviceGL::linkShaderProgram(uint32_t programObj)
     glGetProgramiv(programObj, GL_LINK_STATUS, &status);
     if (!status) return false;
 
+    return true;
+}
+
+//------------------------------------------------------------------------------
+bool RenderDeviceGL::applyVertexLayout()
+{
+    // uint32_t newVertexAttribMask {0u};
+
+    // if (mNewVertexLayout != 0) {
+    //     if (mCurShaderID == 0) return false;
+
+    //     RDIVertexLayout& v1         = mVertexLayouts[mNewVertexLayout - 1];
+    //     RDIShader& shader           = mShaders.getRef(mCurShaderID);
+    //     RDIInputLayout& inputLayout = shader.inputLayout[mNewVertexLayout - 1];
+
+    //     if (!inputLayout.valid) return false;
+
+    //     // Set vertex attrib pointers
+    //     for (uint32_t i = 0; i < v1.numAttribs; ++i) {
+    //         int8_t attribIndex = inputLayout.attribIndices[i];
+    //         if (attribIndex >= 0) {
+    //             VertexLayoutAttrib& attrib = v1.attribs[i];
+    //             cnst RDIVertBufSlot& vbSlot = mVertB
+    //         }
+    //     }
+    // }
+
+    // TODO
     return true;
 }
 
