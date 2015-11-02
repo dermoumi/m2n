@@ -38,8 +38,22 @@ ffi.cdef [[
     bool nxWindowCreate(const char*, int, int, bool);
     void nxWindowClose();
     void nxWindowDisplay();
+    void nxWindowEnsureContext();
+    void nxWindowReleaseContext();
+    bool nxWindowGetDesktopSize(int, int*);
+    int nxWindowGetDisplayCount();
+    const char* nxWindowGetDisplayName(int);
+    int nxWindowGetFullscreen();
+    const int* nxWindowGetDisplayModes(int, size_t*);
     void nxWindowGetSize(int*);
+    void nxWindowGetPosition(int*);
+    const char*nxWindowGetTitle();
+    void nxWindowMinimize();
+    void nxWindowSetPosition(int, int);
+    void nxWindowSetSize(int, int);
     void nxWindowSetTitle(const char*);
+    void nxWindowSimpleMessageBox(const char*, const char*, uint32_t, bool);
+    void nxWindowDrawableSize(int*);
 ]]
 
 ------------------------------------------------------------
