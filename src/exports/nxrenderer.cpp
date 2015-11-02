@@ -25,7 +25,7 @@
     For more information, please refer to <http://unlicense.org>
 *///============================================================================
 #include "../config.hpp"
-#include "../graphics/renderdevice.hpp"
+#include "../system/log.hpp"
 
 #if !defined(NX_OPENGL_ES)
     #include "../graphics/renderdevicegl.hpp"
@@ -80,7 +80,58 @@ NX_EXPORT void nxRendererFinish()
 NX_EXPORT void nxRendererSetupViewport(int x, int y, int width, int height)
 {
     rdi->setViewport(x, y, width, height);
-    rdi->setScissorRect(x, y, width, height);
+    // rdi->setScissorRect(x, y, width, height);
+}
+
+//----------------------------------------------------------
+static uint32_t vlShape;
+static uint32_t vbTriangle;
+static uint32_t defaultShader;
+
+//----------------------------------------------------------
+NX_EXPORT void nxRendererTestInit()
+{
+    // Register Vertex layouts
+    VertexLayoutAttrib attribsPosOnly[1] {
+        {"vertPos", 0, 3, 0}
+    };
+    vlShape = rdi->registerVertexLayout(1, attribsPosOnly);
+
+    float triVerts[3*3] {
+         0.f,   0.5f, 0.f,
+        -0.5f, -0.5f, 0.f,
+         0.5f, -0.5f, 0.f
+    };
+    vbTriangle = rdi->createVertexBuffer(3 * 3 * sizeof(float), triVerts);
+
+    defaultShader = rdi->createShader(
+        "attribute vec3 vertPos;\n"
+        "void main() {\n"
+        "   gl_Position = vec4(vertPos, 1.0);\n"
+        "}\n",
+        "void main() {\n"
+        "   gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);\n"
+        "}\n"
+    );
+}
+
+//----------------------------------------------------------
+NX_EXPORT void nxRendererTestRender()
+{
+    rdi->bindShader(defaultShader);
+
+    rdi->setVertexBuffer(0, vbTriangle, 0, 12);
+    rdi->setIndexBuffer( 0, IDXFMT_16 );
+    rdi->setVertexLayout(vlShape);
+
+    rdi->draw(PRIM_TRIANGLES, 0, 3);
+}
+
+//----------------------------------------------------------
+NX_EXPORT void nxRendererTestRelease()
+{
+    rdi->destroyShader(defaultShader);
+    rdi->destroyBuffer(vbTriangle);
 }
 
 //==============================================================================

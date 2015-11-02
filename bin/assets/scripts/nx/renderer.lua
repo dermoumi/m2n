@@ -37,6 +37,9 @@ ffi.cdef [[
     void nxRendererBegin();
     void nxRendererFinish();
     void nxRendererSetupViewport(int, int, int, int);
+    void nxRendererTestInit();
+    void nxRendererTestRender();
+    void nxRendererTestRelease();
 ]]
 
 ------------------------------------------------------------
@@ -66,6 +69,21 @@ end
 ------------------------------------------------------------
 function Renderer.setupViewport(x, y, w, h)
     C.nxRendererSetupViewport(x, y, w, h)
+end
+
+------------------------------------------------------------
+function Renderer.testInit()
+    C.nxRendererTestInit()
+end
+
+------------------------------------------------------------
+function Renderer.testRender()
+    C.nxRendererTestRender()
+end
+
+------------------------------------------------------------
+function Renderer.testRelease()
+    C.nxRendererTestRelease()
 end
 
 ------------------------------------------------------------

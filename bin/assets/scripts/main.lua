@@ -85,7 +85,8 @@ if not ok then
     return 1
 end
 
-Renderer.setupViewport(0, 0, 800, 600)
+Renderer.setupViewport(0, 0, 1280, 720)
+Renderer.testInit()
 
 ------------------------------------------------------------
 -- Startup scene
@@ -117,6 +118,7 @@ while Window.isOpen() do
     -- Process events
     for e, a, b, c, d in Events.poll() do
         if e == 'quit' and Scene.call('onQuit') then
+            Renderer.testRelease()
             Window.close()
             break
         else
@@ -128,7 +130,8 @@ while Window.isOpen() do
     Scene.call('update', elapsedTime)
 
     Renderer.begin()
-    Scene.call('render') 
+    Scene.call('render')
+    Renderer.testRender()
     Renderer.finish()
 
     Window.display()
