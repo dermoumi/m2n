@@ -202,7 +202,7 @@ void RenderDeviceGL::draw(RDIPrimType primType, uint32_t firstVert, uint32_t ver
 }
 
 //----------------------------------------------------------
-void RenderDeviceGL::draw(RDIPrimType primType, uint32_t firstIndex, uint32_t indexCount,
+void RenderDeviceGL::drawIndexed(RDIPrimType primType, uint32_t firstIndex, uint32_t indexCount,
         uint32_t firstVert, uint32_t vertCount)
 {
     if (commitStates()) {
@@ -243,14 +243,17 @@ uint32_t RenderDeviceGL::createShader(const char* vertexShaderSrc, const char* f
     int attribCount;
     glGetProgramiv(programObj, GL_ACTIVE_ATTRIBUTES, &attribCount);
 
+    // Run through vertex layouts and check which is compatible with this shader
     for (uint32_t i = 0; i < mNumVertexLayouts; ++i) {
         RDIVertexLayout& v1 = mVertexLayouts[i];
         bool allAttribsFound = true;
 
+        // Reset attribute indices to -1 (no attribute)
         for (uint32_t j = 0; j < 16; ++j) {
             shader.inputLayouts[i].attribIndices[j] = -1;
         }
 
+        // Check if shader has all declared attributes, and set locations
         for (int j = 0; j < attribCount; ++j)
         {
             char name[32];
@@ -271,6 +274,7 @@ uint32_t RenderDeviceGL::createShader(const char* vertexShaderSrc, const char* f
             }
         }
 
+        // An input layout is only valid for this shader if all attributes were found
         shader.inputLayouts[i].valid = allAttribsFound;
     }
 
