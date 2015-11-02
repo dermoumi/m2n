@@ -212,14 +212,12 @@ void RenderDeviceGL::draw(RDIPrimType primType, uint32_t firstVert, uint32_t ver
 }
 
 //----------------------------------------------------------
-void RenderDeviceGL::drawIndexed(RDIPrimType primType, uint32_t firstIndex, uint32_t indexCount,
-        uint32_t firstVert, uint32_t vertCount)
+void RenderDeviceGL::drawIndexed(RDIPrimType primType, uint32_t firstIndex, uint32_t indexCount)
 {
     if (commitStates()) {
         firstIndex *= (mIndexFormat == GL_UNSIGNED_SHORT) ? sizeof(short) : sizeof(int);
 
-        glDrawRangeElements(toPrimType[primType], firstVert, firstVert + vertCount,
-            indexCount, mIndexFormat, (char*)0 + firstIndex);
+        glDrawElements(toPrimType[primType], indexCount, mIndexFormat, (char*)0 + firstIndex);
     }
 }
 

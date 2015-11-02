@@ -46,8 +46,7 @@ public:
     // Drawcalls and clears
     void clear(const float* color);
     void draw(RDIPrimType primType, uint32_t firstVert, uint32_t vertCount);
-    void drawIndexed(RDIPrimType primType, uint32_t firstIndex, uint32_t indexCount,
-        uint32_t firstVert, uint32_t vertCount);
+    void drawIndexed(RDIPrimType primType, uint32_t firstIndex, uint32_t indexCount);
 
     // Vertex layouts
     uint32_t registerVertexLayout(uint32_t numAttribs, const VertexLayoutAttrib* attribs);

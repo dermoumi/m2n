@@ -169,7 +169,7 @@ bool RenderDeviceGLES2::commitStates(uint32_t filter)
 
                 mCurIndexBuffer = mNewIndexBuffer;
             }
-            
+
             mPendingMask &= ~PMIndexBuffer;
         }
 
@@ -208,8 +208,7 @@ void RenderDeviceGLES2::draw(RDIPrimType primType, uint32_t firstVert, uint32_t 
 }
 
 //----------------------------------------------------------
-void RenderDeviceGLES2::drawIndexed(RDIPrimType primType, uint32_t firstIndex, uint32_t indexCount,
-        uint32_t firstVert, uint32_t vertCount)
+void RenderDeviceGLES2::drawIndexed(RDIPrimType primType, uint32_t firstIndex, uint32_t indexCount)
 {
     if (commitStates()) {
         firstIndex *= (mIndexFormat == GL_UNSIGNED_SHORT) ? sizeof(short) : sizeof(int);

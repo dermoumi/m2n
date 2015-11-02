@@ -147,8 +147,7 @@ public:
     // Drawcalls and clears
     virtual void clear(const float* color) = 0;
     virtual void draw(RDIPrimType primType, uint32_t firstVert, uint32_t vertCount) = 0;
-    virtual void drawIndexed(RDIPrimType primType, uint32_t firstIndex, uint32_t indexCount,
-        uint32_t firstVert, uint32_t vertCount) = 0;
+    virtual void drawIndexed(RDIPrimType primType, uint32_t firstIndex, uint32_t indexCount) = 0;
 
     // Vertex layouts
     virtual uint32_t registerVertexLayout(uint32_t numAttribs,
