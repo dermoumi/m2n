@@ -41,6 +41,7 @@ local SceneTitle = require 'scene.title'
 local eventMapping = {
     focus             = 'onFocus',
     visible           = 'onVisible',
+    resized           = 'onResize',
     textinput         = 'onTextInput',
     textedit          = 'onTextEdit',
     keydown           = 'onKeyDown',
@@ -86,7 +87,6 @@ if not ok then
 end
 
 Renderer.setupViewport(0, 0, 1280, 720)
-Renderer.testInit()
 
 ------------------------------------------------------------
 -- Startup scene
@@ -118,7 +118,6 @@ while Window.isOpen() do
     -- Process events
     for e, a, b, c, d in Events.poll() do
         if e == 'quit' and Scene.call('onQuit') then
-            Renderer.testRelease()
             Window.close()
             break
         else
@@ -131,7 +130,6 @@ while Window.isOpen() do
 
     Renderer.begin()
     Scene.call('render')
-    Renderer.testRender()
     Renderer.finish()
 
     Window.display()

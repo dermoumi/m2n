@@ -37,12 +37,30 @@ local Mouse = require 'nx.mouse'
 local Renderer = require 'nx.renderer'
 
 ------------------------------------------------------------
+function SceneTitle:load()
+    print('loaded?')
+    Renderer.testInit()
+end
+
+------------------------------------------------------------
 function SceneTitle:render()
     if Mouse.isButtonDown('left') then
         Renderer.clear(128, 255, 0)
     else
         Renderer.clear(255, 128, 0)
     end
+
+    Renderer.testRender()
+end
+
+------------------------------------------------------------
+function SceneTitle:onResize(w, h)
+    Renderer.setupViewport(0, 0, w, h)
+end
+
+------------------------------------------------------------
+function SceneTitle:onQuit()
+    Renderer.testRelease()
 end
 
 ------------------------------------------------------------

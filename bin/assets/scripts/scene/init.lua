@@ -42,11 +42,13 @@ end
 ------------------------------------------------------------
 function Scene.static.goTo(scene)
     sceneStack = {scene}
+    scene:load()
 end
 
 ------------------------------------------------------------
 function Scene.static.push(scene)
     sceneStack[#sceneStack + 1] = scene
+    scene:load()
 end
 
 ------------------------------------------------------------
@@ -93,6 +95,11 @@ end
 
 ------------------------------------------------------------
 function Scene:onVisible(isVisible)
+    -- Nothing to do
+end
+
+------------------------------------------------------------
+function Scene:onResize(w, h)
     -- Nothing to do
 end
 
