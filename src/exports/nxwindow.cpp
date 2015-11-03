@@ -64,7 +64,8 @@ NX_EXPORT void nxWindowClose()
 //------------------------------------------------------
 NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, int fullscreen,
     bool vsync, bool resizable, bool borderless, int minWidth, int minHeight, bool highDpi,
-    int, int posX, int posY, unsigned int depthBits, unsigned int stencilBits, unsigned int msaa)
+    int refreshRate, int posX, int posY, unsigned int depthBits, unsigned int stencilBits,
+    unsigned int msaa)
 {
     if (window) {
         nxWindowClose();
@@ -98,8 +99,6 @@ NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, int
     if (borderless) flags |= SDL_WINDOW_BORDERLESS;
     if (highDpi)    flags |= SDL_WINDOW_ALLOW_HIGHDPI;
 
-    // TODO: Refresh rate
-
     if      (posX == -1) posX = SDL_WINDOWPOS_UNDEFINED;
     else if (posX == -2) posX = SDL_WINDOWPOS_CENTERED;
 
@@ -108,6 +107,17 @@ NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, int
 
     window = SDL_CreateWindow(title, posX, posY, width, height, flags);
     SDL_SetWindowMinimumSize(window, minWidth, minHeight);
+
+    // Set display mode
+    SDL_DisplayMode target, closest;
+    target.w = width;
+    target.h = height;
+    target.refresh_rate = refreshRate;
+    target.format = 0;
+    target.driverdata = 0;
+    if (SDL_GetClosestDisplayMode(0, &target, &closest) != nullptr) {
+        SDL_SetWindowDisplayMode(window, &closest);
+    }
 
     // Context settings
     auto* context = GlContext::create(depthBits, stencilBits, msaa);
