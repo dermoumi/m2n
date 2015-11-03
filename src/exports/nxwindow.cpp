@@ -62,7 +62,9 @@ NX_EXPORT void nxWindowClose()
 }
 
 //------------------------------------------------------
-NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, bool fullscreen)
+NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, int fullscreen,
+    bool vsync, bool resizable, bool borderless, int minWidth, int minHeight, bool highDpi,
+    bool sRGB, int refreshRate, int posX, int posY)
 {
     if (window) {
         nxWindowClose();

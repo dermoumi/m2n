@@ -35,7 +35,8 @@ ffi.cdef [[
     typedef struct NxWindow NxWindow;
 
     NxWindow* nxWindowGet();
-    bool nxWindowCreate(const char*, int, int, bool);
+    bool nxWindowCreate(const char*, int, int, int, bool, bool, bool, int, int, bool, bool, int,
+        int, int);
     void nxWindowClose();
     void nxWindowDisplay();
     void nxWindowEnsureContext();
@@ -66,6 +67,15 @@ local MsgBoxType = {
     ['info']    = 64
 }
 
+local FsType = {
+    normal = 1,
+    desktop = 2
+}
+
+local PosType = {
+    center = -1
+}
+
 ------------------------------------------------------------
 -- A set of functions to manage the main window
 ------------------------------------------------------------
@@ -81,8 +91,51 @@ local function getDrawableSize()
 end
 
 ------------------------------------------------------------
-function Window.create(title, width, height, fullscreen)
-    if C.nxWindowCreate(title, width, height, fullscreen) == nil then
+local function checkFlags(flags)
+    flags = flags or {}
+
+    if flags.fullscreen == nil     then flags.fullscreen = false end
+    if flags.fullscreentype == nil then flags.fullscreentype = 'auto' end
+    if flags.vsync == nil          then flags.vsync = true end
+    if flags.resizable == nil      then flags.resizable = false end
+    if flags.borderless == nil     then flags.borderless = false end
+    if flags.minwidth == nil       then flags.minwidth = 480 end
+    if flags.minheight == nil      then flags.minheight = 320 end
+    if flags.highdpi == nil        then flags.highdpi = false end
+    if flags.srgb == nil           then flags.srgb = true end
+    if flags.refreshrate == nil    then flags.refreshrate = 0 end
+    if flags.x == nil              then flags.x = 'center' end
+    if flags.y == nil              then flags.y = 'center' end
+
+    return flags
+end
+
+------------------------------------------------------------
+function Window.create(title, width, height, flags)
+    flags = checkFlags(flags)
+
+    local fullscreen = flags.fullscreen and FsType[flags.fullscreentype] or false
+    local posX = PosType[flags.x] or flags.x
+    local posY = PosType[flags.y] or flags.y
+
+    local window = C.nxWindowCreate(
+        title,
+        width,
+        height,
+        fullscreen,
+        flags.vsync,
+        flags.resizable,
+        flags.borderless,
+        flags.minwidth,
+        flags.minheight,
+        flags.highdpi,
+        flags.srgb,
+        flags.refreshrate,
+        posX,
+        posY
+    )
+
+    if window == nil then
         require 'nx' -- For the GetSDLError() C declaration
         return nil, ffi.string(C.nxSysGetSDLError())
     end
