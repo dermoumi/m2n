@@ -35,12 +35,21 @@ local SceneSubtitle = class('scene.subtitle', Scene)
 ------------------------------------------------------------
 local Mouse = require 'nx.mouse'
 local Renderer = require 'nx.renderer'
+local Thread = require 'nx.thread'
 
 ------------------------------------------------------------
 function SceneSubtitle:load()
     print('hello?')
 
-    Renderer.testInit()
+    local thread = Thread:new(function()
+        require('nx.window').ensureContext()
+        require('nx.renderer').testInit()
+    end)
+
+    print('huh?-')
+    thread:join()
+    print('huh?')
+
     self._processParent = true
 end
 

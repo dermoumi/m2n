@@ -48,11 +48,23 @@ namespace
 
     std::mutex windowMutex;
     thread_local GlContextPtr currentContext {nullptr};
+
+    std::mutex internalContextMutex;
+    GlContextPtr internalContext {nullptr};
 }
 
 //----------------------------------------------------------
 GlContext* GlContext::create(unsigned int depth, unsigned int stencil, unsigned int msaa)
 {
+    if (!internalContext) {
+        std::lock_guard<std::mutex> lock(internalContextMutex);
+        internalContext = GlContextPtr(new GlContext(0, 0, 0));
+    }
+    else {
+        std::lock_guard<std::mutex> lock(internalContextMutex);
+        internalContext->setActive(true);
+    }
+
     auto context = new GlContext(depth, stencil, msaa);
     currentContext = GlContextPtr(context);
     return currentContext.get();

@@ -111,7 +111,7 @@ local lastTime         = Nx.getSystemTime()
 ------------------------------------------------------------
 -- Main loop
 ------------------------------------------------------------
-while Window.isOpen() do
+while true do
     local currentTime = Nx.getSystemTime()
     local elapsedTime = currentTime - lastTime
     lastTime = currentTime
@@ -128,6 +128,9 @@ while Window.isOpen() do
             scene:_onEvent(event, a, b, c, d)
         end
     end
+
+    -- Check if the window is still open
+    if not Window.isOpen() then break end
     
     scene:_update(elapsedTime)
 

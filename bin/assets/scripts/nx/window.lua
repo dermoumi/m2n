@@ -166,6 +166,11 @@ function Window.display()
 end
 
 ------------------------------------------------------------
+function Window.ensureContext()
+    return C.nxWindowEnsureContext() ~= nil
+end
+
+------------------------------------------------------------
 function Window.size()
     return windowWidth, windowHeight
 end
