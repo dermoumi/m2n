@@ -35,8 +35,8 @@ ffi.cdef [[
     typedef struct NxWindow NxWindow;
 
     NxWindow* nxWindowGet();
-    bool nxWindowCreate(const char*, int, int, int, bool, bool, bool, int, int, bool, bool, int,
-        int, int);
+    bool nxWindowCreate(const char*, int, int, int, bool, bool, bool, int, int, bool, int, int,
+        int);
     void nxWindowClose();
     void nxWindowDisplay();
     void nxWindowEnsureContext();
@@ -69,11 +69,13 @@ local MsgBoxType = {
 
 local FsType = {
     normal = 1,
-    desktop = 2
+    desktop = 2,
+    auto = 3
 }
 
 local PosType = {
-    center = -1
+    undefined = -1,
+    center = -2
 }
 
 ------------------------------------------------------------
@@ -102,10 +104,9 @@ local function checkFlags(flags)
     if flags.minwidth == nil       then flags.minwidth = 480 end
     if flags.minheight == nil      then flags.minheight = 320 end
     if flags.highdpi == nil        then flags.highdpi = false end
-    if flags.srgb == nil           then flags.srgb = true end
     if flags.refreshrate == nil    then flags.refreshrate = 0 end
-    if flags.x == nil              then flags.x = 'center' end
-    if flags.y == nil              then flags.y = 'center' end
+    if flags.x == nil              then flags.x = 'undefined' end
+    if flags.y == nil              then flags.y = 'undefined' end
 
     return flags
 end
@@ -129,7 +130,6 @@ function Window.create(title, width, height, flags)
         flags.minwidth,
         flags.minheight,
         flags.highdpi,
-        flags.srgb,
         flags.refreshrate,
         posX,
         posY

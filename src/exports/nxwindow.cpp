@@ -64,7 +64,7 @@ NX_EXPORT void nxWindowClose()
 //------------------------------------------------------
 NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, int fullscreen,
     bool vsync, bool resizable, bool borderless, int minWidth, int minHeight, bool highDpi,
-    bool sRGB, int refreshRate, int posX, int posY)
+    int, int posX, int posY)
 {
     if (window) {
         nxWindowClose();
@@ -72,7 +72,8 @@ NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, int
 
     Uint32 flags = SDL_WINDOW_OPENGL;
 
-    if (fullscreen) {
+    // Fullscreen
+    if (fullscreen == 3) {
         // Add FULLSCREEN_DESKTOP flag is window sizes are the same as the desktop's mode
         SDL_DisplayMode desktopMode;
         if (SDL_GetDesktopDisplayMode(0, &desktopMode) == 0
@@ -86,12 +87,31 @@ NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, int
             flags |= SDL_WINDOW_FULLSCREEN;
         }
     }
+    else if (fullscreen == 2) {
+        flags |= SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_FULLSCREEN;
+    }
+    else if (fullscreen == 1) {
+        flags |= SDL_WINDOW_FULLSCREEN;
+    }
 
-    window = SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-        width, height, flags);
+    if (resizable)  flags |= SDL_WINDOW_RESIZABLE;
+    if (borderless) flags |= SDL_WINDOW_BORDERLESS;
+    if (highDpi)    flags |= SDL_WINDOW_ALLOW_HIGHDPI;
 
+    // TODO: Refresh rate
+
+    if      (posX == -1) posX = SDL_WINDOWPOS_UNDEFINED;
+    else if (posX == -2) posX = SDL_WINDOWPOS_CENTERED;
+
+    if      (posY == -1) posY = SDL_WINDOWPOS_UNDEFINED;
+    else if (posY == -2) posY = SDL_WINDOWPOS_CENTERED;
+
+    window = SDL_CreateWindow(title, posX, posY, width, height, flags);
+    SDL_SetWindowMinimumSize(window, minWidth, minHeight);
+
+    // Context settings
     auto* context = GlContext::create(0, 0, 0);
-    context->setVSyncEnabled(false);
+    context->setVSyncEnabled(vsync);
 
     return window;
 }
