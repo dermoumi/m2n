@@ -92,7 +92,6 @@ function Thread:join()
     local ok = C.nxThreadWait(self._cdata)
     if ok then
         local retCount = self._vm:getTop()
-        print('retcount', retCount)
         return self._vm:pop(retCount, true)
     end
 

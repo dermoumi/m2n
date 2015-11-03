@@ -39,16 +39,14 @@ local Thread = require 'nx.thread'
 
 ------------------------------------------------------------
 function SceneSubtitle:load()
-    print('hello?')
-
+    print('hello')
+    
     local thread = Thread:new(function()
         require('nx.window').ensureContext()
         require('nx.renderer').testInit()
     end)
 
-    print('huh?-')
     thread:join()
-    print('huh?')
 
     self._processParent = true
 end

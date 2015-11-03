@@ -56,13 +56,14 @@ namespace
 //----------------------------------------------------------
 GlContext* GlContext::create(unsigned int depth, unsigned int stencil, unsigned int msaa)
 {
-    if (!internalContext) {
+    {
         std::lock_guard<std::mutex> lock(internalContextMutex);
-        internalContext = GlContextPtr(new GlContext(0, 0, 0));
-    }
-    else {
-        std::lock_guard<std::mutex> lock(internalContextMutex);
-        internalContext->setActive(true);
+        if (!internalContext) {
+            internalContext = GlContextPtr(new GlContext(0, 0, 0));
+        }
+        else {
+            internalContext->setActive(true);
+        }
     }
 
     auto context = new GlContext(depth, stencil, msaa);

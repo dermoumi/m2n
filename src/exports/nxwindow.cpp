@@ -57,6 +57,7 @@ NX_EXPORT NxWindow* nxWindowGet()
 //------------------------------------------------------
 NX_EXPORT void nxWindowClose()
 {
+    GlContext::release();
     SDL_DestroyWindow(window);
     window = nullptr;
 }
