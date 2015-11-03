@@ -53,7 +53,7 @@ ffi.cdef [[
     void nxWindowSetSize(int, int);
     void nxWindowSetTitle(const char*);
     void nxWindowSimpleMessageBox(const char*, const char*, uint32_t, bool);
-    void nxWindowDrawableSize(int*);
+    void nxWindowGetDrawableSize(int*);
 ]]
 
 
@@ -70,6 +70,15 @@ local MsgBoxType = {
 -- A set of functions to manage the main window
 ------------------------------------------------------------
 local Window = {}
+local windowWidth, windowHeight
+local drawableWidth, drawableHeight
+
+------------------------------------------------------------
+local function getDrawableSize()
+    local sizePtr = ffi.new('int[2]')
+    C.nxWindowGetDrawableSize(sizePtr)
+    return tonumber(sizePtr[0]), tonumber(sizePtr[1])
+end
 
 ------------------------------------------------------------
 function Window.create(title, width, height, fullscreen)
@@ -78,6 +87,8 @@ function Window.create(title, width, height, fullscreen)
         return nil, ffi.string(C.nxSysGetSDLError())
     end
 
+    windowWidth, windowHeight     = width, height
+    drawableWidth, drawableHeight = getDrawableSize()
     return true
 end
 
@@ -98,9 +109,7 @@ end
 
 ------------------------------------------------------------
 function Window.size()
-    local sizePtr = ffi.new('int[2]')
-    C.nxWindowGetSize(sizePtr)
-    return tonumber(sizePtr[0]), tonumber(sizePtr[1])
+    return windowWidth, windowHeight
 end
 
 ------------------------------------------------------------
@@ -189,6 +198,22 @@ function Window.showMessageBox(title, message, type, attach)
     if not attach then attach = false end
 
     C.nxWindowSimpleMessageBox(title, message, MsgBoxType[type] or MsgBoxType.error, attach)
+end
+
+------------------------------------------------------------
+function Window.toPixel(x, y)
+    return x * drawableWidth / windowWidth, y * drawableHeight / windowHeight
+end
+
+------------------------------------------------------------
+function Window.fromPixel(x, y)
+    return x * windowWidth / drawableWidth, y * windowHeight / drawableHeight
+end
+
+------------------------------------------------------------
+function Window._resize(w, h)
+    windowWidth,   windowHeight   = w, h
+    drawableWidth, drawableHeight = getDrawableSize()
 end
 
 ------------------------------------------------------------

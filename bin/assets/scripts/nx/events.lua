@@ -85,6 +85,7 @@ local Keyboard = require 'nx.keyboard'
 local Mouse = require 'nx.mouse'
 local Joystick = require 'nx.joystick'
 local Gamepad = require 'nx.gamepad'
+local Window = require 'nx.window'
 
 ------------------------------------------------------------
 -- Helpers
@@ -102,6 +103,7 @@ local function nextEvent(func)
     elseif evType == C.NX_Quit then
         return 'quit'
     elseif evType == C.NX_Resized then
+        Window._resize(tonumber(e.a), tonumber(e.b))
         return 'resized', tonumber(e.a), tonumber(e.b)
     elseif evType == C.NX_Visible then
         return 'visible', e.a == 1
