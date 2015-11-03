@@ -33,7 +33,6 @@
 class NX_HIDDEN GlContext
 {
 public:
-    static GlContext* create(unsigned int depth = 0u, unsigned int stencil = 0, unsigned int msaa = 0u);
     static GlContext* ensure();
     static void release();
     
@@ -42,16 +41,12 @@ public:
     void display();
     bool isVSyncEnabled() const;
     void setVSyncEnabled(bool enable);
-    void getSettings(unsigned int* depth, unsigned int* stencil, unsigned int* msaa) const;
 
 private:
-    GlContext(unsigned int depth, unsigned int stencil, unsigned int msaa);
+    GlContext();
 
 private:
     mutable void* mContext {nullptr};
-    unsigned int  mDepth;
-    unsigned int  mStencil;
-    unsigned int  mMSAA;
 };
 
 //==============================================================================

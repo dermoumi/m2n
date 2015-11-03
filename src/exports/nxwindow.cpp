@@ -68,9 +68,8 @@ NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, int
     int refreshRate, int posX, int posY, unsigned int depthBits, unsigned int stencilBits,
     unsigned int msaa)
 {
-    if (window) {
-        nxWindowClose();
-    }
+    // Destroy any other window before proceeding
+    if (window) SDL_DestroyWindow(window);
 
     Uint32 flags = SDL_WINDOW_OPENGL;
 
@@ -106,6 +105,30 @@ NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, int
     if      (posY == -1) posY = SDL_WINDOWPOS_UNDEFINED;
     else if (posY == -2) posY = SDL_WINDOWPOS_CENTERED;
 
+    // Set context attributes    
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
+
+    SDL_GL_SetAttribute(SDL_GL_RED_SIZE,   8);
+    SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE,  8);
+    SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
+
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE,   depthBits);
+    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, stencilBits);
+
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, msaa ? 1 : 0);
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, msaa);
+
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, NX_GL_MAJOR);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, NX_GL_MINOR);
+
+    #ifdef NX_OPENGL_ES
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+    #endif
+
+    SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
+
     window = SDL_CreateWindow(title, posX, posY, width, height, flags);
     SDL_SetWindowMinimumSize(window, minWidth, minHeight);
 
@@ -121,7 +144,7 @@ NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, int
     }
 
     // Context settings
-    auto* context = GlContext::create(depthBits, stencilBits, msaa);
+    auto* context = GlContext::ensure();
     context->setVSyncEnabled(vsync);
 
     return window;

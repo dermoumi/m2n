@@ -25,7 +25,7 @@
     For more information, please refer to <http://unlicense.org>
 *///============================================================================
 #include "glcontext.hpp"
-
+    
 #include <SDL2/SDL.h>
 
 #include <memory>
@@ -54,27 +54,22 @@ namespace
 }
 
 //----------------------------------------------------------
-GlContext* GlContext::create(unsigned int depth, unsigned int stencil, unsigned int msaa)
-{
-    {
-        std::lock_guard<std::mutex> lock(internalContextMutex);
-        if (!internalContext) {
-            internalContext = GlContextPtr(new GlContext(0, 0, 0));
-        }
-        else {
-            internalContext->setActive(true);
-        }
-    }
-
-    auto context = new GlContext(depth, stencil, msaa);
-    currentContext = GlContextPtr(context);
-    return currentContext.get();
-}
-
-//----------------------------------------------------------
 GlContext* GlContext::ensure()
 {
-    if (!currentContext) create();
+    if (!currentContext) {
+        {
+            std::lock_guard<std::mutex> lock(internalContextMutex);
+            if (!internalContext) {
+                internalContext = GlContextPtr(new GlContext());
+            }
+
+            internalContext->setActive(true);
+        }
+
+        currentContext = GlContextPtr(new GlContext());
+    }
+
+    currentContext->setActive(true);
     return currentContext.get();
 }
 
@@ -85,43 +80,11 @@ void GlContext::release()
 }
 
 //----------------------------------------------------------
-GlContext::GlContext(unsigned int depth, unsigned int stencil, unsigned int msaa) :
-    mDepth(depth),
-    mStencil(stencil),
-    mMSAA(msaa)
+GlContext::GlContext()
 {
-    // Set context attributes    
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
-
-    SDL_GL_SetAttribute(SDL_GL_RED_SIZE,   8);
-    SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
-    SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE,  8);
-    SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
-
-    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE,   mDepth);
-    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, mStencil);
-
-    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, mMSAA ? 1 : 0);
-    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, mMSAA);
-
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, NX_GL_MAJOR);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, NX_GL_MINOR);
-
-    #ifdef NX_OPENGL_ES
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-    #endif
-
-    SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
-
     // Create the context
-    {
-        std::lock_guard<std::mutex> lock(windowMutex);
-        mContext = SDL_GL_CreateContext(nxWindowGet());
-    }
-
-    // Activate the context
-    setActive(true);
+    std::lock_guard<std::mutex> lock(windowMutex);
+    mContext = SDL_GL_CreateContext(nxWindowGet());
 }
 
 //----------------------------------------------------------
@@ -176,14 +139,6 @@ void GlContext::setVSyncEnabled(bool enable)
     else {
         SDL_GL_SetSwapInterval(0);
     }
-}
-
-//----------------------------------------------------------
-void GlContext::getSettings(unsigned int* depth, unsigned int* stencil, unsigned int* msaa) const
-{
-    if (depth)   *depth   = mDepth;
-    if (stencil) *stencil = mStencil;
-    if (msaa)    *msaa    = mMSAA;
 }
 
 //==============================================================================

@@ -54,6 +54,12 @@ end
 function SceneTitle:onKeyDown(scancode)
     if scancode == 'f1' then
         Scene.push('scene.subtitle')
+    elseif scancode == 'f10' then
+        require('nx.window').create('m2n-', 1280, 720, {})
+    elseif scancode == 'f11' then
+        require('nx.window').create('m2n-', 1920, 1080, {fullscreen = true, msaa = 4})
+    elseif scancode == 'f12' then
+        require('nx.window').create('m2n-', 1024, 720, {fullscreen = true, msaa = 8})
     end
 end
 
