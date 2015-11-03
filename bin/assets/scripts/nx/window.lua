@@ -40,7 +40,6 @@ ffi.cdef [[
     void nxWindowClose();
     void nxWindowDisplay();
     void nxWindowEnsureContext();
-    void nxWindowReleaseContext();
     bool nxWindowGetDesktopSize(int, int*);
     int nxWindowGetDisplayCount();
     const char* nxWindowGetDisplayName(int);

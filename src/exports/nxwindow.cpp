@@ -129,12 +129,6 @@ NX_EXPORT void nxWindowEnsureContext()
 }
 
 //------------------------------------------------------
-NX_EXPORT void nxWindowReleaseContext()
-{
-    if (!Thread::isMain()) GlContext::release();
-}
-
-//------------------------------------------------------
 NX_EXPORT bool nxWindowGetDesktopSize(int displayIndex, int* sizePtr)
 {
     if (displayIndex < 1 || displayIndex > SDL_GetNumVideoDisplays()) return false;
