@@ -36,7 +36,7 @@ ffi.cdef [[
 
     NxWindow* nxWindowGet();
     bool nxWindowCreate(const char*, int, int, int, bool, bool, bool, int, int, bool, int, int,
-        int);
+        int, unsigned int, unsigned int, unsigned int);
     void nxWindowClose();
     void nxWindowDisplay();
     void nxWindowEnsureContext();
@@ -56,7 +56,6 @@ ffi.cdef [[
     void nxWindowSimpleMessageBox(const char*, const char*, uint32_t, bool);
     void nxWindowGetDrawableSize(int*);
 ]]
-
 
 ------------------------------------------------------------
 -- Constants
@@ -107,6 +106,9 @@ local function checkFlags(flags)
     if flags.refreshrate == nil    then flags.refreshrate = 0 end
     if flags.x == nil              then flags.x = 'undefined' end
     if flags.y == nil              then flags.y = 'undefined' end
+    if flags.depth == nil          then flags.depth = 0 end
+    if flags.stencil == nil        then flags.stencil = 0 end
+    if flags.msaa == nil           then flags.msaa = 0 end
 
     return flags
 end
@@ -132,7 +134,10 @@ function Window.create(title, width, height, flags)
         flags.highdpi,
         flags.refreshrate,
         posX,
-        posY
+        posY,
+        flags.depth,
+        flags.stencil,
+        flags.msaa
     )
 
     if window == nil then

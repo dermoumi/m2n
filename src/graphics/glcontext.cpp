@@ -53,7 +53,8 @@ namespace
 //----------------------------------------------------------
 GlContext* GlContext::create(unsigned int depth, unsigned int stencil, unsigned int msaa)
 {
-    currentContext = GlContextPtr(new GlContext(depth, stencil, msaa));
+    auto context = new GlContext(depth, stencil, msaa);
+    currentContext = GlContextPtr(context);
     return currentContext.get();
 }
 

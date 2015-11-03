@@ -64,7 +64,7 @@ NX_EXPORT void nxWindowClose()
 //------------------------------------------------------
 NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, int fullscreen,
     bool vsync, bool resizable, bool borderless, int minWidth, int minHeight, bool highDpi,
-    int, int posX, int posY)
+    int, int posX, int posY, unsigned int depthBits, unsigned int stencilBits, unsigned int msaa)
 {
     if (window) {
         nxWindowClose();
@@ -75,9 +75,9 @@ NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, int
     // Fullscreen
     if (fullscreen == 3) {
         // Add FULLSCREEN_DESKTOP flag is window sizes are the same as the desktop's mode
-        SDL_DisplayMode desktopMode;
-        if (SDL_GetDesktopDisplayMode(0, &desktopMode) == 0
-            && desktopMode.w == width && desktopMode.h == height)
+        SDL_DisplayMode dm;
+        if (SDL_GetDesktopDisplayMode(0, &dm) == 0
+            && dm.w == width && dm.h == height)
         {
             flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
         }
@@ -110,7 +110,7 @@ NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, int
     SDL_SetWindowMinimumSize(window, minWidth, minHeight);
 
     // Context settings
-    auto* context = GlContext::create(0, 0, 0);
+    auto* context = GlContext::create(depthBits, stencilBits, msaa);
     context->setVSyncEnabled(vsync);
 
     return window;
