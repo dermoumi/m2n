@@ -85,7 +85,7 @@ if not ok then
     return 1
 end
 
-Window.setIcon(require('nx.image').load('assets/icon.png'))
+Window.setIcon('assets/icon.png')
 Renderer.setupViewport(0, 0, Window.size())
 
 ------------------------------------------------------------
