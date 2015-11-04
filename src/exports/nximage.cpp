@@ -94,4 +94,55 @@ NX_EXPORT void nxImageRelease(NxImage* image)
     delete image;
 }
 
+//----------------------------------------------------------
+NX_EXPORT void nxImageGetSize(NxImage* image, unsigned int* sizePtr)
+{
+    image->getSize(&sizePtr[0], &sizePtr[1]);
+}
+
+//----------------------------------------------------------
+NX_EXPORT void nxImageColorMask(NxImage* image, uint8_t r, uint8_t g, uint8_t b, uint8_t a,
+    uint8_t alpha)
+{
+    image->createMaskFromColor(r, g, b, a, alpha);
+}
+
+//----------------------------------------------------------
+NX_EXPORT void nxImageCopy(NxImage* image, const NxImage* source, unsigned int destX,
+    unsigned int destY, int srcX, int srcY, int width, int height, bool applyAlpha)
+{
+    image->copy(*source, destX, destY, srcX, srcY, width, height, applyAlpha);
+}
+
+//----------------------------------------------------------
+NX_EXPORT void nxImageSetPixel(NxImage* image, unsigned int x, unsigned int y, uint8_t r, uint8_t g,
+    uint8_t b, uint8_t a)
+{
+    image->setPixel(x, y, r, g, b, a);
+}
+
+//----------------------------------------------------------
+NX_EXPORT void nxImageGetPixel(NxImage* image, unsigned int x, unsigned int y, uint8_t* colPtr)
+{
+    image->getPixel(x, y, &colPtr[0], &colPtr[1], &colPtr[2], &colPtr[3]);
+}
+
+//----------------------------------------------------------
+NX_EXPORT const uint8_t* nxImageGetPixelsPtr(NxImage* image)
+{
+    return image->getPixelsPtr();
+}
+
+//----------------------------------------------------------
+NX_EXPORT void nxImageFlipHorizontally(NxImage* image)
+{
+    image->flipHorizontally();
+}
+
+//----------------------------------------------------------
+NX_EXPORT void nxImageFlipVertically(NxImage* image)
+{
+    image->flipVertically();
+}
+
 //==============================================================================

@@ -254,9 +254,153 @@ void Image::getSize(unsigned int* width, unsigned int* height) const
 }
 
 //----------------------------------------------------------
+void Image::createMaskFromColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a, uint8_t targetAlpha)
+{
+    // Make sure that the image is not empty
+    if (mPixels.empty()) return;
+
+    // Replace the alpha of the pixels that match the transparent color
+    uint8_t* ptr = &mPixels[0];
+    uint8_t* end = ptr + mPixels.size();
+    while (ptr < end) {
+        if ((ptr[0] == r) && (ptr[1] == g) && (ptr[2] == b) && (ptr[3] == a)) {
+            ptr[3] = targetAlpha;
+        }
+
+        ptr += 4;
+    }
+}
+
+//----------------------------------------------------------
+void Image::copy(const Image& source, unsigned int destX, unsigned int destY, int srcX, int srcY,
+    int srcWidth, int srcHeight, bool applyAlpha)
+{
+    // Make sure that both images are valid
+    if (!source.mWidth || !source.mHeight || !mWidth || !mHeight) return;
+
+    // Adjust the source rectangle
+    if (srcWidth == 0 || srcHeight == 0) {
+        srcX = 0;
+        srcY = 0;
+        srcWidth = source.mWidth;
+        srcHeight = source.mHeight;
+    }
+    else {
+        if (srcX < 0) srcX = 0;
+        if (srcY < 0) srcY = 0;
+        if (srcWidth > static_cast<int>(source.mWidth))   srcWidth = source.mWidth;
+        if (srcHeight > static_cast<int>(source.mHeight)) srcHeight = source.mHeight;
+    }
+
+    // Then find the valid bounds of the destination rectangle
+    int width  = srcWidth;
+    int height = srcHeight;
+    if (destX + width > mWidth)   width = mWidth - destX;
+    if (destY + height > mHeight) height = mHeight - destY;
+
+    // Make sure the destination area is valid
+    if ((width <= 0) || (height <= 0)) return;
+
+    // Precompute as much as possible
+    int pitch     = 4 * width;
+    int rows      = height;
+    int srcStride = 4 * source.mWidth;
+    int dstStride = 4 * mWidth;
+    auto* srcPixels = &source.mPixels[0] + 4 * (srcX + srcY * source.mWidth);
+    auto* dstPixels = &mPixels[0] + 4 * (destX + destY * mWidth);
+
+    // Copy th pixels
+    if (applyAlpha) {
+        // Interpolation using alpha values, pixel by pixel (slow)
+        for (int i = 0; i < rows; ++i) {
+            for (int j = 0; j < width; ++j) {
+                // Get a direct pointer to the components of the current pixel
+                const uint8_t* src = srcPixels + j * 4;
+                uint8_t*       dst = dstPixels + j * 4;
+
+                // Interpolate RGBA components using the source alpha
+                uint8_t alpha = src[3];
+                dst[0] = (src[0] * alpha + dst[0] * (255 - alpha)) / 255;
+                dst[1] = (src[1] * alpha + dst[1] * (255 - alpha)) / 255;
+                dst[2] = (src[2] * alpha + dst[2] * (255 - alpha)) / 255;
+                dst[3] = alpha + dst[3] * (255 - alpha) / 255;
+            }
+
+            srcPixels += srcStride;
+            dstPixels += dstStride;
+        }
+    }
+    else {
+        // Optimized copy ignoring alpha values, row by row (fast)
+        for (int i = 0; i < rows; ++i) {
+            memcpy(dstPixels, srcPixels, pitch);
+            srcPixels += srcStride;
+            dstPixels += dstStride;
+        }
+    }
+}
+
+//----------------------------------------------------------
+void Image::setPixel(unsigned int x, unsigned int y, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+{
+    uint8_t* pixel = &mPixels[(x + y * mWidth) * 4];
+    *pixel++ = r;
+    *pixel++ = g;
+    *pixel++ = b;
+    *pixel++ = a;
+}
+
+//----------------------------------------------------------
+void Image::getPixel(unsigned int x, unsigned int y, uint8_t* r, uint8_t* g, uint8_t* b,
+    uint8_t* a) const
+{
+    const uint8_t* pixel = &mPixels[(x + y * mWidth) * 4];
+    *r = *pixel++;
+    *g = *pixel++;
+    *b = *pixel++;
+    *a = *pixel++;
+}
+
+//----------------------------------------------------------
 const uint8_t* Image::getPixelsPtr() const
 {
     return mPixels.data();
+}
+
+//----------------------------------------------------------
+void Image::flipHorizontally()
+{
+    if (mPixels.empty()) return;
+
+    size_t rowSize = mWidth * 4;
+    for (size_t y = 0; y < mHeight; ++y) {
+        auto left  = mPixels.begin() + y * rowSize;
+        auto right = mPixels.begin() + (y + 1) * rowSize - 4;
+
+        for (size_t x = 0; x < mWidth / 2; ++x) {
+            std::swap_ranges(left, left + 4, right);
+
+            left  += 4;
+            right -= 4;
+        }
+    }
+}
+
+//----------------------------------------------------------
+void Image::flipVertically()
+{
+    if (mPixels.empty()) return;
+
+    size_t rowSize = mWidth * 4;
+    auto top    = mPixels.begin();
+    auto bottom = mPixels.end() - rowSize;
+
+    for (size_t y = 0; y < mHeight / 2; ++y) {
+        std::swap_ranges(top, top + rowSize, bottom);
+
+        top    += rowSize;
+        bottom -= rowSize;
+    }
 }
 
 //==============================================================================
