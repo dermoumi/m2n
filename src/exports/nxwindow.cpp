@@ -64,12 +64,15 @@ NX_EXPORT void nxWindowClose()
 
 //------------------------------------------------------
 NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, int fullscreen,
-    bool vsync, bool resizable, bool borderless, int minWidth, int minHeight, bool highDpi,
-    int refreshRate, int posX, int posY, unsigned int depthBits, unsigned int stencilBits,
-    unsigned int msaa)
+    int display, bool vsync, bool resizable, bool borderless, int minWidth, int minHeight,
+    bool highDpi, int refreshRate, int posX, int posY, unsigned int depthBits,
+    unsigned int stencilBits, unsigned int msaa)
 {
     // Destroy any other window before proceeding
     if (window) SDL_DestroyWindow(window);
+
+    // Get a valid display number
+    display = std::max(0, std::min(display - 1, SDL_GetNumVideoDisplays() - 1));
 
     Uint32 flags = SDL_WINDOW_OPENGL;
 
@@ -77,9 +80,7 @@ NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, int
     if (fullscreen == 3) {
         // Add FULLSCREEN_DESKTOP flag is window sizes are the same as the desktop's mode
         SDL_DisplayMode dm;
-        if (SDL_GetDesktopDisplayMode(0, &dm) == 0
-            && dm.w == width && dm.h == height)
-        {
+        if (SDL_GetDesktopDisplayMode(display, &dm) == 0 && dm.w == width && dm.h == height) {
             flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
         }
 
@@ -99,11 +100,11 @@ NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, int
     if (borderless) flags |= SDL_WINDOW_BORDERLESS;
     if (highDpi)    flags |= SDL_WINDOW_ALLOW_HIGHDPI;
 
-    if      (posX == -1) posX = SDL_WINDOWPOS_UNDEFINED;
-    else if (posX == -2) posX = SDL_WINDOWPOS_CENTERED;
+    if      (posX == -1) posX = SDL_WINDOWPOS_UNDEFINED_DISPLAY(display);
+    else if (posX == -2) posX = SDL_WINDOWPOS_CENTERED_DISPLAY(display);
 
-    if      (posY == -1) posY = SDL_WINDOWPOS_UNDEFINED;
-    else if (posY == -2) posY = SDL_WINDOWPOS_CENTERED;
+    if      (posY == -1) posY = SDL_WINDOWPOS_UNDEFINED_DISPLAY(display);
+    else if (posY == -2) posY = SDL_WINDOWPOS_CENTERED_DISPLAY(display);
 
     // Set context attributes    
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
@@ -139,7 +140,7 @@ NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, int
     target.refresh_rate = refreshRate;
     target.format = 0;
     target.driverdata = 0;
-    if (SDL_GetClosestDisplayMode(0, &target, &closest) != nullptr) {
+    if (SDL_GetClosestDisplayMode(display, &target, &closest) != nullptr) {
         SDL_SetWindowDisplayMode(window, &closest);
     }
 

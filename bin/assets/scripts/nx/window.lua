@@ -35,7 +35,7 @@ ffi.cdef [[
     typedef struct NxWindow NxWindow;
 
     NxWindow* nxWindowGet();
-    bool nxWindowCreate(const char*, int, int, int, bool, bool, bool, int, int, bool, int, int,
+    bool nxWindowCreate(const char*, int, int, int, int, bool, bool, bool, int, int, bool, int, int,
         int, unsigned int, unsigned int, unsigned int);
     void nxWindowClose();
     void nxWindowDisplay();
@@ -96,6 +96,7 @@ local function checkFlags(flags)
 
     if flags.fullscreen == nil     then flags.fullscreen = false end
     if flags.fullscreentype == nil then flags.fullscreentype = 'auto' end
+    if flags.display == nil        then flags.display = 1 end
     if flags.vsync == nil          then flags.vsync = true end
     if flags.resizable == nil      then flags.resizable = false end
     if flags.borderless == nil     then flags.borderless = false end
@@ -125,6 +126,7 @@ function Window.create(title, width, height, flags)
         width,
         height,
         fullscreen,
+        flags.display,
         flags.vsync,
         flags.resizable,
         flags.borderless,
