@@ -87,19 +87,6 @@ end
 
 Renderer.setupViewport(0, 0, Window.size())
 
-local Image = require 'nx.image'
--- local img = Image.load('assets/pasrien.png')
-local img, err = Image.create(3, 2, {
-    0, 0, 0, 255, 255, 128, 0, 255, 255, 255, 255, 255,
-    255, 128, 0, 255, 255, 255, 255, 255, 0, 0, 0, 255
-})
-if img then
-    print('loaded')
-    print('saved? ' .. tostring(img:save('hello.png')))
-else
-    print('not loaded: ' .. err)
-end
-
 ------------------------------------------------------------
 -- Startup scene
 ------------------------------------------------------------
