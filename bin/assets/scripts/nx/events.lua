@@ -108,8 +108,10 @@ local function nextEvent(func)
     elseif evType == C.NX_Visible then
         return 'visible', e.a == 1
     elseif evType == C.NX_Focus then
+        Window._focus((e.a == 1.0))
         return 'focus', e.a == 1
     elseif evType == C.NX_MouseFocus then
+        Window._mouseFocus((e.a == 1.0))
         return 'mousefocus', (e.a == 1.0)
     elseif evType == C.NX_TextInput then
         return 'textinput', ffi.string(e.t)

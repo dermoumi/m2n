@@ -45,6 +45,7 @@ ffi.cdef [[
     int nxWindowGetDisplayCount();
     const char* nxWindowGetDisplayName(int);
     int nxWindowGetFullscreen();
+    bool nxWindowGetVisible();
     const int* nxWindowGetDisplayModes(int, size_t*);
     void nxWindowGetSize(int*);
     void nxWindowGetPosition(int*);
@@ -91,6 +92,7 @@ end
 local Window = {}
 local windowWidth, windowHeight
 local drawableWidth, drawableHeight
+local hasFocus, hasMouseFocus 
 
 ------------------------------------------------------------
 local function getDrawableSize()
@@ -157,6 +159,14 @@ function Window.create(title, width, height, flags)
 
     windowWidth, windowHeight     = width, height
     drawableWidth, drawableHeight = getDrawableSize()
+    hasFocus, hasMouseFocus       = true, true
+
+    -- Initial mouse focus is impossible with SDL < 2.0.4 (need to get global position)
+    -- local Mouse = require 'nx.mouse'
+    -- local mX, mY = Mouse.getPosition()
+    -- print(mX, mY, width, height)
+    -- hasMouseFocus = mX >= 0 and mY >= 0 and mX < width and mY < height
+
     return true
 end
 
@@ -270,6 +280,21 @@ function Window.isFullscreen()
 end
 
 ------------------------------------------------------------
+function Window.isVisible()
+    return C.nxWindowGetVisible()
+end
+
+------------------------------------------------------------
+function Window.hasFocus()
+    return hasFocus
+end
+
+------------------------------------------------------------
+function Window.hasMouseFocus()
+    return hasMouseFocus
+end
+
+------------------------------------------------------------
 function Window.displayModes(display)
     display = display or 1
 
@@ -300,6 +325,11 @@ function Window.showMessageBox(title, message, type, attach)
 end
 
 ------------------------------------------------------------
+function Window.getDrawableSize()
+    return drawableWidth, drawableHeight
+end
+
+------------------------------------------------------------
 function Window.toPixel(x, y)
     return x * drawableWidth / windowWidth, y * drawableHeight / windowHeight
 end
@@ -313,6 +343,16 @@ end
 function Window._resize(w, h)
     windowWidth,   windowHeight   = w, h
     drawableWidth, drawableHeight = getDrawableSize()
+end
+
+------------------------------------------------------------
+function Window._focus(focus)
+    hasFocus = focus
+end
+
+------------------------------------------------------------
+function Window._mouseFocus(focus)
+    hasMouseFocus = focus
 end
 
 ------------------------------------------------------------

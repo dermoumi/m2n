@@ -248,7 +248,7 @@ NX_EXPORT const char* nxWindowGetDisplayName(int displayIndex)
 //------------------------------------------------------
 NX_EXPORT int nxWindowGetFullscreen()
 {
-    uint32_t flags = SDL_GetWindowFlags(window);
+    auto flags = SDL_GetWindowFlags(window);
     if (flags & SDL_WINDOW_FULLSCREEN_DESKTOP) {
         return 2;
     }
@@ -258,6 +258,13 @@ NX_EXPORT int nxWindowGetFullscreen()
     else {
         return 0;
     }
+}
+
+//----------------------------------------------------------
+NX_EXPORT bool nxWindowGetVisible()
+{
+    auto flags = SDL_GetWindowFlags(window);
+    return (flags & (SDL_WINDOW_HIDDEN | SDL_WINDOW_MINIMIZED));
 }
 
 //------------------------------------------------------

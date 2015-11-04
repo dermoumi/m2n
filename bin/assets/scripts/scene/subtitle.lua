@@ -41,7 +41,7 @@ local Thread = require 'nx.thread'
 function SceneSubtitle:load()
     print('hello')
     
-    require('nx.renderer').testInit()
+    Renderer.testInit()
 
     self._processParent = true
 end
@@ -68,6 +68,8 @@ function SceneSubtitle:onKeyDown(scancode)
         return false
     elseif scancode == 'f3' then
         self._processParent = not self._processParent
+    elseif scancode == 'space' then
+        print(require('nx.window').hasMouseFocus())
     end
 end
 
