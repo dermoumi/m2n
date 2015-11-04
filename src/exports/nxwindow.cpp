@@ -65,8 +65,7 @@ NX_EXPORT void nxWindowClose()
 //------------------------------------------------------
 NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, int fullscreen,
     int display, bool vsync, bool resizable, bool borderless, int minWidth, int minHeight,
-    bool highDpi, int refreshRate, int posX, int posY, unsigned int depthBits,
-    unsigned int stencilBits, unsigned int msaa)
+    bool highDpi, int refreshRate, int posX, int posY, int depthBits, int stencilBits, int msaa)
 {
     // Destroy any other window before proceeding
     if (window) SDL_DestroyWindow(window);
@@ -155,6 +154,60 @@ NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, int
 NX_EXPORT void nxWindowDisplay()
 {
     GlContext::ensure()->display();
+}
+
+//----------------------------------------------------------
+NX_EXPORT void nxWindowGetFlags(int* flagsPtr)
+{
+    auto flags = SDL_GetWindowFlags(window);
+
+    // Get fullscreen
+    if (flags & SDL_WINDOW_FULLSCREEN_DESKTOP) {
+        flagsPtr[0] = 2;
+    }
+    else if (flags & SDL_WINDOW_FULLSCREEN) {
+        flagsPtr[0] = 1;
+    }
+    else {
+        flagsPtr[0] = 0;
+    }
+
+    // Display
+    flagsPtr[1] = std::max(0, SDL_GetWindowDisplayIndex(window));
+
+    // Vsync
+    flagsPtr[2] = GlContext::ensure()->isVSyncEnabled() ? 1 : 0;
+
+    // Resizable
+    flagsPtr[3] = (flags & SDL_WINDOW_RESIZABLE) ? 1 : 0;
+
+    // Borderless
+    flagsPtr[4] = (flags & SDL_WINDOW_BORDERLESS) ? 1 : 0;
+
+    // Minimum width and height
+    SDL_GetWindowMinimumSize(window, &flagsPtr[5], &flagsPtr[6]);
+
+    // High DPI
+    flagsPtr[7] = (flags & SDL_WINDOW_ALLOW_HIGHDPI);
+
+    // Refresh rate
+    SDL_DisplayMode dm;
+    flagsPtr[8] = (SDL_GetWindowDisplayMode(window, &dm) == 0) ? dm.refresh_rate : 0;
+
+    // Position
+    SDL_GetWindowPosition(window, &flagsPtr[9], &flagsPtr[10]);
+
+    // Depth and stencil bits
+    if (SDL_GL_GetAttribute(SDL_GL_DEPTH_SIZE, &flagsPtr[11]) != 0) flagsPtr[11] = 0;
+    if (SDL_GL_GetAttribute(SDL_GL_STENCIL_SIZE, &flagsPtr[12]) != 0) flagsPtr[12] = 0;
+
+    // MSAA
+    int msaaEnabled = 0;
+    if (SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &msaaEnabled) != 0) msaaEnabled = 0;
+
+    if (!msaaEnabled || SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &flagsPtr[13]) != 0) {
+        flagsPtr[13] = 0;
+    }
 }
 
 //------------------------------------------------------

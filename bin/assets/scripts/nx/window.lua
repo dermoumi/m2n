@@ -36,9 +36,10 @@ ffi.cdef [[
 
     NxWindow* nxWindowGet();
     bool nxWindowCreate(const char*, int, int, int, int, bool, bool, bool, int, int, bool, int, int,
-        int, unsigned int, unsigned int, unsigned int);
+        int, int, int, int);
     void nxWindowClose();
     void nxWindowDisplay();
+    void nxWindowGetFlags(int*);
     void nxWindowEnsureContext();
     bool nxWindowGetDesktopSize(int, int*);
     int nxWindowGetDisplayCount();
@@ -70,11 +71,19 @@ local FsType = {
     desktop = 2,
     auto = 3
 }
+local ToFsType = {}
+for i, v in pairs(FsType) do
+    ToFsType[v] = i
+end
 
 local PosType = {
     undefined = -1,
     center = -2
 }
+local ToPosType = {}
+for i, v in pairs(PosType) do
+    ToPosType[v] = i
+end
 
 ------------------------------------------------------------
 -- A set of functions to manage the main window
@@ -106,8 +115,8 @@ local function checkFlags(flags)
     if flags.refreshrate == nil    then flags.refreshrate = 0 end
     if flags.x == nil              then flags.x = 'undefined' end
     if flags.y == nil              then flags.y = 'undefined' end
-    if flags.depth == nil          then flags.depth = 0 end
-    if flags.stencil == nil        then flags.stencil = 0 end
+    if flags.depthbits == nil      then flags.depthbits = 0 end
+    if flags.stencilbits == nil    then flags.stencilbits = 0 end
     if flags.msaa == nil           then flags.msaa = 0 end
 
     return flags
@@ -136,8 +145,8 @@ function Window.create(title, width, height, flags)
         flags.refreshrate,
         posX,
         posY,
-        flags.depth,
-        flags.stencil,
+        flags.depthbits,
+        flags.stencilbits,
         flags.msaa
     )
 
@@ -164,6 +173,32 @@ end
 ------------------------------------------------------------
 function Window.display()
     C.nxWindowDisplay()
+end
+
+------------------------------------------------------------
+function Window.getFlags()
+    local flags = {}
+    local flagsPtr = ffi.new('int[14]')
+
+    C.nxWindowGetFlags(flagsPtr)
+
+    flags.fullscreen     = tonumber(flagsPtr[0]) > 0
+    flags.fullscreentype = ToFsType[tonumber(flagsPtr[0])] or 'auto'
+    flags.display        = tonumber(flagsPtr[1])
+    flags.vsync          = flagsPtr[2] == 1
+    flags.resizable      = flagsPtr[3] == 1
+    flags.borderless     = flagsPtr[4] == 1
+    flags.minwidth       = tonumber(flagsPtr[5])
+    flags.minheight      = tonumber(flagsPtr[6])
+    flags.highdpi        = flagsPtr[7] == 1
+    flags.refreshrate    = tonumber(flagsPtr[8])
+    flags.x              = ToPosType[tonumber(flagsPtr[9])]  or tonumber(flagsPtr[9])
+    flags.y              = ToPosType[tonumber(flagsPtr[10])] or tonumber(flagsPtr[10])
+    flags.depthbits      = tonumber(flagsPtr[11])
+    flags.stencilbits    = tonumber(flagsPtr[12])
+    flags.msaa           = tonumber(flagsPtr[13]) -- To be removed eventually
+
+    return flags
 end
 
 ------------------------------------------------------------
