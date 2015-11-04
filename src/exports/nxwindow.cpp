@@ -29,6 +29,7 @@
 #include "../system/thread.hpp"
 #include "../system/log.hpp"
 #include "../graphics/glcontext.hpp"
+#include "../graphics/image.hpp"
 
 #include <SDL2/SDL.h>
 #include <vector>
@@ -41,10 +42,8 @@ using NxWindow = SDL_Window;
 //----------------------------------------------------------
 // Locals
 //----------------------------------------------------------
-namespace
-{
-    NxWindow* window {nullptr};
-}
+static NxWindow* window {nullptr};
+static Image icon;
 
 //----------------------------------------------------------
 // Exported functions
@@ -347,6 +346,39 @@ NX_EXPORT void nxWindowSimpleMessageBox(const char* title, const char* message, 
 NX_EXPORT void nxWindowGetDrawableSize(int* sizePtr)
 {
     SDL_GL_GetDrawableSize(window, &sizePtr[0], &sizePtr[1]);
+}
+
+//----------------------------------------------------------
+NX_EXPORT const uint8_t* nxWindowGetIcon(unsigned int* sizePtr)
+{
+    icon.getSize(&sizePtr[0], &sizePtr[1]);
+    return icon.getPixelsPtr();
+}
+
+//----------------------------------------------------------
+NX_EXPORT void nxWindowSetIcon(unsigned int width, unsigned int height, const uint8_t* data)
+{
+    uint32_t rmask, gmask, bmask, amask;
+ 
+    #if SDL_BYTEORDER == SDL_BIG_ENDIAN
+        rmask = 0xff000000;
+        gmask = 0x00ff0000;
+        bmask = 0x0000ff00;
+        amask = 0x000000ff;
+    #else
+        rmask = 0x000000ff;
+        gmask = 0x0000ff00;
+        bmask = 0x00ff0000;
+        amask = 0xff000000;
+    #endif
+ 
+    SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(const_cast<uint8_t*>(data), width, height, 32,
+        width * 4, rmask, gmask, bmask, amask);
+ 
+    SDL_SetWindowIcon(window, surface);
+    SDL_FreeSurface(surface);
+
+    icon.create(width, height, data);
 }
 
 //==============================================================================

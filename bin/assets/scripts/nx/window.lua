@@ -56,6 +56,8 @@ ffi.cdef [[
     void nxWindowSetTitle(const char*);
     void nxWindowSimpleMessageBox(const char*, const char*, uint32_t, bool);
     void nxWindowGetDrawableSize(int*);
+    const uint8_t* nxWindowGetIcon(unsigned int*);
+    void nxWindowSetIcon(unsigned int, unsigned int, const uint8_t*);
 ]]
 
 ------------------------------------------------------------
@@ -90,6 +92,9 @@ end
 -- A set of functions to manage the main window
 ------------------------------------------------------------
 local Window = {}
+
+local Image = require 'nx.image'
+
 local windowWidth, windowHeight
 local drawableWidth, drawableHeight
 local hasFocus, hasMouseFocus 
@@ -340,6 +345,26 @@ function Window.fromPixel(x, y)
 end
 
 ------------------------------------------------------------
+function Window.setIcon(icon)
+    if type(icon) == 'string' then
+        icon = Image.load(icon)
+    end
+
+    if not require('nx.class').Object.isInstanceOf(icon, Image) then return end
+
+    local w, h = icon:size()
+    C.nxWindowSetIcon(w, h, icon:data())
+end
+
+------------------------------------------------------------
+function Window.getIcon()
+    local sizePtr = ffi.new('unsigned int[2]')
+    local dataPtr = C.nxWindowGetIcon(sizePtr)
+
+    return Image.create(tonumber(sizePtr[0]), tonumber(sizePtr[1]), dataPtr)
+end
+
+------------------------------------------------------------
 function Window._resize(w, h)
     windowWidth,   windowHeight   = w, h
     drawableWidth, drawableHeight = getDrawableSize()
@@ -354,6 +379,5 @@ end
 function Window._mouseFocus(focus)
     hasMouseFocus = focus
 end
-
 ------------------------------------------------------------
 return Window
