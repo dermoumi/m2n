@@ -35,7 +35,8 @@ ffi.cdef [[
     typedef void NxImage;
     typedef struct PHYSFS_File PHYSFS_File;
 
-    NxImage* nxImageCreateFill(unsigned int, unsigned int, const uint8_t*);
+    NxImage* nxImageCreateFill(unsigned int, unsigned int, uint8_t r, uint8_t g, uint8_t b,
+        uint8_t a);
     NxImage* nxImageCreateFromData(unsigned int, unsigned int, const uint8_t*);
     NxImage* nxImageCreateFromFile(const char* filename);
     NxImage* nxImageCreateFromMemory(const void*, size_t);
@@ -45,19 +46,106 @@ ffi.cdef [[
 ]]
 
 ------------------------------------------------------------
+local function isNumber(val)
+    return type(val) == 'number'
+end
+
+local function isNilOrNumber(val)
+    return (val == nil) or (type(val) == 'number')
+end
+
+local function isCArray(a)
+    return type(a) == 'string' or type(a) == 'cdata' or type(a) == 'userdata'
+end
+
+------------------------------------------------------------
 -- A class to handle Image creation and management
 ------------------------------------------------------------
 local class = require 'nx.class'
 local Image = class 'Image'
 
 ------------------------------------------------------------
-function Image:initialize(filename)
-    local handle = C.nxImageCreateFromFile(filename)
+function Image.static._fromCData(data)
+    local image = Image:new()
+    image._cdata = ffi.cast('NxImage*', data)
+    return image
+end
+
+------------------------------------------------------------
+function Image.static.create(width, height, r, g, b, a)
+    local image = Image:new()
+
+    local ok, err = image:create(width, height, r, g, b, a)
+    if not ok then
+        return nil, err
+    end
+
+    return image
+end
+
+------------------------------------------------------------
+function Image.static.load(a, b)
+    local image = Image:new()
+
+    local ok, err = image:load(a, b)
+    if not ok then
+        return nil, err
+    end
+
+    return image
+end
+
+------------------------------------------------------------
+function Image:create(width, height, r, g, b, a)
+    -- TODO: Release previous image if exists
+
+    if not isNumber(width) or not isNumber(height) then
+        return false, 'Invalid dimensions'
+    end
+
+    local handle
+    if isNilOrNumber(r) and isNilOrNumber(g) and isNilOrNumber(b) and isNilOrNumber(a) then
+        handle = C.nxImageCreateFill(width, height, r or 0, g or 0, b or 0, a or 255);
+    elseif type(r) == 'table' then
+        handle = C.nxImageCreateFromData(width, height, ffi.new('const uint8_t[?]', #r, r))
+    elseif isCArray(r) then
+        handle = C.nxImageCreateFromData(width, height, r)
+    else
+        return false, 'Invalid parameters'
+    end
+
     if handle == nil then
-        return nil, 'Cannot load image from file: ' .. filename
+        return false, 'Cannot create image'
     end
 
     self._cdata = ffi.gc(handle, C.nxImageRelease)
+    return true
+end
+
+------------------------------------------------------------
+function Image:load(a, b)
+    local handle
+
+    if isCArray(a) and isNumber(b) then
+        -- Load from memory
+        handle = C.nxImageCreateFromMemory(a, b)
+    elseif type(a) == 'string' then
+        -- Load from file
+        handle = C.nxImageCreateFromFile(a)
+    elseif class.Object.isInstanceOf(a, require('nx._binaryfile')) then
+        -- Load from handle
+        handle = C.nxImageCreateFromHandle(a._cdata, false)
+    else
+        return false, 'Invalid parameters'
+    end
+
+    -- Appropriate error message for each case
+    if handle == nil then
+        return false, 'Cannot load image'
+    end
+
+    self._cdata = ffi.gc(handle, C.nxImageRelease)
+    return true
 end
 
 ------------------------------------------------------------

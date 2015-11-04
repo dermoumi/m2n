@@ -36,10 +36,11 @@ struct PHYSFS_File;
 //==========================================================
 // A set of functions to create and manage images
 //==========================================================
-NX_EXPORT NxImage* nxImageCreateFill(unsigned int width, unsigned int height, const uint8_t* color)
+NX_EXPORT NxImage* nxImageCreateFill(unsigned int width, unsigned int height, uint8_t r,
+    uint8_t g, uint8_t b, uint8_t a)
 {
     NxImage* image = new NxImage();
-    image->create(width, height, color[0], color[1], color[2], color[4]);
+    image->create(width, height, r, g, b, a);
     return image;
 }
 
