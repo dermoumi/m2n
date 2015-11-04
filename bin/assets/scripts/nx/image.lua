@@ -76,6 +76,7 @@ local Image = class 'Image'
 function Image.static._fromCData(data)
     local image = Image:new()
     image._cdata = ffi.cast('NxImage*', data)
+    image._unmanagedCData = true
     return image
 end
 
@@ -105,7 +106,7 @@ end
 
 ------------------------------------------------------------
 function Image:create(width, height, r, g, b, a)
-    -- TODO: Release previous image if exists
+    self:release()
 
     if not isNumber(width) or not isNumber(height) then
         return false, 'Invalid dimensions'
@@ -132,6 +133,8 @@ end
 
 ------------------------------------------------------------
 function Image:load(a, b)
+    self:release()
+    
     local handle
 
     if isCArray(a) and isNumber(b) then
@@ -160,6 +163,12 @@ end
 function Image:save(filename)
     if not self._cdata or not filename then return false end
     return C.nxImageSave(self._cdata, filename)
+end
+
+------------------------------------------------------------
+function Image:release()
+    if not self._cdata or self._unmanagedCData then return end
+    C.nxImageRelease(ffi.gc(handle, nil))
 end
 
 ------------------------------------------------------------
