@@ -84,11 +84,22 @@ enum RDIShaderConstType
 };
 
 //----------------------------------------------------------
+namespace TextureType
+{
+    enum Type : int
+    {
+        Tex2D,
+        Tex3D,
+        TexCube
+    };
+}
+
+//----------------------------------------------------------
 namespace TextureFormat
 {
     enum Type : int
     {
-        Unknown = 0,
+        Unknown,
         RGBA8,
         DXT1,
         DXT3,
@@ -189,6 +200,14 @@ public:
     virtual uint32_t getBufferMemory() const = 0;
 
     // Textures
+    uint32_t calcTextureSize(TextureFormat::Type format, int width, int height, int depth);
+    virtual uint32_t createTexture(TextureType::Type type, int width, int height,
+        unsigned int depth, TextureFormat::Type format, bool hasMips, bool genMips, bool sRGB) = 0;
+    virtual void uploadTextureData(uint32_t texObj, int slice, int mipLevel,
+        const void* pixels) = 0;
+    virtual void destroyTexture(uint32_t texObj) = 0;
+    virtual bool getTextureData(uint32_t texObj, int slice, int mipLevel, void* buffer) = 0;
+    virtual uint32_t getTextureMemory() const = 0;
 
     // Shaders
     virtual uint32_t createShader(const char* vertexShaderSrc, const char* fragmentShaderSrc) = 0;

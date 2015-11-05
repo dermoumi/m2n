@@ -52,8 +52,10 @@ static const char* defaultShaderFS =
 
 static uint32_t toIndexFormat[] = {GL_UNSIGNED_SHORT, GL_UNSIGNED_INT};
 static uint32_t toPrimType[]    = {GL_TRIANGLES, GL_TRIANGLE_STRIP};
+static int      toTexType[]     = {GL_TEXTURE_2D, GL_TEXTURE_3D, GL_TEXTURE_CUBE_MAP};
 
 static std::mutex vlMutex; // Vertex layouts mutex
+static std::mutex txMutex; // Texture operations mutex
 static std::mutex cpMutex; // Capabilities mutex
 thread_local std::string shaderLog;
 
@@ -114,6 +116,7 @@ bool RenderDeviceGL::initialize()
     mActiveVertexAttribsMask = 0;
 
     // TODO: Find supported depth format (some old ATI cards only support 16 bit depth for FBOs)
+    mDepthFormat = GL_DEPTH_COMPONENT24;
 
     initStates();
     resetStates();
@@ -241,6 +244,215 @@ uint32_t RenderDeviceGL::registerVertexLayout(uint32_t numAttribs,
     }
 
     return ++mNumVertexLayouts;
+}
+
+//----------------------------------------------------------
+uint32_t RenderDeviceGL::createTexture(TextureType::Type type, int width, int height,
+    unsigned int depth, TextureFormat::Type format, bool hasMips, bool genMips, bool sRGB)
+{
+    if (!mCaps.texNPOT && ((width & (width-1)) != 0 || ((height & (height-1)) != 0))) {
+        Log::warning("Texture has Non-Power-Of-Two dimensions "
+            "although NPOT is not supported by GPU");
+    }
+
+    RDITexture tex;
+    tex.type    = toTexType[type];
+    tex.format  = format;
+    tex.width   = width;
+    tex.height  = height;
+    tex.depth   = depth;
+    tex.sRGB    = sRGB;
+    tex.genMips = genMips;
+    tex.hasMips = hasMips;
+
+    switch(format) {
+    case TextureFormat::RGBA8:
+        tex.glFmt = tex.sRGB ? GL_SRGB8_ALPHA8_EXT : GL_RGBA8;
+        break;
+    case TextureFormat::DXT1:
+        tex.glFmt = tex.sRGB ?
+            GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT : GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+        break;
+    case TextureFormat::DXT3:
+        tex.glFmt = tex.sRGB ?
+            GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT : GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+        break;
+    case TextureFormat::DXT5:
+        tex.glFmt = tex.sRGB ?
+            GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT : GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+        break;
+    case TextureFormat::RGBA16F:
+        tex.glFmt = GL_RGBA16F_ARB;
+        break;
+    case TextureFormat::RGBA32F:
+        tex.glFmt = GL_RGBA32F_ARB;
+        break;
+    case TextureFormat::DEPTH:
+        tex.glFmt = mDepthFormat;
+    default:
+        Log::warning("Could not create texture: invalid format");
+        return 0;
+    }
+
+    glGenTextures(1, &tex.glObj);
+    glActiveTexture(GL_TEXTURE15);
+    glBindTexture(tex.type, tex.glObj);
+
+    float borderColor[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+
+    tex.samplerState = 0;
+    // applySamplerState(tex);
+
+    glBindTexture(tex.type, 0);
+    {
+        std::lock_guard<std::mutex> lock(txMutex);
+        if (mTexSlots[15].texObj) {
+            auto& tex15 = mTextures.getRef(mTexSlots[15].texObj);
+            glBindTexture(tex15.type, tex15.glObj);
+        }
+    }
+
+    // Calculate memory requirements
+    tex.memSize = calcTextureSize(format, width, height, depth);
+    if (hasMips || genMips) tex.memSize += static_cast<int>(tex.memSize / 3.f + 0.5f);
+    if (type == TextureType::TexCube) tex.memSize *= 6;
+    mTextureMemory += tex.memSize;
+
+    return mTextures.add(tex);
+}
+
+//----------------------------------------------------------
+void RenderDeviceGL::uploadTextureData(uint32_t texObj, int slice, int mipLevel, const void* pixels)
+{
+    const auto& tex = mTextures.getRef(texObj);
+    auto format     = tex.format;
+
+    glActiveTexture(GL_TEXTURE15);
+    glBindTexture(tex.type, tex.glObj);
+
+    int inputFormat = GL_RGBA, inputType = GL_UNSIGNED_BYTE;
+    bool compressed = (format == TextureFormat::DXT1) || (format == TextureFormat::DXT3) ||
+                      (format == TextureFormat::DXT5);
+
+    switch (format) {
+        case TextureFormat::RGBA16F:
+        case TextureFormat::RGBA32F:
+            inputType = GL_FLOAT;
+            break;
+        case TextureFormat::DEPTH:
+            inputFormat = GL_DEPTH_COMPONENT;
+            inputType = GL_FLOAT;
+        default:
+            Log::warning("Invalid texture format when uploading texture data");
+    }
+
+    // Calculate size of the next mipmap using "floor" convention
+    int width = std::max(tex.width >> mipLevel, 1);
+    int height = std::max(tex.height >> mipLevel, 1);
+
+    if (tex.type == GL_TEXTURE_2D || tex.type == GL_TEXTURE_CUBE_MAP)
+    {
+        int target = (tex.type == GL_TEXTURE_2D) ?
+            GL_TEXTURE_2D : (GL_TEXTURE_CUBE_MAP_POSITIVE_X + slice);
+
+        if (compressed) {
+            glCompressedTexImage2D(target, mipLevel, tex.glFmt, width, height, 0,
+                calcTextureSize(format, width, height, 1), pixels);
+        }
+        else {
+            glTexImage2D(target, mipLevel, tex.glFmt, width, height, 0, inputFormat, inputType, 
+                pixels);
+        }
+    }
+    else if (tex.type == GL_TEXTURE_3D) {
+        int depth = std::max(tex.depth >> mipLevel, 1);
+
+        if (compressed) {
+            glCompressedTexImage3D(GL_TEXTURE_3D, mipLevel, tex.glFmt, width, height, depth, 0,
+                calcTextureSize(format, width, height, depth), pixels);
+        }
+        else {
+            glTexImage3D(GL_TEXTURE_3D, mipLevel, tex.glFmt, width, height, depth, 0, inputFormat,
+                inputType, pixels);
+        }
+    }
+
+    if (tex.genMips && (tex.type != GL_TEXTURE_CUBE_MAP || slice == 5)) {
+        // Note: cube map mips are only generated when the last side is uploaded
+        glEnable(tex.type);
+        glGenerateMipmapEXT(tex.type);
+        glDisable(tex.type);
+    }
+
+    glBindTexture(tex.type, 0);
+    {
+        std::lock_guard<std::mutex> lock(txMutex);
+        if (mTexSlots[15].texObj) {
+            auto& tex15 = mTextures.getRef(mTexSlots[15].texObj);
+            glBindTexture(tex15.type, tex15.glObj);
+        }
+    }
+}
+
+//----------------------------------------------------------
+void RenderDeviceGL::destroyTexture(uint32_t texObj)
+{
+    if (texObj == 0) return;
+    const auto& tex = mTextures.getRef(texObj);
+
+    glDeleteTextures(1, &tex.glObj);
+    mTextureMemory -= tex.memSize;
+    mTextures.remove(texObj);
+}
+
+//----------------------------------------------------------
+bool RenderDeviceGL::getTextureData(uint32_t texObj, int slice, int mipLevel, void* buffer)
+{
+    const auto& tex = mTextures.getRef(texObj);
+
+    int target = (tex.type == GL_TEXTURE_CUBE_MAP) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
+    if (target == GL_TEXTURE_CUBE_MAP) target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + slice;
+
+    int fmt, type, compressed = 0;
+    glActiveTexture(GL_TEXTURE15);
+    glBindTexture(tex.type, tex.glObj);
+
+    switch(tex.format) {
+    case TextureFormat::RGBA8:
+        fmt = GL_RGBA;
+        type = GL_UNSIGNED_BYTE;
+        break;
+    case TextureFormat::DXT1:
+    case TextureFormat::DXT3:
+    case TextureFormat::DXT5:
+        compressed = 1;
+        break;
+    default:
+        return false;
+    };
+
+    if (compressed)
+        glGetCompressedTexImage(target, mipLevel, buffer);
+    else
+        glGetTexImage(target, mipLevel, fmt, type, buffer);
+
+    glBindTexture(tex.type, 0);
+    {
+        std::lock_guard<std::mutex> lock(txMutex);
+        if (mTexSlots[15].texObj) {
+            auto& tex15 = mTextures.getRef(mTexSlots[15].texObj);
+            glBindTexture(tex15.type, tex15.glObj);
+        }
+    }
+
+    return true;
+}
+
+//----------------------------------------------------------
+uint32_t RenderDeviceGL::getTextureMemory() const
+{
+    return mTextureMemory;
 }
 
 //----------------------------------------------------------
