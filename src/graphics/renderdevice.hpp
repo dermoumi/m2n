@@ -111,6 +111,48 @@ namespace TextureFormat
     };
 }
 
+//----------------------------------------------------------
+namespace SamplerState
+{
+    enum Type
+    {
+        FilterBilinear   = 0x0,
+        FilterTrilinear  = 0x0001,
+        FilterPoint      = 0x0002,
+        Aniso1           = 0x0,
+        Aniso2           = 0x0004,
+        Aniso4           = 0x0008,
+        Aniso8           = 0x0010,
+        Aniso16          = 0x0020,
+        AddrUClamp       = 0x0,
+        AddrUWrap        = 0x0040,
+        AddrUClampCol    = 0x0080,
+        AddrVClamp       = 0x0,
+        AddrVWrap        = 0x0100,
+        ADdrVClampCol    = 0x0200,
+        AddrWClamp       = 0x0,
+        AddrWWrap        = 0x0400,
+        AddrWClampCol    = 0x0800,
+        AddrClamp        = AddrUClamp | AddrVClamp | AddrWClamp,
+        AddrWrap         = AddrUWrap | AddrVWrap | AddrWWrap,
+        AddrClampCol     = AddrUClampCol | ADdrVClampCol | AddrWClampCol,
+        CompLEqual       = 0x1000
+    };
+
+    constexpr uint32_t FilterStart = 0;
+    constexpr uint32_t FilterMask = FilterBilinear | FilterTrilinear | FilterPoint;
+    constexpr uint32_t AnisoStart = 2;
+    constexpr uint32_t AnisoMask = Aniso1 | Aniso2 | Aniso4 | Aniso8 | Aniso16;
+    constexpr uint32_t AddrUStart = 6;
+    constexpr uint32_t AddrUMask = AddrUClamp | AddrUWrap | AddrWClampCol;
+    constexpr uint32_t AddrVStart = 8;
+    constexpr uint32_t AddrVMask = AddrVClamp | AddrVWrap | ADdrVClampCol;
+    constexpr uint32_t AddrWStart = 10;
+    constexpr uint32_t AddrWMask = AddrWClamp | AddrWWrap | AddrWClampCol;
+    constexpr uint32_t AddrStart = 6;
+    constexpr uint32_t AddrMask = AddrClamp | AddrWrap | AddrClampCol;
+}
+
 //==========================================================
 // Container for different objects used by the device
 //==========================================================

@@ -159,6 +159,7 @@ private:
     bool linkShaderProgram(uint32_t programObj);
 
     bool applyVertexLayout();
+    void applySamplerState(RDITexture& tex);
 
 private:
     uint32_t mDepthFormat;

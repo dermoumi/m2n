@@ -302,7 +302,7 @@ uint32_t RenderDeviceGL::createTexture(TextureType::Type type, int width, int he
     glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 
     tex.samplerState = 0;
-    // applySamplerState(tex);
+    applySamplerState(tex);
 
     glBindTexture(tex.type, 0);
     {
@@ -834,7 +834,7 @@ bool RenderDeviceGL::linkShaderProgram(uint32_t programObj)
     return true;
 }
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------
 bool RenderDeviceGL::applyVertexLayout()
 {
     uint32_t newVertexAttribMask {0u};
@@ -887,6 +887,47 @@ bool RenderDeviceGL::applyVertexLayout()
 
     // TODO
     return true;
+}
+
+//----------------------------------------------------------
+void RenderDeviceGL::applySamplerState(RDITexture& tex)
+{
+    thread_local const uint32_t magFilters[] = {GL_LINEAR, GL_LINEAR, GL_NEAREST};
+    thread_local const uint32_t minFiltersMips[] = {
+        GL_LINEAR_MIPMAP_NEAREST, GL_LINEAR_MIPMAP_LINEAR, GL_NEAREST_MIPMAP_NEAREST
+    };
+    thread_local const uint32_t maxAniso[] = {1u, 2u, 4u, 8u, 16u, 1u, 1u, 1u};
+    thread_local const uint32_t wrapModes[] = {GL_CLAMP_TO_EDGE, GL_REPEAT, GL_CLAMP_TO_BORDER};
+
+    uint32_t state = tex.samplerState;
+    uint32_t target = tex.type;
+
+    auto filter = (state & SamplerState::FilterMask) >> SamplerState::FilterStart;
+    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, tex.hasMips ?
+        magFilters[filter] : minFiltersMips[filter]);
+
+    filter = (state & SamplerState::FilterMask) >> SamplerState::FilterStart;
+    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, magFilters[filter]);
+
+    filter = (state & SamplerState::AnisoMask) >> SamplerState::AnisoStart;
+    glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, maxAniso[filter]);
+
+    filter = (state & SamplerState::AddrUMask) >> SamplerState::AddrUStart;
+    glTexParameteri(target, GL_TEXTURE_WRAP_S, wrapModes[filter]);
+
+    filter = (state & SamplerState::AddrVMask) >> SamplerState::AddrVStart;
+    glTexParameteri(target, GL_TEXTURE_WRAP_T, wrapModes[filter]);
+
+    filter = (state & SamplerState::AddrWMask) >> SamplerState::AddrWStart;
+    glTexParameteri(target, GL_TEXTURE_WRAP_R, wrapModes[filter]);
+
+    if (!(state & SamplerState::CompLEqual)) {
+        glTexParameteri(target, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+    }
+    else {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+    }
 }
 
 //------------------------------------------------------------------------------
