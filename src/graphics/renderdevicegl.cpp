@@ -188,7 +188,27 @@ bool RenderDeviceGL::commitStates(uint32_t filter)
 
         // Bind textures and set sampler state
         if (mask & PMTextures) {
-            // TODO
+            for (uint32_t i = 0; i < 16; ++i) {
+                glActiveTexture(GL_TEXTURE0 + i);
+                auto& texSlot = mTexSlots[i];
+
+                if (texSlot.texObj == 0) {
+                    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+                    glBindTexture(GL_TEXTURE_3D, 0);
+                    glBindTexture(GL_TEXTURE_2D, 0);
+                }
+                else {
+                    auto& tex = mTextures.getRef(texSlot.texObj);
+                    glBindTexture(tex.type, tex.glObj);
+
+                    // Apply sampler state
+                    if (tex.samplerState != texSlot.samplerState) {
+                        tex.samplerState = texSlot.samplerState;
+                        applySamplerState(tex);
+                    }
+                }
+            }
+            
             mPendingMask &= ~PMTextures;
         }
 
@@ -719,11 +739,6 @@ void RenderDeviceGL::setIndexBuffer(uint32_t bufObj, RDIIndexFormat format)
 void RenderDeviceGL::setVertexBuffer(uint32_t slot, uint32_t vbObj, uint32_t offset,
     uint32_t stride)
 {
-    if (slot >= 16) {
-        Log::warning("Attempting to set Vertex buffer at slot >= 16");
-        return;
-    }
-
     mVertBufSlots[slot] = {vbObj, offset, stride};
     mPendingMask |= PMVertexLayout;
 }
@@ -735,9 +750,10 @@ void RenderDeviceGL::setVertexLayout(uint32_t vlObj)
 }
 
 //----------------------------------------------------------
-void RenderDeviceGL::setTexture(uint32_t, uint32_t, uint16_t)
+void RenderDeviceGL::setTexture(uint32_t slot, uint32_t texObj, uint16_t samplerState)
 {
-    // TODO
+    mTexSlots[slot] = {texObj, samplerState};
+    mPendingMask |= PMTextures;
 }
 
 //----------------------------------------------------------
