@@ -54,6 +54,7 @@ static uint32_t toIndexFormat[] = {GL_UNSIGNED_SHORT, GL_UNSIGNED_INT};
 static uint32_t toPrimType[]    = {GL_TRIANGLES, GL_TRIANGLE_STRIP};
 
 static std::mutex vlMutex; // Vertex layouts mutex
+static std::mutex cpMutex; // Capabilities mutex
 thread_local std::string shaderLog;
 
 //----------------------------------------------------------
@@ -525,6 +526,13 @@ void RenderDeviceGL::setVertexLayout(uint32_t vlObj)
 void RenderDeviceGL::setTexture(uint32_t, uint32_t, uint16_t)
 {
     // TODO
+}
+
+//----------------------------------------------------------
+bool RenderDeviceGL::isTextureCompressionSupported() const
+{
+    std::lock_guard<std::mutex> lock(cpMutex);
+    return glExt::EXT_texture_compression_s3tc;
 }
 
 //----------------------------------------------------------

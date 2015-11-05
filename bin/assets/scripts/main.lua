@@ -73,6 +73,7 @@ local eventMapping = {
 
 -- Create window
 local ok, err = Window.create("m2n", 1280, 720, {})
+
 if not ok then
     Log.error('Cannot initialize window: ' + err)
     return 1

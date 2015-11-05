@@ -83,6 +83,23 @@ enum RDIShaderConstType
     CONST_FLOAT33
 };
 
+//----------------------------------------------------------
+namespace TextureFormat
+{
+    enum Type : int
+    {
+        Unknown = 0,
+        RGBA8,
+        DXT1,
+        DXT3,
+        DXT5,
+        RGBA16F,
+        RGBA32F,
+        DEPTH,
+        Count
+    };
+}
+
 //==========================================================
 // Container for different objects used by the device
 //==========================================================
@@ -171,6 +188,8 @@ public:
         const void* data) = 0;
     virtual uint32_t getBufferMemory() const = 0;
 
+    // Textures
+
     // Shaders
     virtual uint32_t createShader(const char* vertexShaderSrc, const char* fragmentShaderSrc) = 0;
     virtual void destroyShader(uint32_t shaderID) = 0;
@@ -193,6 +212,8 @@ public:
     virtual void setVertexLayout(uint32_t vlObj) = 0;
     virtual void setTexture(uint32_t slot, uint32_t texObj, uint16_t samplerState) = 0;
 
+    // Capabilities
+    virtual bool isTextureCompressionSupported() const = 0;
     const DeviceCaps& getCapabilities() const;
 
 protected:

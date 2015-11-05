@@ -82,6 +82,9 @@ public:
     void setVertexLayout(uint32_t vlObj);
     void setTexture(uint32_t slot, uint32_t texObj, uint16_t samplerState);
 
+    // Capabilities
+    bool isTextureCompressionSupported() const;
+    
 private:
     constexpr static uint32_t MaxNumVertexLayouts = 16;
 
