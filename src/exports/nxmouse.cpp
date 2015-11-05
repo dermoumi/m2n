@@ -31,26 +31,23 @@
 //----------------------------------------------------------
 // Locals
 //----------------------------------------------------------
-namespace
-{
-    int currentCursor = -1;
-    // bool grabbed = false;
-}
+static int currentCursor = -1;
+// static bool grabbed = false;
+
+//----------------------------------------------------------
+// Declarations
+//----------------------------------------------------------
+extern "C" SDL_Window* nxWindowGet();
 
 //----------------------------------------------------------
 // Exported functions
 //----------------------------------------------------------
-
-//------------------------------------------------------
-extern "C" SDL_Window* nxWindowGet();
-
-//------------------------------------------------------
 NX_EXPORT bool nxMouseVisible(int toggle)
 {
     return SDL_ShowCursor(toggle) == 1;
 }
 
-//------------------------------------------------------
+//----------------------------------------------------------
 NX_EXPORT void nxMouseSetSystemCursor(int type)
 {
     SDL_Cursor* cursor;
@@ -65,13 +62,13 @@ NX_EXPORT void nxMouseSetSystemCursor(int type)
     currentCursor = type;
 }
 
-//------------------------------------------------------
+//----------------------------------------------------------
 NX_EXPORT int nxMouseGetCursor()
 {
     return currentCursor;
 }
 
-//------------------------------------------------------
+//----------------------------------------------------------
 NX_EXPORT void nxMouseSetPosition(int x, int y, bool global)
 {
     if (global) {
@@ -83,7 +80,7 @@ NX_EXPORT void nxMouseSetPosition(int x, int y, bool global)
     }
 }
 
-//------------------------------------------------------
+//----------------------------------------------------------
 NX_EXPORT void nxMouseGetPosition(int* pos, bool global)
 {
     if (SDL_GetRelativeMouseMode()) {
@@ -98,25 +95,25 @@ NX_EXPORT void nxMouseGetPosition(int* pos, bool global)
     }
 }
 
-//------------------------------------------------------
+//----------------------------------------------------------
 NX_EXPORT bool nxMouseSetRelativeMode(bool enabled)
 {
     return SDL_SetRelativeMouseMode(static_cast<SDL_bool>(enabled)) == 0;
 }
 
-//------------------------------------------------------
+//----------------------------------------------------------
 NX_EXPORT bool nxMouseGetRelativeMode()
 {
     return SDL_GetRelativeMouseMode() == SDL_TRUE;
 }
 
-//------------------------------------------------------
+//----------------------------------------------------------
 NX_EXPORT bool nxMouseIsButtonDown(int button)
 {
     return SDL_GetMouseState(nullptr, nullptr) & SDL_BUTTON(button);
 }
 
-//------------------------------------------------------
+//----------------------------------------------------------
 NX_EXPORT bool nxMouseSetGrab(bool /*enabled*/)
 {
     // TODO: Upgrade to SDL 2.0.4?
@@ -128,7 +125,7 @@ NX_EXPORT bool nxMouseSetGrab(bool /*enabled*/)
     return false;
 }
 
-//------------------------------------------------------
+//----------------------------------------------------------
 NX_EXPORT bool nxMouseIsGrabbed()
 {
     // TODO: Upgrade to SDL 2.0.4?

@@ -31,20 +31,18 @@
 //----------------------------------------------------------
 // Exported functions
 //----------------------------------------------------------
-
-//------------------------------------------------------
 NX_EXPORT char** nxFsEnumerateFiles(const char* path)
 {
     return PHYSFS_enumerateFiles(path);
 }
 
-//------------------------------------------------------
+//----------------------------------------------------------
 NX_EXPORT void nxFsFreeList(void* listVar)
 {
     PHYSFS_freeList(listVar);
 }
 
-//------------------------------------------------------
+//----------------------------------------------------------
 NX_EXPORT bool nxFsIsDirectory(const char* path)
 {
     PHYSFS_Stat stat;
@@ -53,7 +51,7 @@ NX_EXPORT bool nxFsIsDirectory(const char* path)
     return stat.filetype == PHYSFS_FILETYPE_DIRECTORY;
 }
 
-//------------------------------------------------------
+//----------------------------------------------------------
 NX_EXPORT bool nxFsIsFile(const char* path)
 {
     PHYSFS_Stat stat;

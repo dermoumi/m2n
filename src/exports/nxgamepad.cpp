@@ -40,16 +40,11 @@ using NxGamepad = SDL_GameController;
 //----------------------------------------------------------
 // Locals
 //----------------------------------------------------------
-namespace
-{
-    std::map<std::string, bool> recentGUIDs;
-}
+static std::map<std::string, bool> recentGUIDs;
 
 //----------------------------------------------------------
 // Exported functions
 //----------------------------------------------------------
-
-//------------------------------------------------------
 NX_EXPORT NxGamepad* nxGamepadOpen(int id)
 {
     NxGamepad* gamepad = SDL_GameControllerOpen(id - 1);
@@ -65,38 +60,38 @@ NX_EXPORT NxGamepad* nxGamepadOpen(int id)
     return gamepad;
 }
 
-//------------------------------------------------------
+//----------------------------------------------------------
 NX_EXPORT void nxGamepadClose(NxGamepad* gamepad)
 {
     SDL_GameControllerClose(gamepad);
 }
 
-//------------------------------------------------------
+//----------------------------------------------------------
 NX_EXPORT bool nxGamepadButtonDown(NxGamepad* gamepad, int btn)
 {
     return SDL_GameControllerGetButton(gamepad, static_cast<SDL_GameControllerButton>(btn - 1));
 }
 
-//------------------------------------------------------
+//----------------------------------------------------------
 NX_EXPORT double nxGamepadGetAxis(NxGamepad* gamepad, int axis)
 {
     return SDL_GameControllerGetAxis(gamepad, static_cast<SDL_GameControllerAxis>(axis - 1));
 }
 
-//------------------------------------------------------
+//----------------------------------------------------------
 NX_EXPORT bool nxGamepadAddMapping(const char* mappingStr)
 {
     return SDL_GameControllerAddMapping(mappingStr) != -1;
 }
 
-//------------------------------------------------------
+//----------------------------------------------------------
 NX_EXPORT const char* nxGamepadGetMapping(const char* guidStr)
 {
     auto guid = SDL_JoystickGetGUIDFromString(guidStr);
     return SDL_GameControllerMappingForGUID(guid);
 }
 
-//------------------------------------------------------
+//----------------------------------------------------------
 NX_EXPORT bool nxGamepadAddMappings(const char* data)
 {
     // Add to recent GUIDs
@@ -123,7 +118,7 @@ NX_EXPORT bool nxGamepadAddMappings(const char* data)
     return SDL_GameControllerAddMappingsFromRW(rw, 1) != -1;
 }
 
-//------------------------------------------------------
+//----------------------------------------------------------
 NX_EXPORT const char* nxGamepadGetMappings()
 {
     static std::string str;

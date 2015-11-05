@@ -33,55 +33,48 @@
 //----------------------------------------------------------
 // Locals
 //----------------------------------------------------------
-namespace
+struct NxThreadObj
 {
-    struct NxThreadObj
-    {
-        std::thread* handle;
-        lua_State* state;
-        bool succeeded;
-    };
+    std::thread* handle;
+    lua_State* state;
+    bool succeeded;
+};
 
-    NX_HIDDEN void threadCallback(lua_State* state, bool& succeeded)
-    {
-        int argCount = lua_gettop(state) - 1; // Total elements in stack minus the function itself
-        succeeded = lua_pcall(state, argCount, -1, 0) == 0;
-    }
+static void threadCallback(lua_State* state, bool& succeeded)
+{
+    int argCount = lua_gettop(state) - 1; // Total elements in stack minus the function itself
+    succeeded = lua_pcall(state, argCount, -1, 0) == 0;
 }
 
 //----------------------------------------------------------
 // Exported functions
 //----------------------------------------------------------
-extern "C"
+NX_EXPORT NxThreadObj* nxThreadCreate(lua_State* state)
 {
-    //------------------------------------------------------
-    NX_EXPORT NxThreadObj* nxThreadCreate(lua_State* state)
-    {
-        auto threadObj = new NxThreadObj();
-        threadObj->state = state;
-        threadObj->handle = new std::thread(threadCallback, state, std::ref(threadObj->succeeded));
-        return threadObj;
-    }
+    auto threadObj = new NxThreadObj();
+    threadObj->state = state;
+    threadObj->handle = new std::thread(threadCallback, state, std::ref(threadObj->succeeded));
+    return threadObj;
+}
 
-    //------------------------------------------------------
-    NX_EXPORT void nxThreadRelease(NxThreadObj* threadObj)
-    {
-        delete threadObj->handle;
-        delete threadObj;
-    }
+//----------------------------------------------------------
+NX_EXPORT void nxThreadRelease(NxThreadObj* threadObj)
+{
+    delete threadObj->handle;
+    delete threadObj;
+}
 
-    //------------------------------------------------------
-    NX_EXPORT bool nxThreadWait(NxThreadObj* threadObj)
-    {
-        threadObj->handle->join();
-        return threadObj->succeeded;
-    }
+//----------------------------------------------------------
+NX_EXPORT bool nxThreadWait(NxThreadObj* threadObj)
+{
+    threadObj->handle->join();
+    return threadObj->succeeded;
+}
 
-    //------------------------------------------------------
-    NX_EXPORT bool nxThreadIsMain()
-    {
-        return Thread::isMain();
-    }
+//----------------------------------------------------------
+NX_EXPORT bool nxThreadIsMain()
+{
+    return Thread::isMain();
 }
 
 //==============================================================================

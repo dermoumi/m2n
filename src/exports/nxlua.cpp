@@ -32,8 +32,6 @@
 //----------------------------------------------------------
 // Exported functions
 //----------------------------------------------------------
-
-//------------------------------------------------------
 NX_EXPORT bool nxLuaLoadNxLibs(lua_State* state)
 {
     // Load data into a string?
@@ -53,7 +51,7 @@ NX_EXPORT bool nxLuaLoadNxLibs(lua_State* state)
     return true;
 }
 
-//------------------------------------------------------
+//----------------------------------------------------------
 NX_EXPORT void* nxLuaToCdata(lua_State* state, int index)
 {
     auto ptr = lua_topointer(state, index);

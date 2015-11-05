@@ -53,7 +53,7 @@ NX_EXPORT NxWindow* nxWindowGet()
     return window;
 }
 
-//------------------------------------------------------
+//----------------------------------------------------------
 NX_EXPORT void nxWindowClose()
 {
     GlContext::release();
@@ -61,7 +61,7 @@ NX_EXPORT void nxWindowClose()
     window = nullptr;
 }
 
-//------------------------------------------------------
+//----------------------------------------------------------
 NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, int fullscreen,
     int display, bool vsync, bool resizable, bool borderless, int minWidth, int minHeight,
     bool highDpi, int refreshRate, int posX, int posY, int depthBits, int stencilBits, int msaa)
@@ -149,7 +149,7 @@ NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, int
     return window;
 }
 
-//------------------------------------------------------
+//----------------------------------------------------------
 NX_EXPORT void nxWindowDisplay()
 {
     GlContext::ensure()->display();
@@ -209,13 +209,13 @@ NX_EXPORT void nxWindowGetFlags(int* flagsPtr)
     }
 }
 
-//------------------------------------------------------
+//----------------------------------------------------------
 NX_EXPORT void nxWindowEnsureContext()
 {
     GlContext::ensure();
 }
 
-//------------------------------------------------------
+//----------------------------------------------------------
 NX_EXPORT bool nxWindowGetDesktopSize(int displayIndex, int* sizePtr)
 {
     if (displayIndex < 1 || displayIndex > SDL_GetNumVideoDisplays()) return false;
@@ -230,13 +230,13 @@ NX_EXPORT bool nxWindowGetDesktopSize(int displayIndex, int* sizePtr)
     return false;
 }
 
-//------------------------------------------------------
+//----------------------------------------------------------
 NX_EXPORT int nxWindowGetDisplayCount()
 {
     return SDL_GetNumVideoDisplays();
 }
 
-//------------------------------------------------------
+//----------------------------------------------------------
 NX_EXPORT const char* nxWindowGetDisplayName(int displayIndex)
 {
     if (displayIndex < 1 || displayIndex > SDL_GetNumVideoDisplays()) return nullptr;
@@ -244,7 +244,7 @@ NX_EXPORT const char* nxWindowGetDisplayName(int displayIndex)
     return SDL_GetDisplayName(displayIndex - 1);
 }
 
-//------------------------------------------------------
+//----------------------------------------------------------
 NX_EXPORT int nxWindowGetFullscreen()
 {
     auto flags = SDL_GetWindowFlags(window);
@@ -266,7 +266,7 @@ NX_EXPORT bool nxWindowGetVisible()
     return (flags & (SDL_WINDOW_HIDDEN | SDL_WINDOW_MINIMIZED));
 }
 
-//------------------------------------------------------
+//----------------------------------------------------------
 NX_EXPORT const int* nxWindowGetDisplayModes(int displayIndex, size_t* count)
 {
     static std::vector<int> modes;
@@ -293,56 +293,56 @@ NX_EXPORT const int* nxWindowGetDisplayModes(int displayIndex, size_t* count)
     return modes.data();
 }
 
-//------------------------------------------------------
+//----------------------------------------------------------
 NX_EXPORT void nxWindowGetSize(int* sizePtr)
 {   
     SDL_GetWindowSize(window, &sizePtr[0], &sizePtr[1]);
 }
 
-//------------------------------------------------------
+//----------------------------------------------------------
 NX_EXPORT void nxWindowGetPosition(int* posPtr)
 {
     SDL_GetWindowPosition(window, &posPtr[0], &posPtr[1]);
 }
 
-//------------------------------------------------------
+//----------------------------------------------------------
 NX_EXPORT const char* nxWindowGetTitle()
 {
     return SDL_GetWindowTitle(window);
 }
 
-//------------------------------------------------------
+//----------------------------------------------------------
 NX_EXPORT void nxWindowMinimize()
 {
     SDL_MinimizeWindow(window);
 }
 
-//------------------------------------------------------
+//----------------------------------------------------------
 NX_EXPORT void nxWindowSetPosition(int x, int y)
 {
     SDL_SetWindowPosition(window, x, y);
 }
 
-//------------------------------------------------------
+//----------------------------------------------------------
 NX_EXPORT void nxWindowSetSize(int width, int height)
 {
     SDL_SetWindowSize(window, width, height);
 }
 
-//------------------------------------------------------
+//----------------------------------------------------------
 NX_EXPORT void nxWindowSetTitle(const char* title)
 {
     SDL_SetWindowTitle(window, title);
 }
 
-//------------------------------------------------------
+//----------------------------------------------------------
 NX_EXPORT void nxWindowSimpleMessageBox(const char* title, const char* message, uint32_t type,
     bool attach)
 {
     SDL_ShowSimpleMessageBox(type, title, message, attach ? window : nullptr);
 }
 
-//------------------------------------------------------
+//----------------------------------------------------------
 NX_EXPORT void nxWindowGetDrawableSize(int* sizePtr)
 {
     SDL_GL_GetDrawableSize(window, &sizePtr[0], &sizePtr[1]);
