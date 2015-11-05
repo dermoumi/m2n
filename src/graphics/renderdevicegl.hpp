@@ -131,7 +131,6 @@ private:
     int mVpX {0}, mVpY {0}, mVpWidth {1}, mVpHeight {1};
     int mScX {0}, mScY {0}, mScWidth {1}, mScHeight {1};
     std::atomic<uint32_t> mBufferMemory  {0u};
-    std::string mShaderLog;
 
     int mDefaultFBO {0};
     std::atomic<uint32_t> mNumVertexLayouts{0};
