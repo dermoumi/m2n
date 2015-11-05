@@ -31,8 +31,7 @@
 //------------------------------------------------------------------------------
 #include "renderdevice.hpp"
 
-#include <vector>
-
+#include <atomic>
 
 //==========================================================
 // OpenGL implementation of RenderDevice
@@ -131,11 +130,11 @@ private:
 private:
     int mVpX {0}, mVpY {0}, mVpWidth {1}, mVpHeight {1};
     int mScX {0}, mScY {0}, mScWidth {1}, mScHeight {1};
+    std::atomic<uint32_t> mBufferMemory  {0u};
     std::string mShaderLog;
-    uint32_t mBufferMemory  {0u};
 
     int mDefaultFBO {0};
-    uint32_t              mNumVertexLayouts{0};
+    std::atomic<uint32_t> mNumVertexLayouts{0};
     RDIVertexLayout       mVertexLayouts[MaxNumVertexLayouts];
     RDIObjects<RDIBuffer> mBuffers;
     RDIObjects<RDIShader> mShaders;

@@ -27,6 +27,7 @@
 #pragma once
 #include "../config.hpp"
 
+#include <cstring>
 #include <vector>
 #include <string>
 #include <mutex>
@@ -89,12 +90,19 @@ template <class T>
 class RDIObjects
 {
 public:
-    uint32_t add(const T& obj)
+    uint32_t add(const T& obj, bool copy = false)
     {
         std::lock_guard<std::mutex> lock(mMutex);
         
         if (mFreeList.empty()) {
-            mObjects.push_back(obj);
+            if (copy) {
+                mObjects.emplace_back();
+                memcpy(&mObjects.back(), &obj, sizeof(T));
+            }
+            else {
+                mObjects.emplace_back(obj);
+            }
+
             return static_cast<uint32_t>(mObjects.size());
         }
         else {
@@ -118,8 +126,8 @@ public:
     {
         thread_local T invalidObj;
 
-        if (handle <= 0 || handle > mObjects.size()) return invalidObj;
         std::lock_guard<std::mutex> lock(mMutex);
+        if (handle <= 0 || handle > mObjects.size()) return invalidObj;
         
         return mObjects[handle - 1];
     }

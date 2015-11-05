@@ -25,10 +25,10 @@
     For more information, please refer to <http://unlicense.org>
 *///============================================================================
 #include "renderdevicegles2.hpp"
-#include "../system/log.hpp"
 
 #if defined(NX_OPENGL_ES)
 //------------------------------------------------------------------------------
+#include "../system/log.hpp"
 #include "opengles2.hpp"
 
 //==========================================================
@@ -239,9 +239,7 @@ uint32_t RenderDeviceGLES2::createShader(const char* vertexShaderSrc, const char
     if (programObj == 0) return 0;
     if (!linkShaderProgram(programObj)) return 0;
 
-
-    uint32_t shaderID = mShaders.add({});
-    RDIShader& shader = mShaders.getRef(shaderID);
+    RDIShader shader {};
     shader.oglProgramObj = programObj;
 
     int attribCount;
@@ -282,7 +280,7 @@ uint32_t RenderDeviceGLES2::createShader(const char* vertexShaderSrc, const char
         shader.inputLayouts[i].valid = allAttribsFound;
     }
 
-    return shaderID;
+    return mShaders.add(shader, true);
 }
 
 //----------------------------------------------------------

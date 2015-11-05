@@ -25,11 +25,13 @@
     For more information, please refer to <http://unlicense.org>
 *///============================================================================
 #include "renderdevicegl.hpp"
-#include "../system/log.hpp"
 
 #if !defined(NX_OPENGL_ES)
 //------------------------------------------------------------------------------
+#include "../system/log.hpp"
 #include "opengl.hpp"
+
+#include <mutex>
 
 //==========================================================
 // Locals
@@ -50,6 +52,9 @@ static const char* defaultShaderFS =
 
 static uint32_t toIndexFormat[] = {GL_UNSIGNED_SHORT, GL_UNSIGNED_INT};
 static uint32_t toPrimType[]    = {GL_TRIANGLES, GL_TRIANGLE_STRIP};
+
+static std::mutex vlMutex; // Vertex layouts mutex
+thread_local std::string shaderLog;
 
 //----------------------------------------------------------
 bool RenderDeviceGL::initialize()
@@ -227,6 +232,8 @@ uint32_t RenderDeviceGL::registerVertexLayout(uint32_t numAttribs,
 {
     if (mNumVertexLayouts == MaxNumVertexLayouts) return 0;
 
+    std::lock_guard<std::mutex> lock(vlMutex);
+
     mVertexLayouts[mNumVertexLayouts].numAttribs = numAttribs;
     for (uint32_t i = 0; i < numAttribs; ++i) {
         mVertexLayouts[mNumVertexLayouts].attribs[i] = attribs[i];
@@ -243,9 +250,7 @@ uint32_t RenderDeviceGL::createShader(const char* vertexShaderSrc, const char* f
     if (programObj == 0) return 0;
     if (!linkShaderProgram(programObj)) return 0;
 
-
-    uint32_t shaderID = mShaders.add({});
-    RDIShader& shader = mShaders.getRef(shaderID);
+    RDIShader shader {};
     shader.oglProgramObj = programObj;
 
     int attribCount;
@@ -253,7 +258,6 @@ uint32_t RenderDeviceGL::createShader(const char* vertexShaderSrc, const char* f
 
     // Run through vertex layouts and check which is compatible with this shader
     for (uint32_t i = 0; i < mNumVertexLayouts; ++i) {
-        RDIVertexLayout& v1 = mVertexLayouts[i];
         bool allAttribsFound = true;
 
         // Reset attribute indices to -1 (no attribute)
@@ -269,10 +273,17 @@ uint32_t RenderDeviceGL::createShader(const char* vertexShaderSrc, const char* f
             glGetActiveAttrib(programObj, j, 32, nullptr, (int*)&size, &type, name);
 
             bool attribFound = false;
-            for (uint32_t k = 0; k < v1.numAttribs; ++k) {
-                if (v1.attribs[j].semanticName == name) {
-                    shader.inputLayouts[i].attribIndices[k] = glGetAttribLocation(programObj, name);
-                    attribFound = true;
+
+            {
+                std::lock_guard<std::mutex> lock(vlMutex);
+
+                RDIVertexLayout& v1 = mVertexLayouts[i];
+                for (uint32_t k = 0; k < v1.numAttribs; ++k) {
+                    if (v1.attribs[j].semanticName == name) {
+                        auto loc = glGetAttribLocation(programObj, name);
+                        shader.inputLayouts[i].attribIndices[k] = loc;
+                        attribFound = true;
+                    }
                 }
             }
 
@@ -286,7 +297,8 @@ uint32_t RenderDeviceGL::createShader(const char* vertexShaderSrc, const char* f
         shader.inputLayouts[i].valid = allAttribsFound;
     }
 
-    return shaderID;
+
+    return mShaders.add(shader, true);
 }
 
 //----------------------------------------------------------
@@ -316,7 +328,7 @@ void RenderDeviceGL::bindShader(uint32_t shaderID)
 //----------------------------------------------------------
 const std::string& RenderDeviceGL::getShaderLog()
 {
-    return mShaderLog;
+    return shaderLog;
 }
 
 //----------------------------------------------------------
@@ -524,7 +536,7 @@ uint32_t RenderDeviceGL::createShaderProgram(const char* vertexShaderSrc,
     char* infoLog     {nullptr};
     int status;
 
-    mShaderLog = "";
+    shaderLog = "";
 
     // Vertex shader
     uint32_t vs = glCreateShader(GL_VERTEX_SHADER);
@@ -537,7 +549,7 @@ uint32_t RenderDeviceGL::createShaderProgram(const char* vertexShaderSrc,
         if (infoLogLength > 1) {
             infoLog = new char[infoLogLength];
             glGetShaderInfoLog(vs, infoLogLength, &charsWritten, infoLog);
-            mShaderLog = mShaderLog + "[Vertex Shader]\n" + infoLog;
+            shaderLog = shaderLog + "[Vertex Shader]\n" + infoLog;
             delete[] infoLog;
             infoLog = nullptr;
         }
@@ -556,7 +568,7 @@ uint32_t RenderDeviceGL::createShaderProgram(const char* vertexShaderSrc,
         if (infoLogLength > 1) {
             infoLog = new char[infoLogLength];
             glGetShaderInfoLog(fs, infoLogLength, &charsWritten, infoLog);
-            mShaderLog = mShaderLog + "[Fragment Shader]\n" + infoLog;
+            shaderLog = shaderLog + "[Fragment Shader]\n" + infoLog;
             delete[] infoLog;
             infoLog = nullptr;
         }
@@ -584,14 +596,14 @@ bool RenderDeviceGL::linkShaderProgram(uint32_t programObj)
     char* infoLog {nullptr};
     int status;
 
-    mShaderLog = "";
+    shaderLog = "";
 
     glLinkProgram(programObj);
     glGetProgramiv(programObj, GL_INFO_LOG_LENGTH, &infoLogLength);
     if (infoLogLength > 1) {
         infoLog = new char[infoLogLength];
         glGetProgramInfoLog(programObj, infoLogLength, &charsWritten, infoLog);
-        mShaderLog = mShaderLog + "[Linking]\n" + infoLog;
+        shaderLog = shaderLog + "[Linking]\n" + infoLog;
         delete[] infoLog;
         infoLog = nullptr;
     }
