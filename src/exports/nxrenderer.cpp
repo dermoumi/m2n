@@ -122,7 +122,6 @@ NX_EXPORT void nxRendererTestInit()
 
     // Create shaders
     defaultShader = rdi->createShader(
-        "#version 120\n"
         "attribute vec2 vertPos;\n"
         "attribute vec2 texCoords0;\n"
         "varying vec2 coords;\n"
@@ -130,7 +129,6 @@ NX_EXPORT void nxRendererTestInit()
         "   coords = texCoords0;\n"
         "   gl_Position = vec4(vertPos, 0.0, 1.0);\n"
         "}\n",
-        "#version 120\n"
         "uniform sampler2D tex;\n"
         "varying vec2 coords;\n"
         "void main() {\n"

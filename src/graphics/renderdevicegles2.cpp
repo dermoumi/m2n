@@ -52,8 +52,11 @@ static const char* defaultShaderFS =
 
 static uint32_t toIndexFormat[] = {GL_UNSIGNED_SHORT, GL_UNSIGNED_INT};
 static uint32_t toPrimType[]    = {GL_TRIANGLES, GL_TRIANGLE_STRIP};
+static int      toTexType[]     = {GL_TEXTURE_2D, GL_TEXTURE_3D_OES, GL_TEXTURE_CUBE_MAP};
 
 static std::mutex vlMutex; // Vertex layouts mutex
+static std::mutex txMutex; // Texture operations mutex
+static std::mutex cpMutex; // Capabilities mutex
 thread_local std::string shaderLog;
 
 //----------------------------------------------------------
@@ -125,11 +128,15 @@ void RenderDeviceGLES2::initStates()
 //----------------------------------------------------------
 void RenderDeviceGLES2::resetStates()
 {
-    // TODO: complete this
+    mCurVertexLayout = 1;                     mNewVertexLayout = 0;
+    mCurIndexBuffer = 1;                      mNewIndexBuffer = 0;
+    mCurRasterState.hash = 0xFFFFFFFFu;       mNewRasterState.hash = 0u;
+    mCurBlendState.hash = 0xFFFFFFFFu;        mNewBlendState.hash = 0u;
+    mCurDepthStencilState.hash = 0xFFFFFFFFu; mCurDepthStencilState.hash = 0u;
 
-    mCurVertexLayout = 1; mNewVertexLayout = 0;
-    mCurIndexBuffer = 1;  mNewIndexBuffer = 0;
+    for (uint32_t i = 0; i < 16; ++i) setTexture(i, 0, 0);
 
+    setColorWriteMask(true);
     mPendingMask = 0xFFFFFFFFu;
     commitStates();
 
@@ -151,7 +158,7 @@ bool RenderDeviceGLES2::commitStates(uint32_t filter)
 
         // Update renderstates
         if (mask & PMRenderStates) {
-            // TODO
+            applyRenderStates();
             mPendingMask &= ~PMRenderStates;
         }
 
@@ -180,7 +187,27 @@ bool RenderDeviceGLES2::commitStates(uint32_t filter)
 
         // Bind textures and set sampler state
         if (mask & PMTextures) {
-            // TODO
+            for (uint32_t i = 0; i < 8; ++i) {
+                glActiveTexture(GL_TEXTURE0 + i);
+                auto& texSlot = mTexSlots[i];
+
+                if (texSlot.texObj == 0) {
+                    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+                    glBindTexture(GL_TEXTURE_3D_OES, 0);
+                    glBindTexture(GL_TEXTURE_2D, 0);
+                }
+                else {
+                    auto& tex = mTextures.getRef(texSlot.texObj);
+                    glBindTexture(tex.type, tex.glObj);
+
+                    // Apply sampler state
+                    if (tex.samplerState != texSlot.samplerState) {
+                        tex.samplerState = texSlot.samplerState;
+                        applySamplerState(tex);
+                    }
+                }
+            }
+            
             mPendingMask &= ~PMTextures;
         }
 
@@ -200,6 +227,7 @@ bool RenderDeviceGLES2::commitStates(uint32_t filter)
 //----------------------------------------------------------
 void RenderDeviceGLES2::clear(const float* color)
 {
+    commitStates(PMViewport | PMScissor | PMRenderStates);
     glClearColor(color[0], color[1], color[2], color[3]);
     glClear(GL_COLOR_BUFFER_BIT);
 }
@@ -239,6 +267,223 @@ uint32_t RenderDeviceGLES2::registerVertexLayout(uint32_t numAttribs,
 }
 
 //----------------------------------------------------------
+uint32_t RenderDeviceGLES2::createTexture(TextureType::Type type, int width, int height,
+    unsigned int depth, TextureFormat::Type format, bool hasMips, bool genMips, bool sRGB)
+{
+    // TODO: Add support for android specific texture compression
+
+    if (!mCaps.texNPOT && ((width & (width-1)) != 0 || ((height & (height-1)) != 0))) {
+        Log::warning("Texture has Non-Power-Of-Two dimensions "
+            "although NPOT is not supported by GPU");
+    }
+
+    RDITexture tex;
+    tex.type    = toTexType[type];
+    tex.format  = format;
+    tex.width   = width;
+    tex.height  = height;
+    tex.depth   = depth;
+    tex.sRGB    = sRGB;
+    tex.genMips = genMips;
+    tex.hasMips = hasMips;
+
+    switch(format) {
+    case TextureFormat::RGBA8:
+        tex.glFmt = GL_RGBA;
+        break;
+    case TextureFormat::DXT1:
+        tex.glFmt = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+        break;
+    case TextureFormat::DXT3:
+        tex.glFmt = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+        break;
+    case TextureFormat::DXT5:
+        tex.glFmt = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+        break;
+    case TextureFormat::RGBA16F:
+        tex.glFmt = GL_RGBA;
+        break;
+    case TextureFormat::RGBA32F:
+        tex.glFmt = GL_RGBA;
+        break;
+    case TextureFormat::DEPTH:
+        tex.glFmt = GL_DEPTH_COMPONENT;
+    default:
+        Log::warning("Could not create texture: invalid format");
+        return 0;
+    }
+
+    glGenTextures(1, &tex.glObj);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(tex.type, tex.glObj);
+
+    // TODO: Look this up
+    // float borderColor[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    // glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+
+    tex.samplerState = 0;
+    applySamplerState(tex);
+
+    glBindTexture(tex.type, 0);
+    {
+        std::lock_guard<std::mutex> lock(txMutex);
+        if (mTexSlots[0].texObj) {
+            auto& tex0 = mTextures.getRef(mTexSlots[0].texObj);
+            glBindTexture(tex0.type, tex0.glObj);
+        }
+    }
+
+    // Calculate memory requirements
+    tex.memSize = calcTextureSize(format, width, height, depth);
+    if (hasMips || genMips) tex.memSize += static_cast<int>(tex.memSize / 3.f + 0.5f);
+    if (type == TextureType::TexCube) tex.memSize *= 6;
+    mTextureMemory += tex.memSize;
+
+    return mTextures.add(tex);
+}
+
+//----------------------------------------------------------
+void RenderDeviceGLES2::uploadTextureData(uint32_t texObj, int slice, int mipLevel, const void* pixels)
+{
+    // TODO: return false when failing
+
+    const auto& tex = mTextures.getRef(texObj);
+    auto format     = tex.format;
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(tex.type, tex.glObj);
+
+    int inputFormat = GL_RGBA;
+    int inputType = GL_UNSIGNED_BYTE;
+    bool compressed = (format == TextureFormat::DXT1) || (format == TextureFormat::DXT3) ||
+                      (format == TextureFormat::DXT5);
+
+    switch (format) {
+        case TextureFormat::RGBA16F:
+        case TextureFormat::RGBA32F:
+            inputFormat = GL_RGBA;
+            inputType   = GL_FLOAT;
+            break;
+        case TextureFormat::DEPTH:
+            inputFormat = GL_DEPTH_COMPONENT;
+            inputType   = GL_FLOAT;
+            break;
+        default:
+            break;
+    }
+
+    // Calculate size of the next mipmap using "floor" convention
+    int width = std::max(tex.width >> mipLevel, 1);
+    int height = std::max(tex.height >> mipLevel, 1);
+
+    // TODO: Check for size constraints
+
+    if (tex.type == GL_TEXTURE_2D || tex.type == GL_TEXTURE_CUBE_MAP)
+    {
+        int target = (tex.type == GL_TEXTURE_2D) ?
+            GL_TEXTURE_2D : (GL_TEXTURE_CUBE_MAP_POSITIVE_X + slice);
+
+        if (compressed) {
+            glCompressedTexImage2D(target, mipLevel, tex.glFmt, width, height, 0,
+                calcTextureSize(format, width, height, 1), pixels);
+        }
+        else {
+            glTexImage2D(target, mipLevel, tex.glFmt, width, height, 0, inputFormat, inputType, 
+                pixels);
+        }
+    }
+    else if (tex.type == GL_TEXTURE_3D_OES) {
+        int depth = std::max(tex.depth >> mipLevel, 1);
+
+        if (compressed) {
+            glCompressedTexImage3DOES(GL_TEXTURE_3D_OES, mipLevel, tex.glFmt, width, height, depth,
+                0, calcTextureSize(format, width, height, depth), pixels);
+        }
+        else {
+            glTexImage3DOES(GL_TEXTURE_3D_OES, mipLevel, tex.glFmt, width, height, depth, 0,
+                inputFormat, inputType, pixels);
+        }
+    }
+
+    if (tex.genMips && (tex.type != GL_TEXTURE_CUBE_MAP || slice == 5)) {
+        // Note: cube map mips are only generated when the last side is uploaded
+        // glEnable(tex.type);
+        glGenerateMipmap(tex.type);
+        // glDisable(tex.type);
+    }
+
+    glBindTexture(tex.type, 0);
+    {
+        std::lock_guard<std::mutex> lock(txMutex);
+        if (mTexSlots[0].texObj) {
+            auto& tex0 = mTextures.getRef(mTexSlots[0].texObj);
+            glBindTexture(tex0.type, tex0.glObj);
+        }
+    }
+}
+
+//----------------------------------------------------------
+void RenderDeviceGLES2::destroyTexture(uint32_t texObj)
+{
+    if (texObj == 0) return;
+    const auto& tex = mTextures.getRef(texObj);
+
+    glDeleteTextures(1, &tex.glObj);
+    mTextureMemory -= tex.memSize;
+    mTextures.remove(texObj);
+}
+
+//----------------------------------------------------------
+bool RenderDeviceGLES2::getTextureData(uint32_t texObj, int slice, int mipLevel, void* buffer)
+{
+    // const auto& tex = mTextures.getRef(texObj);
+
+    // int target = (tex.type == GL_TEXTURE_CUBE_MAP) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
+    // if (target == GL_TEXTURE_CUBE_MAP) target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + slice;
+
+    // int fmt, type, compressed = 0;
+    // glActiveTexture(GL_TEXTURE15);
+    // glBindTexture(tex.type, tex.glObj);
+
+    // switch(tex.format) {
+    // case TextureFormat::RGBA8:
+    //     fmt = GL_RGBA;
+    //     type = GL_UNSIGNED_BYTE;
+    //     break;
+    // case TextureFormat::DXT1:
+    // case TextureFormat::DXT3:
+    // case TextureFormat::DXT5:
+    //     compressed = 1;
+    //     break;
+    // default:
+    //     return false;
+    // };
+
+    // if (compressed)
+    //     glGetCompressedTexImage(target, mipLevel, buffer);
+    // else
+    //     glGetTexImage(target, mipLevel, fmt, type, buffer);
+
+    // glBindTexture(tex.type, 0);
+    // {
+    //     std::lock_guard<std::mutex> lock(txMutex);
+    //     if (mTexSlots[15].texObj) {
+    //         auto& tex15 = mTextures.getRef(mTexSlots[15].texObj);
+    //         glBindTexture(tex15.type, tex15.glObj);
+    //     }
+    // }
+
+    // TODO: Implement drawing to a render buffer and reading from it
+    return false;
+}
+
+//----------------------------------------------------------
+uint32_t RenderDeviceGLES2::getTextureMemory() const
+{
+    return mTextureMemory;
+}
+
+//----------------------------------------------------------
 uint32_t RenderDeviceGLES2::createShader(const char* vertexShaderSrc, const char* fragmentShaderSrc)
 {
     // Compile and link shader
@@ -273,9 +518,9 @@ uint32_t RenderDeviceGLES2::createShader(const char* vertexShaderSrc, const char
             {
                 std::lock_guard<std::mutex> lock(vlMutex);
 
-                RDIVertexLayout& v1 = mVertexLayouts[i];
-                for (uint32_t k = 0; k < v1.numAttribs; ++k) {
-                    if (v1.attribs[j].semanticName == name) {
+                RDIVertexLayout& vl = mVertexLayouts[i];
+                for (uint32_t k = 0; k < vl.numAttribs; ++k) {
+                    if (vl.attribs[k].semanticName == name) {
                         auto loc = glGetAttribLocation(programObj, name);
                         shader.inputLayouts[i].attribIndices[k] = loc;
                         attribFound = true;
@@ -517,9 +762,151 @@ void RenderDeviceGLES2::setVertexLayout(uint32_t vlObj)
 }
 
 //----------------------------------------------------------
-void RenderDeviceGLES2::setTexture(uint32_t, uint32_t, uint16_t)
+void RenderDeviceGLES2::setTexture(uint32_t slot, uint32_t texObj, uint16_t samplerState)
 {
-    // TODO
+    mTexSlots[slot] = {texObj, samplerState};
+    mPendingMask |= PMTextures;
+}
+
+//----------------------------------------------------------
+void RenderDeviceGLES2::setColorWriteMask(bool enabled)
+{
+    mNewRasterState.renderTargetWriteMask = enabled;
+}
+
+//----------------------------------------------------------
+bool RenderDeviceGLES2::getColorWriteMask() const
+{
+    return mNewRasterState.renderTargetWriteMask;
+}
+
+//----------------------------------------------------------
+void RenderDeviceGLES2::setFillMode(RDIFillMode fillMode)
+{
+    mNewRasterState.fillMode = fillMode;
+    mPendingMask |= PMRenderStates;
+}
+
+//----------------------------------------------------------
+RDIFillMode RenderDeviceGLES2::getFillMode() const
+{
+    return static_cast<RDIFillMode>(mNewRasterState.fillMode);
+}
+
+//----------------------------------------------------------
+void RenderDeviceGLES2::setCullMode(RDICullMode cullMode)
+{
+    mNewRasterState.cullMode = cullMode;
+    mPendingMask |= PMRenderStates;
+}
+
+//----------------------------------------------------------
+RDICullMode RenderDeviceGLES2::getCullMode() const
+{
+    return static_cast<RDICullMode>(mNewRasterState.cullMode);
+}
+
+//----------------------------------------------------------
+void RenderDeviceGLES2::setScissorTest(bool enabled)
+{
+    mNewRasterState.scissorEnable = enabled;
+    mPendingMask |= PMRenderStates;
+}
+
+//----------------------------------------------------------
+bool RenderDeviceGLES2::getScissorTest() const
+{
+    return mNewRasterState.scissorEnable;
+}
+
+//----------------------------------------------------------
+void RenderDeviceGLES2::setMultisampling(bool enabled)
+{
+    mNewRasterState.multisampleEnable = enabled;
+    mPendingMask |= PMRenderStates;
+}
+
+//----------------------------------------------------------
+bool RenderDeviceGLES2::getMultisampling() const
+{
+    return mNewRasterState.multisampleEnable;
+}
+
+//----------------------------------------------------------
+void RenderDeviceGLES2::setAlphaToCoverage(bool enabled)
+{
+    mNewBlendState.alphaToCoverageEnable = enabled;
+    mPendingMask |= PMRenderStates;
+}
+
+//----------------------------------------------------------
+bool RenderDeviceGLES2::getAlphaToCoverage() const
+{
+    return mNewBlendState.alphaToCoverageEnable;
+}
+
+//----------------------------------------------------------
+void RenderDeviceGLES2::setBlendMode(bool enabled, RDIBlendFunc src, RDIBlendFunc dst)
+{
+    mNewBlendState.blendEnable = enabled;
+    mNewBlendState.srcBlendFunc = src;
+    mNewBlendState.dstBlendFunc = dst;
+
+    mPendingMask |= PMRenderStates;
+}
+
+//----------------------------------------------------------
+bool RenderDeviceGLES2::getBlendMode(RDIBlendFunc& src, RDIBlendFunc& dst) const
+{
+    src = static_cast<RDIBlendFunc>(mNewBlendState.srcBlendFunc);
+    dst = static_cast<RDIBlendFunc>(mNewBlendState.dstBlendFunc);
+    return mNewBlendState.blendEnable;
+}
+
+//----------------------------------------------------------
+void RenderDeviceGLES2::setDepthMask(bool enabled)
+{
+    mNewDepthStencilState.depthWriteMask = enabled;
+    mPendingMask |= PMRenderStates;
+}
+
+//----------------------------------------------------------
+bool RenderDeviceGLES2::getDepthMask() const
+{
+    return mNewDepthStencilState.depthWriteMask;
+}
+
+//----------------------------------------------------------
+void RenderDeviceGLES2::setDepthTest(bool enabled)
+{
+    mNewDepthStencilState.depthEnable = enabled;
+    mPendingMask |= PMRenderStates;
+}
+
+//----------------------------------------------------------
+bool RenderDeviceGLES2::getDepthTest() const
+{
+    return mNewDepthStencilState.depthEnable;
+}
+
+//----------------------------------------------------------
+void RenderDeviceGLES2::setDepthFunc(RDIDepthFunc depthFunc)
+{
+    mNewDepthStencilState.depthFunc = depthFunc;
+    mPendingMask |= PMRenderStates;
+}
+
+//----------------------------------------------------------
+RDIDepthFunc RenderDeviceGLES2::getDepthFunc() const
+{
+    return static_cast<RDIDepthFunc>(mNewDepthStencilState.depthFunc);
+}
+
+//----------------------------------------------------------
+bool RenderDeviceGLES2::isTextureCompressionSupported() const
+{
+    std::lock_guard<std::mutex> lock(cpMutex);
+    return glExt::EXT_texture_compression_s3tc;
 }
 
 //----------------------------------------------------------
@@ -662,6 +1049,151 @@ bool RenderDeviceGLES2::applyVertexLayout()
 
     // TODO
     return true;
+}
+
+//----------------------------------------------------------
+void RenderDeviceGLES2::applySamplerState(RDITexture& tex)
+{
+    thread_local const uint32_t magFilters[] = {GL_LINEAR, GL_LINEAR, GL_NEAREST};
+    thread_local const uint32_t minFiltersMips[] = {
+        GL_LINEAR_MIPMAP_NEAREST, GL_LINEAR_MIPMAP_LINEAR, GL_NEAREST_MIPMAP_NEAREST
+    };
+    thread_local const uint32_t maxAniso[] = {1u, 2u, 4u, 8u, 16u, 1u, 1u, 1u};
+    thread_local const uint32_t wrapModes[] = {GL_CLAMP_TO_EDGE, GL_REPEAT, GL_CLAMP_TO_EDGE};
+
+    uint32_t state = tex.samplerState;
+    uint32_t target = tex.type;
+
+    auto filter = (state & SamplerState::FilterMask) >> SamplerState::FilterStart;
+    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, tex.hasMips ?
+        magFilters[filter] : minFiltersMips[filter]);
+
+    filter = (state & SamplerState::FilterMask) >> SamplerState::FilterStart;
+    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, magFilters[filter]);
+
+    // TODO: Check for anisotropy availability
+    // filter = (state & SamplerState::AnisoMask) >> SamplerState::AnisoStart;
+    // glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, maxAniso[filter]);
+
+    filter = (state & SamplerState::AddrUMask) >> SamplerState::AddrUStart;
+    glTexParameteri(target, GL_TEXTURE_WRAP_S, wrapModes[filter]);
+
+    filter = (state & SamplerState::AddrVMask) >> SamplerState::AddrVStart;
+    glTexParameteri(target, GL_TEXTURE_WRAP_T, wrapModes[filter]);
+
+    // TODO: Check for Texture3D availability
+    // filter = (state & SamplerState::AddrWMask) >> SamplerState::AddrWStart;
+    // glTexParameteri(target, GL_TEXTURE_WRAP_R, wrapModes[filter]);
+
+    // TODO: Check for shadow samplers availability
+    // if (!(state & SamplerState::CompLEqual)) {
+    //     glTexParameteri(target, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+    // }
+    // else {
+    //     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+    //     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+    // }
+}
+
+//----------------------------------------------------------
+void RenderDeviceGLES2::applyRenderStates()
+{
+    // Rasterizer state
+    if (mNewRasterState.hash != mCurRasterState.hash) {
+        // TODO: Not supported on GLES2
+        // if (mNewRasterState.fillMode == RS_FILL_SOLID) {
+        //     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        // }
+        // else {
+        //     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        // }
+
+        if (mNewRasterState.cullMode == RS_CULL_BACK) {
+            glEnable(GL_CULL_FACE);
+            glCullFace(GL_BACK);
+        }
+        else if (mNewRasterState.cullMode == RS_CULL_FRONT) {
+            glEnable(GL_CULL_FACE);
+            glCullFace(GL_FRONT);
+        }
+        else {
+            glDisable(GL_CULL_FACE);
+        }
+
+        if (!mNewRasterState.scissorEnable) {
+            glDisable(GL_SCISSOR_TEST);
+        }
+        else {
+            glEnable(GL_SCISSOR_TEST);
+        }
+
+        if (mNewRasterState.renderTargetWriteMask) {
+            glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+        }
+        else {
+            glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+        }
+
+        mCurRasterState.hash = mNewRasterState.hash;
+    }
+
+    // Blend state
+    if (mNewBlendState.hash != mCurBlendState.hash) {
+        if (!mNewBlendState.alphaToCoverageEnable) {
+            glDisable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+        }
+        else {
+            glEnable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+        }
+
+        if (!mNewBlendState.blendEnable) {
+            glDisable(GL_BLEND);
+        }
+        else {
+            static uint32_t oglBlendFuncs[] = {
+                GL_ZERO,
+                GL_ONE,
+                GL_SRC_ALPHA,
+                GL_ONE_MINUS_SRC_ALPHA,
+                GL_DST_COLOR
+            };
+
+            glEnable(GL_BLEND);
+            glBlendFunc(oglBlendFuncs[mNewBlendState.srcBlendFunc],
+                oglBlendFuncs[mNewBlendState.dstBlendFunc]);
+        }
+
+        mCurBlendState.hash = mNewBlendState.hash;
+    }
+
+    // Depth-stencil state
+    if (mNewDepthStencilState.hash != mCurDepthStencilState.hash) {
+        if (mNewDepthStencilState.depthWriteMask) {
+            glDepthMask(GL_TRUE);
+        }
+        else {
+            glDepthMask(GL_FALSE);
+        }
+
+        if (mNewDepthStencilState.depthEnable) {
+            static uint32_t oglDepthFuncs[] = {
+                GL_LEQUAL,
+                GL_LESS,
+                GL_EQUAL,
+                GL_GREATER,
+                GL_GEQUAL,
+                GL_ALWAYS
+            };
+
+            glEnable(GL_DEPTH_TEST);
+            glDepthFunc(oglDepthFuncs[mNewDepthStencilState.depthFunc]);
+        }
+        else {
+            glDisable(GL_DEPTH_TEST);
+        }
+
+        mCurDepthStencilState.hash = mNewDepthStencilState.hash;
+    }
 }
 
 //------------------------------------------------------------------------------

@@ -37,6 +37,11 @@ local Mouse = require 'nx.mouse'
 local Renderer = require 'nx.renderer'
 
 ------------------------------------------------------------
+function SceneTitle:load()
+    Scene.push('scene.subtitle')
+end
+
+------------------------------------------------------------
 function SceneTitle:render()
     if Mouse.isButtonDown('left') then
         Renderer.clear(128, 255, 0)

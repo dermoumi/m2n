@@ -53,6 +53,14 @@ public:
     // Vertex layouts
     uint32_t registerVertexLayout(uint32_t numAttribs, const VertexLayoutAttrib* attribs);
 
+    // Textures
+    uint32_t createTexture(TextureType::Type type, int width, int height, unsigned int depth,
+        TextureFormat::Type format, bool hasMips, bool genMips, bool sRGB);
+    void uploadTextureData(uint32_t texObj, int slice, int mipLevel, const void* pixels);
+    void destroyTexture(uint32_t texObj);
+    bool getTextureData(uint32_t texObj, int slice, int mipLevel, void* buffer);
+    uint32_t getTextureMemory() const;
+
     // Shaders
     uint32_t createShader(const char* vertexShaderSrc, const char* fragmentShaderSrc);
     void destroyShader(uint32_t shaderID);
@@ -82,6 +90,32 @@ public:
     void setVertexLayout(uint32_t vlObj);
     void setTexture(uint32_t slot, uint32_t texObj, uint16_t samplerState);
 
+    // Render states
+    void setColorWriteMask(bool enabled);
+    bool getColorWriteMask() const;
+    void setFillMode(RDIFillMode fillMode);
+    RDIFillMode getFillMode() const;
+    void setCullMode(RDICullMode cullMode);
+    RDICullMode getCullMode() const;
+    void setScissorTest(bool enabled);
+    bool getScissorTest() const;
+    void setMultisampling(bool enabled);
+    bool getMultisampling() const;
+    void setAlphaToCoverage(bool enabled);
+    bool getAlphaToCoverage() const;
+    void setBlendMode(bool enabled, RDIBlendFunc src = BS_BLEND_ZERO,
+        RDIBlendFunc dst = BS_BLEND_ZERO);
+    bool getBlendMode(RDIBlendFunc& src, RDIBlendFunc& dst) const;
+    void setDepthMask(bool enabled);
+    bool getDepthMask() const;
+    void setDepthTest(bool enabled);
+    bool getDepthTest() const;
+    void setDepthFunc(RDIDepthFunc depthFunc);
+    RDIDepthFunc getDepthFunc() const;
+
+    // Capabilities
+    bool isTextureCompressionSupported() const;
+
 private:
     constexpr static uint32_t MaxNumVertexLayouts = 16;
 
@@ -98,6 +132,22 @@ private:
         int8_t attribIndices[16];
     };
 
+    struct RDITexture
+    {
+        uint32_t            glObj;
+        uint32_t            glFmt;
+        int                 type;
+        TextureFormat::Type format;
+        int                 width;
+        int                 height;
+        int                 depth;
+        int                 memSize;
+        uint32_t            samplerState;
+        bool                sRGB;
+        bool                hasMips;
+        bool                genMips;
+    };
+
     struct RDIShader
     {
         uint32_t oglProgramObj;
@@ -109,6 +159,57 @@ private:
         uint32_t vbObj;
         uint32_t offset;
         uint32_t stride;
+    };
+
+    struct RDITexSlot
+    {
+        uint32_t texObj;
+        uint32_t samplerState;
+    };
+
+    struct RDIRasterState
+    {
+        union
+        {
+            uint32_t hash;
+            struct
+            {
+                uint32_t fillMode              : 1;
+                uint32_t cullMode              : 2;
+                uint32_t scissorEnable         : 1;
+                uint32_t multisampleEnable     : 1;
+                uint32_t renderTargetWriteMask : 1;
+            };
+        };
+    };
+
+    struct RDIBlendState
+    {
+        union
+        {
+            uint32_t hash;
+            struct
+            {
+                uint32_t alphaToCoverageEnable : 1;
+                uint32_t blendEnable           : 1;
+                uint32_t srcBlendFunc          : 4;
+                uint32_t dstBlendFunc          : 4;
+            };
+        };
+    };
+
+    struct RDIDepthStencilState
+    {
+        union
+        {
+            uint32_t hash;
+            struct
+            {
+                uint32_t depthWriteMask : 1;
+                uint32_t depthEnable    : 1;
+                uint32_t depthFunc      : 4;
+            };
+        };
     };
 
     enum PendingMask : uint32_t
@@ -126,19 +227,28 @@ private:
     bool linkShaderProgram(uint32_t programObj);
 
     bool applyVertexLayout();
+    void applySamplerState(RDITexture& tex);
+    void applyRenderStates();
 
 private:
+    uint32_t mDepthFormat;
     int mVpX {0}, mVpY {0}, mVpWidth {1}, mVpHeight {1};
     int mScX {0}, mScY {0}, mScWidth {1}, mScHeight {1};
     std::atomic<uint32_t> mBufferMemory  {0u};
+    std::atomic<uint32_t> mTextureMemory {0u};
 
     int mDefaultFBO {0};
-    std::atomic<uint32_t> mNumVertexLayouts{0};
-    RDIVertexLayout       mVertexLayouts[MaxNumVertexLayouts];
-    RDIObjects<RDIBuffer> mBuffers;
-    RDIObjects<RDIShader> mShaders;
+    std::atomic<uint32_t>  mNumVertexLayouts{0};
+    RDIVertexLayout        mVertexLayouts[MaxNumVertexLayouts];
+    RDIObjects<RDIBuffer>  mBuffers;
+    RDIObjects<RDIShader>  mShaders;
+    RDIObjects<RDITexture> mTextures;
 
-    RDIVertBufSlot mVertBufSlots[16];
+    RDIVertBufSlot       mVertBufSlots[16];
+    RDITexSlot           mTexSlots[16];
+    RDIRasterState       mCurRasterState,       mNewRasterState;
+    RDIBlendState        mCurBlendState,        mNewBlendState;
+    RDIDepthStencilState mCurDepthStencilState, mNewDepthStencilState;
     uint32_t mPrevShaderID {0u},    mCurShaderID {0u};
     uint32_t mCurVertexLayout {0u}, mNewVertexLayout {0u};
     uint32_t mCurIndexBuffer {0u},  mNewIndexBuffer {0u};
