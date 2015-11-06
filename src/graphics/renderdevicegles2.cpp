@@ -457,6 +457,75 @@ void RenderDeviceGLES2::uploadTextureData(uint32_t texObj, int slice, int mipLev
 }
 
 //----------------------------------------------------------
+void RenderDeviceGLES2::uploadTextureSubData(uint32_t texObj, int slice, int mipLevel, int x, int y,
+    int z, unsigned int width, unsigned int height, unsigned int depth, const void* pixels)
+{
+    if (texObj == 0) return;
+
+    const auto& tex = mTextures.getRef(texObj);
+    auto format     = tex.format;
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(tex.type, tex.glObj);
+
+    int inputFormat = GL_RGBA, inputType = GL_UNSIGNED_BYTE;
+    bool compressed = (format == TextureFormat::DXT1) || (format == TextureFormat::DXT3) ||
+                      (format == TextureFormat::DXT5);
+
+    switch (format) {
+        case TextureFormat::RGBA16F:
+        case TextureFormat::RGBA32F:
+            inputFormat = GL_RGBA;
+            inputType = GL_FLOAT;
+            break;
+        case TextureFormat::DEPTH:
+            inputFormat = GL_DEPTH_COMPONENT;
+            inputType = GL_FLOAT;
+            break;
+        default:
+            break;
+    }
+    
+    if (tex.type == GL_TEXTURE_2D || tex.type == GL_TEXTURE_CUBE_MAP)
+    {
+        int target = (tex.type == GL_TEXTURE_2D) ?
+            GL_TEXTURE_2D : (GL_TEXTURE_CUBE_MAP_POSITIVE_X + slice);
+
+        if (compressed) {
+            glCompressedTexSubImage2D(target, mipLevel, x, y, width, height, tex.glFmt,
+                calcTextureSize(format, width, height, 1), pixels);
+        }
+        else {
+            glTexSubImage2D(target, mipLevel, x, y, width, height, inputFormat, inputType, pixels);
+        }
+    }
+    else if (tex.type == GL_TEXTURE_3D_OES) {
+        if (compressed) {
+            glCompressedTexSubImage3DOES(GL_TEXTURE_3D_OES, mipLevel, x, y, z, width, height, depth,
+                tex.glFmt, calcTextureSize(format, width, height, depth), pixels);
+        }
+        else {
+            glTexSubImage3DOES(GL_TEXTURE_3D_OES, mipLevel, x, y, z, width, height, depth,
+                inputFormat, inputType, pixels);
+        }
+    }
+
+    if (tex.genMips && (tex.type != GL_TEXTURE_CUBE_MAP || slice == 5)) {
+        // Note: cube map mips are only generated when the last side is uploaded
+        glGenerateMipmap(tex.type);
+    }
+
+    glBindTexture(tex.type, 0);
+    {
+        std::lock_guard<std::mutex> lock(txMutex);
+        if (mTexSlots[0].texObj) {
+            auto& tex0 = mTextures.getRef(mTexSlots[0].texObj);
+            glBindTexture(tex0.type, tex0.glObj);
+        }
+    }
+}
+
+//----------------------------------------------------------
 void RenderDeviceGLES2::destroyTexture(uint32_t texObj)
 {
     if (texObj == 0) return;
