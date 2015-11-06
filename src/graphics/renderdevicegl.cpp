@@ -297,8 +297,19 @@ uint32_t RenderDeviceGL::createTexture(TextureType::Type type, int width, int he
     unsigned int depth, TextureFormat::Type format, bool hasMips, bool genMips, bool sRGB)
 {
     if (!mTexNPOTSupported && ((width & (width-1)) != 0 || ((height & (height-1)) != 0))) {
-        Log::warning("Texture has Non-Power-Of-Two dimensions "
-            "although NPOT is not supported by GPU");
+        Log::error("Non-Power-Of-Two textures are not supported by GPU");
+        return 0;
+    }
+
+    if (type == TextureType::TexCube && (width > mMaxCubeTextureSize || height > mMaxTextureSize)) {
+        Log::error("Cube map is bigger than limit size");
+        return 0;
+    }
+    else if (type != TextureType::TexCube && (width > mMaxTextureSize || height > mMaxTextureSize ||
+        depth > static_cast<unsigned int>(mMaxTextureSize)))
+    {
+        Log::error("Texture is bigger than limit size");
+        return 0;
     }
 
     RDITexture tex;

@@ -299,9 +299,16 @@ uint32_t RenderDeviceGLES2::createTexture(TextureType::Type type, int width, int
         return 0;
     }
     else if (type != TextureType::TexCube && (width > mMaxTextureSize || height > mMaxTextureSize ||
-        depth > mMaxTextureSize))
+        depth > static_cast<unsigned int>(mMaxTextureSize)))
     {
         Log::error("Texture is bigger than limit size");
+        return 0;
+    }
+
+    if (!mDXTSupported && (format == TextureFormat::DXT1 || format == TextureFormat::DXT3 ||
+        format == TextureFormat::DXT5))
+    {
+        Log::error("S3TC/DXT texture formats are not supported by the GPU");
         return 0;
     }
 
