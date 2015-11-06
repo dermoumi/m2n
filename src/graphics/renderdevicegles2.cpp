@@ -107,6 +107,10 @@ bool RenderDeviceGLES2::initialize()
     mCaps.rtMultisampling = glExt::ANGLE_framebuffer_blit || glExt::EXT_multisampled_render_to_texture;
     if( glExt::EXT_multisampled_render_to_texture ) glExt::ANGLE_framebuffer_blit = false;
 
+    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &mMaxTextureSize);
+    glGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &mMaxCubeTextureSize);
+    glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &mMaxTextureUnits);
+
     // Set some default values
     mIndexFormat = GL_UNSIGNED_SHORT;
     mActiveVertexAttribsMask = 0u;
@@ -187,7 +191,7 @@ bool RenderDeviceGLES2::commitStates(uint32_t filter)
 
         // Bind textures and set sampler state
         if (mask & PMTextures) {
-            for (uint32_t i = 0; i < 8; ++i) {
+            for (uint32_t i = 0; i < mMaxTextureUnits; ++i) {
                 glActiveTexture(GL_TEXTURE0 + i);
                 auto& texSlot = mTexSlots[i];
 
@@ -273,8 +277,19 @@ uint32_t RenderDeviceGLES2::createTexture(TextureType::Type type, int width, int
     // TODO: Add support for android specific texture compression
 
     if (!mCaps.texNPOT && ((width & (width-1)) != 0 || ((height & (height-1)) != 0))) {
-        Log::warning("Texture has Non-Power-Of-Two dimensions "
-            "although NPOT is not supported by GPU");
+        Log::error("Non-Power-Of-Two textures are not supported by GPU");
+        return 0;
+    }
+
+    if (type == TextureType::TexCube && (width > mMaxCubeTextureSize || height > mMaxTextureSize)) {
+        Log::error("Cube map is bigger than limit size");
+        return 0;
+    }
+    else if (type != TextureType::TexCube && (width > mMaxTextureSize || height > mMaxTextureSize ||
+        depth > mMaxTextureSize))
+    {
+        Log::error("Texture is bigger than limit size");
+        return 0;
     }
 
     RDITexture tex;
@@ -316,10 +331,6 @@ uint32_t RenderDeviceGLES2::createTexture(TextureType::Type type, int width, int
     glGenTextures(1, &tex.glObj);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(tex.type, tex.glObj);
-
-    // TODO: Look this up
-    // float borderColor[] = {1.0f, 1.0f, 1.0f, 1.0f};
-    // glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 
     tex.samplerState = 0;
     applySamplerState(tex);
@@ -376,8 +387,6 @@ void RenderDeviceGLES2::uploadTextureData(uint32_t texObj, int slice, int mipLev
     int width = std::max(tex.width >> mipLevel, 1);
     int height = std::max(tex.height >> mipLevel, 1);
 
-    // TODO: Check for size constraints
-
     if (tex.type == GL_TEXTURE_2D || tex.type == GL_TEXTURE_CUBE_MAP)
     {
         int target = (tex.type == GL_TEXTURE_2D) ?
@@ -407,9 +416,7 @@ void RenderDeviceGLES2::uploadTextureData(uint32_t texObj, int slice, int mipLev
 
     if (tex.genMips && (tex.type != GL_TEXTURE_CUBE_MAP || slice == 5)) {
         // Note: cube map mips are only generated when the last side is uploaded
-        // glEnable(tex.type);
         glGenerateMipmap(tex.type);
-        // glDisable(tex.type);
     }
 
     glBindTexture(tex.type, 0);
@@ -436,43 +443,6 @@ void RenderDeviceGLES2::destroyTexture(uint32_t texObj)
 //----------------------------------------------------------
 bool RenderDeviceGLES2::getTextureData(uint32_t texObj, int slice, int mipLevel, void* buffer)
 {
-    // const auto& tex = mTextures.getRef(texObj);
-
-    // int target = (tex.type == GL_TEXTURE_CUBE_MAP) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
-    // if (target == GL_TEXTURE_CUBE_MAP) target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + slice;
-
-    // int fmt, type, compressed = 0;
-    // glActiveTexture(GL_TEXTURE15);
-    // glBindTexture(tex.type, tex.glObj);
-
-    // switch(tex.format) {
-    // case TextureFormat::RGBA8:
-    //     fmt = GL_RGBA;
-    //     type = GL_UNSIGNED_BYTE;
-    //     break;
-    // case TextureFormat::DXT1:
-    // case TextureFormat::DXT3:
-    // case TextureFormat::DXT5:
-    //     compressed = 1;
-    //     break;
-    // default:
-    //     return false;
-    // };
-
-    // if (compressed)
-    //     glGetCompressedTexImage(target, mipLevel, buffer);
-    // else
-    //     glGetTexImage(target, mipLevel, fmt, type, buffer);
-
-    // glBindTexture(tex.type, 0);
-    // {
-    //     std::lock_guard<std::mutex> lock(txMutex);
-    //     if (mTexSlots[15].texObj) {
-    //         auto& tex15 = mTextures.getRef(mTexSlots[15].texObj);
-    //         glBindTexture(tex15.type, tex15.glObj);
-    //     }
-    // }
-
     // TODO: Implement drawing to a render buffer and reading from it
     return false;
 }
