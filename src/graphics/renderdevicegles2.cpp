@@ -84,8 +84,7 @@ bool RenderDeviceGLES2::initialize()
 
     // Check that required extensions are supported
     if (!glExt::EXT_texture_filter_anisotropic) {
-        Log::error("Extension EXT_texture_filter_anisotropic not supported");
-        failed = true;
+        Log::warning("Extension EXT_texture_filter_anisotropic not supported");
     }
 
     // Something went wrong
