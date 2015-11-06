@@ -105,18 +105,18 @@ NX_EXPORT void nxRendererTestInit()
     nxRendererTestRelease();
 
     // Register Vertex layouts
-    VertexLayoutAttrib attribsPosOnly[] = {
+    VertexLayoutAttrib attribs[] = {
         {"vertPos", 0, 2, 0},
-        {"texCoords", 0, 2, 8}
+        {"texCoords0", 0, 2, 8}
     };
-    vlShape = rdi->registerVertexLayout(1, attribsPosOnly);
+    vlShape = rdi->registerVertexLayout(2, attribs);
 
     // Create tiangle
     float verts[4*4] {
         -0.5f, -0.5f, 0.f, 0.f,
-        -0.5f,  0.5f, 0.f, 0.f,
-         0.5f, -0.5f, 0.f, 0.f,
-         0.5f,  0.5f, 0.f, 0.f
+         0.5f, -0.5f, 1.f, 0.f,
+        -0.5f,  0.5f, 0.f, 1.f,
+         0.5f,  0.5f, 1.f, 1.f
     };
     vbTriangle = rdi->createVertexBuffer(4 * 4 * sizeof(float), verts);
 
@@ -124,10 +124,10 @@ NX_EXPORT void nxRendererTestInit()
     defaultShader = rdi->createShader(
         "#version 120\n"
         "attribute vec2 vertPos;\n"
-        "attribute vec2 texCoords;\n"
+        "attribute vec2 texCoords0;\n"
         "varying vec2 coords;\n"
         "void main() {\n"
-        "   coords = texCoords;\n"
+        "   coords = texCoords0;\n"
         "   gl_Position = vec4(vertPos, 0.0, 1.0);\n"
         "}\n",
         "#version 120\n"
@@ -135,11 +135,9 @@ NX_EXPORT void nxRendererTestInit()
         "varying vec2 coords;\n"
         "void main() {\n"
         "   vec4 col = texture2D(tex, coords);\n"
-        "   gl_FragColor = vec4(0.0, 0.0, col.b, 0.5);\n"
+        "   gl_FragColor = col;\n"
         "}\n"
     );
-
-    Log::info("shader: %u", defaultShader);
 
     // Load image
     Image img;
@@ -150,19 +148,17 @@ NX_EXPORT void nxRendererTestInit()
 
     unsigned int imgWidth, imgHeight;
     img.getSize(&imgWidth, &imgHeight);
-    Log::info("sizes: %u %u", imgWidth, imgHeight);
 
     // Create texture
-    unsigned char texData[] = 
-        { 128,192,255,255, 128,192,255,255, 128,192,255,255, 128,192,255,255,
-          128,192,255,255, 128,192,255,255, 128,192,255,255, 128,192,255,255,
-          128,192,255,255, 128,192,255,255, 128,192,255,255, 128,192,255,255,
-          128,192,255,255, 128,192,255,255, 128,192,255,255, 128,192,255,255 };
+    // unsigned char texData[] = 
+    //     { 128,192,255,255, 128,192,255,255, 128,192,255,255, 128,192,255,255,
+    //       128,192,255,255, 128,192,255,255, 128,192,255,255, 128,192,255,255,
+    //       128,192,255,255, 128,192,255,255, 128,192,255,255, 128,192,255,255,
+    //       128,192,255,255, 128,192,255,255, 128,192,255,255, 128,192,255,255 };
 
-    texture = rdi->createTexture(TextureType::Tex2D, 4, 4, 1, TextureFormat::RGBA8,
+    texture = rdi->createTexture(TextureType::Tex2D, imgWidth, imgHeight, 1, TextureFormat::RGBA8,
         true, true, false);
-    Log::info("texture: %u", texture);
-    rdi->uploadTextureData(texture, 0, 0, texData);
+    rdi->uploadTextureData(texture, 0, 0, img.getPixelsPtr());
 
     // Get texture data
     // uint8_t* buffer = new uint8_t[imgWidth * imgHeight * 4];
@@ -171,6 +167,7 @@ NX_EXPORT void nxRendererTestInit()
     // img.create(imgWidth, imgHeight, buffer);
     // img.save("testimgD.png");
 
+    rdi->resetStates();
 }
 
 //----------------------------------------------------------
@@ -180,12 +177,12 @@ NX_EXPORT void nxRendererTestRender()
         SamplerState::AddrWrap);
 
     rdi->bindShader(defaultShader);
+    rdi->setBlendMode(true, BS_BLEND_SRC_ALPHA, BS_BLEND_INV_SRC_ALPHA);
 
     // Affect texture to shader
     auto loc = rdi->getShaderSamplerLoc(defaultShader, "tex");
     // Log::info("Loc2: %i", loc);
     if (loc >= 0) rdi->setShaderSampler(loc, 1);
-
 
     rdi->setVertexBuffer(0, vbTriangle, 0, 16);
     rdi->setIndexBuffer( 0, IDXFMT_16 );

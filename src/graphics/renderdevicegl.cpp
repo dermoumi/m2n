@@ -133,20 +133,17 @@ void RenderDeviceGL::initStates()
 //----------------------------------------------------------
 void RenderDeviceGL::resetStates()
 {
-    // TODO: complete this
-
-    mCurVertexLayout = 1; mNewVertexLayout = 0;
-    mCurIndexBuffer = 1;  mNewIndexBuffer = 0;
+    mCurVertexLayout = 1;                     mNewVertexLayout = 0;
+    mCurIndexBuffer = 1;                      mNewIndexBuffer = 0;
+    mCurRasterState.hash = 0xFFFFFFFFu;       mNewRasterState.hash = 0u;
+    mCurBlendState.hash = 0xFFFFFFFFu;        mNewBlendState.hash = 0u;
+    mCurDepthStencilState.hash = 0xFFFFFFFFu; mCurDepthStencilState.hash = 0u;
 
     for (uint32_t i = 0; i < 16; ++i) setTexture(i, 0, 0);
 
+    setColorWriteMask(true);
     mPendingMask = 0xFFFFFFFFu;
     commitStates();
-
-    // glDisable(GL_ALPHA_TEST);
-    glDisable(GL_DEPTH_TEST);
-    glDisable(GL_CULL_FACE);
-    glEnable(GL_BLEND);
 
     // Bind buffers
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -166,7 +163,7 @@ bool RenderDeviceGL::commitStates(uint32_t filter)
 
         // Update renderstates
         if (mask & PMRenderStates) {
-            // TODO
+            applyRenderStates();
             mPendingMask &= ~PMRenderStates;
         }
 
@@ -235,6 +232,7 @@ bool RenderDeviceGL::commitStates(uint32_t filter)
 //----------------------------------------------------------
 void RenderDeviceGL::clear(const float* color)
 {
+    commitStates(PMViewport | PMScissor | PMRenderStates);
     glClearColor(color[0], color[1], color[2], color[3]);
     glClear(GL_COLOR_BUFFER_BIT);
 }
@@ -514,13 +512,12 @@ uint32_t RenderDeviceGL::createShader(const char* vertexShaderSrc, const char* f
             glGetActiveAttrib(programObj, j, 32, nullptr, (int*)&size, &type, name);
 
             bool attribFound = false;
-
             {
                 std::lock_guard<std::mutex> lock(vlMutex);
 
-                RDIVertexLayout& v1 = mVertexLayouts[i];
-                for (uint32_t k = 0; k < v1.numAttribs; ++k) {
-                    if (v1.attribs[j].semanticName == name) {
+                RDIVertexLayout& vl = mVertexLayouts[i];
+                for (uint32_t k = 0; k < vl.numAttribs; ++k) {
+                    if (vl.attribs[k].semanticName == name) {
                         auto loc = glGetAttribLocation(programObj, name);
                         shader.inputLayouts[i].attribIndices[k] = loc;
                         attribFound = true;
@@ -537,7 +534,6 @@ uint32_t RenderDeviceGL::createShader(const char* vertexShaderSrc, const char* f
         // An input layout is only valid for this shader if all attributes were found
         shader.inputLayouts[i].valid = allAttribsFound;
     }
-
 
     return mShaders.add(shader, true);
 }
@@ -1085,6 +1081,106 @@ void RenderDeviceGL::applySamplerState(RDITexture& tex)
     else {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+    }
+}
+
+//----------------------------------------------------------
+void RenderDeviceGL::applyRenderStates()
+{
+    // Rasterizer state
+    if (mNewRasterState.hash != mCurRasterState.hash) {
+        if (mNewRasterState.fillMode == RS_FILL_SOLID) {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        }
+        else {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        }
+
+        if (mNewRasterState.cullMode == RS_CULL_BACK) {
+            glEnable(GL_CULL_FACE);
+            glCullFace(GL_BACK);
+        }
+        else if (mNewRasterState.cullMode == RS_CULL_FRONT) {
+            glEnable(GL_CULL_FACE);
+            glCullFace(GL_FRONT);
+        }
+        else {
+            glDisable(GL_CULL_FACE);
+        }
+
+        if (!mNewRasterState.scissorEnable) {
+            glDisable(GL_SCISSOR_TEST);
+        }
+        else {
+            glEnable(GL_SCISSOR_TEST);
+        }
+
+        if (mNewRasterState.renderTargetWriteMask) {
+            glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+        }
+        else {
+            glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+        }
+
+        mCurRasterState.hash = mNewRasterState.hash;
+    }
+
+    // Blend state
+    if (mNewBlendState.hash != mCurBlendState.hash) {
+        if (!mNewBlendState.alphaToCoverageEnable) {
+            glDisable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+        }
+        else {
+            glEnable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+        }
+
+        if (!mNewBlendState.blendEnable) {
+            glDisable(GL_BLEND);
+        }
+        else {
+            static uint32_t oglBlendFuncs[] = {
+                GL_ZERO,
+                GL_ONE,
+                GL_SRC_ALPHA,
+                GL_ONE_MINUS_SRC_ALPHA,
+                GL_DST_COLOR
+            };
+
+            glEnable(GL_BLEND);
+            glBlendFunc(oglBlendFuncs[mNewBlendState.srcBlendFunc],
+                oglBlendFuncs[mNewBlendState.dstBlendFunc]);
+        }
+
+        mCurBlendState.hash = mNewBlendState.hash;
+    }
+
+    // Depth-stencil state
+    if (mNewDepthStencilState.hash != mCurDepthStencilState.hash) {
+        if (mNewDepthStencilState.depthWriteMask) {
+            glDepthMask(GL_TRUE);
+        }
+        else {
+            glDepthMask(GL_FALSE);
+        }
+
+        if (mNewDepthStencilState.depthEnable) {
+            static uint32_t oglDepthFuncs[] = {
+                GL_LEQUAL,
+                GL_LESS,
+                GL_EQUAL,
+                GL_GREATER,
+                GL_GEQUAL,
+                GL_ALWAYS
+            };
+
+            glEnable(GL_DEPTH_TEST);
+            glDepthFunc(oglDepthFuncs[mNewDepthStencilState.depthFunc]);
+        }
+        else {
+            glDisable(GL_DEPTH_TEST);
+        }
+
+        mCurDepthStencilState.hash = mNewDepthStencilState.hash;
     }
 }
 
