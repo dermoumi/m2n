@@ -134,7 +134,7 @@ NX_EXPORT void nxRendererTestInit()
         "uniform sampler2D tex;\n"
         "varying vec2 coords;\n"
         "void main() {\n"
-        "   vec4 col = texture2D(tex, coords.st);\n"
+        "   vec4 col = texture2D(tex, coords);\n"
         "   gl_FragColor = vec4(0.0, 0.0, col.b, 0.5);\n"
         "}\n"
     );

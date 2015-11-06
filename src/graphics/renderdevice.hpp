@@ -153,6 +153,42 @@ namespace SamplerState
     constexpr uint32_t AddrMask = AddrClamp | AddrWrap | AddrClampCol;
 }
 
+//----------------------------------------------------------
+enum RDIFillMode
+{
+    RS_FILL_SOLID = 0,
+    RS_FILL_WIREFRAME = 1
+};
+
+//----------------------------------------------------------
+enum RDICullMode
+{
+    RS_CULL_BACK = 0,
+    RS_CULL_FRONT,
+    RS_CULL_NONE
+};
+
+//----------------------------------------------------------
+enum RDIBlendFunc
+{
+    BS_BLEND_ZERO = 0,
+    BS_BLEND_ONE,
+    BS_BLEND_SRC_ALPHA,
+    BS_BLEND_INV_SRC_ALPHA,
+    BS_BLEND_DEST_COLOR
+};
+
+//----------------------------------------------------------
+enum RDIDepthFunc
+{
+    DSS_DEPTHFUNC_LESS_EQUAL = 0,
+    DSS_DEPTHFUNC_LESS,
+    DSS_DEPTHFUNC_EQUAL,
+    DSS_DEPTHFUNC_GREATER,
+    DSS_DEPTHFUNC_GREATER_EQUAL,
+    DSS_DEPTHFUNC_ALWAYS
+};
+
 //==========================================================
 // Container for different objects used by the device
 //==========================================================
@@ -272,6 +308,29 @@ public:
         uint32_t stride) = 0;
     virtual void setVertexLayout(uint32_t vlObj) = 0;
     virtual void setTexture(uint32_t slot, uint32_t texObj, uint16_t samplerState) = 0;
+
+    // Render states
+    virtual void setColorWriteMask(bool enabled) = 0;
+    virtual bool getColorWriteMask() const = 0;
+    virtual void setFillMode(RDIFillMode fillMode) = 0;
+    virtual RDIFillMode getFillMode() const = 0;
+    virtual void setCullMode(RDICullMode cullMode) = 0;
+    virtual RDICullMode getCullMode() const = 0;
+    virtual void setScissorTest(bool enabled) = 0;
+    virtual bool getScissorTest() const = 0;
+    virtual void setMultisampling(bool enabled) = 0;
+    virtual bool getMultisampling() const = 0;
+    virtual void setAlphaToCoverage(bool enabled) = 0;
+    virtual bool getAlphaToCoverage() const = 0;
+    virtual void setBlendMode(bool enabled, RDIBlendFunc src = BS_BLEND_ZERO,
+        RDIBlendFunc dst = BS_BLEND_ZERO) = 0;
+    virtual bool getBlendMode(RDIBlendFunc& src, RDIBlendFunc& dst) const = 0;
+    virtual void setDepthMask(bool enabled) = 0;
+    virtual bool getDepthMask() const = 0;
+    virtual void setDepthTest(bool enabled) = 0;
+    virtual bool getDepthTest() const = 0;
+    virtual void setDepthFunc(RDIDepthFunc depthFunc) = 0;
+    virtual RDIDepthFunc getDepthFunc() const = 0;
 
     // Capabilities
     virtual bool isTextureCompressionSupported() const = 0;

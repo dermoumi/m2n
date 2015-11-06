@@ -90,6 +90,29 @@ public:
     void setVertexLayout(uint32_t vlObj);
     void setTexture(uint32_t slot, uint32_t texObj, uint16_t samplerState);
 
+    // Render states
+    void setColorWriteMask(bool enabled);
+    bool getColorWriteMask() const;
+    void setFillMode(RDIFillMode fillMode);
+    RDIFillMode getFillMode() const;
+    void setCullMode(RDICullMode cullMode);
+    RDICullMode getCullMode() const;
+    void setScissorTest(bool enabled);
+    bool getScissorTest() const;
+    void setMultisampling(bool enabled);
+    bool getMultisampling() const;
+    void setAlphaToCoverage(bool enabled);
+    bool getAlphaToCoverage() const;
+    void setBlendMode(bool enabled, RDIBlendFunc src = BS_BLEND_ZERO,
+        RDIBlendFunc dst = BS_BLEND_ZERO);
+    bool getBlendMode(RDIBlendFunc& src, RDIBlendFunc& dst) const;
+    void setDepthMask(bool enabled);
+    bool getDepthMask() const;
+    void setDepthTest(bool enabled);
+    bool getDepthTest() const;
+    void setDepthFunc(RDIDepthFunc depthFunc);
+    RDIDepthFunc getDepthFunc() const;
+
     // Capabilities
     bool isTextureCompressionSupported() const;
     
@@ -144,6 +167,51 @@ private:
         uint32_t samplerState;
     };
 
+    struct RDIRasterState
+    {
+        union
+        {
+            uint32_t hash;
+            struct
+            {
+                uint32_t fillMode              : 1;
+                uint32_t cullMode              : 2;
+                uint32_t scissorEnable         : 1;
+                uint32_t multisampleEnable     : 1;
+                uint32_t renderTargetWriteMask : 1;
+            };
+        };
+    };
+
+    struct RDIBlendState
+    {
+        union
+        {
+            uint32_t hash;
+            struct
+            {
+                uint32_t alphaToCoverageEnable : 1;
+                uint32_t blendEnable           : 1;
+                uint32_t srcBlendFunc          : 4;
+                uint32_t dstBlendFunc          : 4;
+            };
+        };
+    };
+
+    struct RDIDepthStencilState
+    {
+        union
+        {
+            uint32_t hash;
+            struct
+            {
+                uint32_t depthWriteMask : 1;
+                uint32_t depthEnable    : 1;
+                uint32_t depthFunc      : 4;
+            };
+        };
+    };
+
     enum PendingMask : uint32_t
     {
         PMViewport     = 1 << 0,
@@ -160,6 +228,7 @@ private:
 
     bool applyVertexLayout();
     void applySamplerState(RDITexture& tex);
+    void applyRenderStates();
 
 private:
     uint32_t mDepthFormat;
@@ -175,8 +244,11 @@ private:
     RDIObjects<RDIShader>  mShaders;
     RDIObjects<RDITexture> mTextures;
 
-    RDIVertBufSlot mVertBufSlots[16];
-    RDITexSlot     mTexSlots[16];
+    RDIVertBufSlot       mVertBufSlots[16];
+    RDITexSlot           mTexSlots[16];
+    RDIRasterState       mCurRasterState,       mNewRasterState;
+    RDIBlendState        mCurBlendState,        mNewBlendState;
+    RDIDepthStencilState mCurDepthStencilState, mNewDepthStencilState;
     uint32_t mPrevShaderID {0u},    mCurShaderID {0u};
     uint32_t mCurVertexLayout {0u}, mNewVertexLayout {0u};
     uint32_t mCurIndexBuffer {0u},  mNewIndexBuffer {0u};

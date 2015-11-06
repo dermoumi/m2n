@@ -765,6 +765,140 @@ void RenderDeviceGL::setTexture(uint32_t slot, uint32_t texObj, uint16_t sampler
 }
 
 //----------------------------------------------------------
+void RenderDeviceGL::setColorWriteMask(bool enabled)
+{
+    mNewRasterState.renderTargetWriteMask = enabled;
+}
+
+//----------------------------------------------------------
+bool RenderDeviceGL::getColorWriteMask() const
+{
+    return mNewRasterState.renderTargetWriteMask;
+}
+
+//----------------------------------------------------------
+void RenderDeviceGL::setFillMode(RDIFillMode fillMode)
+{
+    mNewRasterState.fillMode = fillMode;
+    mPendingMask |= PMRenderStates;
+}
+
+//----------------------------------------------------------
+RDIFillMode RenderDeviceGL::getFillMode() const
+{
+    return static_cast<RDIFillMode>(mNewRasterState.fillMode);
+}
+
+//----------------------------------------------------------
+void RenderDeviceGL::setCullMode(RDICullMode cullMode)
+{
+    mNewRasterState.cullMode = cullMode;
+    mPendingMask |= PMRenderStates;
+}
+
+//----------------------------------------------------------
+RDICullMode RenderDeviceGL::getCullMode() const
+{
+    return static_cast<RDICullMode>(mNewRasterState.cullMode);
+}
+
+//----------------------------------------------------------
+void RenderDeviceGL::setScissorTest(bool enabled)
+{
+    mNewRasterState.scissorEnable = enabled;
+    mPendingMask |= PMRenderStates;
+}
+
+//----------------------------------------------------------
+bool RenderDeviceGL::getScissorTest() const
+{
+    return mNewRasterState.scissorEnable;
+}
+
+//----------------------------------------------------------
+void RenderDeviceGL::setMultisampling(bool enabled)
+{
+    mNewRasterState.multisampleEnable = enabled;
+    mPendingMask |= PMRenderStates;
+}
+
+//----------------------------------------------------------
+bool RenderDeviceGL::getMultisampling() const
+{
+    return mNewRasterState.multisampleEnable;
+}
+
+//----------------------------------------------------------
+void RenderDeviceGL::setAlphaToCoverage(bool enabled)
+{
+    mNewBlendState.alphaToCoverageEnable = enabled;
+    mPendingMask |= PMRenderStates;
+}
+
+//----------------------------------------------------------
+bool RenderDeviceGL::getAlphaToCoverage() const
+{
+    return mNewBlendState.alphaToCoverageEnable;
+}
+
+//----------------------------------------------------------
+void RenderDeviceGL::setBlendMode(bool enabled, RDIBlendFunc src, RDIBlendFunc dst)
+{
+    mNewBlendState.blendEnable = enabled;
+    mNewBlendState.srcBlendFunc = src;
+    mNewBlendState.dstBlendFunc = dst;
+
+    mPendingMask |= PMRenderStates;
+}
+
+//----------------------------------------------------------
+bool RenderDeviceGL::getBlendMode(RDIBlendFunc& src, RDIBlendFunc& dst) const
+{
+    src = static_cast<RDIBlendFunc>(mNewBlendState.srcBlendFunc);
+    dst = static_cast<RDIBlendFunc>(mNewBlendState.dstBlendFunc);
+    return mNewBlendState.blendEnable;
+}
+
+//----------------------------------------------------------
+void RenderDeviceGL::setDepthMask(bool enabled)
+{
+    mNewDepthStencilState.depthWriteMask = enabled;
+    mPendingMask |= PMRenderStates;
+}
+
+//----------------------------------------------------------
+bool RenderDeviceGL::getDepthMask() const
+{
+    return mNewDepthStencilState.depthWriteMask;
+}
+
+//----------------------------------------------------------
+void RenderDeviceGL::setDepthTest(bool enabled)
+{
+    mNewDepthStencilState.depthEnable = enabled;
+    mPendingMask |= PMRenderStates;
+}
+
+//----------------------------------------------------------
+bool RenderDeviceGL::getDepthTest() const
+{
+    return mNewDepthStencilState.depthEnable;
+}
+
+//----------------------------------------------------------
+void RenderDeviceGL::setDepthFunc(RDIDepthFunc depthFunc)
+{
+    mNewDepthStencilState.depthFunc = depthFunc;
+    mPendingMask |= PMRenderStates;
+}
+
+//----------------------------------------------------------
+RDIDepthFunc RenderDeviceGL::getDepthFunc() const
+{
+    return static_cast<RDIDepthFunc>(mNewDepthStencilState.depthFunc);
+}
+
+//----------------------------------------------------------
 bool RenderDeviceGL::isTextureCompressionSupported() const
 {
     std::lock_guard<std::mutex> lock(cpMutex);
