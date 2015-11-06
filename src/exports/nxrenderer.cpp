@@ -84,54 +84,114 @@ NX_EXPORT void nxRendererSetupViewport(int x, int y, int width, int height)
 }
 
 //----------------------------------------------------------
+#include "../system/log.hpp"
+#include "../graphics/image.hpp"
 static uint32_t vlShape;
 static uint32_t vbTriangle;
 static uint32_t defaultShader;
-
-//----------------------------------------------------------
-NX_EXPORT void nxRendererTestInit()
-{
-    // Register Vertex layouts
-    VertexLayoutAttrib attribsPosOnly[1] {
-        {"vertPos", 0, 3, 0}
-    };
-    vlShape = rdi->registerVertexLayout(1, attribsPosOnly);
-
-    float triVerts[3*3] {
-         0.f,   0.5f, 0.f,
-        -0.5f, -0.5f, 0.f,
-         0.5f, -0.5f, 0.f
-    };
-    vbTriangle = rdi->createVertexBuffer(3 * 3 * sizeof(float), triVerts);
-
-    defaultShader = rdi->createShader(
-        "attribute vec3 vertPos;\n"
-        "void main() {\n"
-        "   gl_Position = vec4(vertPos, 1.0);\n"
-        "}\n",
-        "void main() {\n"
-        "   gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);\n"
-        "}\n"
-    );
-}
-
-//----------------------------------------------------------
-NX_EXPORT void nxRendererTestRender()
-{
-    rdi->bindShader(defaultShader);
-
-    rdi->setVertexBuffer(0, vbTriangle, 0, 12);
-    rdi->setIndexBuffer( 0, IDXFMT_16 );
-    rdi->setVertexLayout(vlShape);
-
-    rdi->draw(PRIM_TRIANGLES, 0, 3);
-}
+static uint32_t texture;
 
 //----------------------------------------------------------
 NX_EXPORT void nxRendererTestRelease()
 {
     rdi->destroyShader(defaultShader);
     rdi->destroyBuffer(vbTriangle);
+    rdi->destroyTexture(texture);
+}
+
+//----------------------------------------------------------
+NX_EXPORT void nxRendererTestInit()
+{
+    nxRendererTestRelease();
+
+    // Register Vertex layouts
+    VertexLayoutAttrib attribsPosOnly[] = {
+        {"vertPos", 0, 2, 0},
+        {"texCoords", 0, 2, 8}
+    };
+    vlShape = rdi->registerVertexLayout(1, attribsPosOnly);
+
+    // Create tiangle
+    float verts[4*4] {
+        -0.5f, -0.5f, 0.f, 0.f,
+        -0.5f,  0.5f, 0.f, 0.f,
+         0.5f, -0.5f, 0.f, 0.f,
+         0.5f,  0.5f, 0.f, 0.f
+    };
+    vbTriangle = rdi->createVertexBuffer(4 * 4 * sizeof(float), verts);
+
+    // Create shaders
+    defaultShader = rdi->createShader(
+        "#version 120\n"
+        "attribute vec2 vertPos;\n"
+        "attribute vec2 texCoords;\n"
+        "varying vec2 coords;\n"
+        "void main() {\n"
+        "   coords = texCoords;\n"
+        "   gl_Position = vec4(vertPos, 0.0, 1.0);\n"
+        "}\n",
+        "#version 120\n"
+        "uniform sampler2D tex;\n"
+        "varying vec2 coords;\n"
+        "void main() {\n"
+        "   vec4 col = texture2D(tex, coords.st);\n"
+        "   gl_FragColor = vec4(0.0, 0.0, col.b, 0.5);\n"
+        "}\n"
+    );
+
+    Log::info("shader: %u", defaultShader);
+
+    // Load image
+    Image img;
+    if (!img.open("assets/pasrien.png")) {
+        Log::error("Could not load image");
+        return;
+    }
+
+    unsigned int imgWidth, imgHeight;
+    img.getSize(&imgWidth, &imgHeight);
+    Log::info("sizes: %u %u", imgWidth, imgHeight);
+
+    // Create texture
+    unsigned char texData[] = 
+        { 128,192,255,255, 128,192,255,255, 128,192,255,255, 128,192,255,255,
+          128,192,255,255, 128,192,255,255, 128,192,255,255, 128,192,255,255,
+          128,192,255,255, 128,192,255,255, 128,192,255,255, 128,192,255,255,
+          128,192,255,255, 128,192,255,255, 128,192,255,255, 128,192,255,255 };
+
+    texture = rdi->createTexture(TextureType::Tex2D, 4, 4, 1, TextureFormat::RGBA8,
+        true, true, false);
+    Log::info("texture: %u", texture);
+    rdi->uploadTextureData(texture, 0, 0, texData);
+
+    // Get texture data
+    // uint8_t* buffer = new uint8_t[imgWidth * imgHeight * 4];
+    // rdi->getTextureData(texture, 0, 0, buffer);
+    // Image img2;
+    // img.create(imgWidth, imgHeight, buffer);
+    // img.save("testimgD.png");
+
+}
+
+//----------------------------------------------------------
+NX_EXPORT void nxRendererTestRender()
+{
+    rdi->setTexture(1, texture, SamplerState::FilterTrilinear | SamplerState::Aniso8 |
+        SamplerState::AddrWrap);
+
+    rdi->bindShader(defaultShader);
+
+    // Affect texture to shader
+    auto loc = rdi->getShaderSamplerLoc(defaultShader, "tex");
+    // Log::info("Loc2: %i", loc);
+    if (loc >= 0) rdi->setShaderSampler(loc, 1);
+
+
+    rdi->setVertexBuffer(0, vbTriangle, 0, 16);
+    rdi->setIndexBuffer( 0, IDXFMT_16 );
+    rdi->setVertexLayout(vlShape);
+
+    rdi->draw(PRIM_TRISTRIP, 0, 4);
 }
 
 //==============================================================================

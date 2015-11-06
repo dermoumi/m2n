@@ -138,8 +138,15 @@ void RenderDeviceGL::resetStates()
     mCurVertexLayout = 1; mNewVertexLayout = 0;
     mCurIndexBuffer = 1;  mNewIndexBuffer = 0;
 
+    for (uint32_t i = 0; i < 16; ++i) setTexture(i, 0, 0);
+
     mPendingMask = 0xFFFFFFFFu;
     commitStates();
+
+    // glDisable(GL_ALPHA_TEST);
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_CULL_FACE);
+    glEnable(GL_BLEND);
 
     // Bind buffers
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -363,8 +370,9 @@ void RenderDeviceGL::uploadTextureData(uint32_t texObj, int slice, int mipLevel,
         case TextureFormat::DEPTH:
             inputFormat = GL_DEPTH_COMPONENT;
             inputType = GL_FLOAT;
+            break;
         default:
-            Log::warning("Invalid texture format when uploading texture data");
+            break;
     }
 
     // Calculate size of the next mipmap using "floor" convention
