@@ -352,6 +352,8 @@ uint32_t RenderDeviceGL::createTexture(TextureType::Type type, int width, int he
     }
 
     glGenTextures(1, &tex.glObj);
+    if (tex.glObj == 0) return 0;
+
     glActiveTexture(GL_TEXTURE15);
     glBindTexture(tex.type, tex.glObj);
 
@@ -382,6 +384,8 @@ uint32_t RenderDeviceGL::createTexture(TextureType::Type type, int width, int he
 //----------------------------------------------------------
 void RenderDeviceGL::uploadTextureData(uint32_t texObj, int slice, int mipLevel, const void* pixels)
 {
+    if (texObj == 0) return;
+
     const auto& tex = mTextures.getRef(texObj);
     auto format     = tex.format;
 

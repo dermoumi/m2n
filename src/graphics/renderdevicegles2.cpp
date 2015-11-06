@@ -312,6 +312,11 @@ uint32_t RenderDeviceGLES2::createTexture(TextureType::Type type, int width, int
         return 0;
     }
 
+    if (!mTex3DSupported && type == TextureType::Tex3D) {
+        Log::error("3D Textures are not supported by the GPU");
+        return 0;
+    }
+
     RDITexture tex;
     tex.type    = toTexType[type];
     tex.format  = format;
@@ -349,6 +354,8 @@ uint32_t RenderDeviceGLES2::createTexture(TextureType::Type type, int width, int
     }
 
     glGenTextures(1, &tex.glObj);
+    if (tex.glObj == 0) return 0;
+
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(tex.type, tex.glObj);
 
@@ -376,18 +383,18 @@ uint32_t RenderDeviceGLES2::createTexture(TextureType::Type type, int width, int
 //----------------------------------------------------------
 void RenderDeviceGLES2::uploadTextureData(uint32_t texObj, int slice, int mipLevel, const void* pixels)
 {
-    // TODO: return false when failing
+    if (texObj == 0) return;
 
     const auto& tex = mTextures.getRef(texObj);
     auto format     = tex.format;
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(tex.type, tex.glObj);
 
     int inputFormat = GL_RGBA;
     int inputType = GL_UNSIGNED_BYTE;
     bool compressed = (format == TextureFormat::DXT1) || (format == TextureFormat::DXT3) ||
                       (format == TextureFormat::DXT5);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(tex.type, tex.glObj);
 
     switch (format) {
         case TextureFormat::RGBA16F:
