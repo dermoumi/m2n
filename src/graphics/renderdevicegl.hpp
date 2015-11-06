@@ -114,7 +114,10 @@ public:
     RDIDepthFunc getDepthFunc() const;
 
     // Capabilities
-    bool isTextureCompressionSupported() const;
+    void getCapabilities(unsigned int& maxTexUnits, unsigned int& maxTexSize,
+        unsigned int& maxCubTexSize, bool& dxt, bool& pvrtci, bool& etc1, bool& texFloat,
+        bool& texDepth, bool& texSS, bool& tex3d, bool& texNPOT, bool& texSRGB, bool& rtms,
+        bool& occQuery, bool& timerQuery) const;
     
 private:
     constexpr static uint32_t MaxNumVertexLayouts = 16;
@@ -255,6 +258,22 @@ private:
     uint32_t mIndexFormat {0u};
     uint32_t mActiveVertexAttribsMask {0u};
     uint32_t mPendingMask {0u};
+
+    int mMaxTextureUnits      {0};
+    int mMaxTextureSize       {0};
+    int mMaxCubeTextureSize   {0};
+    bool mDXTSupported        {false};
+    bool mPVRTCISupported     {false};
+    bool mTexETC1Supported    {false};
+    bool mTexFloatSupported   {false};
+    bool mTexDepthSupported   {false};
+    bool mTexShadowSamplers   {false};
+    bool mTex3DSupported      {false};
+    bool mTexNPOTSupported    {false};
+    bool mTexSRGBSupported    {false};
+    bool mRTMultiSampling     {false};
+    bool mOccQuerySupported   {false};
+    bool mTimerQuerySupported {false};
 };
 
 //------------------------------------------------------------------------------

@@ -289,7 +289,7 @@ uint32_t RenderDeviceGLES2::createTexture(TextureType::Type type, int width, int
 {
     // TODO: Add support for android specific texture compression
 
-    if (!mCaps.texNPOT && ((width & (width-1)) != 0 || ((height & (height-1)) != 0))) {
+    if (!mTexNPOTSupported && ((width & (width-1)) != 0 || ((height & (height-1)) != 0))) {
         Log::error("Non-Power-Of-Two textures are not supported by GPU");
         return 0;
     }
@@ -883,13 +883,6 @@ void RenderDeviceGLES2::setDepthFunc(RDIDepthFunc depthFunc)
 RDIDepthFunc RenderDeviceGLES2::getDepthFunc() const
 {
     return static_cast<RDIDepthFunc>(mNewDepthStencilState.depthFunc);
-}
-
-//----------------------------------------------------------
-bool RenderDeviceGLES2::isTextureCompressionSupported() const
-{
-    // TODO: Remove this
-    return false;
 }
 
 //----------------------------------------------------------

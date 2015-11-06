@@ -114,7 +114,6 @@ public:
     RDIDepthFunc getDepthFunc() const;
 
     // Capabilities
-    bool isTextureCompressionSupported() const;
     void getCapabilities(unsigned int& maxTexUnits, unsigned int& maxTexSize,
         unsigned int& maxCubTexSize, bool& dxt, bool& pvrtci, bool& etc1, bool& texFloat,
         bool& texDepth, bool& texSS, bool& tex3d, bool& texNPOT, bool& texSRGB, bool& rtms,

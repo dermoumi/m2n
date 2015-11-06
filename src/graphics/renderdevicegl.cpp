@@ -107,9 +107,30 @@ bool RenderDeviceGL::initialize()
     }
 
     // Get capabilities
-    mCaps.texFloat         = glExt::ARB_texture_float;
-    mCaps.texNPOT = glExt::ARB_texture_non_power_of_two;
-    mCaps.rtMultisampling = glExt::EXT_framebuffer_multisample;
+    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &mMaxTextureSize);
+    glGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &mMaxCubeTextureSize);
+    glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &mMaxTextureUnits);
+
+    mDXTSupported = true;
+    mPVRTCISupported = false;
+    mTexETC1Supported = false;
+
+    mTexFloatSupported = glExt::ARB_texture_float;
+    mTexDepthSupported = true;
+    mTexShadowSamplers = true;
+
+    mTex3DSupported = true;
+    mTexNPOTSupported = glExt::ARB_texture_non_power_of_two;
+    mTexSRGBSupported = true;
+
+    mRTMultiSampling = glExt::EXT_framebuffer_multisample;
+
+    mOccQuerySupported = true;
+    mTimerQuerySupported = true;
+
+    // Set some default values
+    mIndexFormat = GL_UNSIGNED_SHORT;
+    mActiveVertexAttribsMask = 0u;
 
     // Set some default values
     mIndexFormat = GL_UNSIGNED_SHORT;
@@ -275,7 +296,7 @@ uint32_t RenderDeviceGL::registerVertexLayout(uint32_t numAttribs,
 uint32_t RenderDeviceGL::createTexture(TextureType::Type type, int width, int height,
     unsigned int depth, TextureFormat::Type format, bool hasMips, bool genMips, bool sRGB)
 {
-    if (!mCaps.texNPOT && ((width & (width-1)) != 0 || ((height & (height-1)) != 0))) {
+    if (!mTexNPOTSupported && ((width & (width-1)) != 0 || ((height & (height-1)) != 0))) {
         Log::warning("Texture has Non-Power-Of-Two dimensions "
             "although NPOT is not supported by GPU");
     }
@@ -895,10 +916,27 @@ RDIDepthFunc RenderDeviceGL::getDepthFunc() const
 }
 
 //----------------------------------------------------------
-bool RenderDeviceGL::isTextureCompressionSupported() const
+void RenderDeviceGL::getCapabilities(unsigned int& maxTexUnits, unsigned int& maxTexSize,
+        unsigned int& maxCubTexSize, bool& dxt, bool& pvrtci, bool& etc1, bool& texFloat,
+        bool& texDepth, bool& texSS, bool& tex3D, bool& texNPOT, bool& texSRGB, bool& rtms,
+        bool& occQuery, bool& timerQuery) const
 {
     std::lock_guard<std::mutex> lock(cpMutex);
-    return glExt::EXT_texture_compression_s3tc;
+    maxTexUnits   = mMaxTextureUnits;
+    maxTexSize    = mMaxTextureSize;
+    maxCubTexSize = mMaxCubeTextureSize;
+    dxt           = mDXTSupported;
+    pvrtci        = mPVRTCISupported;
+    etc1          = mTexETC1Supported;
+    texFloat      = mTexFloatSupported;
+    texDepth      = mTexDepthSupported;
+    texSS         = mTexShadowSamplers;
+    tex3D         = mTex3DSupported;
+    texNPOT       = mTexNPOTSupported;
+    texSRGB       = mTexSRGBSupported;
+    rtms          = mRTMultiSampling;
+    occQuery      = mOccQuerySupported;
+    timerQuery    = mTimerQuerySupported;
 }
 
 //----------------------------------------------------------

@@ -48,10 +48,4 @@ uint32_t RenderDevice::calcTextureSize(TextureFormat::Type format, int width, in
     }
 }
 
-//----------------------------------------------------------
-const DeviceCaps& RenderDevice::getCapabilities() const
-{
-    return mCaps;
-}
-
 //==============================================================================
