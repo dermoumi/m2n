@@ -288,8 +288,6 @@ uint32_t RenderDeviceGLES2::registerVertexLayout(uint32_t numAttribs,
 uint32_t RenderDeviceGLES2::createTexture(TextureType::Type type, int width, int height,
     unsigned int depth, TextureFormat::Type format, bool hasMips, bool genMips, bool sRGB)
 {
-    // TODO: Add support for android specific texture compression
-
     if (!mTexNPOTSupported && ((width & (width-1)) != 0 || ((height & (height-1)) != 0))) {
         Log::error("Non-Power-Of-Two textures are not supported by GPU");
         return 0;
@@ -310,6 +308,19 @@ uint32_t RenderDeviceGLES2::createTexture(TextureType::Type type, int width, int
         format == TextureFormat::DXT5))
     {
         Log::error("S3TC/DXT texture formats are not supported by the GPU");
+        return 0;
+    }
+
+    if (!mPVRTCISupported && (format == TextureFormat::PVRTCI_2BPP ||
+        format == TextureFormat::PVRTCI_A2BPP || format == TextureFormat::PVRTCI_4BPP ||
+        format == TextureFormat::PVRTCI_A4BPP))
+    {
+        Log::error("PVRTCI texture formats are not supported by the GPU");
+        return 0;
+    }
+
+    if (!mTexETC1Supported && format == TextureFormat::ETC1) {
+        Log::error("ETC1 texture format is not supported by the GPU");
         return 0;
     }
 
@@ -346,6 +357,21 @@ uint32_t RenderDeviceGLES2::createTexture(TextureType::Type type, int width, int
         break;
     case TextureFormat::RGBA32F:
         tex.glFmt = GL_RGBA;
+        break;
+    case TextureFormat::PVRTCI_2BPP:
+        tex.glFmt = GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG;
+        break;
+    case TextureFormat::PVRTCI_A2BPP:
+        tex.glFmt = GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG;
+        break;
+    case TextureFormat::PVRTCI_4BPP:
+        tex.glFmt = GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG;
+        break;
+    case TextureFormat::PVRTCI_A4BPP:
+        tex.glFmt = GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG;
+        break;
+    case TextureFormat::ETC1:
+        tex.glFmt = GL_ETC1_RGB8_OES;
         break;
     case TextureFormat::DEPTH:
         tex.glFmt = GL_DEPTH_COMPONENT;
@@ -392,7 +418,9 @@ void RenderDeviceGLES2::uploadTextureData(uint32_t texObj, int slice, int mipLev
     int inputFormat = GL_RGBA;
     int inputType = GL_UNSIGNED_BYTE;
     bool compressed = (format == TextureFormat::DXT1) || (format == TextureFormat::DXT3) ||
-                      (format == TextureFormat::DXT5);
+        (format == TextureFormat::DXT5)        || (format == TextureFormat::ETC1 ||
+        (format == TextureFormat::PVRTCI_2BPP) || (format == TextureFormat::PVRTCI_A2BPP) ||
+        (format == TextureFormat::PVRTCI_4BPP) || (format == TextureFormat::PVRTCI_A4BPP));
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(tex.type, tex.glObj);

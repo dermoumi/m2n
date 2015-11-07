@@ -313,6 +313,14 @@ uint32_t RenderDeviceGL::createTexture(TextureType::Type type, int width, int he
         return 0;
     }
 
+    if (format == TextureFormat::PVRTCI_2BPP || format == TextureFormat::PVRTCI_A2BPP ||
+        format == TextureFormat::PVRTCI_4BPP || format == TextureFormat::PVRTCI_A4BPP ||
+        format == TextureFormat::ETC1)
+    {
+        Log::error("PVRTCI and ETC1 texture formats are not supported by the GPU");
+        return 0;
+    }
+
     RDITexture tex;
     tex.type    = toTexType[type];
     tex.format  = format;
@@ -348,7 +356,7 @@ uint32_t RenderDeviceGL::createTexture(TextureType::Type type, int width, int he
     case TextureFormat::DEPTH:
         tex.glFmt = mDepthFormat;
     default:
-        Log::warning("Could not create texture: invalid format");
+        Log::error("Could not create texture: invalid format");
         return 0;
     }
 

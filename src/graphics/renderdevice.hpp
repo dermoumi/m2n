@@ -106,6 +106,13 @@ namespace TextureFormat
         DXT5,
         RGBA16F,
         RGBA32F,
+
+        PVRTCI_2BPP,
+        PVRTCI_A2BPP,
+        PVRTCI_4BPP,
+        PVRTCI_A4BPP,
+        ETC1,
+
         DEPTH,
         Count
     };
