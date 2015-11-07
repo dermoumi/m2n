@@ -466,6 +466,12 @@ void RenderDeviceGL::uploadTextureSubData(uint32_t texObj, int slice, int mipLev
     const auto& tex = mTextures.getRef(texObj);
     auto format     = tex.format;
 
+    if (x + width > static_cast<unsigned int>(tex.width) ||
+        y + height > static_cast<unsigned int>(tex.height)) {
+        Log::info("Attemting to update portion out of texture boundaries");
+        return;
+    }
+
     glActiveTexture(GL_TEXTURE15);
     glBindTexture(tex.type, tex.glObj);
 
@@ -485,7 +491,7 @@ void RenderDeviceGL::uploadTextureSubData(uint32_t texObj, int slice, int mipLev
         default:
             break;
     }
-    
+
     if (tex.type == GL_TEXTURE_2D || tex.type == GL_TEXTURE_CUBE_MAP)
     {
         int target = (tex.type == GL_TEXTURE_2D) ?

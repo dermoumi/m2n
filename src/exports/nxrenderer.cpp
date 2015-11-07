@@ -156,7 +156,8 @@ NX_EXPORT void nxRendererTestInit()
 
     texture = rdi->createTexture(TextureType::Tex2D, imgWidth, imgHeight, 1, TextureFormat::RGBA8,
         true, true, false);
-    rdi->uploadTextureData(texture, 0, 0, img.getPixelsPtr());
+    rdi->uploadTextureData(texture, 0, 0, nullptr);
+    rdi->uploadTextureSubData(texture, 0, 0, 0, 0, 0, 512, 512, 1, img.getPixelsPtr());
 
     // Get texture data
     // uint8_t* buffer = new uint8_t[imgWidth * imgHeight * 4];
