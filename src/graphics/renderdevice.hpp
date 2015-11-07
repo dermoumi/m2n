@@ -33,170 +33,6 @@
 #include <mutex>
 
 //==========================================================
-// Structures and enums
-//==========================================================
-struct DeviceCaps
-{
-    bool texFloat;
-    bool texNPOT;
-    bool rtMultisampling;
-};
-
-//----------------------------------------------------------
-struct VertexLayoutAttrib
-{
-    std::string semanticName;
-    uint32_t    vbSlot;
-    uint32_t    size;
-    uint32_t    offset;
-};
-
-//----------------------------------------------------------
-struct RDIVertexLayout
-{
-    uint32_t           numAttribs;
-    VertexLayoutAttrib attribs[16];
-};
-
-//----------------------------------------------------------
-enum RDIIndexFormat : int
-{
-    IDXFMT_16,
-    IDXFMT_32
-};
-
-//----------------------------------------------------------
-enum RDIPrimType : int
-{
-    PRIM_TRIANGLES,
-    PRIM_TRISTRIP
-};
-
-//----------------------------------------------------------
-enum RDIShaderConstType
-{
-    CONST_FLOAT,
-    CONST_FLOAT2,
-    CONST_FLOAT3,
-    CONST_FLOAT4,
-    CONST_FLOAT44,
-    CONST_FLOAT33
-};
-
-//----------------------------------------------------------
-namespace TextureType
-{
-    enum Type : int
-    {
-        Tex2D,
-        Tex3D,
-        TexCube
-    };
-}
-
-//----------------------------------------------------------
-namespace TextureFormat
-{
-    enum Type : int
-    {
-        Unknown,
-        RGBA8,
-        DXT1,
-        DXT3,
-        DXT5,
-        RGBA16F,
-        RGBA32F,
-
-        PVRTCI_2BPP,
-        PVRTCI_A2BPP,
-        PVRTCI_4BPP,
-        PVRTCI_A4BPP,
-        ETC1,
-
-        DEPTH,
-        Count
-    };
-}
-
-//----------------------------------------------------------
-namespace SamplerState
-{
-    enum Type
-    {
-        FilterBilinear   = 0x0,
-        FilterTrilinear  = 0x0001,
-        FilterPoint      = 0x0002,
-        Aniso1           = 0x0,
-        Aniso2           = 0x0004,
-        Aniso4           = 0x0008,
-        Aniso8           = 0x0010,
-        Aniso16          = 0x0020,
-        AddrUClamp       = 0x0,
-        AddrUWrap        = 0x0040,
-        AddrUClampCol    = 0x0080,
-        AddrVClamp       = 0x0,
-        AddrVWrap        = 0x0100,
-        ADdrVClampCol    = 0x0200,
-        AddrWClamp       = 0x0,
-        AddrWWrap        = 0x0400,
-        AddrWClampCol    = 0x0800,
-        AddrClamp        = AddrUClamp | AddrVClamp | AddrWClamp,
-        AddrWrap         = AddrUWrap | AddrVWrap | AddrWWrap,
-        AddrClampCol     = AddrUClampCol | ADdrVClampCol | AddrWClampCol,
-        CompLEqual       = 0x1000
-    };
-
-    constexpr uint32_t FilterStart = 0;
-    constexpr uint32_t FilterMask = FilterBilinear | FilterTrilinear | FilterPoint;
-    constexpr uint32_t AnisoStart = 2;
-    constexpr uint32_t AnisoMask = Aniso1 | Aniso2 | Aniso4 | Aniso8 | Aniso16;
-    constexpr uint32_t AddrUStart = 6;
-    constexpr uint32_t AddrUMask = AddrUClamp | AddrUWrap | AddrWClampCol;
-    constexpr uint32_t AddrVStart = 8;
-    constexpr uint32_t AddrVMask = AddrVClamp | AddrVWrap | ADdrVClampCol;
-    constexpr uint32_t AddrWStart = 10;
-    constexpr uint32_t AddrWMask = AddrWClamp | AddrWWrap | AddrWClampCol;
-    constexpr uint32_t AddrStart = 6;
-    constexpr uint32_t AddrMask = AddrClamp | AddrWrap | AddrClampCol;
-}
-
-//----------------------------------------------------------
-enum RDIFillMode
-{
-    RS_FILL_SOLID = 0,
-    RS_FILL_WIREFRAME = 1
-};
-
-//----------------------------------------------------------
-enum RDICullMode
-{
-    RS_CULL_BACK = 0,
-    RS_CULL_FRONT,
-    RS_CULL_NONE
-};
-
-//----------------------------------------------------------
-enum RDIBlendFunc
-{
-    BS_BLEND_ZERO = 0,
-    BS_BLEND_ONE,
-    BS_BLEND_SRC_ALPHA,
-    BS_BLEND_INV_SRC_ALPHA,
-    BS_BLEND_DEST_COLOR
-};
-
-//----------------------------------------------------------
-enum RDIDepthFunc
-{
-    DSS_DEPTHFUNC_LESS_EQUAL = 0,
-    DSS_DEPTHFUNC_LESS,
-    DSS_DEPTHFUNC_EQUAL,
-    DSS_DEPTHFUNC_GREATER,
-    DSS_DEPTHFUNC_GREATER_EQUAL,
-    DSS_DEPTHFUNC_ALWAYS
-};
-
-//==========================================================
 // Container for different objects used by the device
 //==========================================================
 template <class T>
@@ -246,7 +82,6 @@ public:
     }
 
 private:
-    friend class RenderDevice;
     std::vector<T>        mObjects;
     std::vector<uint32_t> mFreeList;
     std::mutex            mMutex;
@@ -258,6 +93,140 @@ private:
 class RenderDevice
 {
 public:
+    struct VertexLayoutAttrib
+    {
+        std::string semanticName;
+        uint32_t    vbSlot;
+        uint32_t    size;
+        uint32_t    offset;
+    };
+
+    struct VertexLayout
+    {
+        uint32_t           numAttribs;
+        VertexLayoutAttrib attribs[16];
+    };
+
+    enum IndexFormat
+    {
+        U16 = 0,
+        U32
+    };
+
+    enum PrimType
+    {
+        Triangles = 0,
+        TriangleStrip
+    };
+
+    enum ShaderConstType
+    {
+        Float,
+        Float2,
+        Float3,
+        Float4,
+        Float44,
+        Float33
+    };
+
+    enum TextureType
+    {
+        Tex2D = 0,
+        Tex3D,
+        TexCube
+    };
+
+    enum TextureFormat
+    {
+        Unknown = 0,
+        RGBA8,
+        DXT1,
+        DXT3,
+        DXT5,
+        RGBA16F,
+        RGBA32F,
+
+        PVRTCI_2BPP,
+        PVRTCI_A2BPP,
+        PVRTCI_4BPP,
+        PVRTCI_A4BPP,
+        ETC1,
+
+        DEPTH,
+        Count
+    };
+
+    enum SamplerState
+    {
+        FilterBilinear   = 0x0,
+        FilterTrilinear  = 0x0001,
+        FilterPoint      = 0x0002,
+        Aniso1           = 0x0,
+        Aniso2           = 0x0004,
+        Aniso4           = 0x0008,
+        Aniso8           = 0x0010,
+        Aniso16          = 0x0020,
+        AddrUClamp       = 0x0,
+        AddrUWrap        = 0x0040,
+        AddrUClampCol    = 0x0080,
+        AddrVClamp       = 0x0,
+        AddrVWrap        = 0x0100,
+        ADdrVClampCol    = 0x0200,
+        AddrWClamp       = 0x0,
+        AddrWWrap        = 0x0400,
+        AddrWClampCol    = 0x0800,
+        AddrClamp        = AddrUClamp | AddrVClamp | AddrWClamp,
+        AddrWrap         = AddrUWrap | AddrVWrap | AddrWWrap,
+        AddrClampCol     = AddrUClampCol | ADdrVClampCol | AddrWClampCol,
+        CompLEqual       = 0x1000,
+
+        FilterStart      = 0,
+        FilterMask       = FilterBilinear | FilterTrilinear | FilterPoint,
+        AnisoStart       = 2,
+        AnisoMask        = Aniso1 | Aniso2 | Aniso4 | Aniso8 | Aniso16,
+        AddrUStart       = 6,
+        AddrUMask        = AddrUClamp | AddrUWrap | AddrWClampCol,
+        AddrVStart       = 8,
+        AddrVMask        = AddrVClamp | AddrVWrap | ADdrVClampCol,
+        AddrWStart       = 10,
+        AddrWMask        = AddrWClamp | AddrWWrap | AddrWClampCol,
+        AddrStart        = 6,
+        AddrMask         = AddrClamp | AddrWrap | AddrClampCol
+    };
+
+    enum FillMode
+    {
+        Solid = 0,
+        Wireframe
+    };
+
+    enum CullMode
+    {
+        Back = 0,
+        Front,
+        None
+    };
+
+    enum BlendFunc
+    {
+        Zero = 0,
+        One,
+        SrcAlpha,
+        InvSrcAlpha,
+        DstColor
+    };
+
+    enum DepthFunc
+    {
+        LessEqueal = 0,
+        Less,
+        Equal,
+        Greater,
+        GreaterEqual,
+        Always
+    };
+
+public:
     virtual ~RenderDevice() = default;
     virtual bool initialize() = 0;
 
@@ -267,8 +236,8 @@ public:
 
     // Drawcalls and clears
     virtual void clear(const float* color) = 0;
-    virtual void draw(RDIPrimType primType, uint32_t firstVert, uint32_t vertCount) = 0;
-    virtual void drawIndexed(RDIPrimType primType, uint32_t firstIndex, uint32_t indexCount) = 0;
+    virtual void draw(PrimType primType, uint32_t firstVert, uint32_t vertCount) = 0;
+    virtual void drawIndexed(PrimType primType, uint32_t firstIndex, uint32_t indexCount) = 0;
 
     // Vertex layouts
     virtual uint32_t registerVertexLayout(uint32_t numAttribs,
@@ -285,9 +254,9 @@ public:
     virtual uint32_t getBufferMemory() const = 0;
 
     // Textures
-    uint32_t calcTextureSize(TextureFormat::Type format, int width, int height, int depth);
-    virtual uint32_t createTexture(TextureType::Type type, int width, int height,
-        unsigned int depth, TextureFormat::Type format, bool hasMips, bool genMips, bool sRGB) = 0;
+    uint32_t calcTextureSize(TextureFormat format, int width, int height, int depth);
+    virtual uint32_t createTexture(TextureType type, int width, int height, unsigned int depth,
+        TextureFormat format, bool hasMips, bool genMips, bool sRGB) = 0;
     virtual void uploadTextureData(uint32_t texObj, int slice, int mipLevel,
         const void* pixels) = 0;
     virtual void uploadTextureSubData(uint32_t texObj, int slice, int mipLevel, unsigned int x,
@@ -304,7 +273,7 @@ public:
     virtual const std::string& getShaderLog() = 0;
     virtual int getShaderConstLoc(uint32_t shaderID, const char* name) = 0;
     virtual int getShaderSamplerLoc(uint32_t shaderID, const char* name) = 0;
-    virtual void setShaderConst(int loc, RDIShaderConstType type, float* values,
+    virtual void setShaderConst(int loc, ShaderConstType type, float* values,
         uint32_t count = 1) = 0;
     virtual void setShaderSampler(int loc, uint32_t texUnit) = 0;
     virtual const char* getDefaultVSCode() = 0;
@@ -313,7 +282,7 @@ public:
     // GL States
     virtual void setViewport(int x, int y, int width, int height) = 0;
     virtual void setScissorRect(int x, int y, int width, int height) = 0;
-    virtual void setIndexBuffer(uint32_t bufObj, RDIIndexFormat idxFmt) = 0;
+    virtual void setIndexBuffer(uint32_t bufObj, IndexFormat idxFmt) = 0;
     virtual void setVertexBuffer(uint32_t slot, uint32_t vbObj, uint32_t offset,
         uint32_t stride) = 0;
     virtual void setVertexLayout(uint32_t vlObj) = 0;
@@ -322,25 +291,24 @@ public:
     // Render states
     virtual void setColorWriteMask(bool enabled) = 0;
     virtual bool getColorWriteMask() const = 0;
-    virtual void setFillMode(RDIFillMode fillMode) = 0;
-    virtual RDIFillMode getFillMode() const = 0;
-    virtual void setCullMode(RDICullMode cullMode) = 0;
-    virtual RDICullMode getCullMode() const = 0;
+    virtual void setFillMode(FillMode fillMode) = 0;
+    virtual FillMode getFillMode() const = 0;
+    virtual void setCullMode(CullMode cullMode) = 0;
+    virtual CullMode getCullMode() const = 0;
     virtual void setScissorTest(bool enabled) = 0;
     virtual bool getScissorTest() const = 0;
     virtual void setMultisampling(bool enabled) = 0;
     virtual bool getMultisampling() const = 0;
     virtual void setAlphaToCoverage(bool enabled) = 0;
     virtual bool getAlphaToCoverage() const = 0;
-    virtual void setBlendMode(bool enabled, RDIBlendFunc src = BS_BLEND_ZERO,
-        RDIBlendFunc dst = BS_BLEND_ZERO) = 0;
-    virtual bool getBlendMode(RDIBlendFunc& src, RDIBlendFunc& dst) const = 0;
+    virtual void setBlendMode(bool enabled, BlendFunc src = Zero, BlendFunc dst = Zero) = 0;
+    virtual bool getBlendMode(BlendFunc& src, BlendFunc& dst) const = 0;
     virtual void setDepthMask(bool enabled) = 0;
     virtual bool getDepthMask() const = 0;
     virtual void setDepthTest(bool enabled) = 0;
     virtual bool getDepthTest() const = 0;
-    virtual void setDepthFunc(RDIDepthFunc depthFunc) = 0;
-    virtual RDIDepthFunc getDepthFunc() const = 0;
+    virtual void setDepthFunc(DepthFunc depthFunc) = 0;
+    virtual DepthFunc getDepthFunc() const = 0;
 
     // Capabilities
     virtual void getCapabilities(unsigned int* maxTexUnits, unsigned int* maxTexSize,

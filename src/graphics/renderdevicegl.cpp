@@ -260,7 +260,7 @@ void RenderDeviceGL::clear(const float* color)
 }
 
 //----------------------------------------------------------
-void RenderDeviceGL::draw(RDIPrimType primType, uint32_t firstVert, uint32_t vertCount)
+void RenderDeviceGL::draw(PrimType primType, uint32_t firstVert, uint32_t vertCount)
 {
     if (commitStates()) {
         glDrawArrays(toPrimType[primType], firstVert, vertCount);
@@ -268,7 +268,7 @@ void RenderDeviceGL::draw(RDIPrimType primType, uint32_t firstVert, uint32_t ver
 }
 
 //----------------------------------------------------------
-void RenderDeviceGL::drawIndexed(RDIPrimType primType, uint32_t firstIndex, uint32_t indexCount)
+void RenderDeviceGL::drawIndexed(PrimType primType, uint32_t firstIndex, uint32_t indexCount)
 {
     if (commitStates()) {
         firstIndex *= (mIndexFormat == GL_UNSIGNED_SHORT) ? sizeof(short) : sizeof(int);
@@ -294,28 +294,27 @@ uint32_t RenderDeviceGL::registerVertexLayout(uint32_t numAttribs,
 }
 
 //----------------------------------------------------------
-uint32_t RenderDeviceGL::createTexture(TextureType::Type type, int width, int height,
-    unsigned int depth, TextureFormat::Type format, bool hasMips, bool genMips, bool sRGB)
+uint32_t RenderDeviceGL::createTexture(TextureType type, int width, int height,
+    unsigned int depth, TextureFormat format, bool hasMips, bool genMips, bool sRGB)
 {
     if (!mTexNPOTSupported && ((width & (width-1)) != 0 || ((height & (height-1)) != 0))) {
         Log::error("Non-Power-Of-Two textures are not supported by GPU");
         return 0;
     }
 
-    if (type == TextureType::TexCube && (width > mMaxCubeTextureSize || height > mMaxTextureSize)) {
+    if (type == TexCube && (width > mMaxCubeTextureSize || height > mMaxTextureSize)) {
         Log::error("Cube map is bigger than limit size");
         return 0;
     }
-    else if (type != TextureType::TexCube && (width > mMaxTextureSize || height > mMaxTextureSize ||
+    else if (type != TexCube && (width > mMaxTextureSize || height > mMaxTextureSize ||
         depth > static_cast<unsigned int>(mMaxTextureSize)))
     {
         Log::error("Texture is bigger than limit size");
         return 0;
     }
 
-    if (format == TextureFormat::PVRTCI_2BPP || format == TextureFormat::PVRTCI_A2BPP ||
-        format == TextureFormat::PVRTCI_4BPP || format == TextureFormat::PVRTCI_A4BPP ||
-        format == TextureFormat::ETC1)
+    if (format == PVRTCI_2BPP || format == PVRTCI_A2BPP || format == PVRTCI_4BPP ||
+        format == PVRTCI_A4BPP || format == ETC1)
     {
         Log::error("PVRTCI and ETC1 texture formats are not supported by the GPU");
         return 0;
@@ -332,28 +331,28 @@ uint32_t RenderDeviceGL::createTexture(TextureType::Type type, int width, int he
     tex.hasMips = hasMips;
 
     switch(format) {
-    case TextureFormat::RGBA8:
+    case RGBA8:
         tex.glFmt = tex.sRGB ? GL_SRGB8_ALPHA8_EXT : GL_RGBA8;
         break;
-    case TextureFormat::DXT1:
+    case DXT1:
         tex.glFmt = tex.sRGB ?
             GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT : GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
         break;
-    case TextureFormat::DXT3:
+    case DXT3:
         tex.glFmt = tex.sRGB ?
             GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT : GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
         break;
-    case TextureFormat::DXT5:
+    case DXT5:
         tex.glFmt = tex.sRGB ?
             GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT : GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
         break;
-    case TextureFormat::RGBA16F:
+    case RGBA16F:
         tex.glFmt = GL_RGBA16F_ARB;
         break;
-    case TextureFormat::RGBA32F:
+    case RGBA32F:
         tex.glFmt = GL_RGBA32F_ARB;
         break;
-    case TextureFormat::DEPTH:
+    case DEPTH:
         tex.glFmt = mDepthFormat;
     default:
         Log::error("Could not create texture: invalid format");
@@ -402,15 +401,14 @@ void RenderDeviceGL::uploadTextureData(uint32_t texObj, int slice, int mipLevel,
     glBindTexture(tex.type, tex.glObj);
 
     int inputFormat = GL_RGBA, inputType = GL_UNSIGNED_BYTE;
-    bool compressed = (format == TextureFormat::DXT1) || (format == TextureFormat::DXT3) ||
-                      (format == TextureFormat::DXT5);
+    bool compressed = (format == DXT1) || (format == DXT3) || (format == DXT5);
 
     switch (format) {
-        case TextureFormat::RGBA16F:
-        case TextureFormat::RGBA32F:
+        case RGBA16F:
+        case RGBA32F:
             inputType = GL_FLOAT;
             break;
-        case TextureFormat::DEPTH:
+        case DEPTH:
             inputFormat = GL_DEPTH_COMPONENT;
             inputType = GL_UNSIGNED_SHORT;
             break;
@@ -486,15 +484,14 @@ void RenderDeviceGL::uploadTextureSubData(uint32_t texObj, int slice, int mipLev
     glBindTexture(tex.type, tex.glObj);
 
     int inputFormat = GL_RGBA, inputType = GL_UNSIGNED_BYTE;
-    bool compressed = (format == TextureFormat::DXT1) || (format == TextureFormat::DXT3) ||
-                      (format == TextureFormat::DXT5);
+    bool compressed = (format == DXT1) || (format == DXT3) || (format == DXT5);
 
     switch (format) {
-        case TextureFormat::RGBA16F:
-        case TextureFormat::RGBA32F:
+        case RGBA16F:
+        case RGBA32F:
             inputType = GL_FLOAT;
             break;
-        case TextureFormat::DEPTH:
+        case DEPTH:
             inputFormat = GL_DEPTH_COMPONENT;
             inputType = GL_FLOAT;
             break;
@@ -566,13 +563,13 @@ bool RenderDeviceGL::getTextureData(uint32_t texObj, int slice, int mipLevel, vo
     glBindTexture(tex.type, tex.glObj);
 
     switch(tex.format) {
-    case TextureFormat::RGBA8:
+    case RGBA8:
         fmt = GL_RGBA;
         type = GL_UNSIGNED_BYTE;
         break;
-    case TextureFormat::DXT1:
-    case TextureFormat::DXT3:
-    case TextureFormat::DXT5:
+    case DXT1:
+    case DXT3:
+    case DXT5:
         compressed = 1;
         break;
     default:
@@ -638,7 +635,7 @@ uint32_t RenderDeviceGL::createShader(const char* vertexShaderSrc, const char* f
             {
                 std::lock_guard<std::mutex> lock(vlMutex);
 
-                RDIVertexLayout& vl = mVertexLayouts[i];
+                auto& vl = mVertexLayouts[i];
                 for (uint32_t k = 0; k < vl.numAttribs; ++k) {
                     if (vl.attribs[k].semanticName == name) {
                         auto loc = glGetAttribLocation(programObj, name);
@@ -706,25 +703,25 @@ int RenderDeviceGL::getShaderSamplerLoc(uint32_t shaderID, const char* name)
 }
 
 //----------------------------------------------------------
-void RenderDeviceGL::setShaderConst(int loc, RDIShaderConstType type, float* values, uint32_t count)
+void RenderDeviceGL::setShaderConst(int loc, ShaderConstType type, float* values, uint32_t count)
 {
     switch(type) {
-    case CONST_FLOAT:
+    case Float:
         glUniform1fv(loc, count, values);
         break;
-    case CONST_FLOAT2:
+    case Float2:
         glUniform2fv(loc, count, values);
         break;
-    case CONST_FLOAT3:
+    case Float3:
         glUniform3fv(loc, count, values);
         break;
-    case CONST_FLOAT4:
+    case Float4:
         glUniform4fv(loc, count, values);
         break;
-    case CONST_FLOAT44:
+    case Float44:
         glUniformMatrix4fv(loc, count, false, values);
         break;
-    case CONST_FLOAT33:
+    case Float33:
         glUniformMatrix4fv(loc, count, false, values);
         break;
     }
@@ -855,7 +852,7 @@ void RenderDeviceGL::setScissorRect(int x, int y, int width, int height)
 }
 
 //----------------------------------------------------------
-void RenderDeviceGL::setIndexBuffer(uint32_t bufObj, RDIIndexFormat format)
+void RenderDeviceGL::setIndexBuffer(uint32_t bufObj, IndexFormat format)
 {
     mIndexFormat = toIndexFormat[format];
     mNewIndexBuffer = bufObj;
@@ -896,29 +893,29 @@ bool RenderDeviceGL::getColorWriteMask() const
 }
 
 //----------------------------------------------------------
-void RenderDeviceGL::setFillMode(RDIFillMode fillMode)
+void RenderDeviceGL::setFillMode(FillMode fillMode)
 {
     mNewRasterState.fillMode = fillMode;
     mPendingMask |= PMRenderStates;
 }
 
 //----------------------------------------------------------
-RDIFillMode RenderDeviceGL::getFillMode() const
+RenderDevice::FillMode RenderDeviceGL::getFillMode() const
 {
-    return static_cast<RDIFillMode>(mNewRasterState.fillMode);
+    return static_cast<FillMode>(mNewRasterState.fillMode);
 }
 
 //----------------------------------------------------------
-void RenderDeviceGL::setCullMode(RDICullMode cullMode)
+void RenderDeviceGL::setCullMode(CullMode cullMode)
 {
     mNewRasterState.cullMode = cullMode;
     mPendingMask |= PMRenderStates;
 }
 
 //----------------------------------------------------------
-RDICullMode RenderDeviceGL::getCullMode() const
+RenderDevice::CullMode RenderDeviceGL::getCullMode() const
 {
-    return static_cast<RDICullMode>(mNewRasterState.cullMode);
+    return static_cast<CullMode>(mNewRasterState.cullMode);
 }
 
 //----------------------------------------------------------
@@ -961,7 +958,7 @@ bool RenderDeviceGL::getAlphaToCoverage() const
 }
 
 //----------------------------------------------------------
-void RenderDeviceGL::setBlendMode(bool enabled, RDIBlendFunc src, RDIBlendFunc dst)
+void RenderDeviceGL::setBlendMode(bool enabled, BlendFunc src, BlendFunc dst)
 {
     mNewBlendState.blendEnable = enabled;
     mNewBlendState.srcBlendFunc = src;
@@ -971,10 +968,10 @@ void RenderDeviceGL::setBlendMode(bool enabled, RDIBlendFunc src, RDIBlendFunc d
 }
 
 //----------------------------------------------------------
-bool RenderDeviceGL::getBlendMode(RDIBlendFunc& src, RDIBlendFunc& dst) const
+bool RenderDeviceGL::getBlendMode(BlendFunc& src, BlendFunc& dst) const
 {
-    src = static_cast<RDIBlendFunc>(mNewBlendState.srcBlendFunc);
-    dst = static_cast<RDIBlendFunc>(mNewBlendState.dstBlendFunc);
+    src = static_cast<BlendFunc>(mNewBlendState.srcBlendFunc);
+    dst = static_cast<BlendFunc>(mNewBlendState.dstBlendFunc);
     return mNewBlendState.blendEnable;
 }
 
@@ -1005,16 +1002,16 @@ bool RenderDeviceGL::getDepthTest() const
 }
 
 //----------------------------------------------------------
-void RenderDeviceGL::setDepthFunc(RDIDepthFunc depthFunc)
+void RenderDeviceGL::setDepthFunc(DepthFunc depthFunc)
 {
     mNewDepthStencilState.depthFunc = depthFunc;
     mPendingMask |= PMRenderStates;
 }
 
 //----------------------------------------------------------
-RDIDepthFunc RenderDeviceGL::getDepthFunc() const
+RenderDevice::DepthFunc RenderDeviceGL::getDepthFunc() const
 {
-    return static_cast<RDIDepthFunc>(mNewDepthStencilState.depthFunc);
+    return static_cast<DepthFunc>(mNewDepthStencilState.depthFunc);
 }
 
 //----------------------------------------------------------
@@ -1136,17 +1133,17 @@ bool RenderDeviceGL::applyVertexLayout()
     if (mNewVertexLayout != 0) {
         if (mCurShaderID == 0) return false;
 
-        RDIVertexLayout& v1         = mVertexLayouts[mNewVertexLayout - 1];
         RDIShader& shader           = mShaders.getRef(mCurShaderID);
         RDIInputLayout& inputLayout = shader.inputLayouts[mNewVertexLayout - 1];
 
         if (!inputLayout.valid) return false;
 
         // Set vertex attrib pointers
-        for (uint32_t i = 0; i < v1.numAttribs; ++i) {
+        auto& vl = mVertexLayouts[mNewVertexLayout - 1];
+        for (uint32_t i = 0; i < vl.numAttribs; ++i) {
             int8_t attribIndex = inputLayout.attribIndices[i];
             if (attribIndex >= 0) {
-                VertexLayoutAttrib& attrib = v1.attribs[i];
+                VertexLayoutAttrib& attrib = vl.attribs[i];
                 const auto& vbSlot = mVertBufSlots[attrib.vbSlot];
 
                 if (mBuffers.getRef(vbSlot.vbObj).glObj == 0 ||
@@ -1228,18 +1225,18 @@ void RenderDeviceGL::applyRenderStates()
 {
     // Rasterizer state
     if (mNewRasterState.hash != mCurRasterState.hash) {
-        if (mNewRasterState.fillMode == RS_FILL_SOLID) {
+        if (mNewRasterState.fillMode == Solid) {
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         }
         else {
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         }
 
-        if (mNewRasterState.cullMode == RS_CULL_BACK) {
+        if (mNewRasterState.cullMode == Back) {
             glEnable(GL_CULL_FACE);
             glCullFace(GL_BACK);
         }
-        else if (mNewRasterState.cullMode == RS_CULL_FRONT) {
+        else if (mNewRasterState.cullMode == Front) {
             glEnable(GL_CULL_FACE);
             glCullFace(GL_FRONT);
         }

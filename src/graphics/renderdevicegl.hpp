@@ -47,15 +47,15 @@ public:
 
     // Drawcalls and clears
     void clear(const float* color);
-    void draw(RDIPrimType primType, uint32_t firstVert, uint32_t vertCount);
-    void drawIndexed(RDIPrimType primType, uint32_t firstIndex, uint32_t indexCount);
+    void draw(PrimType primType, uint32_t firstVert, uint32_t vertCount);
+    void drawIndexed(PrimType primType, uint32_t firstIndex, uint32_t indexCount);
 
     // Vertex layouts
     uint32_t registerVertexLayout(uint32_t numAttribs, const VertexLayoutAttrib* attribs);
 
     // Textures
-    uint32_t createTexture(TextureType::Type type, int width, int height, unsigned int depth,
-        TextureFormat::Type format, bool hasMips, bool genMips, bool sRGB);
+    uint32_t createTexture(TextureType type, int width, int height, unsigned int depth,
+        TextureFormat format, bool hasMips, bool genMips, bool sRGB);
     void uploadTextureData(uint32_t texObj, int slice, int mipLevel, const void* pixels);
     void uploadTextureSubData(uint32_t texObj, int slice, int mipLevel, unsigned int x,
         unsigned int y, unsigned int z, unsigned int width, unsigned int height, unsigned int depth,
@@ -71,7 +71,7 @@ public:
     const std::string& getShaderLog();
     int getShaderConstLoc(uint32_t shaderID, const char* name);
     int getShaderSamplerLoc(uint32_t shaderID, const char* name);
-    void setShaderConst(int loc, RDIShaderConstType type, float* values, uint32_t count = 1);
+    void setShaderConst(int loc, ShaderConstType type, float* values, uint32_t count = 1);
     void setShaderSampler(int loc, uint32_t texUnit);
     const char* getDefaultVSCode();
     const char* getDefaultFSCode();
@@ -88,7 +88,7 @@ public:
     // GL States
     void setViewport(int x, int y, int width, int height);
     void setScissorRect(int x, int y, int width, int height);
-    void setIndexBuffer(uint32_t bufObj, RDIIndexFormat idxFmt);
+    void setIndexBuffer(uint32_t bufObj, IndexFormat idxFmt);
     void setVertexBuffer(uint32_t slot, uint32_t vbObj, uint32_t offset, uint32_t stride);
     void setVertexLayout(uint32_t vlObj);
     void setTexture(uint32_t slot, uint32_t texObj, uint16_t samplerState);
@@ -96,25 +96,24 @@ public:
     // Render states
     void setColorWriteMask(bool enabled);
     bool getColorWriteMask() const;
-    void setFillMode(RDIFillMode fillMode);
-    RDIFillMode getFillMode() const;
-    void setCullMode(RDICullMode cullMode);
-    RDICullMode getCullMode() const;
+    void setFillMode(FillMode fillMode);
+    FillMode getFillMode() const;
+    void setCullMode(CullMode cullMode);
+    CullMode getCullMode() const;
     void setScissorTest(bool enabled);
     bool getScissorTest() const;
     void setMultisampling(bool enabled);
     bool getMultisampling() const;
     void setAlphaToCoverage(bool enabled);
     bool getAlphaToCoverage() const;
-    void setBlendMode(bool enabled, RDIBlendFunc src = BS_BLEND_ZERO,
-        RDIBlendFunc dst = BS_BLEND_ZERO);
-    bool getBlendMode(RDIBlendFunc& src, RDIBlendFunc& dst) const;
+    void setBlendMode(bool enabled, BlendFunc src = Zero, BlendFunc dst = Zero);
+    bool getBlendMode(BlendFunc& src, BlendFunc& dst) const;
     void setDepthMask(bool enabled);
     bool getDepthMask() const;
     void setDepthTest(bool enabled);
     bool getDepthTest() const;
-    void setDepthFunc(RDIDepthFunc depthFunc);
-    RDIDepthFunc getDepthFunc() const;
+    void setDepthFunc(DepthFunc depthFunc);
+    DepthFunc getDepthFunc() const;
 
     // Capabilities
     void getCapabilities(unsigned int* maxTexUnits, unsigned int* maxTexSize,
@@ -140,18 +139,18 @@ private:
 
     struct RDITexture
     {
-        uint32_t            glObj;
-        uint32_t            glFmt;
-        int                 type;
-        TextureFormat::Type format;
-        int                 width;
-        int                 height;
-        int                 depth;
-        int                 memSize;
-        uint32_t            samplerState;
-        bool                sRGB;
-        bool                hasMips;
-        bool                genMips;
+        uint32_t      glObj;
+        uint32_t      glFmt;
+        int           type;
+        TextureFormat format;
+        int           width;
+        int           height;
+        int           depth;
+        int           memSize;
+        uint32_t      samplerState;
+        bool          sRGB;
+        bool          hasMips;
+        bool          genMips;
     };
 
     struct RDIShader
@@ -245,7 +244,7 @@ private:
 
     int mDefaultFBO {0};
     std::atomic<uint32_t>  mNumVertexLayouts{0};
-    RDIVertexLayout        mVertexLayouts[MaxNumVertexLayouts];
+    VertexLayout           mVertexLayouts[MaxNumVertexLayouts];
     RDIObjects<RDIBuffer>  mBuffers;
     RDIObjects<RDIShader>  mShaders;
     RDIObjects<RDITexture> mTextures;

@@ -27,21 +27,21 @@
 #include "renderdevice.hpp"
 
 //----------------------------------------------------------
-uint32_t RenderDevice::calcTextureSize(TextureFormat::Type format, int width, int height, int depth)
+uint32_t RenderDevice::calcTextureSize(TextureFormat format, int width, int height, int depth)
 {
     switch(format)
     {
-    case TextureFormat::RGBA8:
+    case RGBA8:
         return width * height * depth * 4;
-    case TextureFormat::DXT1:
+    case DXT1:
         return std::max( width / 4, 1 ) * std::max( height / 4, 1 ) * depth * 8;
-    case TextureFormat::DXT3:
+    case DXT3:
         return std::max( width / 4, 1 ) * std::max( height / 4, 1 ) * depth * 16;
-    case TextureFormat::DXT5:
+    case DXT5:
         return std::max( width / 4, 1 ) * std::max( height / 4, 1 ) * depth * 16;
-    case TextureFormat::RGBA16F:
+    case RGBA16F:
         return width * height * depth * 8;
-    case TextureFormat::RGBA32F:
+    case RGBA32F:
         return width * height * depth * 16;
     default:
         return 0;

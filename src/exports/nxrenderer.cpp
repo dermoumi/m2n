@@ -105,7 +105,7 @@ NX_EXPORT void nxRendererTestInit()
     nxRendererTestRelease();
 
     // Register Vertex layouts
-    VertexLayoutAttrib attribs[] = {
+    RenderDevice::VertexLayoutAttrib attribs[] = {
         {"vertPos", 0, 2, 0},
         {"texCoords0", 0, 2, 8}
     };
@@ -154,7 +154,7 @@ NX_EXPORT void nxRendererTestInit()
     //       128,192,255,255, 128,192,255,255, 128,192,255,255, 128,192,255,255,
     //       128,192,255,255, 128,192,255,255, 128,192,255,255, 128,192,255,255 };
 
-    texture = rdi->createTexture(TextureType::Tex2D, imgWidth, imgHeight, 1, TextureFormat::RGBA8,
+    texture = rdi->createTexture(RenderDevice::Tex2D, imgWidth, imgHeight, 1, RenderDevice::RGBA8,
         true, true, false);
     rdi->uploadTextureData(texture, 0, 0, nullptr);
     rdi->uploadTextureSubData(texture, 0, 0, 0, 0, 0, 512, 512, 1, img.getPixelsPtr());
@@ -172,11 +172,11 @@ NX_EXPORT void nxRendererTestInit()
 //----------------------------------------------------------
 NX_EXPORT void nxRendererTestRender()
 {
-    rdi->setTexture(1, texture, SamplerState::FilterTrilinear | SamplerState::Aniso8 |
-        SamplerState::AddrWrap);
+    rdi->setTexture(1, texture, RenderDevice::FilterTrilinear | RenderDevice::Aniso8 |
+        RenderDevice::AddrWrap);
 
     rdi->bindShader(defaultShader);
-    rdi->setBlendMode(true, BS_BLEND_SRC_ALPHA, BS_BLEND_INV_SRC_ALPHA);
+    rdi->setBlendMode(true, RenderDevice::SrcAlpha, RenderDevice::InvSrcAlpha);
 
     // Affect texture to shader
     auto loc = rdi->getShaderSamplerLoc(defaultShader, "tex");
@@ -184,10 +184,10 @@ NX_EXPORT void nxRendererTestRender()
     if (loc >= 0) rdi->setShaderSampler(loc, 1);
 
     rdi->setVertexBuffer(0, vbTriangle, 0, 16);
-    rdi->setIndexBuffer( 0, IDXFMT_16 );
+    rdi->setIndexBuffer( 0, RenderDevice::U16 );
     rdi->setVertexLayout(vlShape);
 
-    rdi->draw(PRIM_TRISTRIP, 0, 4);
+    rdi->draw(RenderDevice::TriangleStrip, 0, 4);
 }
 
 //==============================================================================
