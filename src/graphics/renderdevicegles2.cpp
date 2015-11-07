@@ -432,7 +432,7 @@ void RenderDeviceGLES2::uploadTextureData(uint32_t texObj, int slice, int mipLev
             break;
         case TextureFormat::DEPTH:
             inputFormat = GL_DEPTH_COMPONENT;
-            inputType   = GL_FLOAT;
+            inputType   = GL_UNSIGNED_SHORT;
             break;
         default:
             break;
