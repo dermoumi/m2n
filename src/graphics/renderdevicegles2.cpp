@@ -104,6 +104,7 @@ bool RenderDeviceGLES2::initialize()
     glGetIntegerv(GL_MAX_TEXTURE_SIZE, &mMaxTextureSize);
     glGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &mMaxCubeTextureSize);
     glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &mMaxTextureUnits);
+    if (mMaxTextureUnits > 16) mMaxTextureUnits = 16;
 
     mDXTSupported = glExt::EXT_texture_compression_s3tc || (glExt::EXT_texture_compression_dxt1 &&
         glExt::ANGLE_texture_compression_dxt3 && glExt::ANGLE_texture_compression_dxt5);
@@ -995,27 +996,27 @@ RDIDepthFunc RenderDeviceGLES2::getDepthFunc() const
 }
 
 //----------------------------------------------------------
-void RenderDeviceGLES2::getCapabilities(unsigned int& maxTexUnits, unsigned int& maxTexSize,
-        unsigned int& maxCubTexSize, bool& dxt, bool& pvrtci, bool& etc1, bool& texFloat,
-        bool& texDepth, bool& texSS, bool& tex3D, bool& texNPOT, bool& texSRGB, bool& rtms,
-        bool& occQuery, bool& timerQuery) const
+void RenderDeviceGLES2::getCapabilities(unsigned int* maxTexUnits, unsigned int* maxTexSize,
+        unsigned int* maxCubTexSize, bool* dxt, bool* pvrtci, bool* etc1, bool* texFloat,
+        bool* texDepth, bool* texSS, bool* tex3D, bool* texNPOT, bool* texSRGB, bool* rtms,
+        bool* occQuery, bool* timerQuery) const
 {
     std::lock_guard<std::mutex> lock(cpMutex);
-    maxTexUnits   = mMaxTextureUnits;
-    maxTexSize    = mMaxTextureSize;
-    maxCubTexSize = mMaxCubeTextureSize;
-    dxt           = mDXTSupported;
-    pvrtci        = mPVRTCISupported;
-    etc1          = mTexETC1Supported;
-    texFloat      = mTexFloatSupported;
-    texDepth      = mTexDepthSupported;
-    texSS         = mTexShadowSamplers;
-    tex3D         = mTex3DSupported;
-    texNPOT       = mTexNPOTSupported;
-    texSRGB       = mTexSRGBSupported;
-    rtms          = mRTMultiSampling;
-    occQuery      = mOccQuerySupported;
-    timerQuery    = mTimerQuerySupported;
+    if (maxTexUnits)   *maxTexUnits   = mMaxTextureUnits;
+    if (maxTexSize)    *maxTexSize    = mMaxTextureSize;
+    if (maxCubTexSize) *maxCubTexSize = mMaxCubeTextureSize;
+    if (dxt)           *dxt           = mDXTSupported;
+    if (pvrtci)        *pvrtci        = mPVRTCISupported;
+    if (etc1)          *etc1          = mTexETC1Supported;
+    if (texFloat)      *texFloat      = mTexFloatSupported;
+    if (texDepth)      *texDepth      = mTexDepthSupported;
+    if (texSS)         *texSS         = mTexShadowSamplers;
+    if (tex3D)         *tex3D         = mTex3DSupported;
+    if (texNPOT)       *texNPOT       = mTexNPOTSupported;
+    if (texSRGB)       *texSRGB       = mTexSRGBSupported;
+    if (rtms)          *rtms          = mRTMultiSampling;
+    if (occQuery)      *occQuery      = mOccQuerySupported;
+    if (timerQuery)    *timerQuery    = mTimerQuerySupported;
 }
 
 //----------------------------------------------------------
@@ -1156,7 +1157,6 @@ bool RenderDeviceGLES2::applyVertexLayout()
         return true;
     }
 
-    // TODO
     return true;
 }
 
@@ -1191,7 +1191,6 @@ void RenderDeviceGLES2::applySamplerState(RDITexture& tex)
     filter = (state & SamplerState::AddrVMask) >> SamplerState::AddrVStart;
     glTexParameteri(target, GL_TEXTURE_WRAP_T, wrapModes[filter]);
 
-    // TODO: Check for Texture3D availability
     if (mTex3DSupported) {
         filter = (state & SamplerState::AddrWMask) >> SamplerState::AddrWStart;
         glTexParameteri(target, GL_TEXTURE_WRAP_R_OES, wrapModes[filter]);
@@ -1214,7 +1213,7 @@ void RenderDeviceGLES2::applyRenderStates()
 {
     // Rasterizer state
     if (mNewRasterState.hash != mCurRasterState.hash) {
-        // TODO: Not supported on GLES2
+        // Not supported on GLES2
         // if (mNewRasterState.fillMode == RS_FILL_SOLID) {
         //     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         // }

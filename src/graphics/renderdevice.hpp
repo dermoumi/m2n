@@ -336,10 +336,10 @@ public:
     virtual RDIDepthFunc getDepthFunc() const = 0;
 
     // Capabilities
-    virtual void getCapabilities(unsigned int& maxTexUnits, unsigned int& maxTexSize,
-        unsigned int& maxCubTexSize, bool& dxt, bool& pvrtci, bool& etc1, bool& texFloat,
-        bool& texDepth, bool& texSS, bool& tex3d, bool& texNPOT, bool& texSRGB, bool& rtms,
-        bool& occQuery, bool& timerQuery) const = 0;
+    virtual void getCapabilities(unsigned int* maxTexUnits, unsigned int* maxTexSize,
+        unsigned int* maxCubTexSize, bool* dxt, bool* pvrtci, bool* etc1, bool* texFloat,
+        bool* texDepth, bool* texSS, bool* tex3d, bool* texNPOT, bool* texSRGB, bool* rtms,
+        bool* occQuery, bool* timerQuery) const = 0;
 };
 
 //==============================================================================

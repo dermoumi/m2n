@@ -110,6 +110,7 @@ bool RenderDeviceGL::initialize()
     glGetIntegerv(GL_MAX_TEXTURE_SIZE, &mMaxTextureSize);
     glGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &mMaxCubeTextureSize);
     glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &mMaxTextureUnits);
+    if (mMaxTextureUnits > 16) mMaxTextureUnits = 16;
 
     mDXTSupported = true;
     mPVRTCISupported = false;
@@ -1009,27 +1010,27 @@ RDIDepthFunc RenderDeviceGL::getDepthFunc() const
 }
 
 //----------------------------------------------------------
-void RenderDeviceGL::getCapabilities(unsigned int& maxTexUnits, unsigned int& maxTexSize,
-        unsigned int& maxCubTexSize, bool& dxt, bool& pvrtci, bool& etc1, bool& texFloat,
-        bool& texDepth, bool& texSS, bool& tex3D, bool& texNPOT, bool& texSRGB, bool& rtms,
-        bool& occQuery, bool& timerQuery) const
+void RenderDeviceGL::getCapabilities(unsigned int* maxTexUnits, unsigned int* maxTexSize,
+        unsigned int* maxCubTexSize, bool* dxt, bool* pvrtci, bool* etc1, bool* texFloat,
+        bool* texDepth, bool* texSS, bool* tex3D, bool* texNPOT, bool* texSRGB, bool* rtms,
+        bool* occQuery, bool* timerQuery) const
 {
     std::lock_guard<std::mutex> lock(cpMutex);
-    maxTexUnits   = mMaxTextureUnits;
-    maxTexSize    = mMaxTextureSize;
-    maxCubTexSize = mMaxCubeTextureSize;
-    dxt           = mDXTSupported;
-    pvrtci        = mPVRTCISupported;
-    etc1          = mTexETC1Supported;
-    texFloat      = mTexFloatSupported;
-    texDepth      = mTexDepthSupported;
-    texSS         = mTexShadowSamplers;
-    tex3D         = mTex3DSupported;
-    texNPOT       = mTexNPOTSupported;
-    texSRGB       = mTexSRGBSupported;
-    rtms          = mRTMultiSampling;
-    occQuery      = mOccQuerySupported;
-    timerQuery    = mTimerQuerySupported;
+    if (maxTexUnits)   *maxTexUnits   = mMaxTextureUnits;
+    if (maxTexSize)    *maxTexSize    = mMaxTextureSize;
+    if (maxCubTexSize) *maxCubTexSize = mMaxCubeTextureSize;
+    if (dxt)           *dxt           = mDXTSupported;
+    if (pvrtci)        *pvrtci        = mPVRTCISupported;
+    if (etc1)          *etc1          = mTexETC1Supported;
+    if (texFloat)      *texFloat      = mTexFloatSupported;
+    if (texDepth)      *texDepth      = mTexDepthSupported;
+    if (texSS)         *texSS         = mTexShadowSamplers;
+    if (tex3D)         *tex3D         = mTex3DSupported;
+    if (texNPOT)       *texNPOT       = mTexNPOTSupported;
+    if (texSRGB)       *texSRGB       = mTexSRGBSupported;
+    if (rtms)          *rtms          = mRTMultiSampling;
+    if (occQuery)      *occQuery      = mOccQuerySupported;
+    if (timerQuery)    *timerQuery    = mTimerQuerySupported;
 }
 
 //----------------------------------------------------------
@@ -1169,8 +1170,7 @@ bool RenderDeviceGL::applyVertexLayout()
 
         return true;
     }
-
-    // TODO
+    
     return true;
 }
 
