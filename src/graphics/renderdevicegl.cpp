@@ -458,8 +458,9 @@ void RenderDeviceGL::uploadTextureData(uint32_t texObj, int slice, int mipLevel,
 }
 
 //----------------------------------------------------------
-void RenderDeviceGL::uploadTextureSubData(uint32_t texObj, int slice, int mipLevel, int x, int y,
-    int z, unsigned int width, unsigned int height, unsigned int depth, const void* pixels)
+void RenderDeviceGL::uploadTextureSubData(uint32_t texObj, int slice, int mipLevel, unsigned int x,
+    unsigned int y, unsigned int z, unsigned int width, unsigned int height, unsigned int depth,
+    const void* pixels)
 {
     if (texObj == 0) return;
 

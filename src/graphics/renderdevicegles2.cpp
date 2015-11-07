@@ -399,7 +399,6 @@ void RenderDeviceGLES2::uploadTextureData(uint32_t texObj, int slice, int mipLev
     switch (format) {
         case TextureFormat::RGBA16F:
         case TextureFormat::RGBA32F:
-            inputFormat = GL_RGBA;
             inputType   = GL_FLOAT;
             break;
         case TextureFormat::DEPTH:
@@ -457,13 +456,20 @@ void RenderDeviceGLES2::uploadTextureData(uint32_t texObj, int slice, int mipLev
 }
 
 //----------------------------------------------------------
-void RenderDeviceGLES2::uploadTextureSubData(uint32_t texObj, int slice, int mipLevel, int x, int y,
-    int z, unsigned int width, unsigned int height, unsigned int depth, const void* pixels)
+void RenderDeviceGLES2::uploadTextureSubData(uint32_t texObj, int slice, int mipLevel,
+    unsigned int x, unsigned int y, unsigned int z, unsigned int width, unsigned int height,
+    unsigned int depth, const void* pixels)
 {
     if (texObj == 0) return;
 
     const auto& tex = mTextures.getRef(texObj);
     auto format     = tex.format;
+
+    if (x + width > static_cast<unsigned int>(tex.width) ||
+        y + height > static_cast<unsigned int>(tex.height)) {
+        Log::info("Attemting to update portion out of texture boundaries");
+        return;
+    }
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(tex.type, tex.glObj);
@@ -475,7 +481,6 @@ void RenderDeviceGLES2::uploadTextureSubData(uint32_t texObj, int slice, int mip
     switch (format) {
         case TextureFormat::RGBA16F:
         case TextureFormat::RGBA32F:
-            inputFormat = GL_RGBA;
             inputType = GL_FLOAT;
             break;
         case TextureFormat::DEPTH:
@@ -485,7 +490,7 @@ void RenderDeviceGLES2::uploadTextureSubData(uint32_t texObj, int slice, int mip
         default:
             break;
     }
-    
+
     if (tex.type == GL_TEXTURE_2D || tex.type == GL_TEXTURE_CUBE_MAP)
     {
         int target = (tex.type == GL_TEXTURE_2D) ?

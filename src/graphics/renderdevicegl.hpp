@@ -57,8 +57,9 @@ public:
     uint32_t createTexture(TextureType::Type type, int width, int height, unsigned int depth,
         TextureFormat::Type format, bool hasMips, bool genMips, bool sRGB);
     void uploadTextureData(uint32_t texObj, int slice, int mipLevel, const void* pixels);
-    void uploadTextureSubData(uint32_t texObj, int slice, int mipLevel, int x, int y, int z,
-        unsigned int width, unsigned int height, unsigned int depth, const void* pixels);
+    void uploadTextureSubData(uint32_t texObj, int slice, int mipLevel, unsigned int x,
+        unsigned int y, unsigned int z, unsigned int width, unsigned int height, unsigned int depth,
+        const void* pixels);
     void destroyTexture(uint32_t texObj);
     bool getTextureData(uint32_t texObj, int slice, int mipLevel, void* buffer);
     uint32_t getTextureMemory() const;

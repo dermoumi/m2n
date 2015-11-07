@@ -283,8 +283,9 @@ public:
         unsigned int depth, TextureFormat::Type format, bool hasMips, bool genMips, bool sRGB) = 0;
     virtual void uploadTextureData(uint32_t texObj, int slice, int mipLevel,
         const void* pixels) = 0;
-    virtual void uploadTextureSubData(uint32_t texObj, int slice, int mipLevel, int x, int y, int z,
-        unsigned int width, unsigned int height, unsigned int depth, const void* pixels) = 0;
+    virtual void uploadTextureSubData(uint32_t texObj, int slice, int mipLevel, unsigned int x,
+        unsigned int y, unsigned int z, unsigned int width, unsigned int height, unsigned int depth,
+        const void* pixels) = 0;
     virtual void destroyTexture(uint32_t texObj) = 0;
     virtual bool getTextureData(uint32_t texObj, int slice, int mipLevel, void* buffer) = 0;
     virtual uint32_t getTextureMemory() const = 0;
