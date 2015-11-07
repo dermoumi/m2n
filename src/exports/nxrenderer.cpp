@@ -160,11 +160,11 @@ NX_EXPORT void nxRendererTestInit()
     rdi->uploadTextureSubData(texture, 0, 0, 0, 0, 0, 512, 512, 1, img.getPixelsPtr());
 
     // Get texture data
-    // uint8_t* buffer = new uint8_t[imgWidth * imgHeight * 4];
-    // rdi->getTextureData(texture, 0, 0, buffer);
-    // Image img2;
-    // img.create(imgWidth, imgHeight, buffer);
-    // img.save("testimgD.png");
+    uint8_t* buffer = new uint8_t[imgWidth * imgHeight * 4];
+    rdi->getTextureData(texture, 0, 0, buffer);
+    Image img2;
+    img.create(imgWidth, imgHeight, buffer);
+    img.save("testimgD.png");
 
     rdi->resetStates();
 }

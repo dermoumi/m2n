@@ -491,8 +491,7 @@ void RenderDeviceGLES2::uploadTextureSubData(uint32_t texObj, int slice, int mip
             break;
     }
 
-    if (tex.type == GL_TEXTURE_2D || tex.type == GL_TEXTURE_CUBE_MAP)
-    {
+    if (tex.type == GL_TEXTURE_2D || tex.type == GL_TEXTURE_CUBE_MAP) {
         int target = (tex.type == GL_TEXTURE_2D) ?
             GL_TEXTURE_2D : (GL_TEXTURE_CUBE_MAP_POSITIVE_X + slice);
 
@@ -544,7 +543,29 @@ void RenderDeviceGLES2::destroyTexture(uint32_t texObj)
 //----------------------------------------------------------
 bool RenderDeviceGLES2::getTextureData(uint32_t texObj, int slice, int mipLevel, void* buffer)
 {
-    // TODO: Implement drawing to a render buffer and reading from it
+    const auto& tex = mTextures.getRef(texObj);
+
+    if (tex.format != TextureFormat::RGBA8 || tex.type == GL_TEXTURE_3D_OES) {
+        // Can only retrieve RGBA8 2D data
+        return false;
+    }
+
+    int target = (tex.type == GL_TEXTURE_CUBE_MAP) ? 
+        GL_TEXTURE_CUBE_MAP_POSITIVE_X + slice : GL_TEXTURE_2D;
+
+    GLuint fb {0u};
+    glGenFramebuffers(1, &fb);
+    if (!fb) return false;
+    
+    GLint prevFb;
+    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prevFb);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, fb);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, target, tex.glObj, mipLevel);
+    glReadPixels(0, 0, tex.width, tex.height, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+
+    glDeleteFramebuffers(1, &fb);
+    glBindFramebuffer(GL_FRAMEBUFFER, prevFb);
     return false;
 }
 

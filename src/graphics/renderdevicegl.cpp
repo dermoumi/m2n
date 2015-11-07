@@ -493,8 +493,7 @@ void RenderDeviceGL::uploadTextureSubData(uint32_t texObj, int slice, int mipLev
             break;
     }
 
-    if (tex.type == GL_TEXTURE_2D || tex.type == GL_TEXTURE_CUBE_MAP)
-    {
+    if (tex.type == GL_TEXTURE_2D || tex.type == GL_TEXTURE_CUBE_MAP) {
         int target = (tex.type == GL_TEXTURE_2D) ?
             GL_TEXTURE_2D : (GL_TEXTURE_CUBE_MAP_POSITIVE_X + slice);
 
@@ -571,10 +570,12 @@ bool RenderDeviceGL::getTextureData(uint32_t texObj, int slice, int mipLevel, vo
         return false;
     };
 
-    if (compressed)
+    if (compressed) {
         glGetCompressedTexImage(target, mipLevel, buffer);
-    else
+    }
+    else {
         glGetTexImage(target, mipLevel, fmt, type, buffer);
+    }
 
     glBindTexture(tex.type, 0);
     {
