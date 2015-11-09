@@ -85,6 +85,16 @@ public:
     bool updateBufferData(uint32_t buffer, uint32_t offset, uint32_t size, const void* data);
     uint32_t getBufferMemory() const;
 
+    // Renderbuffers
+    uint32_t createRenderBuffer(uint32_t width, uint32_t height, TextureFormat format, bool depth,
+        uint32_t numColBufs, uint32_t samples);
+    void destroyRenderBuffer(uint32_t rbObj);
+    uint32_t getRenderBufferTexture(uint32_t rbObj, uint32_t bufIndex);
+    void setRenderBuffer(uint32_t rbObj);
+    void getRenderBufferSize(uint32_t rbObj, int* width, int* height);
+    void getRenderBufferData(uint32_t rbObj, int bufIndex, int* width, int* height, int* compCount,
+        void* dataBuffer, int bufferSize);
+
     // GL States
     void setViewport(int x, int y, int width, int height);
     void setScissorRect(int x, int y, int width, int height);
@@ -117,9 +127,9 @@ public:
 
     // Capabilities
     void getCapabilities(unsigned int* maxTexUnits, unsigned int* maxTexSize,
-        unsigned int* maxCubTexSize, bool* dxt, bool* pvrtci, bool* etc1, bool* texFloat,
-        bool* texDepth, bool* texSS, bool* tex3d, bool* texNPOT, bool* texSRGB, bool* rtms,
-        bool* occQuery, bool* timerQuery) const;
+        unsigned int* maxCubTexSize, unsigned int* maxColBufs, bool* dxt, bool* pvrtci, bool* etc1,
+        bool* texFloat, bool* texDepth, bool* texSS, bool* tex3d, bool* texNPOT, bool* texSRGB,
+        bool* rtms, bool* occQuery, bool* timerQuery) const;
 
 private:
     constexpr static uint32_t MaxNumVertexLayouts = 16;
@@ -157,6 +167,32 @@ private:
     {
         uint32_t oglProgramObj;
         RDIInputLayout inputLayouts[MaxNumVertexLayouts];
+    };
+
+    struct RDIRenderBuffer
+    {
+        static constexpr uint32_t MaxColorAttachmentCount = 1;
+
+        uint32_t fbo;
+        uint32_t fboMS;
+        uint32_t width;
+        uint32_t height;
+        uint32_t samples;
+
+        uint32_t depthTex;
+        uint32_t depthBuf;
+        uint32_t colTexs[MaxColorAttachmentCount];
+        uint32_t depthBufMS;
+        uint32_t colBufs[MaxColorAttachmentCount];
+
+        RDIRenderBuffer() :
+            fbo {0u}, fboMS {0u}, width {0u}, height {0u}, samples {0u},
+            depthTex {0u}, depthBuf {0u}, depthBufMS {0u}
+        {
+            for (uint32_t i = 0; i < MaxColorAttachmentCount; ++i) {
+                colTexs[i] = colBufs[i] = 0u;
+            }
+        }
     };
 
     struct RDIVertBufSlot
@@ -241,13 +277,17 @@ private:
     int mScX {0}, mScY {0}, mScWidth {1}, mScHeight {1};
     std::atomic<uint32_t> mBufferMemory  {0u};
     std::atomic<uint32_t> mTextureMemory {0u};
+    int mDefaultFBO        {0};
+    int mFbWidth           {0};
+    int mFbHeight          {0};
+    int mOutputBufferIndex {0};
 
-    int mDefaultFBO {0};
-    std::atomic<uint32_t>  mNumVertexLayouts{0};
-    VertexLayout           mVertexLayouts[MaxNumVertexLayouts];
-    RDIObjects<RDIBuffer>  mBuffers;
-    RDIObjects<RDIShader>  mShaders;
-    RDIObjects<RDITexture> mTextures;
+    std::atomic<uint32_t>       mNumVertexLayouts{0};
+    VertexLayout                mVertexLayouts[MaxNumVertexLayouts];
+    RDIObjects<RDIBuffer>       mBuffers;
+    RDIObjects<RDIShader>       mShaders;
+    RDIObjects<RDITexture>      mTextures;
+    RDIObjects<RDIRenderBuffer> mRenderBuffers;
 
     RDIVertBufSlot       mVertBufSlots[16];
     RDITexSlot           mTexSlots[16];
@@ -264,6 +304,7 @@ private:
     int mMaxTextureUnits      {0};
     int mMaxTextureSize       {0};
     int mMaxCubeTextureSize   {0};
+    int mMaxColBuffers        {0};
     bool mDXTSupported        {false};
     bool mPVRTCISupported     {false};
     bool mTexETC1Supported    {false};

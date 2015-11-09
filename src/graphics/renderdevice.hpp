@@ -279,6 +279,16 @@ public:
     virtual const char* getDefaultVSCode() = 0;
     virtual const char* getDefaultFSCode() = 0;
 
+    // Renderbuffers
+    virtual uint32_t createRenderBuffer(uint32_t width, uint32_t height, TextureFormat format,
+        bool depth, uint32_t numColBufs, uint32_t samples) = 0;
+    virtual void destroyRenderBuffer(uint32_t rbObj) = 0;
+    virtual uint32_t getRenderBufferTexture(uint32_t rbObj, uint32_t bufIndex) = 0;
+    virtual void setRenderBuffer(uint32_t rbObj) = 0;
+    virtual void getRenderBufferSize(uint32_t rbObj, int* width, int* height) = 0;
+    virtual void getRenderBufferData(uint32_t rbObj, int bufIndex, int* width, int* height,
+        int* compCount, void* dataBuffer, int bufferSize) = 0;
+
     // GL States
     virtual void setViewport(int x, int y, int width, int height) = 0;
     virtual void setScissorRect(int x, int y, int width, int height) = 0;
@@ -312,9 +322,9 @@ public:
 
     // Capabilities
     virtual void getCapabilities(unsigned int* maxTexUnits, unsigned int* maxTexSize,
-        unsigned int* maxCubTexSize, bool* dxt, bool* pvrtci, bool* etc1, bool* texFloat,
-        bool* texDepth, bool* texSS, bool* tex3d, bool* texNPOT, bool* texSRGB, bool* rtms,
-        bool* occQuery, bool* timerQuery) const = 0;
+        unsigned int* maxCubTexSize, unsigned int* maxColBufs, bool* dxt, bool* pvrtci, bool* etc1,
+        bool* texFloat, bool* texDepth, bool* texSS, bool* tex3d, bool* texNPOT, bool* texSRGB,
+        bool* rtms, bool* occQuery, bool* timerQuery) const = 0;
 };
 
 //==============================================================================
