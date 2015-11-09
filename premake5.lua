@@ -97,6 +97,6 @@ project 'game'
 
     -- All configs, again, because of linking order
     filter {}
-        links        { 'SDL2main', 'SDL2', 'physfs' }
+        links        { 'SDL2', 'physfs' }
 
 
