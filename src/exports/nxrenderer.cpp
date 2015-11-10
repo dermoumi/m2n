@@ -136,9 +136,11 @@ NX_EXPORT void nxRendererTestInit()
         "}\n",
         "uniform sampler2D tex;\n"
         "varying vec2 coords;\n"
+        // "layout(location = 0) out vec3 color;\n"
         "void main() {\n"
         "   vec4 col = texture2D(tex, coords);\n"
         "   gl_FragColor = col * vec4(1.0, 1.0, 0.0, 1.0);\n"
+        // "   color = col * vec4(1.0, 1.0, 0.0, 1.0);\n"
         "}\n"
     );
 
@@ -159,7 +161,7 @@ NX_EXPORT void nxRendererTestInit()
     );
 
     // Create render buffer
-    rb = rdi->createRenderBuffer(1024, 1024, RenderDevice::RGBA8, false, 1, 0);
+    rb = rdi->createRenderBuffer(1024, 1024, RenderDevice::RGBA8, true, 1, 0);
     rbTex = rdi->getRenderBufferTexture(rb, 0);
 
     // Load image
@@ -195,7 +197,7 @@ NX_EXPORT void nxRendererTestInit()
 
     rdi->resetStates();
 
-    Log::info("Loaded: %u %u %u %u %u", rb, rbShader, defaultShader, rbTex, vbTriangle);
+    Log::info("loaded %u %u %u %u %u", rb, rbTex, texture, defaultShader);
 }
 
 //----------------------------------------------------------
@@ -204,8 +206,8 @@ NX_EXPORT void nxRendererTestRender()
     static float color[] = {1.f, 1.f, 1.f, 1.f};
 
     rdi->setRenderBuffer(rb);
+    rdi->setViewport(0, 0, 1024, 1024);
     rdi->clear(color);
-    rbTex = rdi->getRenderBufferTexture(rb, 0);
 
     rdi->setVertexBuffer(0, vbTriangle, 0, 16);
     rdi->setIndexBuffer( 0, RenderDevice::U16 );
@@ -224,7 +226,9 @@ NX_EXPORT void nxRendererTestRender()
     rdi->draw(RenderDevice::TriangleStrip, 0, 4);
 
     rdi->setRenderBuffer(0);
+    rdi->setViewport(0, 0, 1280, 720);
 
+    rbTex = rdi->getRenderBufferTexture(rb, 0);
     rdi->setTexture(1, rbTex, RenderDevice::FilterTrilinear | RenderDevice::Aniso8 |
         RenderDevice::AddrWrap);
 
