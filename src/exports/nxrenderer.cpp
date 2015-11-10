@@ -89,14 +89,19 @@ NX_EXPORT void nxRendererSetupViewport(int x, int y, int width, int height)
 static uint32_t vlShape;
 static uint32_t vbTriangle;
 static uint32_t defaultShader;
+static uint32_t rbShader;
 static uint32_t texture;
+static uint32_t rbTex;
+static uint32_t rb;
 
 //----------------------------------------------------------
 NX_EXPORT void nxRendererTestRelease()
 {
     rdi->destroyShader(defaultShader);
+    rdi->destroyShader(rbShader);
     rdi->destroyBuffer(vbTriangle);
     rdi->destroyTexture(texture);
+    rdi->destroyRenderBuffer(rb);
 }
 
 //----------------------------------------------------------
@@ -133,9 +138,29 @@ NX_EXPORT void nxRendererTestInit()
         "varying vec2 coords;\n"
         "void main() {\n"
         "   vec4 col = texture2D(tex, coords);\n"
+        "   gl_FragColor = col * vec4(1.0, 1.0, 0.0, 1.0);\n"
+        "}\n"
+    );
+
+    rbShader = rdi->createShader(
+        "attribute vec2 vertPos;\n"
+        "attribute vec2 texCoords0;\n"
+        "varying vec2 coords;\n"
+        "void main() {\n"
+        "   coords = texCoords0;\n"
+        "   gl_Position = vec4(vertPos, 0.0, 1.0);\n"
+        "}\n",
+        "uniform sampler2D tex;\n"
+        "varying vec2 coords;\n"
+        "void main() {\n"
+        "   vec4 col = texture2D(tex, coords);\n"
         "   gl_FragColor = col;\n"
         "}\n"
     );
+
+    // Create render buffer
+    rb = rdi->createRenderBuffer(1024, 1024, RenderDevice::RGBA8, false, 1, 0);
+    rbTex = rdi->getRenderBufferTexture(rb, 0);
 
     // Load image
     Image img;
@@ -159,33 +184,57 @@ NX_EXPORT void nxRendererTestInit()
     rdi->uploadTextureData(texture, 0, 0, nullptr);
     rdi->uploadTextureSubData(texture, 0, 0, 0, 0, 0, 512, 512, 1, img.getPixelsPtr());
 
+    // texture = 0;
+
     // Get texture data
-    uint8_t* buffer = new uint8_t[imgWidth * imgHeight * 4];
-    rdi->getTextureData(texture, 0, 0, buffer);
-    Image img2;
-    img.create(imgWidth, imgHeight, buffer);
-    img.save("testimgD.png");
+    // uint8_t* buffer = new uint8_t[imgWidth * imgHeight * 4];
+    // rdi->getTextureData(texture, 0, 0, buffer);
+    // Image img2;
+    // img.create(imgWidth, imgHeight, buffer);
+    // img.save("testimgD.png");
 
     rdi->resetStates();
+
+    Log::info("Loaded: %u %u %u %u %u", rb, rbShader, defaultShader, rbTex, vbTriangle);
 }
 
 //----------------------------------------------------------
 NX_EXPORT void nxRendererTestRender()
 {
+    static float color[] = {1.f, 1.f, 1.f, 1.f};
+
+    rdi->setRenderBuffer(rb);
+    rdi->clear(color);
+    rbTex = rdi->getRenderBufferTexture(rb, 0);
+
+    rdi->setVertexBuffer(0, vbTriangle, 0, 16);
+    rdi->setIndexBuffer( 0, RenderDevice::U16 );
+    rdi->setVertexLayout(vlShape);
+
     rdi->setTexture(1, texture, RenderDevice::FilterTrilinear | RenderDevice::Aniso8 |
         RenderDevice::AddrWrap);
 
     rdi->bindShader(defaultShader);
-    rdi->setBlendMode(true, RenderDevice::SrcAlpha, RenderDevice::InvSrcAlpha);
 
     // Affect texture to shader
     auto loc = rdi->getShaderSamplerLoc(defaultShader, "tex");
     // Log::info("Loc2: %i", loc);
     if (loc >= 0) rdi->setShaderSampler(loc, 1);
 
-    rdi->setVertexBuffer(0, vbTriangle, 0, 16);
-    rdi->setIndexBuffer( 0, RenderDevice::U16 );
-    rdi->setVertexLayout(vlShape);
+    rdi->draw(RenderDevice::TriangleStrip, 0, 4);
+
+    rdi->setRenderBuffer(0);
+
+    rdi->setTexture(1, rbTex, RenderDevice::FilterTrilinear | RenderDevice::Aniso8 |
+        RenderDevice::AddrWrap);
+
+    rdi->bindShader(rbShader);
+    rdi->setBlendMode(true, RenderDevice::SrcAlpha, RenderDevice::InvSrcAlpha);
+
+    // Affect texture to shader
+    auto loc2 = rdi->getShaderSamplerLoc(rbShader, "tex");
+    // Log::info("Loc2: %i", loc);
+    if (loc2 >= 0) rdi->setShaderSampler(loc2, 1);
 
     rdi->draw(RenderDevice::TriangleStrip, 0, 4);
 }

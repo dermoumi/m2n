@@ -286,7 +286,7 @@ public:
     virtual uint32_t getRenderBufferTexture(uint32_t rbObj, uint32_t bufIndex) = 0;
     virtual void setRenderBuffer(uint32_t rbObj) = 0;
     virtual void getRenderBufferSize(uint32_t rbObj, int* width, int* height) = 0;
-    virtual void getRenderBufferData(uint32_t rbObj, int bufIndex, int* width, int* height,
+    virtual bool getRenderBufferData(uint32_t rbObj, int bufIndex, int* width, int* height,
         int* compCount, void* dataBuffer, int bufferSize) = 0;
 
     // GL States

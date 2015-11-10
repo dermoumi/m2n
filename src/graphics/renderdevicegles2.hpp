@@ -92,7 +92,7 @@ public:
     uint32_t getRenderBufferTexture(uint32_t rbObj, uint32_t bufIndex);
     void setRenderBuffer(uint32_t rbObj);
     void getRenderBufferSize(uint32_t rbObj, int* width, int* height);
-    void getRenderBufferData(uint32_t rbObj, int bufIndex, int* width, int* height, int* compCount,
+    bool getRenderBufferData(uint32_t rbObj, int bufIndex, int* width, int* height, int* compCount,
         void* dataBuffer, int bufferSize);
 
     // GL States
@@ -270,6 +270,7 @@ private:
     bool applyVertexLayout();
     void applySamplerState(RDITexture& tex);
     void applyRenderStates();
+    void resolveRenderBuffer(uint32_t rbObj);
 
 private:
     uint32_t mDepthFormat;
@@ -278,6 +279,7 @@ private:
     std::atomic<uint32_t> mBufferMemory  {0u};
     std::atomic<uint32_t> mTextureMemory {0u};
     int mDefaultFBO        {0};
+    int mCurRenderBuffer   {0};
     int mFbWidth           {0};
     int mFbHeight          {0};
     int mOutputBufferIndex {0};

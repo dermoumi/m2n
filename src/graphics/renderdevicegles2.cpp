@@ -251,7 +251,14 @@ bool RenderDeviceGLES2::commitStates(uint32_t filter)
 void RenderDeviceGLES2::clear(const float* color)
 {
     commitStates(PMViewport | PMScissor | PMRenderStates);
-    glClearColor(color[0], color[1], color[2], color[3]);
+
+    if (color) {
+        glClearColor(color[0], color[1], color[2], color[3]);
+    }
+    else {
+        glClearColor(0.f, 0.f, 0.f, 0.f);
+    }
+
     glClear(GL_COLOR_BUFFER_BIT);
 }
 
@@ -846,10 +853,12 @@ uint32_t RenderDeviceGLES2::createRenderBuffer(uint32_t width, uint32_t height,
     }
 
     uint32_t maxSamples = 0;
-    if (mRTMultiSampling) {
+    if (glExt::EXT_multisampled_render_to_texture || glExt::ANGLE_framebuffer_multisample) {
         GLint value;
+        Log::info(glExt::EXT_multisampled_render_to_texture ? "a" : "b");
         glGetIntegerv(glExt::EXT_multisampled_render_to_texture ?
             GL_MAX_SAMPLES_EXT : GL_MAX_SAMPLES_ANGLE, &value);
+        Log::info(glExt::EXT_multisampled_render_to_texture ? "a" : "b");
         maxSamples = static_cast<uint32_t>(value);
     }
 
@@ -1033,7 +1042,42 @@ uint32_t RenderDeviceGLES2::getRenderBufferTexture(uint32_t rbObj, uint32_t bufI
 //----------------------------------------------------------
 void RenderDeviceGLES2::setRenderBuffer(uint32_t rbObj)
 {
-    // TODO
+    // Resolve reneder buffer if necessary
+    if (mCurRenderBuffer != 0) resolveRenderBuffer(mCurRenderBuffer);
+
+    // Set new render buffer
+    mCurRenderBuffer = rbObj;
+
+    if (rbObj == 0) {
+        // Check if the default render buffer is already bound, since this
+        // call can be extremely expensive on some platforms
+
+        int currentFrameBuffer;
+        glGetIntegerv(GL_FRAMEBUFFER_BINDING, &currentFrameBuffer);
+
+        if (currentFrameBuffer != mDefaultFBO) {
+            glBindFramebuffer(GL_FRAMEBUFFER, mDefaultFBO);
+        }
+
+        mFbWidth  = mVpX + mVpWidth;
+        mFbHeight = mVpY + mVpHeight;
+    }
+    else {
+        // Unbind all textures to make sure that n FBO attachment is bound anymore
+        for (int i = 0; i < mMaxTextureUnits; ++i) {
+            setTexture(i, 0, 0);
+        }
+
+        commitStates(PMTextures);
+
+        auto& rb = mRenderBuffers.getRef(rbObj);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, rb.fboMS != 0 ? rb.fboMS : rb.fbo);
+        // TODO: Assert here
+
+        mFbWidth  = rb.width;
+        mFbHeight = rb.height;
+    }
 }
 
 //----------------------------------------------------------
@@ -1052,10 +1096,70 @@ void RenderDeviceGLES2::getRenderBufferSize(uint32_t rbObj, int* width, int* hei
 }
 
 //----------------------------------------------------------
-void RenderDeviceGLES2::getRenderBufferData(uint32_t rbObj, int bufIndex, int* width, int* height,
+bool RenderDeviceGLES2::getRenderBufferData(uint32_t rbObj, int bufIndex, int* width, int* height,
     int* compCount, void* dataBuffer, int bufferSize)
 {
-    // TODO
+    int x, y, w, h;
+    int format = GL_RGBA;
+    int type = GL_UNSIGNED_BYTE;
+
+    beginRendering();
+    glPixelStorei(GL_PACK_ALIGNMENT, 4);
+
+    if (rbObj == 0) {
+        if (bufIndex != 32 && bufIndex != 0) return false;
+
+        if (width)  *width = mVpWidth;
+        if (height) *height = mVpHeight;
+
+        x = mVpX;
+        y = mVpY;
+        w = mVpWidth;
+        h = mVpHeight;
+
+        glBindFramebuffer(GL_FRAMEBUFFER, mDefaultFBO);
+    }
+    else {
+        resolveRenderBuffer(rbObj);
+        auto& rb = mRenderBuffers.getRef(rbObj);
+
+        if (bufIndex == 32 && rb.depthTex == 0) return false;
+
+        if (bufIndex != 32 && (rb.colTexs[bufIndex] == 0 ||
+            static_cast<unsigned int>(bufIndex) >= RDIRenderBuffer::MaxColorAttachmentCount))
+        {
+            return false;
+        }
+
+            if (width)  *width = rb.width;
+            if (height) *height = rb.height;
+
+            x = 0;
+            y = 0;
+            w = rb.width;
+            h = rb.height;
+
+            glBindFramebuffer(GL_FRAMEBUFFER, rb.fbo);
+    }
+
+    glFinish();
+
+    if (bufIndex == 32) {
+        format = GL_DEPTH_COMPONENT;
+        type = GL_UNSIGNED_SHORT;
+    }
+
+    int comps = (bufIndex == 32 ? 1 : RDIRenderBuffer::MaxColorAttachmentCount);
+    if (compCount) *compCount = comps;
+
+    bool retVal = false;
+    if (dataBuffer && bufferSize >= w * h * comps * (type == GL_UNSIGNED_SHORT ? 2 : 1)) {
+        glReadPixels(x, y, w, h, format, type, dataBuffer);
+        retVal = true;
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, mDefaultFBO);
+    return retVal;
 }
 
 //----------------------------------------------------------
@@ -1562,6 +1666,45 @@ void RenderDeviceGLES2::applyRenderStates()
         mCurDepthStencilState.hash = mNewDepthStencilState.hash;
     }
 }
+
+//----------------------------------------------------------
+void RenderDeviceGLES2::resolveRenderBuffer(uint32_t rbObj)
+{
+    auto& rb = mRenderBuffers.getRef(rbObj);
+
+    // Only needed when using ANGLE_framebuffer_multisample (which uses fboMS)
+    if (rb.fboMS == 0) return;
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER_ANGLE, rb.fboMS);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER_ANGLE, rb.fbo);
+
+    bool depthResolved = false;
+    for (uint32_t i = 0; i < RDIRenderBuffer::MaxColorAttachmentCount; ++i) {
+        if (rb.colBufs[i] != 0) {
+            int mask = GL_COLOR_BUFFER_BIT;
+            if (!depthResolved && rb.depthBufMS != 0 && rb.depthTex != 0 &&
+                !glExt::ANGLE_depth_texture)
+            {
+                //Cannot resolve depth textures created with ANGLE_depth_texture
+                mask |= GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT;
+                depthResolved = true;
+            }
+
+            glBlitFramebufferANGLE(0, 0, rb.width, rb.height, 0, 0, rb.width, rb.height, mask,
+                GL_NEAREST);
+        }
+    }
+
+    if (!depthResolved && rb.depthBufMS != 0 && rb.depthTex != 0 && !glExt::ANGLE_depth_texture) {
+        //Cannot resolve depth textures created with ANGLE_depth_texture
+        glBlitFramebufferANGLE(0, 0, rb.width, rb.height, 0, 0, rb.width, rb.height,
+            GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT, GL_NEAREST);
+    }
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER_ANGLE, mDefaultFBO);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER_ANGLE, mDefaultFBO);
+}
+
 
 //------------------------------------------------------------------------------
 #endif
