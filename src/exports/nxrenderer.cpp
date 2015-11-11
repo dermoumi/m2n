@@ -95,21 +95,10 @@ static uint32_t texture;
 static uint32_t rbTex;
 static uint32_t rb;
 
-#include "../graphics/opengl.hpp"
-
-static uint32_t colorTex;
-static uint32_t fb;
-static uint32_t depthRb;
-
 //----------------------------------------------------------
 NX_EXPORT void nxRendererTestRelease()
 {
     if (!initialized) return;
-
-    glDeleteTextures(1, &colorTex);
-    glDeleteRenderbuffersEXT(1, &depthRb);
-    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-    glDeleteFramebuffersEXT(1, &fb);
 
     rdi->destroyShader(defaultShader);
     rdi->destroyShader(rbShader);
@@ -157,7 +146,7 @@ NX_EXPORT void nxRendererTestInit()
         // "layout(location = 0) out vec3 color;\n"
         "void main() {\n"
         "   vec4 col = texture2D(tex, coords);\n"
-        "   gl_FragColor = col * vec4(1.0, 1.0, 0.0, 1.0);\n"
+        "   gl_FragColor = col * vec4(1.0, 1.0, 0.5, 1.0);\n"
         // "   color = col * vec4(1.0, 1.0, 0.0, 1.0);\n"
         "}\n"
     );
@@ -170,17 +159,13 @@ NX_EXPORT void nxRendererTestInit()
         "   coords = texCoords0;\n"
         "   gl_Position = vec4(vertPos, 0.0, 1.0);\n"
         "}\n",
-        "uniform sampler2D tex;\n"
+        "uniform sampler2D tex2;\n"
         "varying vec2 coords;\n"
         "void main() {\n"
-        "   vec4 col = texture2D(tex, coords);\n"
-        "   gl_FragColor = col;\n"
+        "   vec4 col = texture2D(tex2, coords);\n"
+        "   gl_FragColor = col * vec4(1.0, 1.0, 1.0, 1.0);\n"
         "}\n"
     );
-
-    // Create render buffer
-    rb = rdi->createRenderBuffer(1024, 1024, RenderDevice::RGBA8, false, 1, 0);
-    rbTex = rdi->getRenderBufferTexture(rb, 0);
 
     // Load image
     Image img;
@@ -193,18 +178,14 @@ NX_EXPORT void nxRendererTestInit()
     img.getSize(&imgWidth, &imgHeight);
 
     // Create texture
-    // unsigned char texData[] = 
-    //     { 128,192,255,255, 128,192,255,255, 128,192,255,255, 128,192,255,255,
-    //       128,192,255,255, 128,192,255,255, 128,192,255,255, 128,192,255,255,
-    //       128,192,255,255, 128,192,255,255, 128,192,255,255, 128,192,255,255,
-    //       128,192,255,255, 128,192,255,255, 128,192,255,255, 128,192,255,255 };
-
     texture = rdi->createTexture(RenderDevice::Tex2D, imgWidth, imgHeight, 1, RenderDevice::RGBA8,
         true, true, false);
     rdi->uploadTextureData(texture, 0, 0, nullptr);
     rdi->uploadTextureSubData(texture, 0, 0, 0, 0, 0, 512, 512, 1, img.getPixelsPtr());
 
-    // texture = 0;
+    // Create render buffer
+    rb = rdi->createRenderBuffer(1024, 1024, RenderDevice::RGBA8, false, 1, 0);
+    rbTex = rdi->getRenderBufferTexture(rb, 0);
 
     // Get texture data
     // uint8_t* buffer = new uint8_t[imgWidth * imgHeight * 4];
@@ -213,58 +194,9 @@ NX_EXPORT void nxRendererTestInit()
     // img.create(imgWidth, imgHeight, buffer);
     // img.save("testimgD.png");
 
-    // glGenTextures(1, &colorTex);
-    // glBindTexture(GL_TEXTURE_2D, colorTex);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 256, 256, 0, GL_BGRA, GL_UNSIGNED_BYTE, nullptr);
-
-    // glGenFramebuffersEXT(1, &fb);
-    // glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fb);
-    // glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, colorTex, 0);
-
-    // glGenRenderbuffersEXT(1, &depthRb);
-    // glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, depthRb);
-    // glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT24, 256, 256);
-    // glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, depthRb);
-
-    // GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
-    // if (status != GL_FRAMEBUFFER_COMPLETE_EXT) {
-    //     Log::info("Couldn't create framebuffer");
-    // }
-    // else {
-    //     Log::info("Framebuffer created successfully");
-    // }
-
     rdi->resetStates();
 
-    rdi->beginRendering();
-
-    static float color[] = {1.f, 1.f, 0.5f, 1.f};
-
-    rdi->setRenderBuffer(rb);
-
-    // glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fb);
-    rdi->setViewport(0, 0, 1024, 1024);
-    rdi->clear(color);
-
-    rbTex = rdi->getRenderBufferTexture(rb, 0);
-
-    uint8_t* buffer = new uint8_t[1024 * 1024 * 4];
-    rdi->getTextureData(rbTex, 0, 0, buffer);
-    Image img2;
-    img.create(1024, 1024, buffer);
-    img.save("testimgD.png");
-
-    rdi->setRenderBuffer(0);
-    
-    rdi->finishRendering();
-
-
     initialized = true;
-    Log::info("loaded %u %u %u %u %u", rb, rbTex, texture, defaultShader);
 }
 
 //----------------------------------------------------------
@@ -274,41 +206,35 @@ NX_EXPORT void nxRendererTestRender()
 
     rdi->setRenderBuffer(rb);
 
-    // glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fb);
     rdi->setViewport(0, 0, 1024, 1024);
     rdi->clear(color);
-
-    // rdi->setTexture(1, texture, RenderDevice::FilterTrilinear | RenderDevice::Aniso8 |
-    //     RenderDevice::AddrWrap);
-
-    // rdi->bindShader(defaultShader);
-
-    // // Affect texture to shader
-    // auto loc = rdi->getShaderSamplerLoc(defaultShader, "tex");
-    // // Log::info("Loc2: %i", loc);
-    // if (loc >= 0) rdi->setShaderSampler(loc, 1);
-
-    // rdi->draw(RenderDevice::TriangleStrip, 0, 4);
-
-    // glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-    rdi->setRenderBuffer(0);
-    rdi->setViewport(0, 0, 1280, 720);
 
     rdi->setVertexBuffer(0, vbTriangle, 0, 16);
     rdi->setIndexBuffer( 0, RenderDevice::U16 );
     rdi->setVertexLayout(vlShape);
 
-    rbTex = rdi->getRenderBufferTexture(rb, 0);
-    rdi->setTexture(1, rbTex, RenderDevice::FilterTrilinear | RenderDevice::Aniso8 |
+    rdi->setTexture(1, texture, RenderDevice::FilterTrilinear | RenderDevice::Aniso8 |
         RenderDevice::AddrWrap);
+
+    rdi->bindShader(defaultShader);
+
+    // Affect texture to shader
+    auto loc = rdi->getShaderSamplerLoc(defaultShader, "tex");
+    if (loc >= 0) rdi->setShaderSampler(loc, 1);
+
+    rdi->draw(RenderDevice::TriangleStrip, 0, 4);
+
+    rdi->setRenderBuffer(0);
+    rdi->setViewport(0, 0, 1280, 720);
+
+    rdi->setTexture(2, rbTex, 0);
 
     rdi->bindShader(rbShader);
     rdi->setBlendMode(true, RenderDevice::SrcAlpha, RenderDevice::InvSrcAlpha);
 
     // Affect texture to shader
-    auto loc2 = rdi->getShaderSamplerLoc(rbShader, "tex");
-    // Log::info("Loc2: %i", loc);
-    if (loc2 >= 0) rdi->setShaderSampler(loc2, 1);
+    auto loc2 = rdi->getShaderSamplerLoc(rbShader, "tex2");
+    if (loc2 >= 0) rdi->setShaderSampler(loc2, 2);
 
     rdi->draw(RenderDevice::TriangleStrip, 0, 4);
 }

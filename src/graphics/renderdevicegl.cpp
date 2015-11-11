@@ -442,7 +442,8 @@ void RenderDeviceGL::uploadTextureData(uint32_t texObj, int slice, int mipLevel,
     glActiveTexture(GL_TEXTURE15);
     glBindTexture(tex.type, tex.glObj);
 
-    int inputFormat = GL_RGBA, inputType = GL_UNSIGNED_BYTE;
+    int inputFormat = GL_RGBA;
+    int inputType = GL_UNSIGNED_BYTE;
     bool compressed = (format == DXT1) || (format == DXT3) || (format == DXT5);
 
     switch (format) {
@@ -525,7 +526,8 @@ void RenderDeviceGL::uploadTextureSubData(uint32_t texObj, int slice, int mipLev
     glActiveTexture(GL_TEXTURE15);
     glBindTexture(tex.type, tex.glObj);
 
-    int inputFormat = GL_RGBA, inputType = GL_UNSIGNED_BYTE;
+    int inputFormat = GL_RGBA;
+    int inputType = GL_UNSIGNED_BYTE;
     bool compressed = (format == DXT1) || (format == DXT3) || (format == DXT5);
 
     switch (format) {
@@ -535,7 +537,7 @@ void RenderDeviceGL::uploadTextureSubData(uint32_t texObj, int slice, int mipLev
             break;
         case DEPTH:
             inputFormat = GL_DEPTH_COMPONENT;
-            inputType = GL_FLOAT;
+            inputType = GL_UNSIGNED_SHORT;
             break;
         default:
             break;
@@ -1015,7 +1017,6 @@ uint32_t RenderDeviceGL::createRenderBuffer(uint32_t width, uint32_t height,
 //----------------------------------------------------------
 void RenderDeviceGL::destroyRenderBuffer(uint32_t rbObj)
 {
-    Log::info("?");
     auto& rb = mRenderBuffers.getRef(rbObj);
 
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, mDefaultFBO);
@@ -1043,6 +1044,7 @@ uint32_t RenderDeviceGL::getRenderBufferTexture(uint32_t rbObj, uint32_t bufInde
     auto& rb = mRenderBuffers.getRef(rbObj);
 
     if (bufIndex < RDIRenderBuffer::MaxColorAttachmentCount) {
+        Log::info("%u, %u", rb.colTexs[bufIndex], mTextures.getRef(rb.colTexs[bufIndex]).glObj);
         return rb.colTexs[bufIndex];
     }
     else if (bufIndex == 32) {
@@ -1472,7 +1474,7 @@ void RenderDeviceGL::applySamplerState(RDITexture& tex)
 
     auto filter = (state & SamplerState::FilterMask) >> SamplerState::FilterStart;
     glTexParameteri(target, GL_TEXTURE_MIN_FILTER, tex.hasMips ?
-        magFilters[filter] : minFiltersMips[filter]);
+        minFiltersMips[filter] : magFilters[filter]);
 
     filter = (state & SamplerState::FilterMask) >> SamplerState::FilterStart;
     glTexParameteri(target, GL_TEXTURE_MAG_FILTER, magFilters[filter]);
