@@ -1096,15 +1096,83 @@ void RenderDeviceGL::setRenderBuffer(uint32_t rbObj)
 //----------------------------------------------------------
 void RenderDeviceGL::getRenderBufferSize(uint32_t rbObj, int* width, int* height)
 {
-    // TODO
+    if (rbObj) {
+        auto& rb = mRenderBuffers.getRef(rbObj);
+        if (width)  *width  = rb.width;
+        if (height) *height = rb.height;
+    }
+    else {
+        if (width)  *width  = mVpWidth;
+        if (height) *height = mVpHeight;
+    }
 }
 
 //----------------------------------------------------------
 bool RenderDeviceGL::getRenderBufferData(uint32_t rbObj, int bufIndex, int* width, int* height,
     int* compCount, void* dataBuffer, int bufferSize)
 {
-    // TODO
-    return false;
+    int x, y, w, h;
+    int format = GL_RGBA;
+    int type = GL_FLOAT;
+    beginRendering();
+    glPixelStorei(GL_PACK_ALIGNMENT, 4);
+
+    if (!rbObj) {
+        if (bufIndex != 32 && bufIndex != 0) return false;
+        if (width)  *width  = mVpWidth;
+        if (height) *height = mVpHeight;
+
+        x = mVpX;
+        y = mVpY;
+        w = mVpWidth;
+        h = mVpHeight;
+
+        // format = GL_BGRA;
+        // type   = GL_UNSIGNED_BYTE;
+        glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, mDefaultFBO);
+        if (bufIndex != 32) glReadBuffer(GL_BACK_LEFT);
+    }
+    else {
+        resolveRenderBuffer(rbObj);
+        auto& rb = mRenderBuffers.getRef(rbObj);
+
+        if (bufIndex == 32 && rb.depthTex == 0) return false;
+
+        if (
+            bufIndex != 32 && (rb.colTexs[bufIndex] ||
+            static_cast<unsigned int>(bufIndex) >= RDIRenderBuffer::MaxColorAttachmentCount)
+        ) {
+            return false;
+        }
+
+        if (width)  *width = rb.width;
+        if (height) *height = rb.height;
+
+        x = 0;
+        y = 0;
+        w = rb.width;
+        h = rb.height;
+
+        glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, rb.fbo);
+        if (bufIndex != 32) glReadBuffer(GL_COLOR_ATTACHMENT0_EXT + bufIndex);
+    }
+
+    if (bufIndex == 32) {
+        format = GL_DEPTH_COMPONENT;
+        type = GL_UNSIGNED_SHORT; // GL_UNSIGNED_FLOAT
+    }
+
+    int comps = (bufIndex == 32 ? 1 : 4);
+    if (compCount) *compCount = comps;
+
+    bool retVal = false;
+    if (dataBuffer && bufferSize >= w * h * comps * (type == GL_UNSIGNED_SHORT ? 2 : 1)) {
+        glReadPixels(x, y, w, h, format, type, dataBuffer);
+        retVal = true;
+    }
+
+    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, mDefaultFBO);
+    return retVal;
 }
 
 //----------------------------------------------------------
@@ -1605,6 +1673,39 @@ void RenderDeviceGL::resolveRenderBuffer(uint32_t rbObj)
     auto& rb = mRenderBuffers.getRef(rbObj);
 
     if (rb.fboMS == 0) return;
+
+    glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, rb.fboMS);
+    glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, rb.fbo);
+
+    bool depthResolved {false};
+    for (uint32_t i = 0; i < RDIRenderBuffer::MaxColorAttachmentCount; ++i) {
+        if (rb.colBufs[i] != 0) {
+            glReadBuffer(GL_COLOR_ATTACHMENT0_EXT + i);
+            glDrawBuffer(GL_COLOR_ATTACHMENT0_EXT + i);
+
+            int mask = GL_COLOR_BUFFER_BIT;
+            if (!depthResolved && rb.depthBuf != 0) {
+                mask |= GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT;
+                depthResolved = true;
+            }
+
+            glBlitFramebufferEXT(
+                0, 0, rb.width, rb.height, 0, 0, rb.width, rb.height, mask, GL_NEAREST
+            );
+        }
+    }
+
+    if (!depthResolved && rb.depthBuf != 0) {
+        glReadBuffer(GL_NONE);
+        glDrawBuffer(GL_NONE);
+        glBlitFramebufferEXT(
+            0, 0, rb.width, rb.height, 0, 0, rb.width, rb.height,
+            GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT, GL_NEAREST
+        );
+    }
+
+    glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, mDefaultFBO);
+    glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, mDefaultFBO);
 }
 
 //------------------------------------------------------------------------------
