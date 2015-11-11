@@ -1044,7 +1044,6 @@ uint32_t RenderDeviceGL::getRenderBufferTexture(uint32_t rbObj, uint32_t bufInde
     auto& rb = mRenderBuffers.getRef(rbObj);
 
     if (bufIndex < RDIRenderBuffer::MaxColorAttachmentCount) {
-        Log::info("%u, %u", rb.colTexs[bufIndex], mTextures.getRef(rb.colTexs[bufIndex]).glObj);
         return rb.colTexs[bufIndex];
     }
     else if (bufIndex == 32) {

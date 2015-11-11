@@ -426,7 +426,7 @@ void RenderDeviceGLES2::uploadTextureData(uint32_t texObj, int slice, int mipLev
     auto format     = tex.format;
 
     int inputFormat = GL_RGBA;
-    int inputType = GL_UNSIGNED_BYTE;
+    int inputType   = GL_UNSIGNED_BYTE;
     bool compressed = (format == DXT1) || (format == DXT3) || (format == DXT5) ||
         (format == ETC1) || (format == PVRTCI_2BPP) || (format == PVRTCI_A2BPP) ||
         (format == PVRTCI_4BPP) || (format == PVRTCI_A4BPP);
@@ -511,7 +511,8 @@ void RenderDeviceGLES2::uploadTextureSubData(uint32_t texObj, int slice, int mip
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(tex.type, tex.glObj);
 
-    int inputFormat = GL_RGBA, inputType = GL_UNSIGNED_BYTE;
+    int inputFormat = GL_RGBA;
+    int inputType   = GL_UNSIGNED_BYTE;
     bool compressed = (format == DXT1) || (format == DXT3) || (format == DXT5);
 
     switch (format) {
@@ -521,7 +522,7 @@ void RenderDeviceGLES2::uploadTextureSubData(uint32_t texObj, int slice, int mip
             break;
         case DEPTH:
             inputFormat = GL_DEPTH_COMPONENT;
-            inputType = GL_FLOAT;
+            inputType = GL_UNSIGNED_SHORT;
             break;
         default:
             break;
@@ -1533,7 +1534,7 @@ void RenderDeviceGLES2::applySamplerState(RDITexture& tex)
 
     auto filter = (state & FilterMask) >> FilterStart;
     glTexParameteri(target, GL_TEXTURE_MIN_FILTER, tex.hasMips ?
-        magFilters[filter] : minFiltersMips[filter]);
+        minFiltersMips[filter] : magFilters[filter]);
 
     filter = (state & FilterMask) >> FilterStart;
     glTexParameteri(target, GL_TEXTURE_MAG_FILTER, magFilters[filter]);
