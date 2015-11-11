@@ -253,16 +253,6 @@ private:
         };
     };
 
-    enum PendingMask : uint32_t
-    {
-        PMViewport     = 1 << 0,
-        PMIndexBuffer  = 1 << 1,
-        PMVertexLayout = 1 << 2,
-        PMTextures     = 1 << 3,
-        PMScissor      = 1 << 4,
-        PMRenderStates = 1 << 5
-    };
-
 private:
     uint32_t createShaderProgram(const char* vertexShaderSrc, const char* fragmentShaderSrc);
     bool linkShaderProgram(uint32_t programObj);

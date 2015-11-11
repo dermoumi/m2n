@@ -189,26 +189,26 @@ bool RenderDeviceGL::commitStates(uint32_t filter)
     uint32_t mask = mPendingMask & filter;
     if (mask) {
         // Set viewport
-        if (mask & PMViewport) {
+        if (mask & Viewport) {
             glViewport(mVpX, mVpY, mVpWidth, mVpHeight);
-            mPendingMask &= ~PMViewport;
+            mPendingMask &= ~Viewport;
         }
 
         // Update renderstates
-        if (mask & PMRenderStates) {
+        if (mask & RenderStates) {
             applyRenderStates();
-            mPendingMask &= ~PMRenderStates;
+            mPendingMask &= ~RenderStates;
         }
 
         // Set scissor rect
-        if (mask & PMScissor)
+        if (mask & Scissor)
         {
             glScissor(mScX, mScY, mScWidth, mScHeight);
-            mPendingMask &= ~PMScissor;
+            mPendingMask &= ~Scissor;
         }
 
         // Bind index buffer
-        if (mask & PMIndexBuffer) {
+        if (mask & IndexBuffer) {
             if (mNewIndexBuffer != mCurIndexBuffer) {
                 if (mNewIndexBuffer == 0) {
                     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -220,11 +220,11 @@ bool RenderDeviceGL::commitStates(uint32_t filter)
                 mCurIndexBuffer = mNewIndexBuffer;
             }
             
-            mPendingMask &= ~PMIndexBuffer;
+            mPendingMask &= ~IndexBuffer;
         }
 
         // Bind textures and set sampler state
-        if (mask & PMTextures) {
+        if (mask & Textures) {
             for (uint32_t i = 0; i < 16; ++i) {
                 glActiveTexture(GL_TEXTURE0 + i);
                 auto& texSlot = mTexSlots[i];
@@ -246,16 +246,16 @@ bool RenderDeviceGL::commitStates(uint32_t filter)
                 }
             }
             
-            mPendingMask &= ~PMTextures;
+            mPendingMask &= ~Textures;
         }
 
         // Bind vertex buffers
-        if (mask & PMVertexLayout) {
+        if (mask & VertexLayouts) {
             if (!applyVertexLayout()) return false;
 
             mCurVertexLayout = mNewVertexLayout;
             mPrevShaderID    = mCurShaderID;
-            mPendingMask &= ~PMVertexLayout;
+            mPendingMask &= ~VertexLayouts;
         }
     }
 
@@ -292,7 +292,7 @@ void RenderDeviceGL::clear(const float* color)
     }
     glClearDepth(1.0f);
 
-    commitStates(PMViewport | PMScissor | PMRenderStates);
+    commitStates(Viewport | Scissor | RenderStates);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     if (mCurRenderBuffer != 0) {
@@ -723,7 +723,7 @@ void RenderDeviceGL::bindShader(uint32_t shaderID)
     }
 
     mCurShaderID = shaderID;
-    mPendingMask |= PMVertexLayout;
+    mPendingMask |= VertexLayouts;
 }
 
 //----------------------------------------------------------
@@ -1074,7 +1074,7 @@ void RenderDeviceGL::setRenderBuffer(uint32_t rbObj)
     else {
         // Unbind all textures to make sure that no FBO is bound anymore
         for (uint32_t i = 0; i < 16; ++i) setTexture(i, 0, 0);
-        commitStates(PMTextures);
+        commitStates(Textures);
 
         auto& rb = mRenderBuffers.getRef(rbObj);
 
@@ -1115,7 +1115,7 @@ void RenderDeviceGL::setViewport(int x, int y, int width, int height)
     mVpWidth  = width;
     mVpHeight = height;
 
-    mPendingMask |= PMViewport;
+    mPendingMask |= Viewport;
 }
 
 //----------------------------------------------------------
@@ -1126,7 +1126,7 @@ void RenderDeviceGL::setScissorRect(int x, int y, int width, int height)
     mScWidth  = width;
     mScHeight = height;
 
-    mPendingMask |= PMScissor;
+    mPendingMask |= Scissor;
 }
 
 //----------------------------------------------------------
@@ -1134,7 +1134,7 @@ void RenderDeviceGL::setIndexBuffer(uint32_t bufObj, IndexFormat format)
 {
     mIndexFormat = toIndexFormat[format];
     mNewIndexBuffer = bufObj;
-    mPendingMask |= PMIndexBuffer;
+    mPendingMask |= IndexBuffer;
 }
 
 //----------------------------------------------------------
@@ -1142,7 +1142,7 @@ void RenderDeviceGL::setVertexBuffer(uint32_t slot, uint32_t vbObj, uint32_t off
     uint32_t stride)
 {
     mVertBufSlots[slot] = {vbObj, offset, stride};
-    mPendingMask |= PMVertexLayout;
+    mPendingMask |= VertexLayouts;
 }
 
 //----------------------------------------------------------
@@ -1155,7 +1155,7 @@ void RenderDeviceGL::setVertexLayout(uint32_t vlObj)
 void RenderDeviceGL::setTexture(uint32_t slot, uint32_t texObj, uint16_t samplerState)
 {
     mTexSlots[slot] = {texObj, samplerState};
-    mPendingMask |= PMTextures;
+    mPendingMask |= Textures;
 }
 
 //----------------------------------------------------------
@@ -1174,7 +1174,7 @@ bool RenderDeviceGL::getColorWriteMask() const
 void RenderDeviceGL::setFillMode(FillMode fillMode)
 {
     mNewRasterState.fillMode = fillMode;
-    mPendingMask |= PMRenderStates;
+    mPendingMask |= RenderStates;
 }
 
 //----------------------------------------------------------
@@ -1187,7 +1187,7 @@ RenderDevice::FillMode RenderDeviceGL::getFillMode() const
 void RenderDeviceGL::setCullMode(CullMode cullMode)
 {
     mNewRasterState.cullMode = cullMode;
-    mPendingMask |= PMRenderStates;
+    mPendingMask |= RenderStates;
 }
 
 //----------------------------------------------------------
@@ -1200,7 +1200,7 @@ RenderDevice::CullMode RenderDeviceGL::getCullMode() const
 void RenderDeviceGL::setScissorTest(bool enabled)
 {
     mNewRasterState.scissorEnable = enabled;
-    mPendingMask |= PMRenderStates;
+    mPendingMask |= RenderStates;
 }
 
 //----------------------------------------------------------
@@ -1213,7 +1213,7 @@ bool RenderDeviceGL::getScissorTest() const
 void RenderDeviceGL::setMultisampling(bool enabled)
 {
     mNewRasterState.multisampleEnable = enabled;
-    mPendingMask |= PMRenderStates;
+    mPendingMask |= RenderStates;
 }
 
 //----------------------------------------------------------
@@ -1226,7 +1226,7 @@ bool RenderDeviceGL::getMultisampling() const
 void RenderDeviceGL::setAlphaToCoverage(bool enabled)
 {
     mNewBlendState.alphaToCoverageEnable = enabled;
-    mPendingMask |= PMRenderStates;
+    mPendingMask |= RenderStates;
 }
 
 //----------------------------------------------------------
@@ -1242,7 +1242,7 @@ void RenderDeviceGL::setBlendMode(bool enabled, BlendFunc src, BlendFunc dst)
     mNewBlendState.srcBlendFunc = src;
     mNewBlendState.dstBlendFunc = dst;
 
-    mPendingMask |= PMRenderStates;
+    mPendingMask |= RenderStates;
 }
 
 //----------------------------------------------------------
@@ -1257,7 +1257,7 @@ bool RenderDeviceGL::getBlendMode(BlendFunc& src, BlendFunc& dst) const
 void RenderDeviceGL::setDepthMask(bool enabled)
 {
     mNewDepthStencilState.depthWriteMask = enabled;
-    mPendingMask |= PMRenderStates;
+    mPendingMask |= RenderStates;
 }
 
 //----------------------------------------------------------
@@ -1270,7 +1270,7 @@ bool RenderDeviceGL::getDepthMask() const
 void RenderDeviceGL::setDepthTest(bool enabled)
 {
     mNewDepthStencilState.depthEnable = enabled;
-    mPendingMask |= PMRenderStates;
+    mPendingMask |= RenderStates;
 }
 
 //----------------------------------------------------------
@@ -1283,7 +1283,7 @@ bool RenderDeviceGL::getDepthTest() const
 void RenderDeviceGL::setDepthFunc(DepthFunc depthFunc)
 {
     mNewDepthStencilState.depthFunc = depthFunc;
-    mPendingMask |= PMRenderStates;
+    mPendingMask |= RenderStates;
 }
 
 //----------------------------------------------------------

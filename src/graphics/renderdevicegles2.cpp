@@ -174,26 +174,26 @@ bool RenderDeviceGLES2::commitStates(uint32_t filter)
     uint32_t mask = mPendingMask & filter;
     if (mask) {
         // Set viewport
-        if (mask & PMViewport) {
+        if (mask & Viewport) {
             glViewport(mVpX, mVpY, mVpWidth, mVpHeight);
-            mPendingMask &= ~PMViewport;
+            mPendingMask &= ~Viewport;
         }
 
         // Update renderstates
-        if (mask & PMRenderStates) {
+        if (mask & RenderStates) {
             applyRenderStates();
-            mPendingMask &= ~PMRenderStates;
+            mPendingMask &= ~RenderStates;
         }
 
         // Set scissor rect
-        if (mask & PMScissor)
+        if (mask & Scissor)
         {
             glScissor(mScX, mScY, mScWidth, mScHeight);
-            mPendingMask &= ~PMScissor;
+            mPendingMask &= ~Scissor;
         }
 
         // Bind index buffer
-        if (mask & PMIndexBuffer) {
+        if (mask & IndexBuffer) {
             if (mNewIndexBuffer != mCurIndexBuffer) {
                 if (mNewIndexBuffer == 0) {
                     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -205,11 +205,11 @@ bool RenderDeviceGLES2::commitStates(uint32_t filter)
                 mCurIndexBuffer = mNewIndexBuffer;
             }
 
-            mPendingMask &= ~PMIndexBuffer;
+            mPendingMask &= ~IndexBuffer;
         }
 
         // Bind textures and set sampler state
-        if (mask & PMTextures) {
+        if (mask & Textures) {
             for (uint32_t i = 0; i < mMaxTextureUnits; ++i) {
                 glActiveTexture(GL_TEXTURE0 + i);
                 auto& texSlot = mTexSlots[i];
@@ -231,16 +231,16 @@ bool RenderDeviceGLES2::commitStates(uint32_t filter)
                 }
             }
             
-            mPendingMask &= ~PMTextures;
+            mPendingMask &= ~Textures;
         }
 
         // Bind vertex buffers
-        if (mask & PMVertexLayout) {
+        if (mask & VertexLayouts) {
             if (!applyVertexLayout()) return false;
 
             mCurVertexLayout = mNewVertexLayout;
             mPrevShaderID    = mCurShaderID;
-            mPendingMask &= ~PMVertexLayout;
+            mPendingMask &= ~VertexLayouts;
         }
     }
 
@@ -250,7 +250,7 @@ bool RenderDeviceGLES2::commitStates(uint32_t filter)
 //----------------------------------------------------------
 void RenderDeviceGLES2::clear(const float* color)
 {
-    commitStates(PMViewport | PMScissor | PMRenderStates);
+    commitStates(Viewport | Scissor | RenderStates);
 
     if (color) {
         glClearColor(color[0], color[1], color[2], color[3]);
@@ -691,7 +691,7 @@ void RenderDeviceGLES2::bindShader(uint32_t shaderID)
     }
 
     mCurShaderID = shaderID;
-    mPendingMask |= PMVertexLayout;
+    mPendingMask |= VertexLayouts;
 }
 
 //----------------------------------------------------------
@@ -1069,7 +1069,7 @@ void RenderDeviceGLES2::setRenderBuffer(uint32_t rbObj)
             setTexture(i, 0, 0);
         }
 
-        commitStates(PMTextures);
+        commitStates(Textures);
 
         auto& rb = mRenderBuffers.getRef(rbObj);
 
@@ -1171,7 +1171,7 @@ void RenderDeviceGLES2::setViewport(int x, int y, int width, int height)
     mVpWidth  = width;
     mVpHeight = height;
 
-    mPendingMask |= PMViewport;
+    mPendingMask |= Viewport;
 }
 
 //----------------------------------------------------------
@@ -1182,7 +1182,7 @@ void RenderDeviceGLES2::setScissorRect(int x, int y, int width, int height)
     mScWidth  = width;
     mScHeight = height;
 
-    mPendingMask |= PMScissor;
+    mPendingMask |= Scissor;
 }
 
 //----------------------------------------------------------
@@ -1190,7 +1190,7 @@ void RenderDeviceGLES2::setIndexBuffer(uint32_t bufObj, IndexFormat format)
 {
     mIndexFormat = toIndexFormat[format];
     mNewIndexBuffer = bufObj;
-    mPendingMask |= PMIndexBuffer;
+    mPendingMask |= IndexBuffer;
 }
 
 //----------------------------------------------------------
@@ -1203,7 +1203,7 @@ void RenderDeviceGLES2::setVertexBuffer(uint32_t slot, uint32_t vbObj, uint32_t 
     }
 
     mVertBufSlots[slot] = {vbObj, offset, stride};
-    mPendingMask |= PMVertexLayout;
+    mPendingMask |= VertexLayouts;
 }
 
 //----------------------------------------------------------
@@ -1216,7 +1216,7 @@ void RenderDeviceGLES2::setVertexLayout(uint32_t vlObj)
 void RenderDeviceGLES2::setTexture(uint32_t slot, uint32_t texObj, uint16_t samplerState)
 {
     mTexSlots[slot] = {texObj, samplerState};
-    mPendingMask |= PMTextures;
+    mPendingMask |= Textures;
 }
 
 //----------------------------------------------------------
@@ -1235,7 +1235,7 @@ bool RenderDeviceGLES2::getColorWriteMask() const
 void RenderDeviceGLES2::setFillMode(FillMode fillMode)
 {
     mNewRasterState.fillMode = fillMode;
-    mPendingMask |= PMRenderStates;
+    mPendingMask |= RenderStates;
 }
 
 //----------------------------------------------------------
@@ -1248,7 +1248,7 @@ RenderDevice::FillMode RenderDeviceGLES2::getFillMode() const
 void RenderDeviceGLES2::setCullMode(CullMode cullMode)
 {
     mNewRasterState.cullMode = cullMode;
-    mPendingMask |= PMRenderStates;
+    mPendingMask |= RenderStates;
 }
 
 //----------------------------------------------------------
@@ -1261,7 +1261,7 @@ RenderDevice::CullMode RenderDeviceGLES2::getCullMode() const
 void RenderDeviceGLES2::setScissorTest(bool enabled)
 {
     mNewRasterState.scissorEnable = enabled;
-    mPendingMask |= PMRenderStates;
+    mPendingMask |= RenderStates;
 }
 
 //----------------------------------------------------------
@@ -1274,7 +1274,7 @@ bool RenderDeviceGLES2::getScissorTest() const
 void RenderDeviceGLES2::setMultisampling(bool enabled)
 {
     mNewRasterState.multisampleEnable = enabled;
-    mPendingMask |= PMRenderStates;
+    mPendingMask |= RenderStates;
 }
 
 //----------------------------------------------------------
@@ -1287,7 +1287,7 @@ bool RenderDeviceGLES2::getMultisampling() const
 void RenderDeviceGLES2::setAlphaToCoverage(bool enabled)
 {
     mNewBlendState.alphaToCoverageEnable = enabled;
-    mPendingMask |= PMRenderStates;
+    mPendingMask |= RenderStates;
 }
 
 //----------------------------------------------------------
@@ -1303,7 +1303,7 @@ void RenderDeviceGLES2::setBlendMode(bool enabled, BlendFunc src, BlendFunc dst)
     mNewBlendState.srcBlendFunc = src;
     mNewBlendState.dstBlendFunc = dst;
 
-    mPendingMask |= PMRenderStates;
+    mPendingMask |= RenderStates;
 }
 
 //----------------------------------------------------------
@@ -1318,7 +1318,7 @@ bool RenderDeviceGLES2::getBlendMode(BlendFunc& src, BlendFunc& dst) const
 void RenderDeviceGLES2::setDepthMask(bool enabled)
 {
     mNewDepthStencilState.depthWriteMask = enabled;
-    mPendingMask |= PMRenderStates;
+    mPendingMask |= RenderStates;
 }
 
 //----------------------------------------------------------
@@ -1331,7 +1331,7 @@ bool RenderDeviceGLES2::getDepthMask() const
 void RenderDeviceGLES2::setDepthTest(bool enabled)
 {
     mNewDepthStencilState.depthEnable = enabled;
-    mPendingMask |= PMRenderStates;
+    mPendingMask |= RenderStates;
 }
 
 //----------------------------------------------------------
@@ -1344,7 +1344,7 @@ bool RenderDeviceGLES2::getDepthTest() const
 void RenderDeviceGLES2::setDepthFunc(DepthFunc depthFunc)
 {
     mNewDepthStencilState.depthFunc = depthFunc;
-    mPendingMask |= PMRenderStates;
+    mPendingMask |= RenderStates;
 }
 
 //----------------------------------------------------------

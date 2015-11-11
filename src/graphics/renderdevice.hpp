@@ -226,6 +226,16 @@ public:
         Always
     };
 
+    enum PendingMask : uint32_t
+    {
+        Viewport      = 1 << 0,
+        IndexBuffer   = 1 << 1,
+        VertexLayouts = 1 << 2,
+        Textures      = 1 << 3,
+        Scissor       = 1 << 4,
+        RenderStates  = 1 << 5
+    };
+
 public:
     virtual ~RenderDevice() = default;
     virtual bool initialize() = 0;
