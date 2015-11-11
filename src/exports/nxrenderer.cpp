@@ -57,11 +57,19 @@ NX_EXPORT bool nxRendererInit()
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxRendererClear(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+NX_EXPORT void nxRendererClear(uint8_t r, uint8_t g, uint8_t b, uint8_t a, float depth,
+    bool col0, bool col1, bool col2, bool col3, bool dpth)
 {
+    uint32_t flags = 0;
+    if (col0) flags |= RenderDevice::ClrColorRT0;
+    if (col1) flags |= RenderDevice::ClrColorRT1;
+    if (col2) flags |= RenderDevice::ClrColorRT2;
+    if (col3) flags |= RenderDevice::ClrColorRT3;
+    if (dpth) flags |= RenderDevice::ClrDepth;
+
     float clearColor[] = {r/255.f, g/255.f, b/255.f, a/255.f};
 
-    rdi->clear(clearColor);
+    rdi->clear(flags, clearColor, depth);
 }
 
 //----------------------------------------------------------
@@ -200,12 +208,10 @@ NX_EXPORT void nxRendererTestInit()
 //----------------------------------------------------------
 NX_EXPORT void nxRendererTestRender()
 {
-    static float color[] = {1.f, 1.f, 1.f, 1.f};
-
     rdi->setRenderBuffer(rb);
 
     rdi->setViewport(0, 0, 1024, 1024);
-    rdi->clear(color);
+    nxRendererClear(255, 255, 255, 50, 0.f, true, false, false, false, false);
 
     rdi->setVertexBuffer(0, vbTriangle, 0, 16);
     rdi->setIndexBuffer( 0, RenderDevice::U16 );

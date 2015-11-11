@@ -46,7 +46,7 @@ public:
     bool commitStates(uint32_t filter = 0xFFFFFFFFu);
 
     // Drawcalls and clears
-    void clear(const float* color);
+    void clear(uint32_t flags, const float* color, float depth);
     void draw(PrimType primType, uint32_t firstVert, uint32_t vertCount);
     void drawIndexed(PrimType primType, uint32_t firstIndex, uint32_t indexCount);
 

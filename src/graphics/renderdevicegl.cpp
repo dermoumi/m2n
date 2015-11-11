@@ -263,37 +263,55 @@ bool RenderDeviceGL::commitStates(uint32_t filter)
 }
 
 //----------------------------------------------------------
-void RenderDeviceGL::clear(const float* color)
+void RenderDeviceGL::clear(uint32_t flags, const float* color, float depth)
 {
     uint32_t prevBuffers[4] = {0u};
 
     if (mCurRenderBuffer != 0) {
         auto& rb = mRenderBuffers.getRef(mCurRenderBuffer);
 
+        if ((flags & ClrDepth) && rb.depthTex == 0) flags &= ~ClrDepth;
+
         for (uint32_t i = 0; i < 4; ++i) {
             glGetIntegerv(GL_DRAW_BUFFER0 + i, reinterpret_cast<int*>(&prevBuffers[i]));
         }
 
         uint32_t buffers[4], cnt = 0;
-        if (rb.colTexs[0] != 0) buffers[cnt++] = GL_COLOR_ATTACHMENT0_EXT;
-        if (rb.colTexs[1] != 0) buffers[cnt++] = GL_COLOR_ATTACHMENT1_EXT;
-        if (rb.colTexs[2] != 0) buffers[cnt++] = GL_COLOR_ATTACHMENT2_EXT;
-        if (rb.colTexs[3] != 0) buffers[cnt++] = GL_COLOR_ATTACHMENT3_EXT;
+        if (flags & ClrColorRT0 && rb.colTexs[0] != 0) buffers[cnt++] = GL_COLOR_ATTACHMENT0_EXT;
+        if (flags & ClrColorRT1 && rb.colTexs[1] != 0) buffers[cnt++] = GL_COLOR_ATTACHMENT1_EXT;
+        if (flags & ClrColorRT2 && rb.colTexs[2] != 0) buffers[cnt++] = GL_COLOR_ATTACHMENT2_EXT;
+        if (flags & ClrColorRT3 && rb.colTexs[3] != 0) buffers[cnt++] = GL_COLOR_ATTACHMENT3_EXT;
 
-        glDrawBuffers(cnt, buffers);
+        if (cnt == 0) {
+            flags &= ~(ClrColorRT0 | ClrColorRT1 | ClrColorRT2 | ClrColorRT3);
+        }
+        else {
+            glDrawBuffers(cnt, buffers);
+        }
     }
 
+    uint32_t oglClearMask = 0;
 
-    if (color) {
-        glClearColor(color[0], color[1], color[2], color[3]);
+    if (flags & ClrDepth) {
+        oglClearMask |= GL_DEPTH_BUFFER_BIT;
+        glClearDepth(depth);
     }
-    else {
-        glClearColor(0.f, 0.f, 0.f, 0.f);
-    }
-    glClearDepth(1.0f);
 
-    commitStates(Viewport | Scissor | RenderStates);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    if (flags & (ClrColorRT0 | ClrColorRT1 | ClrColorRT2 | ClrColorRT3)) {
+        oglClearMask |= GL_COLOR_BUFFER_BIT;
+
+        if (color) {
+            glClearColor(color[0], color[1], color[2], color[3]);
+        }
+        else {
+            glClearColor(0.f, 0.f, 0.f, 0.f);
+        }
+    }
+
+    if (oglClearMask) {
+        commitStates(Viewport | Scissor | RenderStates);
+        glClear(oglClearMask);
+    }
 
     if (mCurRenderBuffer != 0) {
         glDrawBuffers(4, prevBuffers);

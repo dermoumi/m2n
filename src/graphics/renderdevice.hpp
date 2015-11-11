@@ -236,6 +236,15 @@ public:
         RenderStates  = 1 << 5
     };
 
+    enum ClearFlags : uint32_t
+    {
+        ClrColorRT0 = 1 << 0,
+        ClrColorRT1 = 1 << 1,
+        ClrColorRT2 = 1 << 2,
+        ClrColorRT3 = 1 << 3,
+        ClrDepth    = 1 << 4
+    };
+
 public:
     virtual ~RenderDevice() = default;
     virtual bool initialize() = 0;
@@ -245,7 +254,7 @@ public:
     virtual bool commitStates(uint32_t filter = 0xFFFFFFFFu) = 0;
 
     // Drawcalls and clears
-    virtual void clear(const float* color) = 0;
+    virtual void clear(uint32_t flags, const float* color, float depth) = 0;
     virtual void draw(PrimType primType, uint32_t firstVert, uint32_t vertCount) = 0;
     virtual void drawIndexed(PrimType primType, uint32_t firstIndex, uint32_t indexCount) = 0;
 
