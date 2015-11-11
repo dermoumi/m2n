@@ -265,7 +265,24 @@ bool RenderDeviceGL::commitStates(uint32_t filter)
 //----------------------------------------------------------
 void RenderDeviceGL::clear(const float* color)
 {
-    commitStates(PMViewport | PMScissor | PMRenderStates);
+    uint32_t prevBuffers[4] = {0u};
+
+    if (mCurRenderBuffer != 0) {
+        auto& rb = mRenderBuffers.getRef(mCurRenderBuffer);
+
+        for (uint32_t i = 0; i < 4; ++i) {
+            glGetIntegerv(GL_DRAW_BUFFER0 + i, reinterpret_cast<int*>(&prevBuffers[i]));
+        }
+
+        uint32_t buffers[4], cnt = 0;
+        if (rb.colTexs[0] != 0) buffers[cnt++] = GL_COLOR_ATTACHMENT0_EXT;
+        if (rb.colTexs[1] != 0) buffers[cnt++] = GL_COLOR_ATTACHMENT1_EXT;
+        if (rb.colTexs[2] != 0) buffers[cnt++] = GL_COLOR_ATTACHMENT2_EXT;
+        if (rb.colTexs[3] != 0) buffers[cnt++] = GL_COLOR_ATTACHMENT3_EXT;
+
+        glDrawBuffers(cnt, buffers);
+    }
+
 
     if (color) {
         glClearColor(color[0], color[1], color[2], color[3]);
@@ -274,7 +291,13 @@ void RenderDeviceGL::clear(const float* color)
         glClearColor(0.f, 0.f, 0.f, 0.f);
     }
     glClearDepth(1.0f);
+
+    commitStates(PMViewport | PMScissor | PMRenderStates);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    if (mCurRenderBuffer != 0) {
+        glDrawBuffers(4, prevBuffers);
+    }
 }
 
 //----------------------------------------------------------
@@ -866,11 +889,10 @@ uint32_t RenderDeviceGL::createRenderBuffer(uint32_t width, uint32_t height,
         glGetIntegerv(GL_MAX_SAMPLES_EXT, &value);
         maxSamples = static_cast<uint32_t>(value);
     }
-
-    if (samples > maxSamples)
-    {
+    if (samples > maxSamples) {
         samples = maxSamples;
-        Log::warning("GPU does not support desired multisampling quality for render target");
+        Log::warning("GPU does not support desired level of multisampling quality for render "
+                     "target");
     }
 
     RDIRenderBuffer rb;
@@ -887,7 +909,7 @@ uint32_t RenderDeviceGL::createRenderBuffer(uint32_t width, uint32_t height,
         for (uint32_t i = 0; i < numColBufs; ++i) {
             glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, rb.fbo);
 
-            // Create a color texture
+            // Create a color texturee
             uint32_t texObj = createTexture(Tex2D, rb.width, rb.height, 1, format, false, false,
                 false);
             // TODO: Assert here
@@ -982,8 +1004,7 @@ uint32_t RenderDeviceGL::createRenderBuffer(uint32_t width, uint32_t height,
         if (status != GL_FRAMEBUFFER_COMPLETE_EXT) valid = false;
     }
 
-    if (!valid)
-    {
+    if (!valid) {
         destroyRenderBuffer(rbObj);
         return 0;
     }
@@ -994,6 +1015,7 @@ uint32_t RenderDeviceGL::createRenderBuffer(uint32_t width, uint32_t height,
 //----------------------------------------------------------
 void RenderDeviceGL::destroyRenderBuffer(uint32_t rbObj)
 {
+    Log::info("?");
     auto& rb = mRenderBuffers.getRef(rbObj);
 
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, mDefaultFBO);
@@ -1056,6 +1078,7 @@ void RenderDeviceGL::setRenderBuffer(uint32_t rbObj)
         auto& rb = mRenderBuffers.getRef(rbObj);
 
         glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, rb.fboMS ? rb.fboMS : rb.fbo);
+        
         // TODO: Assert here
         mFbWidth  = rb.width;
         mFbHeight = rb.height;

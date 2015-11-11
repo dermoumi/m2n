@@ -39,8 +39,6 @@ local Thread = require 'nx.thread'
 
 ------------------------------------------------------------
 function SceneSubtitle:load()
-    print('hello')
-    
     Renderer.testInit()
 
     self._processParent = true
@@ -48,17 +46,13 @@ end
 
 ------------------------------------------------------------
 function SceneSubtitle:release()
+    Renderer.testRelease()
     print('bye?')
 end
 
 ------------------------------------------------------------
 function SceneSubtitle:render()
     Renderer.testRender()
-end
-
-------------------------------------------------------------
-function SceneSubtitle:onQuit()
-    Renderer.testRelease()
 end
 
 ------------------------------------------------------------
