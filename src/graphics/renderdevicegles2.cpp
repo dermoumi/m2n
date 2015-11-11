@@ -248,18 +248,36 @@ bool RenderDeviceGLES2::commitStates(uint32_t filter)
 }
 
 //----------------------------------------------------------
-void RenderDeviceGLES2::clear(const float* color)
+void RenderDeviceGLES2::clear(uint32_t flags, const float* color, float depth)
 {
-    commitStates(Viewport | Scissor | RenderStates);
+    if (mCurRenderBuffer != 0) {
+        auto& rb = mRenderBuffers.getRef(mCurRenderBuffer);
 
-    if (color) {
-        glClearColor(color[0], color[1], color[2], color[3]);
-    }
-    else {
-        glClearColor(0.f, 0.f, 0.f, 0.f);
+        if ((flags & ClrDepth) && rb.depthTex == 0) flags &= ~ClrDepth;
     }
 
-    glClear(GL_COLOR_BUFFER_BIT);
+    uint32_t oglClearMask = 0;
+
+    if (flags & ClrDepth) {
+        oglClearMask |= GL_DEPTH_BUFFER_BIT;
+        glClearDepthf(depth);
+    }
+
+    if (flags & (ClrColorRT0 | ClrColorRT1 | ClrColorRT2 | ClrColorRT3)) {
+        oglClearMask |= GL_COLOR_BUFFER_BIT;
+
+        if (color) {
+            glClearColor(color[0], color[1], color[2], color[3]);
+        }
+        else {
+            glClearColor(0.f, 0.f, 0.f, 0.f);
+        }
+    }
+
+    if (oglClearMask) {
+        commitStates(Viewport | Scissor | RenderStates);
+        glClear(oglClearMask);
+    }
 }
 
 //----------------------------------------------------------
