@@ -42,9 +42,10 @@ ffi.cdef [[
     bool nxRendererInit();
     void nxRendererBegin();
     void nxRendererFinish();
+    void nxRendererResetStates();
     bool nxRendererCommitStates(uint32_t);
     void nxRendererClear(uint8_t, uint8_t, uint8_t, uint8_t, float, bool, bool, bool, bool, bool);
-    void nxRendererDraw(uint32_t, uint32_t uint32_t);
+    void nxRendererDraw(uint32_t, uint32_t, uint32_t);
     void nxRendererDrawIndexed(uint32_t, uint32_t, uint32_t);
     uint32_t nxRendererRegisterVertexLayout(uint32_t, const NxVertexLayoutAttrib*);
     uint32_t nxRendererCreateVertexBuffer(uint32_t, const void*);
