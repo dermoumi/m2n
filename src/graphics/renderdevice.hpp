@@ -252,6 +252,8 @@ public:
     virtual void initStates() = 0;
     virtual void resetStates() = 0;
     virtual bool commitStates(uint32_t filter = 0xFFFFFFFFu) = 0;
+    virtual void beginRendering() = 0;
+    virtual void finishRendering() = 0;
 
     // Drawcalls and clears
     virtual void clear(uint32_t flags, const float* color, float depth) = 0;
@@ -263,8 +265,6 @@ public:
         const VertexLayoutAttrib* attribs) = 0;
 
     // Buffers
-    virtual void beginRendering() = 0;
-    virtual void finishRendering() = 0;
     virtual uint32_t createVertexBuffer(uint32_t size, const void* data) = 0;
     virtual uint32_t createIndexBuffer(uint32_t size, const void* data) = 0;
     virtual void destroyBuffer(uint32_t buffer) = 0;

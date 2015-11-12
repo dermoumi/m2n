@@ -32,11 +32,78 @@ local ffi = require 'ffi'
 local C = ffi.C
 
 ffi.cdef [[
+    typedef struct {
+        char     semanticName[32];
+        uint32_t vbSlot;
+        uint32_t size;
+        uint32_t offset;
+    } NxVertexLayoutAttrib;
+
     bool nxRendererInit();
     void nxRendererBegin();
     void nxRendererFinish();
+    bool nxRendererCommitStates(uint32_t);
     void nxRendererClear(uint8_t, uint8_t, uint8_t, uint8_t, float, bool, bool, bool, bool, bool);
+    void nxRendererDraw(uint32_t, uint32_t uint32_t);
+    void nxRendererDrawIndexed(uint32_t, uint32_t, uint32_t);
+    uint32_t nxRendererRegisterVertexLayout(uint32_t, const NxVertexLayoutAttrib*);
+    uint32_t nxRendererCreateVertexBuffer(uint32_t, const void*);
+    uint32_t nxRendererCreateIndexBuffer(uint32_t, const void*);
+    void nxRendererDestroyBuffer(uint32_t);
+    bool nxRendererUpdateBufferData(uint32_t, uint32_t, uint32_t, const void*);
+    uint32_t nxRendererGetBufferMemory();
+    uint32_t nxRendererCalcTextureSize(uint32_t, int, int, int);
+    uint32_t nxRendererCreateTexture(uint32_t, int, int, unsigned int, uint32_t, bool, bool, bool);
+    void nxRendererUploadTextureData(uint32_t, int, int, const void*);
+    void nxRendererUploadTextureSubData(uint32_t, int, int, unsigned int, unsigned int,
+        unsigned int, unsigned int, unsigned int, unsigned int, const void*);
+    void nxRendererDestroyTexture(uint32_t);
+    bool nxRendererGetTextureData(uint32_t, int, int, void*);
+    uint32_t nxRendererGetTextureMemory();
+    uint32_t nxRendererCreateShader(const char*, const char*);
+    void nxRendererDestroyShader(uint32_t);
+    void nxRendererBindShader(uint32_t);
+    const char* nxRendererGetShaderLog();
+    int nxRendererGetShaderConstLoc(uint32_t, const char*);
+    int nxRendererGetShaderSamplerLoc(uint32_t, const char*);
+    void nxRendererSetShaderConst(int, uint32_t, float*, uint32_t);
+    void nxRendererSetShaderSampler(int, uint32_t);
+    const char* nxRendererGetDefaultVSCode();
+    const char* nxRendererGetDefaultFSCode();
+    uint32_t nxRendererCreateRenderbuffer(uint32_t, uint32_t, uint32_t, bool, uint32_t, uint32_t);
+    void nxRendererDestroyRenderbuffer(uint32_t);
+    uint32_t nxRendererGetRenderbufferTexture(uint32_t, uint32_t);
+    void nxRendererSetRenderbuffer(uint32_t);
+    void nxRendererGetRenderbufferSize(uint32_t, int*);
+    bool nxRendererGetRenderbufferData(uint32_t, int, int*, int*, void*, int);
     void nxRendererSetViewport(int, int, int, int);
+    void nxRendererSetScissorRect(int, int, int, int);
+    void nxRendererSetIndexBuffer(uint32_t, int);
+    void nxRendererSetVertexBuffer(uint32_t, uint32_t, uint32_t, uint32_t);
+    void nxRendererSetVertexLayout(uint32_t);
+    void nxRendererSetTexture(uint32_t, uint32_t, uint16_t);
+    void nxRendererSetColorWriteMask(bool);
+    bool nxRendererGetColorWriteMask();
+    void nxRendererSetFillMode(uint32_t);
+    uint32_t nxRendererGetFillMode();
+    void nxRendererSetCullMode(uint32_t);
+    uint32_t nxRendererGetCullMode();
+    void nxRendererSetScissorTest(bool);
+    bool nxRendererGetScissorTest();
+    void nxRendererSetMultisampling(bool);
+    bool nxRendererGetMultisampling();
+    void nxRendererSetAlphaToCoverage(bool);
+    bool nxRendererGetAlphaToCoverage();
+    void nxRendererSetBlendMode(bool, uint32_t, uint32_t);
+    bool nxRendererGetBlendMode(uint32_t*);
+    void nxRendererSetDepthMask(bool);
+    bool nxRendererGetDepthMask();
+    void nxRendererSetDepthTest(bool);
+    bool nxRendererGetDepthTest();
+    void nxRendererSetDepthFunc(uint32_t);
+    uint32_t nxRendererGetDepthFunc();
+    void nxRendererGetCapabilities(unsigned int*, unsigned int*, unsigned int*, unsigned int*,
+        bool*, bool*, bool*, bool*, bool*, bool*, bool*, bool*, bool*, bool*, bool*, bool*);
     void nxRendererTestInit();
     void nxRendererTestRender();
     void nxRendererTestRelease();

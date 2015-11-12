@@ -34,6 +34,17 @@
 #endif
 
 //----------------------------------------------------------
+// Declarations
+//----------------------------------------------------------
+struct NxVertexLayoutAttrib
+{
+    char     semanticName[32];
+    uint32_t vbSlot;
+    uint32_t size;
+    uint32_t offset;
+};
+
+//----------------------------------------------------------
 // Locals
 //----------------------------------------------------------
 static RenderDevice* rdi {nullptr};
@@ -69,9 +80,9 @@ NX_EXPORT void nxRendererFinish()
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxRendererCommitStates(uint32_t filter)
+NX_EXPORT bool nxRendererCommitStates(uint32_t filter)
 {
-    rdi->commitStates(filter);
+    return rdi->commitStates(filter);
 }
 
 //----------------------------------------------------------
@@ -104,9 +115,17 @@ NX_EXPORT void nxRendererDrawIndexed(uint32_t primType, uint32_t firstIndex, uin
 
 //----------------------------------------------------------
 NX_EXPORT uint32_t nxRendererRegisterVertexLayout(uint32_t numAttribs,
-    const RenderDevice::VertexLayoutAttrib* attribs)
+    const NxVertexLayoutAttrib* attribs)
 {
-    return rdi->registerVertexLayout(numAttribs, attribs);
+    std::vector<RenderDevice::VertexLayoutAttrib> attributes(numAttribs);
+    for (uint32_t i = 0; i < numAttribs; ++i) {
+        attributes[i].semanticName = attribs[i].semanticName;
+        attributes[i].vbSlot       = attribs[i].vbSlot;
+        attributes[i].size         = attribs[i].size;
+        attributes[i].offset       = attribs[i].offset;
+    } 
+
+    return rdi->registerVertexLayout(numAttribs, attributes.data());
 }
 
 //----------------------------------------------------------
@@ -285,10 +304,11 @@ NX_EXPORT void nxRendererGetRenderbufferSize(uint32_t rb, int* size)
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxRendererGetRenderbufferData(uint32_t rb, int bufIndex, int* size, int* compCount,
+NX_EXPORT bool nxRendererGetRenderbufferData(uint32_t rb, int bufIndex, int* size, int* compCount,
     void* buffer, int bufferSize)
 {
-    rdi->getRenderBufferData(rb, bufIndex, &size[0], &size[1], compCount, buffer, bufferSize);
+    return rdi->getRenderBufferData(rb, bufIndex, &size[0], &size[1], compCount, buffer,
+        bufferSize);
 }
 
 //----------------------------------------------------------
@@ -452,6 +472,18 @@ NX_EXPORT void nxRendererSetDepthFunc(uint32_t func)
 NX_EXPORT uint32_t nxRendererGetDepthFunc()
 {
     return rdi->getDepthFunc();
+}
+
+//----------------------------------------------------------
+NX_EXPORT void nxRendererGetCapabilities(unsigned int* maxTexUnits, unsigned int* maxTexSize,
+    unsigned int* maxCubTexSize, unsigned int* maxColBufs, bool* dxt, bool* pvrtci, bool* etc1,
+    bool* texFloat, bool* texDepth, bool* texSS, bool* tex3d, bool* texNPOT, bool* texSRGB,
+    bool* rtms, bool* occQuery, bool* timerQuery)
+{
+    rdi->getCapabilities(
+        maxTexUnits, maxTexSize, maxCubTexSize, maxColBufs, dxt, pvrtci, etc1,
+        texFloat, texDepth, texSS, tex3d, texNPOT, texSRGB, rtms, occQuery, timerQuery
+    );
 }
 
 //----------------------------------------------------------
