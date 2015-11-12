@@ -33,10 +33,10 @@ local C = ffi.C
 
 ffi.cdef [[
     bool nxRendererInit();
-    void nxRendererClear(uint8_t, uint8_t, uint8_t, uint8_t);
     void nxRendererBegin();
     void nxRendererFinish();
-    void nxRendererSetupViewport(int, int, int, int);
+    void nxRendererClear(uint8_t, uint8_t, uint8_t, uint8_t, float, bool, bool, bool, bool, bool);
+    void nxRendererSetViewport(int, int, int, int);
     void nxRendererTestInit();
     void nxRendererTestRender();
     void nxRendererTestRelease();
@@ -52,8 +52,16 @@ function Renderer.init()
 end
 
 ------------------------------------------------------------
-function Renderer.clear(r, g, b, a)
-    C.nxRendererClear(r or 0, g or 0, b or 0, a or 255)
+function Renderer.clear(r, g, b, a, depth, col0, col1, col2, col3, clearDepth)
+    if (col0 == nil) then col0 = true end
+    if (col1 == nil) then col1 = true end
+    if (col2 == nil) then col2 = true end
+    if (col3 == nil) then col3 = true end
+    if (clearDepth == nil) then clearDepth = true end
+
+    C.nxRendererClear(
+        r or 0, g or 0, b or 0, a or 255, dethp or 1.0, col0, col1, col2, col3, clearDepth
+    )
 end
 
 ------------------------------------------------------------
@@ -68,7 +76,7 @@ end
 
 ------------------------------------------------------------
 function Renderer.setupViewport(x, y, w, h)
-    C.nxRendererSetupViewport(x, y, w, h)
+    C.nxRendererSetViewport(x, y, w, h)
 end
 
 ------------------------------------------------------------
