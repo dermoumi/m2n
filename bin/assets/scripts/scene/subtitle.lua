@@ -37,21 +37,15 @@ local Matrix4 = require 'nx.matrix4'
 local Mouse = require 'nx.mouse'
 local Renderer = require 'nx.renderer'
 local Thread = require 'nx.thread'
+local Camera2D = require 'nx.camera2d'
 local ffi = require 'ffi'
 local C = ffi.C
 
 ------------------------------------------------------------
 function SceneSubtitle:load()
-    local mat1 = Matrix4:new()
-    mat1:combine(Matrix4.fromTranslation(1, 0, 0))
-    mat1:combine(Matrix4.fromScaling(2, 2, 2))
-    mat1:combine(Matrix4.fromZRotation(math.pi/2))
-    local x, y, z = mat1:apply(3, 3, -2)
-    print(x, y, z)
+    self.camera = Camera2D:new(-1, -1, 2, 2)
 
-    local mat2 = mat1:inverse()
-    x, y, z = mat2:apply(x, y, z)
-    print(x, y, z)
+    -- self.camera:zoom(0.5, 0.5)
 
     self:releaseTest()
 
@@ -98,10 +92,11 @@ function SceneSubtitle:load()
     self.rbShader = C.nxRendererCreateShader([[
         attribute vec2 vertPos;
         attribute vec2 texCoords0;
+        uniform mat4 projectionMat;
         varying vec2 coords;
         void main() {
            coords = texCoords0;
-           gl_Position = vec4(vertPos, 0.0, 1.0);
+           gl_Position = projectionMat * vec4(vertPos, 0.0, 1.0);
         }]], [[
         uniform sampler2D tex2;
         varying vec2 coords;
@@ -113,7 +108,7 @@ function SceneSubtitle:load()
     if self.rbShader == 0 then
         print(ffi.string(C.nxRendererGetShaderLog()))
     end
-    
+
     -- Load image
     local img, err = require('nx.image').load('assets/pasrien.png')
     if not img then
@@ -134,6 +129,7 @@ function SceneSubtitle:load()
     -- Reset states
     C.nxRendererResetStates()
 
+
     self.initialized = true
 
     self._processParent = true
@@ -142,11 +138,12 @@ end
 ------------------------------------------------------------
 function SceneSubtitle:release()
     self:releaseTest()
-    print('bye?')
 end
 
 ------------------------------------------------------------
 function SceneSubtitle:render()
+    C.nxRendererSetCullMode(3)
+
     C.nxRendererSetRenderbuffer(self.rb)
 
     C.nxRendererSetViewport(0, 0, 1024, 1024)
@@ -175,6 +172,9 @@ function SceneSubtitle:render()
 
     loc = C.nxRendererGetShaderSamplerLoc(self.rbShader, 'tex2')
     if loc >= 0 then C.nxRendererSetShaderSampler(loc, 2) end
+
+    local locProj = C.nxRendererGetShaderConstLoc(self.rbShader, 'projectionMat')
+    if locProj >= 0 then C.nxRendererSetShaderConst(locProj, 4, self.camera:matrix():data(), 1) end
 
     C.nxRendererDraw(1, 0, 4)
 end

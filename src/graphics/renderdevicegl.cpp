@@ -784,7 +784,7 @@ void RenderDeviceGL::setShaderConst(int loc, ShaderConstType type, float* values
         glUniformMatrix4fv(loc, count, false, values);
         break;
     case Float33:
-        glUniformMatrix4fv(loc, count, false, values);
+        glUniformMatrix3fv(loc, count, false, values);
         break;
     }
 }

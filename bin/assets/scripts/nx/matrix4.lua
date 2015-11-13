@@ -29,7 +29,7 @@
 -- A Matrix4 class
 ------------------------------------------------------------
 local class = require 'nx.class'
-local Matrix4 = class 'Matrix4'
+local Matrix4 = class 'nx.matrix4'
 
 local ffi = require 'ffi'
 
@@ -137,12 +137,12 @@ function Matrix4.static.fromOrtho(left, right, bottom, top, near, far)
     local mat = Matrix4:new()
     local m   = mat._cdata
 
-    m[0]  = 2 / (right - left)
-    m[5]  = 2 / (top - bottom)
+    m[0]  =  2 / (right - left)
+    m[5]  =  2 / (top - bottom)
     m[10] = -2 / (far - near)
-    m[12] = -(right + left) / (right - left)
-    m[13] = -(top + bottom) / (top - bottom)
-    m[14] = -(far + near) / (far - near)
+    m[12] = -(right + left)   / (right - left)
+    m[13] = -(top   + bottom) / (top   - bottom)
+    m[14] = -(far   + near)   / (far   - near)
 
     return mat
 end
