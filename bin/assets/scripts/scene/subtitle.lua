@@ -33,6 +33,7 @@ local Scene = require 'scene'
 local SceneSubtitle = class('scene.subtitle', Scene)
 
 ------------------------------------------------------------
+local Matrix4 = require 'nx.matrix4'
 local Mouse = require 'nx.mouse'
 local Renderer = require 'nx.renderer'
 local Thread = require 'nx.thread'
@@ -41,6 +42,12 @@ local C = ffi.C
 
 ------------------------------------------------------------
 function SceneSubtitle:load()
+    local mat1 = Matrix4:new()
+    mat1:combine(Matrix4.fromTranslation(1, 0, 0))
+    mat1:combine(Matrix4.fromScaling(2, 2, 2))
+    mat1:combine(Matrix4.fromZRotation(math.pi/2))
+    print(mat1:apply(1, 0, 0))
+
     self:releaseTest()
 
     -- Register vertex layouts

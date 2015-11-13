@@ -1,0 +1,230 @@
+--[[----------------------------------------------------------------------------
+    This is free and unencumbered software released into the public domain.
+
+    Anyone is free to copy, modify, publish, use, compile, sell, or
+    distribute this software, either in source code form or as a compiled
+    binary, for any purpose, commercial or non-commercial, and by any
+    means.
+
+    In jurisdictions that recognize copyright laws, the author or authors
+    of this software dedicate any and all copyright interest in the
+    software to the public domain. We make this dedication for the benefit
+    of the public at large and to the detriment of our heirs and
+    successors. We intend this dedication to be an overt act of
+    relinquishment in perpetuity of all present and future rights to this
+    software under copyright law.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+    IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+    OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+    ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+    OTHER DEALINGS IN THE SOFTWARE.
+
+    For more information, please refer to <http://unlicense.org>
+--]]----------------------------------------------------------------------------
+
+------------------------------------------------------------
+-- A Matrix4 class
+------------------------------------------------------------
+local class = require 'nx.class'
+local Matrix4 = class 'Matrix4'
+
+local ffi = require 'ffi'
+
+------------------------------------------------------------
+function Matrix4.static._fromCData(data)
+    local m  = Matrix4:allocate()
+    m._cdata = ffi.cast('float*', data)
+    return m
+end
+
+------------------------------------------------------------
+function Matrix4.static.fromTranslation(x, y, z)
+    local mat = Matrix4:new()
+    local m   = mat._cdata
+
+    m[12] = x
+    m[13] = y
+    m[14] = z
+
+    return mat
+end
+
+------------------------------------------------------------
+function Matrix4.static.fromScaling(x, y, z)
+    local mat = Matrix4:new()
+    local m   = mat._cdata
+
+    m[0]  = x
+    m[5]  = y
+    m[10] = z
+
+    return mat
+end
+
+------------------------------------------------------------
+function Matrix4.static.fromRotation(x, y, z)
+    local mat = Matrix4.fromXRotation(x)
+    mat:combine(Matrix4.fromYRotation(y))
+    mat:combine(Matrix4.fromZRotation(z))
+
+    return mat
+end
+
+------------------------------------------------------------
+function Matrix4.static.fromXRotation(rad)
+    local mat  = Matrix4:new()
+    local m    = mat._cdata
+    local s, c = math.sin(rad), math.cos(rad)
+
+    m[5]  = c
+    m[6]  = s
+    m[9]  = -s
+    m[10] = c
+
+    return mat
+end
+
+------------------------------------------------------------
+function Matrix4.static.fromYRotation(rad)
+    local mat  = Matrix4:new()
+    local m    = mat._cdata
+    local s, c = math.sin(rad), math.cos(rad)
+
+    m[0]  = c
+    m[2]  = -s
+    m[8]  = s
+    m[10] = c
+
+    return mat
+end
+
+------------------------------------------------------------
+function Matrix4.static.fromZRotation(rad)
+    local mat  = Matrix4:new()
+    local m    = mat._cdata
+    local s, c = math.sin(rad), math.cos(rad)
+
+    m[0]  = c
+    m[1]  = s
+    m[4]  = -s
+    m[5]  = c
+
+    return mat
+end
+
+------------------------------------------------------------
+function Matrix4.static.fromPerspective(left, right, bottom, top, near, far)
+    local mat = Matrix4:new()
+    local m   = mat._cdata
+
+    m[0]  = 2 * near / (right - left)
+    m[5]  = 2 * near / (top - bottom)
+    m[8]  = (right + left) / (right - left)
+    m[9]  = (top + bottom) / (top - bottom)
+    m[10] = -(far + near) / (far - near)
+    m[11] = -1
+    m[14] = -2 * far * near / (far - near)
+    m[15] = 0
+
+    return mat
+end
+
+------------------------------------------------------------
+function Matrix4.static.fromOrtho(left, right, bottom, top, near, far)
+    local mat = Matrix4:new()
+    local m   = mat._cdata
+
+    m[0]  = 2 / (right - left)
+    m[5]  = 2 / (top - bottom)
+    m[10] = -2 / (far - near)
+    m[12] = -(right + left) / (right - left)
+    m[13] = -(top + bottom) / (top - bottom)
+    m[14] = -(far + near) / (far - near)
+
+    return mat
+end
+
+------------------------------------------------------------
+function Matrix4:initialize()
+    self._cdata = ffi.new('float[16]', {
+        1, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 1
+    })
+end
+
+------------------------------------------------------------
+function Matrix4:clone()
+    local mat = Matrix4:allocate()
+    local m   = self._cdata
+
+    mat._cdata = ffi.new('float[16]', {
+        m[0],  m[1],  m[2],  m[3],
+        m[4],  m[5],  m[6],  m[7],
+        m[8],  m[9],  m[10], m[11],
+        m[12], m[13], m[14], m[15]
+    })
+
+    return mat
+end
+
+------------------------------------------------------------
+function Matrix4:combine(mat)
+    local m1, m2 = self._cdata, mat._cdata
+
+    local a00, a01, a02, a03 = m1[0],  m1[1],  m1[2],  m1[3]
+    local a10, a11, a12, a13 = m1[4],  m1[5],  m1[6],  m1[7]
+    local a20, a21, a22, a23 = m1[8],  m1[9],  m1[10], m1[11]
+    local a30, a31, a32, a33 = m1[12], m1[13], m1[14], m1[15]
+
+    -- Cache only the currnt line of the second matrix
+    local b0, b1, b2, b3 = m2[0], m2[1], m2[2], m2[3]
+    m1[0]  = b0*a00 + b1*a10 + b2*a20 + b3*a30
+    m1[1]  = b0*a01 + b1*a11 + b2*a21 + b3*a31
+    m1[2]  = b0*a02 + b1*a12 + b2*a22 + b3*a32
+    m1[3]  = b0*a03 + b1*a13 + b2*a23 + b3*a33
+
+    b0, b1, b2, b3 = m2[4], m2[5], m2[6], m2[7]
+    m1[4]  = b0*a00 + b1*a10 + b2*a20 + b3*a30
+    m1[5]  = b0*a01 + b1*a11 + b2*a21 + b3*a31
+    m1[6]  = b0*a02 + b1*a12 + b2*a22 + b3*a32
+    m1[7]  = b0*a03 + b1*a13 + b2*a23 + b3*a33
+
+    b0, b1, b2, b3 = m2[8], m2[9], m2[10], m2[11]
+    m1[8]  = b0*a00 + b1*a10 + b2*a20 + b3*a30
+    m1[9]  = b0*a01 + b1*a11 + b2*a21 + b3*a31
+    m1[10] = b0*a02 + b1*a12 + b2*a22 + b3*a32
+    m1[11] = b0*a03 + b1*a13 + b2*a23 + b3*a33
+
+    b0, b1, b2, b3 = m2[12], m2[13], m2[14], m2[15]
+    m1[12] = b0*a00 + b1*a10 + b2*a20 + b3*a30
+    m1[13] = b0*a01 + b1*a11 + b2*a21 + b3*a31
+    m1[14] = b0*a02 + b1*a12 + b2*a22 + b3*a32
+    m1[15] = b0*a03 + b1*a13 + b2*a23 + b3*a33
+end
+
+------------------------------------------------------------
+function Matrix4:apply(x, y, z)
+    local m = self._cdata
+
+    local w = m[3] * x + m[7] * y + m[11] * z + m[15]
+    if w == 0 then w = 1 end
+
+    local outX = (m[0] * x + m[4] * y + m[8]  * z + m[12]) / w
+    local outY = (m[1] * x + m[5] * y + m[9]  * z + m[13]) / w
+    local outZ = (m[2] * x + m[6] * y + m[10] * z + m[14]) / w
+
+    return outX, outY, outZ
+end
+
+------------------------------------------------------------
+function Matrix4:data()
+    return self._cdata
+end
+
+------------------------------------------------------------
+return Matrix4
