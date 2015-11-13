@@ -35,9 +35,19 @@ local SceneTitle = class('scene.title', Scene)
 ------------------------------------------------------------
 local Mouse = require 'nx.mouse'
 local Renderer = require 'nx.renderer'
+local Log = require 'nx.log'
 
 ------------------------------------------------------------
 function SceneTitle:load()
+    local caps = Renderer.getCapabilities()
+
+    Log.info('================================')
+    Log.info('GPU Capabilities:')
+    Log.info('--------------------------------')
+    for i, v in pairs(caps) do
+        Log.info(i .. ':\t' .. tostring(v))
+    end
+
     Scene.push('scene.subtitle')
 end
 

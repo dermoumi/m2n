@@ -341,7 +341,7 @@ public:
 
     // Capabilities
     virtual void getCapabilities(unsigned int* maxTexUnits, unsigned int* maxTexSize,
-        unsigned int* maxCubTexSize, unsigned int* maxColBufs, bool* dxt, bool* pvrtci, bool* etc1,
+        unsigned int* maxCubeTexSize, unsigned int* maxColBufs, bool* dxt, bool* pvrtci, bool* etc1,
         bool* texFloat, bool* texDepth, bool* texSS, bool* tex3d, bool* texNPOT, bool* texSRGB,
         bool* rtms, bool* occQuery, bool* timerQuery) const = 0;
 };

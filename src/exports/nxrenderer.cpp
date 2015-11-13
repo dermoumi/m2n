@@ -481,14 +481,11 @@ NX_EXPORT uint32_t nxRendererGetDepthFunc()
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxRendererGetCapabilities(unsigned int* maxTexUnits, unsigned int* maxTexSize,
-    unsigned int* maxCubTexSize, unsigned int* maxColBufs, bool* dxt, bool* pvrtci, bool* etc1,
-    bool* texFloat, bool* texDepth, bool* texSS, bool* tex3d, bool* texNPOT, bool* texSRGB,
-    bool* rtms, bool* occQuery, bool* timerQuery)
+NX_EXPORT void nxRendererGetCapabilities(unsigned int* u, bool* b)
 {
     rdi->getCapabilities(
-        maxTexUnits, maxTexSize, maxCubTexSize, maxColBufs, dxt, pvrtci, etc1,
-        texFloat, texDepth, texSS, tex3d, texNPOT, texSRGB, rtms, occQuery, timerQuery
+        &u[0], &u[1], &u[2], &u[3], &b[0], &b[1], &b[2], &b[3], &b[4], &b[5], &b[6], &b[7], &b[8],
+        &b[9], &b[10], &b[11]
     );
 }
 
