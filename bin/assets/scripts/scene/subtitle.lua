@@ -46,7 +46,12 @@ function SceneSubtitle:load()
     mat1:combine(Matrix4.fromTranslation(1, 0, 0))
     mat1:combine(Matrix4.fromScaling(2, 2, 2))
     mat1:combine(Matrix4.fromZRotation(math.pi/2))
-    print(mat1:apply(1, 0, 0))
+    local x, y, z = mat1:apply(3, 3, -2)
+    print(x, y, z)
+
+    local mat2 = mat1:inverse()
+    x, y, z = mat2:apply(x, y, z)
+    print(x, y, z)
 
     self:releaseTest()
 
