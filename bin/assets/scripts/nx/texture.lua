@@ -34,6 +34,70 @@ local toTextureType = {
     ['cube'] = 2
 }
 
+local toFilter = {
+    bilinear  = 0x0,
+    trilinear = 0x1,
+    nearest   = 0x2,
+    mask      = 0x3
+}
+local fromFilter = {
+    [0x0] = 'bilinear',
+    [0x1] = 'trilinear',
+    [0x2] = 'nearest'
+}
+
+local toAniso = {
+    [1]  = 0x00,
+    [2]  = 0x04,
+    [4]  = 0x08,
+    [8]  = 0x10,
+    [16] = 0x20,
+    mask = 0x3C
+}
+local fromAniso = {
+    [0x00] = 1,
+    [0x04] = 2,
+    [0x08] = 4,
+    [0x10] = 8,
+    [0x20] = 16
+}
+
+local toXRepeating = {
+    clamp    = 0x00,
+    wrap     = 0x40,
+    clampcol = 0x80,
+    mask     = 0xC0
+}
+local fromXRepeating = {
+    [0x00] = 'clamp',
+    [0x40] = 'wrap',
+    [0x80] = 'clampcol'
+}
+
+local toYRepeating = {
+    clamp    = 0x000,
+    wrap     = 0x100,
+    clampcol = 0x200,
+    mask     = 0x300
+}
+local fromYRepeating = {
+    [0x000] = 'clamp',
+    [0x100] = 'wrap',
+    [0x200] = 'clampcol'
+}
+
+local toZRepeating = {
+    clamp    = 0x000,
+    wrap     = 0x400,
+    clampcol = 0x800,
+    mask     = 0xC00
+}
+local fromZRepeating = {
+    [0x000] = 'clamp',
+    [0x400] = 'wrap',
+    [0x800] = 'clampcol'
+}
+
 ------------------------------------------------------------
 -- FFI C Declarations
 ------------------------------------------------------------
@@ -49,6 +113,7 @@ ffi.cdef [[
         uint16_t depth;
         uint16_t actualWidth;
         uint16_t actualHeight;
+        uint32_t samplerState;
     } NxTexture;
 ]]
 
@@ -115,6 +180,7 @@ function Texture:initialize()
     handle.depth        = 0
     handle.actualWidth  = 0
     handle.actualHeight = 0
+    handle.samplerState = 0
     self._cdata = ffi.gc(handle, destroy)
 end
 
@@ -216,7 +282,7 @@ end
 ------------------------------------------------------------
 function Texture:bind(unit)
     if unit < Renderer.getCapabilities('maxTexUnits') then
-        C.nxRendererSetTexture(unit, self._cdata.tex, 0)
+        C.nxRendererSetTexture(unit, self._cdata.tex, self._cdata.samplerState)
         return true
     end
 
@@ -238,6 +304,75 @@ function Texture:data(slice, mipLevel)
     end
 
     return buffer
+end
+
+------------------------------------------------------------
+function Texture:setFilter(filter)
+    filter = toFilter[filter]
+    if not filter or filter == toFilter.mask then return end
+
+    local c = self._cdata
+    c.samplerState = bit.bor(bit.band(c.samplerState, bit.bnot(toFilter.mask)), filter)
+end
+
+------------------------------------------------------------
+function Texture:setAnisotropyLevel(level)
+    local aniso = toAniso[level]
+    if not aniso or aniso == toAniso.mask then return end
+
+    local c = self._cdata
+    c.samplerState = bit.bor(bit.band(c.samplerState, bit.bnot(toAniso.mask)), aniso)
+end
+
+------------------------------------------------------------
+function Texture:setRepeating(x, y, z)
+    if x == 'mask' or y == 'mask' or z == 'mask' then return end
+
+    x, y, z = toXRepeating[x], toYRepeating[y], toZRepeating[z]
+    if not x or not y or not z then
+        local currX, currY, currZ = self:repeating()
+        x = x or toXRepeating[currX]
+        y = y or toYRepeating[currY]
+        z = z or toZRepeating[currZ]
+    end
+
+    local c = self._cdata
+    c.samplerState = bit.bor(bit.band(c.samplerState, bit.bnot(toXRepeating.mask)), x)
+    c.samplerState = bit.bor(bit.band(c.samplerState, bit.bnot(toYRepeating.mask)), y)
+    c.samplerState = bit.bor(bit.band(c.samplerState, bit.bnot(toZRepeating.mask)), z)
+end
+
+------------------------------------------------------------
+function Texture:setLessOrEqual(lessOrEqual)
+    local c = self._cdata
+    if lessOrEqual then
+        c.samplerState = bit.bor(c.samplerState, 0x1000)
+    else
+        c.samplerState = bit.band(c.samplerState, bit.bnot(0x1000))
+    end
+end
+
+------------------------------------------------------------
+function Texture:filter()
+    return fromFilter[bit.band(self._cdata.samplerState, toFilter.mask)] or 'bilinear'
+end
+
+------------------------------------------------------------
+function Texture:anisotropyLevel()
+    return fromAniso[bit.band(self._cdata.samplerState, toAniso.mask)] or 1
+end
+
+------------------------------------------------------------
+function Texture:repeating()
+    local x = fromXRepeating[bit.band(self._cdata.samplerState, toXRepeating.mask)] or 'clamp'
+    local y = fromYRepeating[bit.band(self._cdata.samplerState, toYRepeating.mask)] or 'clamp'
+    local z = fromZRepeating[bit.band(self._cdata.samplerState, toZRepeating.mask)] or 'clamp'
+    return x, y, z
+end
+
+------------------------------------------------------------
+function Texture:lessOrEqual()
+    return bit.band(self._cdata.samplerState, 0x1000) == 0x1000
 end
 
 ------------------------------------------------------------

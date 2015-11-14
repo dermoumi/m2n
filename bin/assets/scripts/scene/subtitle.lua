@@ -65,9 +65,9 @@ function SceneSubtitle:load()
     -- Create triangle
     local verts = ffi.new('float[?]', 4*4, {
         -0.5, -0.5, 0, 0,
-         0.5, -0.5, 1, 0,
-        -0.5,  0.5, 0, 1,
-         0.5,  0.5, 1, 1
+         0.5, -0.5, 2, 0,
+        -0.5,  0.5, 0, 1.5,
+         0.5,  0.5, 2, 1.5
     })
     self.vbRect = C.nxRendererCreateVertexBuffer(ffi.sizeof(verts), verts)
 
@@ -124,6 +124,9 @@ function SceneSubtitle:load()
     self.texture = Texture:new()
     self.texture:create('2d', imgWidth, imgHeight)
     self.texture:setData(img:data())
+    self.texture:setFilter('nearest')
+    self.texture:setAnisotropyLevel(16)
+    self.texture:setRepeating('clamp', 'wrap')
 
     -- Create renderbuffer
     self.rb = C.nxRendererCreateRenderbuffer(1024, 1024, 1, false, 1, 0)
