@@ -185,8 +185,9 @@ end
 
 ------------------------------------------------------------
 function Image:release()
-    if self._cdata.img == nil or self._unmanagedCData then return end
+    if self._cdata == nil then return end
     destroy(ffi.gc(self._cdata, nil))
+    self._cdata = nil
 end
 
 ------------------------------------------------------------

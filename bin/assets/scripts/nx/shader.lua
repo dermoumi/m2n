@@ -76,6 +76,13 @@ function Shader:initialize()
 end
 
 ------------------------------------------------------------
+function Shader:release()
+    if self._cdata == nil then return end
+    destroy(ffi.gc(self._cdata, nil))
+    self._cdata = nil
+end
+
+------------------------------------------------------------
 function Shader:load(vertexShader, fragmentShader)
     C.nxRendererDestroyShader(self._cdata.id)
 

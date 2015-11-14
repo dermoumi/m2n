@@ -34,6 +34,7 @@ local SceneTitle = class('scene.title', Scene)
 
 ------------------------------------------------------------
 local Mouse = require 'nx.mouse'
+local Keyboard = require 'nx.keyboard'
 local Renderer = require 'nx.renderer'
 local Log = require 'nx.log'
 
@@ -66,7 +67,9 @@ function SceneTitle:onResize(w, h)
 end
 
 ------------------------------------------------------------
-function SceneTitle:onKeyDown(scancode)
+function SceneTitle:onKeyDown(scancode, a, repeated)
+    if repeated then return end
+
     if scancode == 'f1' then
         Scene.push('scene.subtitle')
     elseif scancode == 'f10' then
@@ -75,6 +78,12 @@ function SceneTitle:onKeyDown(scancode)
         require('nx.window').create('m2n-', 1920, 1080, {fullscreen = true, msaa = 4})
     elseif scancode == 'f12' then
         require('nx.window').create('m2n-', 1024, 720, {fullscreen = true, msaa = 8})
+    elseif scancode == 'f9' then
+        if Keyboard.modKeyDown('ctrl') then
+            collectgarbage('collect')
+        else
+            print('Lua usage: ' .. tostring(collectgarbage('count') * 1024))
+        end
     end
 end
 

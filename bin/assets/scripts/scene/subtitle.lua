@@ -39,6 +39,7 @@ local Renderer = require 'nx.renderer'
 local Thread = require 'nx.thread'
 local Camera2D = require 'nx.camera2d'
 local Shader = require 'nx.shader'
+local Texture = require 'nx.texture'
 local ffi = require 'ffi'
 local C = ffi.C
 
@@ -120,9 +121,9 @@ function SceneSubtitle:load()
     local imgWidth, imgHeight = img:size()
 
     -- Create texture
-    self.texture = C.nxRendererCreateTexture(0, imgWidth, imgHeight, 1, 1, true, true, false)
-    if self.texture == 0 then print('Could not create texture') end
-    C.nxRendererUploadTextureData(self.texture, 0, 0, img:data())
+    self.texture = Texture:new()
+    self.texture:create('2d', imgWidth, imgHeight)
+    self.texture:setData(img:data())
 
     -- Create renderbuffer
     self.rb = C.nxRendererCreateRenderbuffer(1024, 1024, 1, false, 1, 0)
@@ -154,7 +155,7 @@ function SceneSubtitle:render()
     C.nxRendererSetIndexBuffer(0, 0)
     C.nxRendererSetVertexLayout(self.vlShape)
 
-    C.nxRendererSetTexture(1, self.texture, 0)
+    self.texture:bind(1)
 
     self.defShader:bind()
     self.defShader:setSampler('tex', 1)
@@ -171,7 +172,7 @@ function SceneSubtitle:render()
     self.rbShader:bind()
     self.rbShader:setUniform('projectionMat', self.camera:matrix())
     self.rbShader:setSampler('tex2', 2)
-    
+
     C.nxRendererDraw(1, 0, 4)
 end
 
@@ -199,10 +200,10 @@ end
 function SceneSubtitle:releaseTest()
     if not self.initialized then return end
 
-    C.nxRendererDestroyShader(self.defShader)
-    C.nxRendererDestroyShader(self.rbShader)
+    self.rbShader:release()
+    self.defShader:release()
+    self.texture:release()
     C.nxRendererDestroyBuffer(self.vbRect)
-    C.nxRendererDestroyTexture(self.texture)
     C.nxRendererDestroyRenderbuffer(self.rb)
 
     self.initialized = false
