@@ -255,17 +255,11 @@ function Texture:create(texType, width, height, depth, hasMips, mipMap)
 end
 
 ------------------------------------------------------------
-function Texture:setData(data, slice, mipLevel)
-    slice    = slice or 0
-    mipLevel = mipLevel or 0
-
-    C.nxRendererUploadTextureData(self._cdata.tex, slice, mipLevel, data)
-end
-
-------------------------------------------------------------
-function Texture:setSubdata(data, a, b, c, d, e, f, g, h)
-    local x, y, z, width, height, depth, slice, mipLevel
-    if self._cdata.texType == 1 then -- 3D maps
+function Texture:setData(data, a, b, c, d, e, f, g, h)
+    local x, y, z, width, height, depth, slice, mipLevel, wholeTexture
+    if not c then
+        wholeTexture, slice, mipLevel = true, a, b
+    elseif self._cdata.texType == 1 then -- 3D maps
         x, y, z, width, height, depth, slice, mipLevel = a, b, c, d, e, f, g, h
     else
         x, y, z, width, height, depth, slice, mipLevel = a, b, 0, c, d, 1, e, f
@@ -274,9 +268,13 @@ function Texture:setSubdata(data, a, b, c, d, e, f, g, h)
     slice = slice or 0
     mipLevel = mipLevel or 0
 
-    C.nxRendererUploadTextureSubData(
-        self._cdata.tex, slice, mipLevel, x, y, z, width, height, depth, data
-    )
+    if wholeTexture then
+        C.nxRendererUploadTextureData(self._cdata.tex, slice, mipLevel, data)
+    else
+        C.nxRendererUploadTextureSubData(
+            self._cdata.tex, slice, mipLevel, x, y, z, width, height, depth, data
+        )
+    end
 end
 
 ------------------------------------------------------------
