@@ -56,18 +56,27 @@ ffi.cdef [[
 ]]
 
 ------------------------------------------------------------
+-- A class to handle Image creation and management
+------------------------------------------------------------
+local class = require 'nx.class'
+local Image = class 'nx.image'
+
+------------------------------------------------------------
 local function isNumber(val)
     return type(val) == 'number'
 end
 
+------------------------------------------------------------
 local function isNilOrNumber(val)
     return (val == nil) or (type(val) == 'number')
 end
 
+------------------------------------------------------------
 local function isCArray(a)
     return type(a) == 'cdata' or type(a) == 'userdata'
 end
 
+------------------------------------------------------------
 local function destroy(cdata)
     if cdata.img ~= nil then
         C.nxImageRelease(cdata.img)
@@ -77,15 +86,9 @@ local function destroy(cdata)
 end
 
 ------------------------------------------------------------
--- A class to handle Image creation and management
-------------------------------------------------------------
-local class = require 'nx.class'
-local Image = class 'nx.image'
-
-------------------------------------------------------------
-function Image.static._fromCData(data)
+function Image.static._fromCData(cdata)
     local image = Image:allocate()
-    image._cdata = ffi.cast('NxImage*', data)
+    image._cdata = ffi.cast('NxImage*', cdata)
     return image
 end
 
@@ -115,7 +118,7 @@ end
 
 ------------------------------------------------------------
 function Image:initialize()
-    local handle = ffi.cast('NxImage*', C.malloc(ffi.sizeof('NxImage')));
+    local handle = ffi.cast('NxImage*', C.malloc(ffi.sizeof('NxImage')))
     handle.img   = nil
     self._cdata  = ffi.gc(handle, destroy)
 end
@@ -159,7 +162,7 @@ function Image:load(a, b)
     elseif type(a) == 'string' then
         -- Load from file
         self._cdata.img = C.nxImageCreateFromFile(a)
-    elseif class.Object.isInstanceOf(a, require('nx._binaryfile')) then
+    elseif class.Object.isInstanceOf(a, require('nx.inputfile')) then
         -- Load from handle
         self._cdata.img = C.nxImageCreateFromHandle(a._cdata, false)
     else

@@ -38,6 +38,7 @@ local Mouse = require 'nx.mouse'
 local Renderer = require 'nx.renderer'
 local Thread = require 'nx.thread'
 local Camera2D = require 'nx.camera2d'
+local Shader = require 'nx.shader'
 local ffi = require 'ffi'
 local C = ffi.C
 
@@ -70,7 +71,8 @@ function SceneSubtitle:load()
     self.vbRect = C.nxRendererCreateVertexBuffer(ffi.sizeof(verts), verts)
 
     -- Create shaders
-    self.defShader = C.nxRendererCreateShader([[
+    self.defShader = Shader:new()
+    local ok, err = self.defShader:load([[
         attribute vec2 vertPos;
         attribute vec2 texCoords0;
         varying vec2 coords;
@@ -85,11 +87,10 @@ function SceneSubtitle:load()
            gl_FragColor = col * vec4(1.0, 1.0, 0.5, 1.0);
         }]]
     )
-    if self.defShader == 0 then
-        print(ffi.string(nxRendererGetShaderLog()))
-    end
+    if not ok then print(err) end
 
-    self.rbShader = C.nxRendererCreateShader([[
+    self.rbShader = Shader:new()
+    ok, err = self.rbShader:load([[
         attribute vec2 vertPos;
         attribute vec2 texCoords0;
         uniform mat4 projectionMat;
@@ -105,9 +106,7 @@ function SceneSubtitle:load()
            gl_FragColor = texture2D(tex2, coords);
         }]]
     )
-    if self.rbShader == 0 then
-        print(ffi.string(C.nxRendererGetShaderLog()))
-    end
+    if not ok then print(err) end
 
     -- Load image
     local img = require('nx.image'):new()
@@ -133,9 +132,7 @@ function SceneSubtitle:load()
     -- Reset states
     C.nxRendererResetStates()
 
-
     self.initialized = true
-
     self._processParent = true
 end
 
@@ -159,10 +156,8 @@ function SceneSubtitle:render()
 
     C.nxRendererSetTexture(1, self.texture, 0)
 
-    C.nxRendererBindShader(self.defShader)
-
-    local loc = C.nxRendererGetShaderSamplerLoc(self.defShader, 'tex')
-    if loc >= 0 then C.nxRendererSetShaderSampler(loc, 1) end
+    self.defShader:bind()
+    self.defShader:setSampler('tex', 1)
 
     C.nxRendererDraw(1, 0, 4)
 
@@ -171,15 +166,12 @@ function SceneSubtitle:render()
 
     C.nxRendererSetTexture(2, self.rbTex, 0)
 
-    C.nxRendererBindShader(self.rbShader)
     C.nxRendererSetBlendMode(true, 2, 3)
 
-    loc = C.nxRendererGetShaderSamplerLoc(self.rbShader, 'tex2')
-    if loc >= 0 then C.nxRendererSetShaderSampler(loc, 2) end
-
-    local locProj = C.nxRendererGetShaderConstLoc(self.rbShader, 'projectionMat')
-    if locProj >= 0 then C.nxRendererSetShaderConst(locProj, 4, self.camera:matrix():data(), 1) end
-
+    self.rbShader:bind()
+    self.rbShader:setUniform('projectionMat', self.camera:matrix())
+    self.rbShader:setSampler('tex2', 2)
+    
     C.nxRendererDraw(1, 0, 4)
 end
 

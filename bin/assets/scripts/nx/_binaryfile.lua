@@ -51,7 +51,7 @@ local BinaryFile = class 'nx._binaryfile'
 ------------------------------------------------------------
 function BinaryFile:initialize(filename)
     -- Attempt to open the file if the argument is valid
-    if type(filename) == 'string' and filename == '' then
+    if type(filename) == 'string' and filename ~= '' then
         -- Call the subclass' open() method
         local ok, err = self:open(filename)
         if not ok then return nil, err end
