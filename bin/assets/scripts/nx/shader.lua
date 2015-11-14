@@ -133,6 +133,7 @@ function Shader:setUniform(name, a, b, c, d)
         return false, 'Invalid parameters'
     end
 
+    local prevShader = C.nxRendererGetCurrentShader()
     self:bind()
 
     local uniform = self._uniforms[name]
@@ -143,6 +144,7 @@ function Shader:setUniform(name, a, b, c, d)
     end
 
     if uniform == -1 then
+        C.nxRendererBindShader(prevShader)
         return false, 'Uniform "' .. name .. '" does not exist'
     end
 
@@ -166,6 +168,7 @@ function Shader:setUniform(name, a, b, c, d)
 
     C.nxRendererSetShaderConst(uniform, uniformType, uniformData, 1)
 
+    C.nxRendererBindShader(prevShader)
     return true
 end
 
@@ -175,6 +178,7 @@ function Shader:setSampler(name, sampler)
         return false, 'Invalid parameters'
     end
 
+    local prevShader = C.nxRendererGetCurrentShader()
     self:bind()
 
     local uniform = self._samplers[name]
@@ -185,11 +189,13 @@ function Shader:setSampler(name, sampler)
     end
 
     if uniform == -1 then
-        return fals, 'Sampler "' .. name .. '"does not exist'
+        C.nxRendererBindShader(prevShader)
+        return false, 'Sampler "' .. name .. '"does not exist'
     end
 
     C.nxRendererSetShaderSampler(uniform, sampler)
 
+    C.nxRendererBindShader(prevShader)
     return true
 end
 

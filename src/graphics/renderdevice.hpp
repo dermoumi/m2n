@@ -297,6 +297,7 @@ public:
     virtual void setShaderSampler(int loc, uint32_t texUnit) = 0;
     virtual const char* getDefaultVSCode() = 0;
     virtual const char* getDefaultFSCode() = 0;
+    virtual uint32_t getCurrentShader() const = 0;
 
     // Renderbuffers
     virtual uint32_t createRenderBuffer(uint32_t width, uint32_t height, TextureFormat format,

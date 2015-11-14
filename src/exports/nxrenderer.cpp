@@ -277,6 +277,12 @@ NX_EXPORT const char* nxRendererGetDefaultFSCode()
 }
 
 //----------------------------------------------------------
+NX_EXPORT uint32_t nxRendererGetCurrentShader()
+{
+    return rdi->getCurrentShader();
+}
+
+//----------------------------------------------------------
 NX_EXPORT uint32_t nxRendererCreateRenderbuffer(uint32_t width, uint32_t height, uint32_t format,
     bool depth, uint32_t colBufs, uint32_t samples)
 {

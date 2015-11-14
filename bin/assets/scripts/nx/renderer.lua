@@ -71,6 +71,7 @@ ffi.cdef [[
     void nxRendererSetShaderSampler(int, uint32_t);
     const char* nxRendererGetDefaultVSCode();
     const char* nxRendererGetDefaultFSCode();
+    uint32_t nxRendererGetCurrentShader();
     uint32_t nxRendererCreateRenderbuffer(uint32_t, uint32_t, uint32_t, bool, uint32_t, uint32_t);
     void nxRendererDestroyRenderbuffer(uint32_t);
     uint32_t nxRendererGetRenderbufferTexture(uint32_t, uint32_t);

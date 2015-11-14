@@ -808,6 +808,12 @@ const char* RenderDeviceGL::getDefaultFSCode()
 }
 
 //----------------------------------------------------------
+uint32_t RenderDeviceGL::getCurrentShader() const
+{
+    return mCurShaderID;
+}
+
+//----------------------------------------------------------
 void RenderDeviceGL::beginRendering()
 {
     // Get the currently bound frame buffer object. 

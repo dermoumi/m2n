@@ -75,6 +75,7 @@ public:
     void setShaderSampler(int loc, uint32_t texUnit);
     const char* getDefaultVSCode();
     const char* getDefaultFSCode();
+    uint32_t getCurrentShader() const;
 
     // Buffers
     void beginRendering();

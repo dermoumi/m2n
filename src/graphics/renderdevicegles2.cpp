@@ -776,6 +776,12 @@ const char* RenderDeviceGLES2::getDefaultFSCode()
 }
 
 //----------------------------------------------------------
+uint32_t RenderDeviceGLES2::getCurrentShader()
+{
+    return mCurShaderID;
+}
+
+//----------------------------------------------------------
 void RenderDeviceGLES2::beginRendering()
 {
     // Get the currently bound frame buffer object. 
