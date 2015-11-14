@@ -123,7 +123,7 @@ function SceneSubtitle:load()
     -- Create texture
     self.texture = Texture:new()
     self.texture:create('2d', imgWidth, imgHeight)
-    self.texture:setData(img:data())
+    self.texture:setData(img)
     self.texture:setFilter('nearest')
     self.texture:setAnisotropyLevel(16)
     self.texture:setRepeating('clamp', 'wrap')

@@ -124,6 +124,7 @@ local class = require 'nx.class'
 local Texture = class 'nx.texture'
 
 local Renderer = require 'nx.renderer'
+local Image    = require 'nx.image'
 
 ------------------------------------------------------------
 local function destroy(cdata)
@@ -263,6 +264,10 @@ function Texture:setData(data, a, b, c, d, e, f, g, h)
         x, y, z, width, height, depth, slice, mipLevel = a, b, c, d, e, f, g, h
     else
         x, y, z, width, height, depth, slice, mipLevel = a, b, 0, c, d, 1, e, f
+    end
+
+    if class.Object.isInstanceOf(data, Image) then
+        data = data:data()
     end
 
     slice = slice or 0
