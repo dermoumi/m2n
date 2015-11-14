@@ -111,10 +111,7 @@ function SceneSubtitle:load()
 
     -- Load image
     local img = require('nx.image'):new()
-    local imgThread = Thread:new(function(img)
-        return img:load('assets/pasrien.png')
-    end, img)
-    local ok, err = imgThread:join()
+    local ok, err = img:load('assets/pasrien.png')
     if not ok then
         print("Couldn't load image: " .. err)
     end
@@ -132,9 +129,6 @@ function SceneSubtitle:load()
     self.rb = C.nxRendererCreateRenderbuffer(1024, 1024, 1, false, 1, 0)
     if self.rb == 0 then print('Could not create render buffer') end
     self.rbTex = C.nxRendererGetRenderbufferTexture(self.rb, 0)
-
-    -- Reset states
-    C.nxRendererResetStates()
 
     self.initialized = true
     self._processParent = true

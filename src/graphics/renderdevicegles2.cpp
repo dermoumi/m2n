@@ -776,7 +776,7 @@ const char* RenderDeviceGLES2::getDefaultFSCode()
 }
 
 //----------------------------------------------------------
-uint32_t RenderDeviceGLES2::getCurrentShader()
+uint32_t RenderDeviceGLES2::getCurrentShader() const
 {
     return mCurShaderID;
 }
