@@ -80,13 +80,12 @@ end
 -- A class to handle Image creation and management
 ------------------------------------------------------------
 local class = require 'nx.class'
-local Image = class 'Image'
+local Image = class 'nx.image'
 
 ------------------------------------------------------------
 function Image.static._fromCData(data)
-    local image = Image:new()
+    local image = Image:allocate()
     image._cdata = ffi.cast('NxImage*', data)
-    image._unmanagedCData = true
     return image
 end
 

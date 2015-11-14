@@ -110,8 +110,12 @@ function SceneSubtitle:load()
     end
 
     -- Load image
-    local img, err = require('nx.image').load('assets/pasrien.png')
-    if not img then
+    local img = require('nx.image'):new()
+    local imgThread = Thread:new(function(img)
+        return img:load('assets/pasrien.png')
+    end, img)
+    local ok, err = imgThread:join()
+    if not ok then
         print("Couldn't load image: " .. err)
     end
     local imgWidth, imgHeight = img:size()
