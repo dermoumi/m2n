@@ -50,9 +50,10 @@ static const char* defaultShaderFS =
     "   gl_FragColor = color;\n"
     "}\n";
 
-static uint32_t toIndexFormat[] = {GL_UNSIGNED_SHORT, GL_UNSIGNED_INT};
-static uint32_t toPrimType[]    = {GL_TRIANGLES, GL_TRIANGLE_STRIP};
-static int      toTexType[]     = {GL_TEXTURE_2D, GL_TEXTURE_3D_OES, GL_TEXTURE_CUBE_MAP};
+static GLenum toVertexFormat[] = {GL_FLOAT, GL_UNSIGNED_BYTE};
+static GLenum toIndexFormat[]  = {GL_UNSIGNED_SHORT, GL_UNSIGNED_INT};
+static GLenum toPrimType[]     = {GL_TRIANGLES, GL_TRIANGLE_STRIP};
+static GLenum toTexType[]      = {GL_TEXTURE_2D, GL_TEXTURE_3D_OES, GL_TEXTURE_CUBE_MAP};
 
 static std::mutex vlMutex; // Vertex layouts mutex
 static std::mutex txMutex; // Texture operations mutex
@@ -299,7 +300,7 @@ void RenderDeviceGLES2::drawIndexed(PrimType primType, uint32_t firstIndex, uint
 }
 
 //----------------------------------------------------------
-uint32_t RenderDeviceGLES2::registerVertexLayout(uint32_t numAttribs,
+uint32_t RenderDeviceGLES2::registerVertexLayout(uint8_t numAttribs,
     const VertexLayoutAttrib* attribs)
 {
     if (mNumVertexLayouts == MaxNumVertexLayouts) return 0;
@@ -307,7 +308,7 @@ uint32_t RenderDeviceGLES2::registerVertexLayout(uint32_t numAttribs,
     std::lock_guard<std::mutex> lock(vlMutex);
     
     mVertexLayouts[mNumVertexLayouts].numAttribs = numAttribs;
-    for (uint32_t i = 0; i < numAttribs; ++i) {
+    for (uint8_t i = 0; i < numAttribs; ++i) {
         mVertexLayouts[mNumVertexLayouts].attribs[i] = attribs[i];
     }
 
@@ -1516,8 +1517,10 @@ bool RenderDeviceGLES2::applyVertexLayout()
                     return false;
                 }
 
+                GLenum format = toVertexFormat[attrib.format];
                 glBindBuffer(GL_ARRAY_BUFFER, mBuffers.getRef(vbSlot.vbObj).glObj);
-                glVertexAttribPointer(attribIndex, attrib.size, GL_FLOAT, GL_FALSE,
+                glVertexAttribPointer(attribIndex, attrib.size, format,
+                    format == GL_UNSIGNED_BYTE ? GL_TRUE : GL_FALSE,
                     vbSlot.stride, (char*)0 + vbSlot.offset + attrib.offset);
 
                 newVertexAttribMask |= 1 << attribIndex;

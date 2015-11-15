@@ -268,7 +268,7 @@ public:
     virtual void drawIndexed(PrimType primType, uint32_t firstIndex, uint32_t indexCount) = 0;
 
     // Vertex layouts
-    virtual uint32_t registerVertexLayout(uint16_t numAttribs,
+    virtual uint32_t registerVertexLayout(uint8_t numAttribs,
         const VertexLayoutAttrib* attribs) = 0;
 
     // Buffers

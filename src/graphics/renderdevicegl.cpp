@@ -137,11 +137,7 @@ bool RenderDeviceGL::initialize()
     mIndexFormat = GL_UNSIGNED_SHORT;
     mActiveVertexAttribsMask = 0u;
 
-    // Set some default values
-    mIndexFormat = GL_UNSIGNED_SHORT;
-    mActiveVertexAttribsMask = 0;
-
-    // TODO: Find supported depth format (some old ATI cards only support 16 bit depth for FBOs)
+    // Find supported depth format (some old ATI cards only support 16 bit depth for FBOs)
     mDepthFormat = GL_DEPTH_COMPONENT24;
     uint32_t testBuf = createRenderBuffer(32, 32, RGBA8, true, 1, 0);
     if (testBuf == 0) {
@@ -338,7 +334,7 @@ void RenderDeviceGL::drawIndexed(PrimType primType, uint32_t firstIndex, uint32_
 }
 
 //----------------------------------------------------------
-uint32_t RenderDeviceGL::registerVertexLayout(uint16_t numAttribs,
+uint32_t RenderDeviceGL::registerVertexLayout(uint8_t numAttribs,
     const VertexLayoutAttrib* attribs)
 {
     if (mNumVertexLayouts == MaxNumVertexLayouts) return 0;
@@ -346,7 +342,7 @@ uint32_t RenderDeviceGL::registerVertexLayout(uint16_t numAttribs,
     std::lock_guard<std::mutex> lock(vlMutex);
 
     mVertexLayouts[mNumVertexLayouts].numAttribs = numAttribs;
-    for (uint16_t i = 0; i < numAttribs; ++i) {
+    for (uint8_t i = 0; i < numAttribs; ++i) {
         mVertexLayouts[mNumVertexLayouts].attribs[i] = attribs[i];
     }
 

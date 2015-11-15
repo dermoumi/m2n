@@ -121,16 +121,13 @@ NX_EXPORT void nxRendererDrawIndexed(uint32_t primType, uint32_t firstIndex, uin
 }
 
 //----------------------------------------------------------
-NX_EXPORT uint32_t nxRendererRegisterVertexLayout(uint16_t numAttribs,
+NX_EXPORT uint32_t nxRendererRegisterVertexLayout(uint8_t numAttribs,
     const NxVertexLayoutAttrib* attribs)
 {
     std::vector<RenderDevice::VertexLayoutAttrib> attributes(numAttribs);
-    for (uint32_t i = 0; i < numAttribs; ++i) {
+    for (uint8_t i = 0; i < numAttribs; ++i) {
         attributes[i].semanticName = attribs[i].semanticName;
-        attributes[i].vbSlot       = attribs[i].vbSlot;
-        attributes[i].size         = attribs[i].size;
-        attributes[i].offset       = attribs[i].offset;
-        attributes[i].format       = attribs[i].format;
+        memcpy(&attributes[i].vbSlot, &attribs[i].vbSlot, sizeof(NxVertexLayoutAttrib) - 32);
     } 
 
     return rdi->registerVertexLayout(numAttribs, attributes.data());

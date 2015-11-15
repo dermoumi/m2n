@@ -48,7 +48,7 @@ ffi.cdef [[
     void nxRendererClear(uint8_t, uint8_t, uint8_t, uint8_t, float, bool, bool, bool, bool, bool);
     void nxRendererDraw(uint32_t, uint32_t, uint32_t);
     void nxRendererDrawIndexed(uint32_t, uint32_t, uint32_t);
-    uint32_t nxRendererRegisterVertexLayout(uint16_t, const NxVertexLayoutAttrib*);
+    uint32_t nxRendererRegisterVertexLayout(uint8_t, const NxVertexLayoutAttrib*);
     uint32_t nxRendererCreateVertexBuffer(uint32_t, const void*);
     uint32_t nxRendererCreateIndexBuffer(uint32_t, const void*);
     void nxRendererDestroyBuffer(uint32_t);
