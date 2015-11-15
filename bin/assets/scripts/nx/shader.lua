@@ -66,13 +66,20 @@ function Shader.static._fromCData(cdata)
 end
 
 ------------------------------------------------------------
-function Shader:initialize()
+function Shader:initialize(vertexShader, fragmentShader)
     local handle = ffi.cast('NxShader*', C.malloc(ffi.sizeof('NxShader')))
     handle.id = 0
     self._cdata = ffi.gc(handle, destroy)
 
     self._uniforms = {}
     self._samplers = {}
+
+    if vertexShader or fragmentShader then
+        ok, err = self:load(vertexShader, fragmentShader)
+        if not ok then
+            return nil, err
+        end
+    end
 end
 
 ------------------------------------------------------------

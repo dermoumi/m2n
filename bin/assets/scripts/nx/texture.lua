@@ -190,7 +190,7 @@ function Texture.static.usedMemory()
 end
 
 ------------------------------------------------------------
-function Texture:initialize()
+function Texture:initialize(texType, width, height, depth, hasMips, mipMap)
     local handle = ffi.cast('NxTexture*', C.malloc(ffi.sizeof('NxTexture')))
     handle.texType      = 0
     handle.tex          = 0
@@ -201,6 +201,13 @@ function Texture:initialize()
     handle.actualHeight = 0
     handle.samplerState = 0
     self._cdata = ffi.gc(handle, destroy)
+
+    if texType and width and height then
+        ok, err = self:create(texType, width, height, depth, hasMips, mipMap)
+        if not ok then
+            return nil, err
+        end
+    end
 end
 
 ------------------------------------------------------------

@@ -68,7 +68,7 @@ function Renderbuffer.static._fromCData(cdata)
 end
 
 ------------------------------------------------------------
-function Renderbuffer:initialize()
+function Renderbuffer:initialize(width, height, depth, samples, numColBufs)
     local handle = ffi.cast('NxRenderbuffer*', C.malloc(ffi.sizeof('NxRenderbuffer')))
 
     handle.rb         = 0
@@ -80,6 +80,13 @@ function Renderbuffer:initialize()
     self._cdata = ffi.gc(handle, destroy)
 
     self._textures = {}
+
+    if width and height then
+        ok, err = self:create(width, height, depth, samples, numColBufs)
+        if not ok then
+            return nil, err
+        end
+    end
 end
 
 ------------------------------------------------------------
