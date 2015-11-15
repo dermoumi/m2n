@@ -86,7 +86,6 @@ if not ok then
 end
 
 Window.setIcon('assets/icon.png')
-Renderer.setViewport(0, 0, Window.size())
 
 ------------------------------------------------------------
 -- Startup scene

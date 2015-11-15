@@ -172,19 +172,6 @@ function Renderer.init()
 end
 
 ------------------------------------------------------------
-function Renderer.clear(r, g, b, a, depth, col0, col1, col2, col3, clearDepth)
-    if (col0 == nil) then col0 = true end
-    if (col1 == nil) then col1 = true end
-    if (col2 == nil) then col2 = true end
-    if (col3 == nil) then col3 = true end
-    if (clearDepth == nil) then clearDepth = true end
-
-    C.nxRendererClear(
-        r or 0, g or 0, b or 0, a or 255, dethp or 1.0, col0, col1, col2, col3, clearDepth
-    )
-end
-
-------------------------------------------------------------
 function Renderer.begin()
     C.nxRendererBegin()
 end
@@ -192,22 +179,6 @@ end
 ------------------------------------------------------------
 function Renderer.finish()
     C.nxRendererFinish()
-end
-
-------------------------------------------------------------
-function Renderer.setViewport(x, y, w, h)
-    C.nxRendererSetViewport(x, y, w, h)
-end
-
-------------------------------------------------------------
-function Renderer.setRenderbuffer(renderbuffer)
-    if renderbuffer then
-        renderbuffer = renderbuffer._cdata.rb
-    else
-        renderbuffer = 0
-    end
-
-    C.nxRendererSetRenderbuffer(renderbuffer)
 end
 
 ------------------------------------------------------------

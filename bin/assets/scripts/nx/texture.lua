@@ -171,7 +171,7 @@ end
 function Texture.static._fromRenderbuffer(rb, bufIndex)
     local c = ffi.new('NxTexture')
 
-    c.texType      = (bufIndex == 32) and 12 or 1
+    c.texType      = (bufIndex == 32) and 12 or 0
     c.tex          = C.nxRendererGetRenderbufferTexture(rb._cdata.rb, bufIndex)
     c.width        = rb._cdata.width
     c.height       = rb._cdata.height
@@ -341,9 +341,9 @@ end
 ------------------------------------------------------------
 function Texture:size(actualSize)
     if actualSize then
-        return tonumber(self._cdata.actualWidth), tonumber(self._cdata.actualHeight)
+        return self._cdata.actualWidth, self._cdata.actualHeight, self._cdata.depth
     else
-        return tonumber(self._cdata.width), tonumber(self._cdata.height)
+        return self._cdata.width, self._cdata.height, self._cdata.depth
     end
 end
 

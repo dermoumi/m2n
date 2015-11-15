@@ -26,57 +26,83 @@
 --]]----------------------------------------------------------------------------
 
 ------------------------------------------------------------
--- A Title scene, probably the first scene the user sees
+-- A base class for camera objects
 ------------------------------------------------------------
 local class = require 'nx.class'
-local Scene = require 'scene'
-local SceneTitle = class('scene.title', Scene)
+local Camera = class 'nx._camera'
 
-------------------------------------------------------------
-local Mouse = require 'nx.mouse'
-local Keyboard = require 'nx.keyboard'
+local Window   = require 'nx.window'
 local Renderer = require 'nx.renderer'
-local Log = require 'nx.log'
+local Matrix4  = require 'nx.matrix4'
+
+local ffi = require 'ffi'
+local C   = ffi.C
 
 ------------------------------------------------------------
-function SceneTitle:load()
-    local caps = Renderer.getCapabilities()
-
-    Log.info('================================')
-    Log.info('GPU Capabilities:')
-    Log.info('--------------------------------')
-    for i, v in pairs(caps) do
-        Log.info(i .. ':\t' .. tostring(v))
-    end
-
-    Scene.push('scene.subtitle')
+function Camera:setViewport(left, top, width, height)
+    self._vpX = left
+    self._vpY = top
+    self._vpW = width
+    self._vpH = height
 end
 
 ------------------------------------------------------------
-function SceneTitle:render()
-    
-end
-
-------------------------------------------------------------
-function SceneTitle:onKeyDown(scancode, a, repeated)
-    if repeated then return end
-
-    if scancode == 'f1' then
-        Scene.push('scene.subtitle')
-    elseif scancode == 'f10' then
-        require('nx.window').create('m2n-', 1280, 720, {})
-    elseif scancode == 'f11' then
-        require('nx.window').create('m2n-', 1920, 1080, {fullscreen = true, msaa = 4})
-    elseif scancode == 'f12' then
-        require('nx.window').create('m2n-', 1024, 720, {fullscreen = true, msaa = 8})
-    elseif scancode == 'f9' then
-        if Keyboard.modKeyDown('ctrl') then
-            collectgarbage('collect')
-        else
-            print('Lua usage: ' .. tostring(collectgarbage('count') * 1024))
-        end
+function Camera:viewport()
+    if self._vpX then
+        return self._vpX, self._vpY, self._vpW, self._vpH
+    elseif self._renderbuffer then
+        return 0, 0, self._renderbuffer:size()
+    else
+        return 0, 0, Window:size()
     end
 end
 
 ------------------------------------------------------------
-return SceneTitle
+function Camera:setRenderbuffer(rb)
+    self._renderbuffer = rb
+end
+
+------------------------------------------------------------
+function Camera:renderbuffer()
+    return self._renderbuffer
+end
+
+------------------------------------------------------------
+function Camera:matrix()
+    return Matrix4:new()
+end
+
+------------------------------------------------------------
+function Camera:clear(r, g, b, a, depth, col0, col1, col2, col3, clearDepth)
+    self:_setupDrawing()
+
+    -- Make sure of values
+    if col0 == nil then col0 = true end
+    if col1 == nil then col1 = true end
+    if col2 == nil then col2 = true end
+    if col3 == nil then col3 = true end
+    if clearDepth == nil then clearDepth = true end
+
+    C.nxRendererClear(
+        r or 0, g or 0, b or 0, a or 255, depth or 1.0, col0, col1, col2, col3, clearDepth
+    )
+end
+
+------------------------------------------------------------
+function Camera:draw(drawable)
+    self:_setupDrawing()
+
+    drawable:_render(self:matrix(), Matrix4:new(), 255, 255, 255, 255)
+end
+
+------------------------------------------------------------
+function Camera:_setupDrawing()
+    -- Setup renderbuffer
+    C.nxRendererSetRenderbuffer(self._renderbuffer and self._renderbuffer._cdata.rb or 0)
+
+    -- Setup viewport
+    C.nxRendererSetViewport(self:viewport())
+end
+
+------------------------------------------------------------
+return Camera

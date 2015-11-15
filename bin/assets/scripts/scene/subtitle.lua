@@ -78,7 +78,6 @@ function SceneSubtitle:load()
     if not self.rb:create(1280, 720) then
         print('Could not create render buffer')
     end
-
     self.rb:texture():setRepeating('wrap', 'wrap')
 
     self.sprite = Sprite:new(self.texture)
@@ -98,31 +97,17 @@ function SceneSubtitle:render()
     C.nxRendererSetCullMode(3)
     C.nxRendererSetBlendMode(true, 2, 3)
 
-    Renderer.setRenderbuffer(self.rb)
-    Renderer.setViewport(0, 0, 1280, 720)
-    Renderer.clear(255, 255, 255, 128)
+    self.camera:setRenderbuffer(self.rb)
+    self.camera:clear(255, 255, 255, 128)
+    self.camera:draw(self.sprite)
 
-    -- self.texture:bind(1)
-
-    -- self.defShader:bind()
-    -- self.defShader:setSampler('uTexture', 1)
-
-    -- C.nxRendererDraw(1, 0, 4)
-
-    self.sprite:_render(nil, self.camera:matrix())
-
-    Renderer.setRenderbuffer(nil)
-    Renderer.setViewport(0, 0, 1280, 720)
-
-    -- self.rb:texture():bind(2)
-
-    -- self.rbShader:bind()
-    -- self.rbShader:setUniform('uViewMat', self.camera:matrix())
-    -- self.rbShader:setSampler('uTexture', 2)
-
-    -- C.nxRendererDraw(1, 0, 4)
-
-    self.rbSprite:_render(nil, self.camera:matrix())
+    self.camera:setRenderbuffer(nil)
+    if Mouse.isButtonDown('left') then
+        self.camera:clear(128, 255, 0)
+    else
+        self.camera:clear(255, 128, 0)
+    end
+    self.camera:draw(self.rbSprite)
 end
 
 ------------------------------------------------------------
@@ -133,7 +118,7 @@ function SceneSubtitle:onKeyDown(scancode)
     elseif scancode == 'f3' then
         self._processParent = not self._processParent
     elseif scancode == 'space' then
-        local img = require('nx.image').create(1024, 1024, self.rb:texture():data())
+        local img = require('nx.image').create(1280, 720, self.rb:texture():data())
         img:save('helloworld.png')
     end
 end

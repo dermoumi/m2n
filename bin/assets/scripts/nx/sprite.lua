@@ -57,12 +57,17 @@ end
 
 ------------------------------------------------------------
 function Sprite:setTexture(texture, keepSubrect)
+    if texture._cdata.texType ~= 0 then -- only accept 2D textures
+        return
+    end
+
     self._texture = texture
 
     if keepSubrect then
         self._updateBuffer = true
     else
-        self:setSubrect(0, 0, texture:size())
+        local w, h = texture:size()
+        self:setSubrect(0, 0, w, h)
     end
 end
 
@@ -100,7 +105,7 @@ function Sprite:size()
 end
 
 ------------------------------------------------------------
-function Sprite:_render(shader, viewMatrix, modelMatrix, r, g, b, a)
+function Sprite:_render(projectionMat, modelViewMat, r, g, b, a)
     if not self._texture then return end
 
     if self._updateBuffer then
@@ -116,6 +121,7 @@ function Sprite:_render(shader, viewMatrix, modelMatrix, r, g, b, a)
             subT = self._subY
             subR = self._subX + self._subW
             subB = self._subY + self._subH
+            print(texW, texH, self._subW, self._subH, self._subW * texW)
         else
             w = self._subW
             h = self._subH
@@ -149,7 +155,7 @@ function Sprite:_render(shader, viewMatrix, modelMatrix, r, g, b, a)
     end
 
     if self._vertexbuffer ~= 0 then
-        shader = shader or Sprite._defaultShader()
+        local shader = self._shader or Sprite._defaultShader()
         r = (r or 255) / 255
         g = (g or 255) / 255
         b = (b or 255) / 255
@@ -162,7 +168,7 @@ function Sprite:_render(shader, viewMatrix, modelMatrix, r, g, b, a)
         self._texture:bind(0)
 
         shader:bind()
-        shader:setUniform('uProjectionMat', viewMatrix)
+        shader:setUniform('uProjectionMat', projectionMat)
         shader:setUniform('uColor', r, g, b, a)
         shader:setSampler('uTexture', 0)
 

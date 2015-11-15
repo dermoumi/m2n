@@ -139,4 +139,9 @@ function Renderbuffer:texture(bufIndex)
 end
 
 ------------------------------------------------------------
+function Renderbuffer:size()
+    return self._cdata.width, self._cdata.height
+end
+
+------------------------------------------------------------
 return Renderbuffer

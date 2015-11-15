@@ -29,7 +29,8 @@
 -- Represents a 2D view in space
 ------------------------------------------------------------
 local class = require 'nx.class'
-local Camera2D = class 'nx.camera2d'
+local Camera = require 'nx._camera'
+local Camera2D = class('nx.camera2d', Camera)
 
 local Matrix4 = require 'nx.matrix4'
 
@@ -92,16 +93,6 @@ function Camera2D:setRotation(rad)
 end
 
 ------------------------------------------------------------
-function Camera2D:setViewport(x, y, width, height)
-    local c = self._cdata
-
-    c.vpX = x
-    c.vpY = y
-    c.vpW = width
-    c.vpH = height
-end
-
-------------------------------------------------------------
 function Camera2D:reset(x, y, width, height)
     local c = self._cdata
 
@@ -136,12 +127,6 @@ end
 function Camera2D:rotation()
     local c = self._cdata
     return c.rotation
-end
-
-------------------------------------------------------------
-function Camera2D:viewport()
-    local c = self._cdata
-    return c.vpX, c.vpY, c.vpW, c.vpH
 end
 
 ------------------------------------------------------------
