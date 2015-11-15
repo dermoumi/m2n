@@ -129,7 +129,7 @@ local Image    = require 'nx.image'
 ------------------------------------------------------------
 local function destroy(cdata)
     if cdata.tex ~= 0 then
-        nxRendererDestroyTexture(cdata.tex)
+        C.nxRendererDestroyTexture(cdata.tex)
     end
 
     C.free(cdata)
@@ -163,6 +163,24 @@ end
 function Texture.static._fromCData(cdata)
     local texture = Texture:allocate()
     texture._cdata = ffi.cast('NxTexture*', cdata)
+    return texture
+end
+
+------------------------------------------------------------
+function Texture.static._fromRenderbuffer(rb, bufIndex)
+    local c = ffi.new('NxTexture')
+
+    c.texType      = (bufIndex == 32) and 12 or 1
+    c.tex          = C.nxRendererGetRenderbufferTexture(rb._cdata.rb, bufIndex)
+    c.width        = rb._cdata.width
+    c.height       = rb._cdata.height
+    c.depth        = 1
+    c.actualWidth  = c.width
+    c.actualHeight = c.height
+    c.samplerState = 0
+
+    local texture = Texture:allocate()
+    texture._cdata = c
     return texture
 end
 
@@ -284,6 +302,7 @@ end
 
 ------------------------------------------------------------
 function Texture:bind(unit)
+    if not self._cdata then return end
     if unit < Renderer.getCapabilities('maxTexUnits') then
         C.nxRendererSetTexture(unit, self._cdata.tex, self._cdata.samplerState)
         return true

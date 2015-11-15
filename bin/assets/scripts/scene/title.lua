@@ -63,7 +63,7 @@ end
 
 ------------------------------------------------------------
 function SceneTitle:onResize(w, h)
-    Renderer.setupViewport(0, 0, w, h)
+    Renderer.setViewport(0, 0, w, h)
 end
 
 ------------------------------------------------------------

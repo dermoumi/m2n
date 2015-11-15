@@ -77,9 +77,7 @@ end
 
 ------------------------------------------------------------
 function Shader:release()
-    if self._cdata == nil then return end
     destroy(ffi.gc(self._cdata, nil))
-    self._cdata = nil
 end
 
 ------------------------------------------------------------

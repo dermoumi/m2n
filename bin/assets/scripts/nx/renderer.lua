@@ -166,8 +166,19 @@ function Renderer.finish()
 end
 
 ------------------------------------------------------------
-function Renderer.setupViewport(x, y, w, h)
+function Renderer.setViewport(x, y, w, h)
     C.nxRendererSetViewport(x, y, w, h)
+end
+
+------------------------------------------------------------
+function Renderer.setRenderbuffer(renderbuffer)
+    if renderbuffer then
+        renderbuffer = renderbuffer._cdata.rb
+    else
+        renderbuffer = 0
+    end
+
+    C.nxRendererSetRenderbuffer(renderbuffer)
 end
 
 ------------------------------------------------------------

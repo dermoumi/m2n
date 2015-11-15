@@ -30,7 +30,7 @@ local Log      = require 'nx.log'
 local Window   = require 'nx.window'
 local Events   = require 'nx.events'
 local Renderer = require 'nx.renderer'
-local Scene      = require 'scene'
+local Scene    = require 'scene'
 
 ------------------------------------------------------------
 -- Helpers
@@ -86,7 +86,7 @@ if not ok then
 end
 
 Window.setIcon('assets/icon.png')
-Renderer.setupViewport(0, 0, Window.size())
+Renderer.setViewport(0, 0, Window.size())
 
 ------------------------------------------------------------
 -- Startup scene
@@ -145,12 +145,7 @@ while true do
     if totalElapsedTime > 1 then
         local currentFPS = math.floor(1 / (totalElapsedTime / frameCount) + .5)
         Window.setTitle('m2n [' .. currentFPS .. ']')
-
-        -- Print the FPS when on android
-        if Nx.getPlatform() == 'android' then
-            print('Current FPS: ' .. currentFPS)
-        end
-        
+       
         totalElapsedTime = totalElapsedTime % 1
         frameCount = 0
     end

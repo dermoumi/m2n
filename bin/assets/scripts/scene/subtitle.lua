@@ -40,6 +40,7 @@ local Thread = require 'nx.thread'
 local Camera2D = require 'nx.camera2d'
 local Shader = require 'nx.shader'
 local Texture = require 'nx.texture'
+local Renderbuffer = require 'nx.renderbuffer'
 local ffi = require 'ffi'
 local C = ffi.C
 
@@ -126,9 +127,13 @@ function SceneSubtitle:load()
     self.texture:setRepeating('clamp', 'wrap')
 
     -- Create renderbuffer
-    self.rb = C.nxRendererCreateRenderbuffer(1024, 1024, 1, false, 1, 0)
-    if self.rb == 0 then print('Could not create render buffer') end
-    self.rbTex = C.nxRendererGetRenderbufferTexture(self.rb, 0)
+    self.rb = Renderbuffer:new()
+    self.rb:create(1024, 1024)
+    if not self.rb:create(1024, 1024) then
+        print('Could not create render buffer')
+    end
+
+    self.rb:texture():setRepeating('wrap', 'wrap')
 
     self.initialized = true
     self._processParent = true
@@ -143,14 +148,13 @@ end
 function SceneSubtitle:render()
     C.nxRendererSetCullMode(3)
 
-    C.nxRendererSetRenderbuffer(self.rb)
-
-    C.nxRendererSetViewport(0, 0, 1024, 1024)
-    C.nxRendererClear(255, 255, 255, 50, 0, true, false, false, false, false)
-
     C.nxRendererSetVertexBuffer(0, self.vbRect, 0, 16)
     C.nxRendererSetIndexBuffer(0, 0)
     C.nxRendererSetVertexLayout(self.vlShape)
+
+    Renderer.setRenderbuffer(self.rb)
+    Renderer.setViewport(0, 0, 1024, 1024)
+    Renderer.clear(255, 255, 255, 50)
 
     self.texture:bind(1)
 
@@ -159,10 +163,10 @@ function SceneSubtitle:render()
 
     C.nxRendererDraw(1, 0, 4)
 
-    C.nxRendererSetRenderbuffer(0)
-    C.nxRendererSetViewport(0, 0, 1280, 720)
+    Renderer.setRenderbuffer(nil)
+    Renderer.setViewport(0, 0, 1280, 720)
 
-    C.nxRendererSetTexture(2, self.rbTex, 0)
+    self.rb:texture():bind(2)
 
     C.nxRendererSetBlendMode(true, 2, 3)
 
@@ -181,9 +185,7 @@ function SceneSubtitle:onKeyDown(scancode)
     elseif scancode == 'f3' then
         self._processParent = not self._processParent
     elseif scancode == 'space' then
-        local buffer = ffi.new('uint8_t[?]', 1024 * 1024 * 8)
-        C.nxRendererGetTextureData(self.rbTex, 0, 0, buffer)
-        local img = require('nx.image').create(1024, 1024, buffer)
+        local img = require('nx.image').create(1024, 1024, self.rb:texture():data())
         img:save('helloworld.png')
     end
 end
@@ -200,8 +202,8 @@ function SceneSubtitle:releaseTest()
     self.rbShader:release()
     self.defShader:release()
     self.texture:release()
+    self.rb:release()
     C.nxRendererDestroyBuffer(self.vbRect)
-    C.nxRendererDestroyRenderbuffer(self.rb)
 
     self.initialized = false
 end

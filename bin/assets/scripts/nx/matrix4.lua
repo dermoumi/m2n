@@ -26,23 +26,23 @@
 --]]----------------------------------------------------------------------------
 
 ------------------------------------------------------------
--- A Matrix4 class
+-- A Matrix class
 ------------------------------------------------------------
 local class = require 'nx.class'
-local Matrix4 = class 'nx.matrix4'
+local Matrix = class 'nx.Matrix'
 
 local ffi = require 'ffi'
 
 ------------------------------------------------------------
-function Matrix4.static._fromCData(data)
-    local m  = Matrix4:allocate()
+function Matrix.static._fromCData(data)
+    local m  = Matrix:allocate()
     m._cdata = ffi.cast('float*', data)
     return m
 end
 
 ------------------------------------------------------------
-function Matrix4.static.fromTranslation(x, y, z)
-    local mat = Matrix4:new()
+function Matrix.static.fromTranslation(x, y, z)
+    local mat = Matrix:new()
     local m   = mat._cdata
 
     m[12] = x
@@ -53,8 +53,8 @@ function Matrix4.static.fromTranslation(x, y, z)
 end
 
 ------------------------------------------------------------
-function Matrix4.static.fromScaling(x, y, z)
-    local mat = Matrix4:new()
+function Matrix.static.fromScaling(x, y, z)
+    local mat = Matrix:new()
     local m   = mat._cdata
 
     m[0]  = x
@@ -65,17 +65,17 @@ function Matrix4.static.fromScaling(x, y, z)
 end
 
 ------------------------------------------------------------
-function Matrix4.static.fromRotation(x, y, z)
-    local mat = Matrix4.fromXRotation(x)
-    mat:combine(Matrix4.fromYRotation(y))
-    mat:combine(Matrix4.fromZRotation(z))
+function Matrix.static.fromRotation(x, y, z)
+    local mat = Matrix.fromXRotation(x)
+    mat:combine(Matrix.fromYRotation(y))
+    mat:combine(Matrix.fromZRotation(z))
 
     return mat
 end
 
 ------------------------------------------------------------
-function Matrix4.static.fromXRotation(rad)
-    local mat  = Matrix4:new()
+function Matrix.static.fromXRotation(rad)
+    local mat  = Matrix:new()
     local m    = mat._cdata
     local s, c = math.sin(rad), math.cos(rad)
 
@@ -88,8 +88,8 @@ function Matrix4.static.fromXRotation(rad)
 end
 
 ------------------------------------------------------------
-function Matrix4.static.fromYRotation(rad)
-    local mat  = Matrix4:new()
+function Matrix.static.fromYRotation(rad)
+    local mat  = Matrix:new()
     local m    = mat._cdata
     local s, c = math.sin(rad), math.cos(rad)
 
@@ -102,8 +102,8 @@ function Matrix4.static.fromYRotation(rad)
 end
 
 ------------------------------------------------------------
-function Matrix4.static.fromZRotation(rad)
-    local mat  = Matrix4:new()
+function Matrix.static.fromZRotation(rad)
+    local mat  = Matrix:new()
     local m    = mat._cdata
     local s, c = math.sin(rad), math.cos(rad)
 
@@ -116,8 +116,8 @@ function Matrix4.static.fromZRotation(rad)
 end
 
 ------------------------------------------------------------
-function Matrix4.static.fromPerspective(left, right, bottom, top, near, far)
-    local mat = Matrix4:new()
+function Matrix.static.fromPerspective(left, right, bottom, top, near, far)
+    local mat = Matrix:new()
     local m   = mat._cdata
 
     m[0]  = 2 * near / (right - left)
@@ -133,8 +133,8 @@ function Matrix4.static.fromPerspective(left, right, bottom, top, near, far)
 end
 
 ------------------------------------------------------------
-function Matrix4.static.fromOrtho(left, right, bottom, top, near, far)
-    local mat = Matrix4:new()
+function Matrix.static.fromOrtho(left, right, bottom, top, near, far)
+    local mat = Matrix:new()
     local m   = mat._cdata
 
     m[0]  =  2 / (right - left)
@@ -148,7 +148,7 @@ function Matrix4.static.fromOrtho(left, right, bottom, top, near, far)
 end
 
 ------------------------------------------------------------
-function Matrix4:initialize()
+function Matrix:initialize()
     self._cdata = ffi.new('float[16]', {
         1, 0, 0, 0,
         0, 1, 0, 0,
@@ -158,8 +158,8 @@ function Matrix4:initialize()
 end
 
 ------------------------------------------------------------
-function Matrix4:clone()
-    local mat = Matrix4:allocate()
+function Matrix:clone()
+    local mat = Matrix:allocate()
     local m   = self._cdata
 
     mat._cdata = ffi.new('float[16]', {
@@ -173,7 +173,7 @@ function Matrix4:clone()
 end
 
 ------------------------------------------------------------
-function Matrix4:combine(mat)
+function Matrix:combine(mat)
     local m1, m2 = self._cdata, mat._cdata
 
     local a00, a01, a02, a03 = m1[0],  m1[1],  m1[2],  m1[3]
@@ -208,7 +208,7 @@ function Matrix4:combine(mat)
 end
 
 ------------------------------------------------------------
-function Matrix4:inverse()
+function Matrix:inverse()
     local m = self._cdata
 
     local a00, a01, a02, a03 = m[0],  m[1],  m[2],  m[3]
@@ -232,7 +232,7 @@ function Matrix4:inverse()
     local det = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06
     if det == 0 then return nil end
 
-    local mat = Matrix4:allocate()
+    local mat = Matrix:allocate()
     mat._cdata = ffi.new('float[16]', {
         (a11 * b11 - a12 * b10 + a13 * b09) / det,
         (a02 * b10 - a01 * b11 - a03 * b09) / det,
@@ -256,7 +256,7 @@ function Matrix4:inverse()
 end
 
 ------------------------------------------------------------
-function Matrix4:apply(x, y, z)
+function Matrix:apply(x, y, z)
     local m = self._cdata
 
     local w = m[3] * x + m[7] * y + m[11] * z + m[15]
@@ -270,9 +270,9 @@ function Matrix4:apply(x, y, z)
 end
 
 ------------------------------------------------------------
-function Matrix4:data()
+function Matrix:data()
     return self._cdata
 end
 
 ------------------------------------------------------------
-return Matrix4
+return Matrix
