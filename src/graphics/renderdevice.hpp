@@ -93,12 +93,19 @@ private:
 class RenderDevice
 {
 public:
+    enum VertexFormat
+    {
+        VtxFloat,
+        VtxU8
+    };
+
     struct VertexLayoutAttrib
     {
         std::string semanticName;
-        uint32_t    vbSlot;
-        uint32_t    size;
-        uint32_t    offset;
+        uint8_t     vbSlot;
+        uint8_t     size;
+        uint8_t     offset;
+        uint8_t     format;
     };
 
     struct VertexLayout
@@ -109,13 +116,13 @@ public:
 
     enum IndexFormat
     {
-        U16 = 0,
+        U16,
         U32
     };
 
     enum PrimType
     {
-        Triangles = 0,
+        Triangles,
         TriangleStrip
     };
 
@@ -131,14 +138,14 @@ public:
 
     enum TextureType
     {
-        Tex2D = 0,
+        Tex2D,
         Tex3D,
         TexCube
     };
 
     enum TextureFormat
     {
-        Unknown = 0,
+        Unknown,
         RGBA8,
         DXT1,
         DXT3,
@@ -196,20 +203,20 @@ public:
 
     enum FillMode
     {
-        Solid = 0,
+        Solid,
         Wireframe
     };
 
     enum CullMode
     {
-        Back = 0,
+        Back,
         Front,
         None
     };
 
     enum BlendFunc
     {
-        Zero = 0,
+        Zero,
         One,
         SrcAlpha,
         InvSrcAlpha,
@@ -218,7 +225,7 @@ public:
 
     enum DepthFunc
     {
-        LessEqueal = 0,
+        LessEqueal,
         Less,
         Equal,
         Greater,
@@ -261,7 +268,7 @@ public:
     virtual void drawIndexed(PrimType primType, uint32_t firstIndex, uint32_t indexCount) = 0;
 
     // Vertex layouts
-    virtual uint32_t registerVertexLayout(uint32_t numAttribs,
+    virtual uint32_t registerVertexLayout(uint16_t numAttribs,
         const VertexLayoutAttrib* attribs) = 0;
 
     // Buffers

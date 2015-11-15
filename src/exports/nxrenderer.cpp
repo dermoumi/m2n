@@ -38,10 +38,11 @@
 //----------------------------------------------------------
 struct NxVertexLayoutAttrib
 {
-    char     semanticName[32];
-    uint32_t vbSlot;
-    uint32_t size;
-    uint32_t offset;
+    char    semanticName[32];
+    uint8_t vbSlot;
+    uint8_t size;
+    uint8_t offset;
+    uint8_t format;
 };
 
 //----------------------------------------------------------
@@ -120,7 +121,7 @@ NX_EXPORT void nxRendererDrawIndexed(uint32_t primType, uint32_t firstIndex, uin
 }
 
 //----------------------------------------------------------
-NX_EXPORT uint32_t nxRendererRegisterVertexLayout(uint32_t numAttribs,
+NX_EXPORT uint32_t nxRendererRegisterVertexLayout(uint16_t numAttribs,
     const NxVertexLayoutAttrib* attribs)
 {
     std::vector<RenderDevice::VertexLayoutAttrib> attributes(numAttribs);
@@ -129,6 +130,7 @@ NX_EXPORT uint32_t nxRendererRegisterVertexLayout(uint32_t numAttribs,
         attributes[i].vbSlot       = attribs[i].vbSlot;
         attributes[i].size         = attribs[i].size;
         attributes[i].offset       = attribs[i].offset;
+        attributes[i].format       = attribs[i].format;
     } 
 
     return rdi->registerVertexLayout(numAttribs, attributes.data());
@@ -166,7 +168,7 @@ NX_EXPORT uint32_t nxRendererGetBufferMemory()
 }
 
 //----------------------------------------------------------
-NX_EXPORT uint32_t nxRendrerCalcTextureSize(uint32_t format, int width, int height, int depth)
+NX_EXPORT uint32_t nxRendererCalcTextureSize(uint32_t format, int width, int height, int depth)
 {
     return rdi->calcTextureSize(
         static_cast<RenderDevice::TextureFormat>(format), width, height, depth

@@ -34,9 +34,10 @@ local C = ffi.C
 ffi.cdef [[
     typedef struct {
         char     semanticName[32];
-        uint32_t vbSlot;
-        uint32_t size;
-        uint32_t offset;
+        uint8_t vbSlot;
+        uint8_t size;
+        uint8_t offset;
+        uint8_t format;
     } NxVertexLayoutAttrib;
 
     bool nxRendererInit();
@@ -47,7 +48,7 @@ ffi.cdef [[
     void nxRendererClear(uint8_t, uint8_t, uint8_t, uint8_t, float, bool, bool, bool, bool, bool);
     void nxRendererDraw(uint32_t, uint32_t, uint32_t);
     void nxRendererDrawIndexed(uint32_t, uint32_t, uint32_t);
-    uint32_t nxRendererRegisterVertexLayout(uint32_t, const NxVertexLayoutAttrib*);
+    uint32_t nxRendererRegisterVertexLayout(uint16_t, const NxVertexLayoutAttrib*);
     uint32_t nxRendererCreateVertexBuffer(uint32_t, const void*);
     uint32_t nxRendererCreateIndexBuffer(uint32_t, const void*);
     void nxRendererDestroyBuffer(uint32_t);

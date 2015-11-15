@@ -51,7 +51,7 @@ public:
     void drawIndexed(PrimType primType, uint32_t firstIndex, uint32_t indexCount);
 
     // Vertex layouts
-    uint32_t registerVertexLayout(uint32_t numAttribs, const VertexLayoutAttrib* attribs);
+    uint32_t registerVertexLayout(uint16_t numAttribs, const VertexLayoutAttrib* attribs);
 
     // Textures
     uint32_t createTexture(TextureType type, int width, int height, unsigned int depth,

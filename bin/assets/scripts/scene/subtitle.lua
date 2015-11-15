@@ -44,6 +44,13 @@ local Renderbuffer = require 'nx.renderbuffer'
 local ffi = require 'ffi'
 local C = ffi.C
 
+ffi.cdef [[
+    typedef struct {
+        float a, b, c, d;
+        uint8_t e, f, g, h;
+    } nxVertex;
+]]
+
 ------------------------------------------------------------
 function SceneSubtitle:load()
     self.camera = Camera2D:new(-1, -1, 2, 2)
@@ -53,22 +60,19 @@ function SceneSubtitle:load()
     self:releaseTest()
 
     -- Register vertex layouts
-    local attribs = ffi.new('NxVertexLayoutAttrib[?]', 2, {
-        ffi.new('NxVertexLayoutAttrib', {
-            'vertPos', 0, 2, 0        
-        }),
-        ffi.new('NxVertexLayoutAttrib', {
-            'texCoords0', 0, 2, 8
-        })
+    local attribs = ffi.new('NxVertexLayoutAttrib[?]', 3, {
+        {'vertPos',    0, 2, 0,  0},
+        {'texCoords0', 0, 2, 8,  0},
+        {'col0',       0, 4, 16, 1}
     })
-    self.vlShape = C.nxRendererRegisterVertexLayout(2, attribs)
+    self.vlShape = C.nxRendererRegisterVertexLayout(3, attribs)
 
     -- Create triangle
-    local verts = ffi.new('float[?]', 4*4, {
-        -0.5, -0.5, 0, 0,
-         0.5, -0.5, 2, 0,
-        -0.5,  0.5, 0, 1.5,
-         0.5,  0.5, 2, 1.5
+    local verts = ffi.new('nxVertex[?]', 4, {
+        {-0.5, -0.5, 0, 0, 255, 255, 255, 255},
+        { 0.5, -0.5, 1, 0, 255, 0,   0,   255},
+        {-0.5,  0.5, 0, 1, 0,   255, 0,   255},
+        { 0.5,  0.5, 1, 1, 0,   0,   255, 255}
     })
     self.vbRect = C.nxRendererCreateVertexBuffer(ffi.sizeof(verts), verts)
 
@@ -77,16 +81,20 @@ function SceneSubtitle:load()
     local ok, err = self.defShader:load([[
         attribute vec2 vertPos;
         attribute vec2 texCoords0;
+        attribute vec4 col0;
+        varying vec4 color;
         varying vec2 coords;
         void main() {
+            color = col0;
            coords = texCoords0;
            gl_Position = vec4(vertPos, 0.0, 1.0);
         }]], [[
         uniform sampler2D tex;
+        varying vec4 color;
         varying vec2 coords;
         void main() {
            vec4 col = texture2D(tex, coords);
-           gl_FragColor = col * vec4(1.0, 1.0, 0.5, 1.0);
+           gl_FragColor = col * vec4(1.0, 1.0, 1.0, 1.0) * color;
         }]]
     )
     if not ok then print(err) end
@@ -95,6 +103,7 @@ function SceneSubtitle:load()
     ok, err = self.rbShader:load([[
         attribute vec2 vertPos;
         attribute vec2 texCoords0;
+        attribute vec4 col0;
         uniform mat4 projectionMat;
         varying vec2 coords;
         void main() {
@@ -148,13 +157,13 @@ end
 function SceneSubtitle:render()
     C.nxRendererSetCullMode(3)
 
-    C.nxRendererSetVertexBuffer(0, self.vbRect, 0, 16)
+    C.nxRendererSetVertexBuffer(0, self.vbRect, 0, 20)
     C.nxRendererSetIndexBuffer(0, 0)
     C.nxRendererSetVertexLayout(self.vlShape)
 
     Renderer.setRenderbuffer(self.rb)
     Renderer.setViewport(0, 0, 1024, 1024)
-    Renderer.clear(255, 255, 255, 50)
+    Renderer.clear(255, 255, 0, 50)
 
     self.texture:bind(1)
 

@@ -323,12 +323,12 @@ function Texture:data(slice, mipLevel)
     slice    = slice or 0
     mipLevel = mipLevel or 0
 
-    local size = nxRendererCalcTextureSize(
-        1, self._cdata.internalWidth, self._cdata.internalHeight, self._cdata.depth
+    local size = C.nxRendererCalcTextureSize(
+        1, self._cdata.actualWidth, self._cdata.actualHeight, self._cdata.depth
     )
     local buffer = ffi.new('uint8_t[?]', size)
 
-    if not C.nxRenderer(self._cdata.tex, slice, mipLevel, buffer) then
+    if not C.nxRendererGetTextureData(self._cdata.tex, slice, mipLevel, buffer) then
         return nil, 'Could not recover texture data'
     end
 
