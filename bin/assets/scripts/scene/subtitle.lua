@@ -99,7 +99,7 @@ function SceneSubtitle:render()
     C.nxRendererSetBlendMode(true, 2, 3)
 
     Renderer.setRenderbuffer(self.rb)
-    Renderer.setViewport(0, 0, 1024, 1024)
+    Renderer.setViewport(0, 0, 1280, 720)
     Renderer.clear(255, 255, 255, 128)
 
     -- self.texture:bind(1)
