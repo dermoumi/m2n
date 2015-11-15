@@ -70,13 +70,12 @@ function SceneSubtitle:load()
     self.texture:create('2d', imgWidth, imgHeight)
     self.texture:setData(img)
     self.texture:setFilter('nearest')
-    self.texture:setAnisotropyLevel(16)
+    self.texture:setAnisotropyLevel(8)
     self.texture:setRepeating('clamp', 'wrap')
 
     -- Create renderbuffer
     self.rb = Renderbuffer:new()
-    self.rb:create(1024, 1024)
-    if not self.rb:create(1024, 1024) then
+    if not self.rb:create(1280, 720) then
         print('Could not create render buffer')
     end
 

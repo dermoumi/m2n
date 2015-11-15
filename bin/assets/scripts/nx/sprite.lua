@@ -126,6 +126,12 @@ function Sprite:_render(shader, viewMatrix, modelMatrix, r, g, b, a)
             subB = (self._subY + self._subH) / texH
         end
 
+        if self._texture._cdata.invertCoords then
+            local temp = subT
+            subT = subB
+            subB = temp
+        end
+
         local buffer = ffi.new('float[16]', {
             0, 0, subL, subT,
             w, 0, subR, subT,

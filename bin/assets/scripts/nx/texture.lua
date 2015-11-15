@@ -114,6 +114,7 @@ ffi.cdef [[
         uint16_t actualWidth;
         uint16_t actualHeight;
         uint32_t samplerState;
+        bool     invertCoords;
     } NxTexture;
 ]]
 
@@ -178,6 +179,7 @@ function Texture.static._fromRenderbuffer(rb, bufIndex)
     c.actualWidth  = c.width
     c.actualHeight = c.height
     c.samplerState = 0
+    c.invertCoords = true
 
     local texture = Texture:allocate()
     texture._cdata = c
@@ -200,6 +202,7 @@ function Texture:initialize(texType, width, height, depth, hasMips, mipMap)
     handle.actualWidth  = 0
     handle.actualHeight = 0
     handle.samplerState = 0
+    handle.invertCoords = false
     self._cdata = ffi.gc(handle, destroy)
 
     if texType and width and height then
