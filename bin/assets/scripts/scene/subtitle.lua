@@ -41,83 +41,21 @@ local Camera2D = require 'nx.camera2d'
 local Shader = require 'nx.shader'
 local Texture = require 'nx.texture'
 local Renderbuffer = require 'nx.renderbuffer'
+local Sprite = require 'nx.sprite'
 local ffi = require 'ffi'
 local C = ffi.C
 
 ffi.cdef [[
     typedef struct {
         float a, b, c, d;
-        uint8_t e, f, g, h;
     } nxVertex;
 ]]
 
 ------------------------------------------------------------
 function SceneSubtitle:load()
-    self.camera = Camera2D:new(-1, -1, 2, 2)
-
-    -- self.camera:zoom(0.5, 0.5)
-
     self:releaseTest()
 
-    -- Register vertex layouts
-    local attribs = ffi.new('NxVertexLayoutAttrib[?]', 3, {
-        {'vertPos',    0, 2, 0,  0},
-        {'texCoords0', 0, 2, 8,  0},
-        {'col0',       0, 4, 16, 1}
-    })
-    self.vlShape = C.nxRendererRegisterVertexLayout(3, attribs)
-
-    -- Create triangle
-    local verts = ffi.new('nxVertex[?]', 4, {
-        {-0.5, -0.5, 0, 0, 255, 255, 255, 255},
-        { 0.5, -0.5, 1, 0, 255, 0,   0,   255},
-        {-0.5,  0.5, 0, 1, 0,   255, 0,   255},
-        { 0.5,  0.5, 1, 1, 0,   0,   255, 255}
-    })
-    self.vbRect = C.nxRendererCreateVertexBuffer(ffi.sizeof(verts), verts)
-
-    -- Create shaders
-    self.defShader = Shader:new()
-    local ok, err = self.defShader:load([[
-        attribute vec2 vertPos;
-        attribute vec2 texCoords0;
-        attribute vec4 col0;
-        varying vec4 color;
-        varying vec2 coords;
-        void main() {
-            color = col0;
-           coords = texCoords0;
-           gl_Position = vec4(vertPos, 0.0, 1.0);
-        }]], [[
-        uniform sampler2D tex;
-        varying vec4 color;
-        varying vec2 coords;
-        void main() {
-           vec4 col = texture2D(tex, coords);
-           gl_FragColor = col * vec4(1.0, 1.0, 1.0, 1.0) * color;
-        }]]
-    )
-    if not ok then print(err) end
-
-    self.rbShader = Shader:new()
-    ok, err = self.rbShader:load([[
-        attribute vec2 vertPos;
-        attribute vec2 texCoords0;
-        attribute vec4 col0;
-        uniform mat4 projectionMat;
-        varying vec2 coords;
-        void main() {
-           coords = texCoords0;
-           gl_Position = projectionMat * vec4(vertPos, 0.0, 1.0);
-        }]], [[
-        uniform sampler2D tex2;
-        varying vec2 coords;
-        void main() {
-           // gl_FragColor = vec4(1.0, 1.0, 0.0, 0.5);
-           gl_FragColor = texture2D(tex2, coords);
-        }]]
-    )
-    if not ok then print(err) end
+    self.camera = Camera2D:new(0, 0, 1280, 720)
 
     -- Load image
     local img = require('nx.image'):new()
@@ -144,6 +82,9 @@ function SceneSubtitle:load()
 
     self.rb:texture():setRepeating('wrap', 'wrap')
 
+    self.sprite = Sprite:new(self.texture)
+    self.rbSprite = Sprite:new(self.rb:texture())
+
     self.initialized = true
     self._processParent = true
 end
@@ -156,34 +97,33 @@ end
 ------------------------------------------------------------
 function SceneSubtitle:render()
     C.nxRendererSetCullMode(3)
-
-    C.nxRendererSetVertexBuffer(0, self.vbRect, 0, 20)
-    C.nxRendererSetIndexBuffer(0, 0)
-    C.nxRendererSetVertexLayout(self.vlShape)
+    C.nxRendererSetBlendMode(true, 2, 3)
 
     Renderer.setRenderbuffer(self.rb)
     Renderer.setViewport(0, 0, 1024, 1024)
-    Renderer.clear(255, 255, 0, 50)
+    Renderer.clear(255, 255, 255, 128)
 
-    self.texture:bind(1)
+    -- self.texture:bind(1)
 
-    self.defShader:bind()
-    self.defShader:setSampler('tex', 1)
+    -- self.defShader:bind()
+    -- self.defShader:setSampler('uTexture', 1)
 
-    C.nxRendererDraw(1, 0, 4)
+    -- C.nxRendererDraw(1, 0, 4)
+
+    self.sprite:_render(nil, self.camera:matrix())
 
     Renderer.setRenderbuffer(nil)
     Renderer.setViewport(0, 0, 1280, 720)
 
-    self.rb:texture():bind(2)
+    -- self.rb:texture():bind(2)
 
-    C.nxRendererSetBlendMode(true, 2, 3)
+    -- self.rbShader:bind()
+    -- self.rbShader:setUniform('uViewMat', self.camera:matrix())
+    -- self.rbShader:setSampler('uTexture', 2)
 
-    self.rbShader:bind()
-    self.rbShader:setUniform('projectionMat', self.camera:matrix())
-    self.rbShader:setSampler('tex2', 2)
+    -- C.nxRendererDraw(1, 0, 4)
 
-    C.nxRendererDraw(1, 0, 4)
+    self.rbSprite:_render(nil, self.camera:matrix())
 end
 
 ------------------------------------------------------------

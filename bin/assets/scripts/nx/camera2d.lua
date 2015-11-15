@@ -163,14 +163,12 @@ function Camera2D:matrix()
         -- Projection components
         local x =  2 / c.width
         local y = -2 / c.height
-        local z = -x * c.centerX
-        local w = -y * c.centerY
 
         -- Rebuild the projection matrix
         self._matrix = Matrix4:new()
         local m = self._matrix._cdata
-        m[0], m[1], m[3] =  x * cos,     x * sin, x * tx + z
-        m[4], m[5], m[7] = -y * sin, y * cos, y * ty + w
+        m[0], m[4], m[12] =  x * cos, x * sin, x * tx - x * c.centerX
+        m[1], m[5], m[13] = -y * sin, y * cos, y * ty - y * c.centerY
     end
 
     return self._matrix

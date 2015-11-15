@@ -336,6 +336,15 @@ function Texture:data(slice, mipLevel)
 end
 
 ------------------------------------------------------------
+function Texture:size(actualSize)
+    if actualSize then
+        return tonumber(self._cdata.actualWidth), tonumber(self._cdata.actualHeight)
+    else
+        return tonumber(self._cdata.width), tonumber(self._cdata.height)
+    end
+end
+
+------------------------------------------------------------
 function Texture:setFilter(filter)
     filter = toFilter[filter]
     if not filter or filter == toFilter.mask then return end

@@ -115,6 +115,8 @@ local Renderer = {}
 
 ------------------------------------------------------------
 local caps = {}
+local vertexLayouts = {}
+local defaultShaders = {}
 
 ------------------------------------------------------------
 function Renderer.init()
@@ -139,6 +141,32 @@ function Renderer.init()
     caps.rtMultisamplingSupported = b[9]
     caps.occQueriesSupported      = b[10]
     caps.timerQueriesSupported    = b[11]
+
+    -- Initialize vertex layouts
+    vertexLayouts[1] = C.nxRendererRegisterVertexLayout(2, ffi.new('NxVertexLayoutAttrib[2]', {
+        {'aPosition',  0, 2, 0, 0},
+        {'aTexCoords', 0, 2, 8, 0}
+    }))
+
+    -- Initialize default shaders
+    local Shader = require('nx.shader')
+    defaultShaders[1] = Shader:new([[
+        attribute vec2 aPosition;
+        attribute vec2 aTexCoords;
+        uniform mat4 uProjectionMat;
+        varying vec2 vTexCoords;
+        void main() {
+            vTexCoords  = aTexCoords;
+            gl_Position = uProjectionMat * vec4(aPosition, 0.0, 1.0);
+        }
+    ]], [[
+        uniform sampler2D uTexture;
+        uniform vec4 uColor;
+        varying vec2 vTexCoords;
+        void main() {
+            gl_FragColor = texture2D(uTexture, vTexCoords) * uColor;
+        }
+    ]])
 
     return true
 end
@@ -193,6 +221,16 @@ function Renderer.getCapabilities(cap)
     end
 
     return caps[cap]
+end
+
+------------------------------------------------------------
+function Renderer.vertexLayout(index)
+    return vertexLayouts[index]
+end
+
+------------------------------------------------------------
+function Renderer.defaultShader(index)
+    return defaultShaders[index]
 end
 
 ------------------------------------------------------------
