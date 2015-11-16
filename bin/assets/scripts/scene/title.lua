@@ -49,12 +49,18 @@ function SceneTitle:load()
         Log.info(i .. ':\t' .. tostring(v))
     end
 
+    self.camera = require('nx.camera2d')
+
     Scene.push('scene.subtitle')
 end
 
 ------------------------------------------------------------
 function SceneTitle:render()
-    
+    if Mouse.isButtonDown('left') then
+        self.camera:clear(128, 255, 0)
+    else
+        self.camera:clear(255, 128, 0)
+    end
 end
 
 ------------------------------------------------------------

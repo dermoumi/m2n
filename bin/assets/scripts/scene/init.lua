@@ -33,6 +33,7 @@ local Scene = class 'nx.scene'
 
 -- Local variables -----------------------------------------
 local sceneStack = {}
+local releaseStack = {}
 
 ------------------------------------------------------------
 function Scene.static.currentScene()
@@ -42,7 +43,7 @@ end
 ------------------------------------------------------------
 function Scene.static.goTo(sceneName)
     for i = #sceneStack, 1, -1 do
-        sceneStack[i]:release()
+        releaseStack[#releaseStack + 1] = sceneStack[i]
         sceneStack[i] = nil
     end
 
@@ -67,9 +68,17 @@ end
 ------------------------------------------------------------
 function Scene.static.back()
     local scene = sceneStack[#sceneStack]
-    scene:release()
+    releaseStack[#releaseStack + 1] = scene
 
     sceneStack[#sceneStack] = nil
+end
+
+------------------------------------------------------------
+function Scene.static.clean()
+    for i, scene in ipairs(releaseStack) do
+        scene:release()
+    end
+    releaseStack = {}
 end
 
 ------------------------------------------------------------

@@ -59,6 +59,12 @@ function Sprite:initialize(texture, subX, subY, subW, subH, normalized)
 end
 
 ------------------------------------------------------------
+function Sprite:release()
+    if not self._vertexbuffer then return end
+    C.nxRendererDestroyBuffer(ffi.gc(self._vertexbuffer, nil))
+end
+
+------------------------------------------------------------
 function Sprite:setTexture(texture, keepSubrect)
     if texture._cdata.texType ~= 0 then -- only accept 2D textures
         return

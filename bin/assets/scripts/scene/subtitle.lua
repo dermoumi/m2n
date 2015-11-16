@@ -46,8 +46,6 @@ local C = ffi.C
 
 ------------------------------------------------------------
 function SceneSubtitle:load()
-    self:releaseTest()
-
     self.camera = Camera2D:new(0, 0, 1280, 720)
 
     -- Load image
@@ -66,6 +64,8 @@ function SceneSubtitle:load()
     self.texture:setAnisotropyLevel(8)
     self.texture:setRepeating('clamp', 'wrap')
 
+    img:release()
+
     -- Create renderbuffer
     self.rb = Renderbuffer:new()
     if not self.rb:create(1024, 512) then
@@ -81,13 +81,7 @@ function SceneSubtitle:load()
     self.rbSprite:setPosition(640, 360)
     self.rbSprite:setOrigin(320, 180)
 
-    self.initialized = true
     self._processParent = true
-end
-
-------------------------------------------------------------
-function SceneSubtitle:release()
-    self:releaseTest()
 end
 
 ------------------------------------------------------------
@@ -107,11 +101,6 @@ function SceneSubtitle:render()
 
     self.camera:setRenderbuffer(nil)
     self.camera:setViewport(nil, nil, nil, nil)
-    if Mouse.isButtonDown('left') then
-        self.camera:clear(128, 255, 0)
-    else
-        self.camera:clear(255, 128, 0)
-    end
     self.camera:draw(self.rbSprite)
 end
 
@@ -134,15 +123,11 @@ function SceneSubtitle:processParent()
 end
 
 ------------------------------------------------------------
-function SceneSubtitle:releaseTest()
-    if not self.initialized then return end
-
-    self.rbShader:release()
-    self.defShader:release()
+function SceneSubtitle:release()
     self.texture:release()
     self.rb:release()
-
-    self.initialized = false
+    self.sprite:release()
+    self.rbSprite:release()
 end
 
 ------------------------------------------------------------

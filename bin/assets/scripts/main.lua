@@ -154,6 +154,9 @@ while true do
     if sleepTime > 0 then
         Nx.sleep(sleepTime)
     end
+
+    -- Clean the scene stack
+    Scene.clean()
 end
 
 ------------------------------------------------------------
