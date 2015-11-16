@@ -105,7 +105,7 @@ function Sprite:size()
 end
 
 ------------------------------------------------------------
-function Sprite:_render(projectionMat, modelViewMat, r, g, b, a)
+function Sprite:_render(camera, projectionMat, modelViewMat, r, g, b, a)
     if not self._texture then return end
 
     if self._updateBuffer then

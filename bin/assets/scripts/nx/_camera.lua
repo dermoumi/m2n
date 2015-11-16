@@ -92,7 +92,7 @@ end
 function Camera:draw(drawable)
     self:_setupDrawing()
 
-    drawable:_render(self:matrix(), Matrix4:new(), 255, 255, 255, 255)
+    drawable:_render(self, self:matrix(), Matrix4:new(), 255, 255, 255, 255)
 end
 
 ------------------------------------------------------------
