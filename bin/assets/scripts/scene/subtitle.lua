@@ -45,12 +45,6 @@ local Sprite = require 'nx.sprite'
 local ffi = require 'ffi'
 local C = ffi.C
 
-ffi.cdef [[
-    typedef struct {
-        float a, b, c, d;
-    } nxVertex;
-]]
-
 ------------------------------------------------------------
 function SceneSubtitle:load()
     self:releaseTest()
@@ -75,7 +69,7 @@ function SceneSubtitle:load()
 
     -- Create renderbuffer
     self.rb = Renderbuffer:new()
-    if not self.rb:create(1280, 720) then
+    if not self.rb:create(1024, 512) then
         print('Could not create render buffer')
     end
     self.rb:texture():setRepeating('wrap', 'wrap')
@@ -84,7 +78,9 @@ function SceneSubtitle:load()
     self.sprite:setPosition(640, 360)
     self.sprite:setOrigin(256, 256)
 
-    self.rbSprite = Sprite:new(self.rb:texture())
+    self.rbSprite = Sprite:new(self.rb:texture(), 0, 0, 640, 360)
+    self.rbSprite:setPosition(640, 360)
+    self.rbSprite:setOrigin(320, 180)
 
     self.initialized = true
     self._processParent = true
@@ -106,10 +102,12 @@ function SceneSubtitle:render()
     C.nxRendererSetBlendMode(true, 2, 3)
 
     self.camera:setRenderbuffer(self.rb)
+    self.camera:setViewport(0, 0, 640, 360)
     self.camera:clear(255, 255, 255, 128)
     self.camera:draw(self.sprite)
 
     self.camera:setRenderbuffer(nil)
+    self.camera:setViewport(nil, nil, nil, nil)
     if Mouse.isButtonDown('left') then
         self.camera:clear(128, 255, 0)
     else
