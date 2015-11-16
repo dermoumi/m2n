@@ -32,7 +32,7 @@ local class = require 'nx.class'
 local Camera = require 'nx._camera'
 local Camera2D = class('nx.camera2d', Camera)
 
-local Matrix4 = require 'nx.matrix4'
+local Matrix = require 'nx.matrix'
 
 ------------------------------------------------------------
 -- FFI declarations
@@ -150,7 +150,7 @@ function Camera2D:matrix()
         local y = -2 / c.height
 
         -- Rebuild the projection matrix
-        self._matrix = Matrix4:new()
+        self._matrix = Matrix:new()
         local m = self._matrix._cdata
         m[0], m[4], m[12] =  x * cos, x * sin, x * tx - x * c.centerX
         m[1], m[5], m[13] = -y * sin, y * cos, y * ty - y * c.centerY

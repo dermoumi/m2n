@@ -29,7 +29,7 @@
 -- A Matrix class
 ------------------------------------------------------------
 local class = require 'nx.class'
-local Matrix = class 'nx.Matrix'
+local Matrix = class 'nx.matrix'
 
 local ffi = require 'ffi'
 

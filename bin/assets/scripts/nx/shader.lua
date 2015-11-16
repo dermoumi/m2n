@@ -45,7 +45,7 @@ local Shader = class 'nx.shader'
 
 local Renderer  = require 'nx.renderer'
 local InputFile = require 'nx.inputfile'
-local Matrix4   = require 'nx.matrix4'
+local Matrix    = require 'nx.matrix'
 
 ------------------------------------------------------------
 local function destroy(cdata)
@@ -161,7 +161,7 @@ function Shader:setUniform(name, a, b, c, d)
     end
 
     local uniformType, uniformData
-    if class.Object.isInstanceOf(a, Matrix4) then
+    if class.Object.isInstanceOf(a, Matrix) then
         uniformType = 4
         uniformData = a:data()
     elseif not b then

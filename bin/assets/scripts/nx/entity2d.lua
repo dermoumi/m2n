@@ -31,7 +31,7 @@
 local class = require 'nx.class'
 local Entity2D = class 'nx.entity2d'
 
-local Matrix4 = require 'nx.matrix4'
+local Matrix = require 'nx.matrix'
 
 ------------------------------------------------------------
 function Entity2D:initialize()
@@ -101,7 +101,7 @@ function Entity2D:matrix()
         local tx  = self._posX - self._originX * sxc - self._originY * sys
         local ty  = self._posY + self._originX * sxs - self._originY * syc
 
-        self._matrix = Matrix4:new()
+        self._matrix = Matrix:new()
         local m = self._matrix._cdata
         m[0], m[4], m[12] =  sxc, sys, tx
         m[1], m[5], m[13] = -sxs, syc, ty

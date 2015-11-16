@@ -33,7 +33,6 @@ local Camera = class 'nx._camera'
 
 local Window   = require 'nx.window'
 local Renderer = require 'nx.renderer'
-local Matrix4  = require 'nx.matrix4'
 
 local ffi = require 'ffi'
 local C   = ffi.C
@@ -69,7 +68,7 @@ end
 
 ------------------------------------------------------------
 function Camera:matrix()
-    return Matrix4:new()
+    return require('nx.matrix'):new()
 end
 
 ------------------------------------------------------------

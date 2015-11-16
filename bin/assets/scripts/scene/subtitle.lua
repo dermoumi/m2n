@@ -33,7 +33,6 @@ local Scene = require 'scene'
 local SceneSubtitle = class('scene.subtitle', Scene)
 
 ------------------------------------------------------------
-local Matrix4 = require 'nx.matrix4'
 local Mouse = require 'nx.mouse'
 local Renderer = require 'nx.renderer'
 local Thread = require 'nx.thread'
@@ -142,7 +141,6 @@ function SceneSubtitle:releaseTest()
     self.defShader:release()
     self.texture:release()
     self.rb:release()
-    C.nxRendererDestroyBuffer(self.vbRect)
 
     self.initialized = false
 end
