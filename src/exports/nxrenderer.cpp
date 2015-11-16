@@ -26,12 +26,7 @@
 *///============================================================================
 #include "../config.hpp"
 #include "../system/log.hpp"
-
-#if !defined(NX_OPENGL_ES)
-    #include "../graphics/renderdevicegl.hpp"
-#else
-    #include "../graphics/renderdevicegles2.hpp"
-#endif
+#include "../graphics/renderdevice.hpp"
 
 //----------------------------------------------------------
 // Declarations
@@ -48,50 +43,35 @@ struct NxVertexLayoutAttrib
 using NxArrayBuffer = uint32_t;
 
 //----------------------------------------------------------
-// Locals
-//----------------------------------------------------------
-static RenderDevice* rdi {nullptr};
-    
-//----------------------------------------------------------
 // Exported functions
 //----------------------------------------------------------
 NX_EXPORT bool nxRendererInit()
 {
-    // Delete the render device if reinitiazing
-    if (rdi) delete rdi;
-
-    // Instanciate the proper render device
-    #if !defined(NX_OPENGL_ES)
-        rdi = new RenderDeviceGL();
-    #else
-        rdi = new RenderDeviceGLES2();
-    #endif
-
-    return rdi->initialize();
+    return RenderDevice::instance().initialize();
 }
 
 //----------------------------------------------------------
 NX_EXPORT void nxRendererBegin()
 {
-    rdi->beginRendering();
+    RenderDevice::instance().beginRendering();
 }
 
 //----------------------------------------------------------
 NX_EXPORT void nxRendererFinish()
 {
-    rdi->finishRendering();
+    RenderDevice::instance().finishRendering();
 }
 
 //----------------------------------------------------------
 NX_EXPORT void nxRendererResetStates()
 {
-    rdi->resetStates();
+    RenderDevice::instance().resetStates();
 }
 
 //----------------------------------------------------------
 NX_EXPORT bool nxRendererCommitStates(uint32_t filter)
 {
-    return rdi->commitStates(filter);
+    return RenderDevice::instance().commitStates(filter);
 }
 
 //----------------------------------------------------------
@@ -107,19 +87,19 @@ NX_EXPORT void nxRendererClear(uint8_t r, uint8_t g, uint8_t b, uint8_t a, float
 
     float clearColor[] = {r/255.f, g/255.f, b/255.f, a/255.f};
 
-    rdi->clear(flags, clearColor, depth);
+    RenderDevice::instance().clear(flags, clearColor, depth);
 }
 
 //----------------------------------------------------------
 NX_EXPORT void nxRendererDraw(uint32_t primType, uint32_t firstVert, uint32_t vertCount)
 {
-    rdi->draw(static_cast<RenderDevice::PrimType>(primType), firstVert, vertCount);
+    RenderDevice::instance().draw(static_cast<RenderDevice::PrimType>(primType), firstVert, vertCount);
 }
 
 //----------------------------------------------------------
 NX_EXPORT void nxRendererDrawIndexed(uint32_t primType, uint32_t firstIndex, uint32_t indexCount)
 {
-    rdi->drawIndexed(static_cast<RenderDevice::PrimType>(primType), firstIndex, indexCount);
+    RenderDevice::instance().drawIndexed(static_cast<RenderDevice::PrimType>(primType), firstIndex, indexCount);
 }
 
 //----------------------------------------------------------
@@ -132,14 +112,14 @@ NX_EXPORT uint32_t nxRendererRegisterVertexLayout(uint8_t numAttribs,
         memcpy(&attributes[i].vbSlot, &attribs[i].vbSlot, sizeof(NxVertexLayoutAttrib) - 32);
     } 
 
-    return rdi->registerVertexLayout(numAttribs, attributes.data());
+    return RenderDevice::instance().registerVertexLayout(numAttribs, attributes.data());
 }
 
 //----------------------------------------------------------
 NX_EXPORT NxArrayBuffer* nxRendererCreateVertexBuffer(uint32_t size, const void* data)
 {
     auto* buffer = new NxArrayBuffer();
-    *buffer = rdi->createVertexBuffer(size, data);
+    *buffer = RenderDevice::instance().createVertexBuffer(size, data);
     return buffer;
 }
 
@@ -147,7 +127,7 @@ NX_EXPORT NxArrayBuffer* nxRendererCreateVertexBuffer(uint32_t size, const void*
 NX_EXPORT NxArrayBuffer* nxRendererCreateIndexBuffer(uint32_t size, const void* data)
 {
     auto* buffer = new NxArrayBuffer();
-    *buffer = rdi->createIndexBuffer(size, data);
+    *buffer = RenderDevice::instance().createIndexBuffer(size, data);
     return buffer;
 }
 
@@ -155,7 +135,7 @@ NX_EXPORT NxArrayBuffer* nxRendererCreateIndexBuffer(uint32_t size, const void* 
 NX_EXPORT void nxRendererDestroyBuffer(NxArrayBuffer* buffer)
 {
     if (!buffer) return;
-    rdi->destroyBuffer(*buffer);
+    RenderDevice::instance().destroyBuffer(*buffer);
     delete buffer;
 }
 
@@ -164,19 +144,19 @@ NX_EXPORT bool nxRendererUpdateBufferData(NxArrayBuffer* buffer, uint32_t offset
     const void* data)
 {
     if (!buffer) return false;
-    return rdi->updateBufferData(*buffer, offset, size, data);
+    return RenderDevice::instance().updateBufferData(*buffer, offset, size, data);
 }
 
 //----------------------------------------------------------
 NX_EXPORT uint32_t nxRendererGetBufferMemory()
 {
-    return rdi->getBufferMemory();
+    return RenderDevice::instance().getBufferMemory();
 }
 
 //----------------------------------------------------------
 NX_EXPORT uint32_t nxRendererCalcTextureSize(uint32_t format, int width, int height, int depth)
 {
-    return rdi->calcTextureSize(
+    return RenderDevice::instance().calcTextureSize(
         static_cast<RenderDevice::TextureFormat>(format), width, height, depth
     );
 }
@@ -185,7 +165,7 @@ NX_EXPORT uint32_t nxRendererCalcTextureSize(uint32_t format, int width, int hei
 NX_EXPORT uint32_t nxRendererCreateTexture(uint32_t type, int width, int height, unsigned int depth,
     uint32_t format, bool hasMips, bool genMips, bool sRGB)
 {
-    return rdi->createTexture(
+    return RenderDevice::instance().createTexture(
         static_cast<RenderDevice::TextureType>(type), width, height, depth,
         static_cast<RenderDevice::TextureFormat>(format), hasMips, genMips, sRGB
     );
@@ -195,7 +175,7 @@ NX_EXPORT uint32_t nxRendererCreateTexture(uint32_t type, int width, int height,
 NX_EXPORT void nxRendererUploadTextureData(uint32_t texObj, int slice, int mipLevel,
     const void* pixels)
 {
-    rdi->uploadTextureData(texObj, slice, mipLevel, pixels);
+    RenderDevice::instance().uploadTextureData(texObj, slice, mipLevel, pixels);
 }
 
 //----------------------------------------------------------
@@ -203,98 +183,98 @@ NX_EXPORT void nxRendererUploadTextureSubData(uint32_t texObj, int slice, int mi
     unsigned int x, unsigned int y, unsigned int z, unsigned int width, unsigned int height,
     unsigned int depth, const void* pixels)
 {
-    rdi->uploadTextureSubData(texObj, slice, mipLevel, x, y, z, width, height, depth, pixels);
+    RenderDevice::instance().uploadTextureSubData(texObj, slice, mipLevel, x, y, z, width, height, depth, pixels);
 }
 
 //----------------------------------------------------------
 NX_EXPORT void nxRendererDestroyTexture(uint32_t texObj)
 {
-    rdi->destroyTexture(texObj);
+    RenderDevice::instance().destroyTexture(texObj);
 }
 
 //----------------------------------------------------------
 NX_EXPORT bool nxRendererGetTextureData(uint32_t texObj, int slice, int mipLevel, void* buffer)
 {
-    return rdi->getTextureData(texObj, slice, mipLevel, buffer);
+    return RenderDevice::instance().getTextureData(texObj, slice, mipLevel, buffer);
 }
 
 //----------------------------------------------------------
 NX_EXPORT uint32_t nxRendererGetTextureMemory()
 {
-    return rdi->getTextureMemory();
+    return RenderDevice::instance().getTextureMemory();
 }
 
 //----------------------------------------------------------
 NX_EXPORT uint32_t nxRendererCreateShader(const char* vertexShader, const char* fragmentShader)
 {
-    return rdi->createShader(vertexShader, fragmentShader);
+    return RenderDevice::instance().createShader(vertexShader, fragmentShader);
 }
 
 //----------------------------------------------------------
 NX_EXPORT void nxRendererDestroyShader(uint32_t shader)
 {
-    rdi->destroyShader(shader);
+    RenderDevice::instance().destroyShader(shader);
 }
 
 //----------------------------------------------------------
 NX_EXPORT void nxRendererBindShader(uint32_t shader)
 {
-    rdi->bindShader(shader);
+    RenderDevice::instance().bindShader(shader);
 }
 
 //----------------------------------------------------------
 NX_EXPORT const char* nxRendererGetShaderLog()
 {
-    return rdi->getShaderLog().data();
+    return RenderDevice::instance().getShaderLog().data();
 }
 
 //----------------------------------------------------------
 NX_EXPORT int nxRendererGetShaderConstLoc(uint32_t shader, const char* name)
 {
-    return rdi->getShaderConstLoc(shader, name);
+    return RenderDevice::instance().getShaderConstLoc(shader, name);
 }
 
 //----------------------------------------------------------
 NX_EXPORT int nxRendererGetShaderSamplerLoc(uint32_t shader, const char* name)
 {
-    return rdi->getShaderSamplerLoc(shader, name);
+    return RenderDevice::instance().getShaderSamplerLoc(shader, name);
 }
 
 //----------------------------------------------------------
 NX_EXPORT void nxRendererSetShaderConst(int loc, uint32_t type, float* values, uint32_t count)
 {
-    rdi->setShaderConst(loc, static_cast<RenderDevice::ShaderConstType>(type), values, count);
+    RenderDevice::instance().setShaderConst(loc, static_cast<RenderDevice::ShaderConstType>(type), values, count);
 }
 
 //----------------------------------------------------------
 NX_EXPORT void nxRendererSetShaderSampler(int loc, uint32_t texUnit)
 {
-    rdi->setShaderSampler(loc, texUnit);
+    RenderDevice::instance().setShaderSampler(loc, texUnit);
 }
 
 //----------------------------------------------------------
 NX_EXPORT const char* nxRendererGetDefaultVSCode()
 {
-    return rdi->getDefaultVSCode();
+    return RenderDevice::instance().getDefaultVSCode();
 }
 
 //----------------------------------------------------------
 NX_EXPORT const char* nxRendererGetDefaultFSCode()
 {
-    return rdi->getDefaultFSCode();
+    return RenderDevice::instance().getDefaultFSCode();
 }
 
 //----------------------------------------------------------
 NX_EXPORT uint32_t nxRendererGetCurrentShader()
 {
-    return rdi->getCurrentShader();
+    return RenderDevice::instance().getCurrentShader();
 }
 
 //----------------------------------------------------------
 NX_EXPORT uint32_t nxRendererCreateRenderbuffer(uint32_t width, uint32_t height, uint32_t format,
     bool depth, uint32_t colBufs, uint32_t samples)
 {
-    return rdi->createRenderBuffer(
+    return RenderDevice::instance().createRenderBuffer(
         width, height, static_cast<RenderDevice::TextureFormat>(format), depth, colBufs, samples
     );
 }
@@ -302,148 +282,148 @@ NX_EXPORT uint32_t nxRendererCreateRenderbuffer(uint32_t width, uint32_t height,
 //----------------------------------------------------------
 NX_EXPORT void nxRendererDestroyRenderbuffer(uint32_t rb)
 {
-    rdi->destroyRenderBuffer(rb);
+    RenderDevice::instance().destroyRenderBuffer(rb);
 }
 
 //----------------------------------------------------------
 NX_EXPORT uint32_t nxRendererGetRenderbufferTexture(uint32_t rb, uint32_t bufIndex)
 {
-    return rdi->getRenderBufferTexture(rb, bufIndex);
+    return RenderDevice::instance().getRenderBufferTexture(rb, bufIndex);
 }
 
 //----------------------------------------------------------
 NX_EXPORT void nxRendererSetRenderbuffer(uint32_t rb)
 {
-    rdi->setRenderBuffer(rb);
+    RenderDevice::instance().setRenderBuffer(rb);
 }
 
 //----------------------------------------------------------
 NX_EXPORT void nxRendererGetRenderbufferSize(uint32_t rb, int* size)
 {
-    rdi->getRenderBufferSize(rb, &size[0], &size[1]);
+    RenderDevice::instance().getRenderBufferSize(rb, &size[0], &size[1]);
 }
 
 //----------------------------------------------------------
 NX_EXPORT bool nxRendererGetRenderbufferData(uint32_t rb, int bufIndex, int* size, int* compCount,
     void* buffer, int bufferSize)
 {
-    return rdi->getRenderBufferData(rb, bufIndex, &size[0], &size[1], compCount, buffer,
+    return RenderDevice::instance().getRenderBufferData(rb, bufIndex, &size[0], &size[1], compCount, buffer,
         bufferSize);
 }
 
 //----------------------------------------------------------
 NX_EXPORT void nxRendererSetViewport(int x, int y, int width, int height)
 {
-    rdi->setViewport(x, y, width, height);
+    RenderDevice::instance().setViewport(x, y, width, height);
 }
 
 //----------------------------------------------------------
 NX_EXPORT void nxRendererSetScissorRect(int x, int y, int width, int height)
 {
-    rdi->setScissorRect(x, y, width, height);
+    RenderDevice::instance().setScissorRect(x, y, width, height);
 }
 
 //----------------------------------------------------------
 NX_EXPORT void nxRendererSetIndexBuffer(NxArrayBuffer* bufObj, int format)
 {
-    rdi->setIndexBuffer(bufObj ? *bufObj : 0, static_cast<RenderDevice::IndexFormat>(format));
+    RenderDevice::instance().setIndexBuffer(bufObj ? *bufObj : 0, static_cast<RenderDevice::IndexFormat>(format));
 }
 
 //----------------------------------------------------------
 NX_EXPORT void nxRendererSetVertexBuffer(uint32_t slot, NxArrayBuffer* vbObj, uint32_t offset,
     uint32_t stride)
 {
-    rdi->setVertexBuffer(slot, vbObj ? *vbObj : 0, offset, stride);
+    RenderDevice::instance().setVertexBuffer(slot, vbObj ? *vbObj : 0, offset, stride);
 }
 
 //----------------------------------------------------------
 NX_EXPORT void nxRendererSetVertexLayout(uint32_t vlObj)
 {
-    rdi->setVertexLayout(vlObj);
+    RenderDevice::instance().setVertexLayout(vlObj);
 }
 
 //----------------------------------------------------------
 NX_EXPORT void nxRendererSetTexture(uint32_t slot, uint32_t texObj, uint16_t samplerState)
 {
-    rdi->setTexture(slot, texObj, samplerState);
+    RenderDevice::instance().setTexture(slot, texObj, samplerState);
 }
 
 //----------------------------------------------------------
 NX_EXPORT void nxRendererSetColorWriteMask(bool enabled)
 {
-    rdi->setColorWriteMask(enabled);
+    RenderDevice::instance().setColorWriteMask(enabled);
 }
 
 //----------------------------------------------------------
 NX_EXPORT bool nxRendererGetColorWriteMask()
 {
-    return rdi->getColorWriteMask();
+    return RenderDevice::instance().getColorWriteMask();
 }
 
 //----------------------------------------------------------
 NX_EXPORT void nxRendererSetFillMode(uint32_t fillMode)
 {
-    rdi->setFillMode(static_cast<RenderDevice::FillMode>(fillMode));
+    RenderDevice::instance().setFillMode(static_cast<RenderDevice::FillMode>(fillMode));
 }
 
 //----------------------------------------------------------
 NX_EXPORT uint32_t nxRendererGetFillMode()
 {
-    return rdi->getFillMode();
+    return RenderDevice::instance().getFillMode();
 }
 
 //----------------------------------------------------------
 NX_EXPORT void nxRendererSetCullMode(uint32_t cullMode)
 {
-    rdi->setCullMode(static_cast<RenderDevice::CullMode>(cullMode));
+    RenderDevice::instance().setCullMode(static_cast<RenderDevice::CullMode>(cullMode));
 }
 
 //----------------------------------------------------------
 NX_EXPORT uint32_t nxRendererGetCullMode()
 {
-    return rdi->getCullMode();
+    return RenderDevice::instance().getCullMode();
 }
 
 //----------------------------------------------------------
 NX_EXPORT void nxRendererSetScissorTest(bool enabled)
 {
-    rdi->setScissorTest(enabled);
+    RenderDevice::instance().setScissorTest(enabled);
 }
 
 //----------------------------------------------------------
 NX_EXPORT bool nxRendererGetScissorTest()
 {
-    return rdi->getScissorTest();
+    return RenderDevice::instance().getScissorTest();
 }
 
 //----------------------------------------------------------
 NX_EXPORT void nxRendererSetMultisampling(bool enabled)
 {
-    rdi->setMultisampling(enabled);
+    RenderDevice::instance().setMultisampling(enabled);
 }
 
 //----------------------------------------------------------
 NX_EXPORT bool nxRendererGetMultisampling()
 {
-    return rdi->getMultisampling();
+    return RenderDevice::instance().getMultisampling();
 }
 
 //----------------------------------------------------------
 NX_EXPORT void nxRendererSetAlphaToCoverage(bool enabled)
 {
-    rdi->setAlphaToCoverage(enabled);
+    RenderDevice::instance().setAlphaToCoverage(enabled);
 }
 
 //----------------------------------------------------------
 NX_EXPORT bool nxRendererGetAlphaToCoverage()
 {
-    return rdi->getAlphaToCoverage();
+    return RenderDevice::instance().getAlphaToCoverage();
 }
 
 //----------------------------------------------------------
 NX_EXPORT void nxRendererSetBlendMode(bool enabled, uint32_t src, uint32_t dst)
 {
-    rdi->setBlendMode(
+    RenderDevice::instance().setBlendMode(
         enabled, static_cast<RenderDevice::BlendFunc>(src),
         static_cast<RenderDevice::BlendFunc>(dst)
     );
@@ -452,7 +432,7 @@ NX_EXPORT void nxRendererSetBlendMode(bool enabled, uint32_t src, uint32_t dst)
 //----------------------------------------------------------
 NX_EXPORT bool nxRendererGetBlendMode(uint32_t* blendFuncs)
 {
-    return rdi->getBlendMode(
+    return RenderDevice::instance().getBlendMode(
         reinterpret_cast<RenderDevice::BlendFunc&>(blendFuncs[0]),
         reinterpret_cast<RenderDevice::BlendFunc&>(blendFuncs[1])
     );
@@ -461,43 +441,43 @@ NX_EXPORT bool nxRendererGetBlendMode(uint32_t* blendFuncs)
 //----------------------------------------------------------
 NX_EXPORT void nxRendererSetDepthMask(bool enabled)
 {
-    rdi->setDepthMask(enabled);
+    RenderDevice::instance().setDepthMask(enabled);
 }
 
 //----------------------------------------------------------
 NX_EXPORT bool nxRendererGetDepthMask()
 {
-    return rdi->getDepthMask();
+    return RenderDevice::instance().getDepthMask();
 }
 
 //----------------------------------------------------------
 NX_EXPORT void nxRendererSetDepthTest(bool enabled)
 {
-    rdi->setDepthTest(enabled);
+    RenderDevice::instance().setDepthTest(enabled);
 }
 
 //----------------------------------------------------------
 NX_EXPORT bool nxRendererGetDepthTest()
 {
-    return rdi->getDepthTest();
+    return RenderDevice::instance().getDepthTest();
 }
 
 //----------------------------------------------------------
 NX_EXPORT void nxRendererSetDepthFunc(uint32_t func)
 {
-    rdi->setDepthFunc(static_cast<RenderDevice::DepthFunc>(func));
+    RenderDevice::instance().setDepthFunc(static_cast<RenderDevice::DepthFunc>(func));
 }
 
 //----------------------------------------------------------
 NX_EXPORT uint32_t nxRendererGetDepthFunc()
 {
-    return rdi->getDepthFunc();
+    return RenderDevice::instance().getDepthFunc();
 }
 
 //----------------------------------------------------------
 NX_EXPORT void nxRendererGetCapabilities(unsigned int* u, bool* b)
 {
-    rdi->getCapabilities(
+    RenderDevice::instance().getCapabilities(
         &u[0], &u[1], &u[2], &u[3], &b[0], &b[1], &b[2], &b[3], &b[4], &b[5], &b[6], &b[7], &b[8],
         &b[9], &b[10], &b[11]
     );

@@ -253,6 +253,8 @@ public:
     };
 
 public:
+    static RenderDevice& instance();
+
     virtual ~RenderDevice() = default;
     virtual bool initialize() = 0;
 

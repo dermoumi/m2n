@@ -25,6 +25,31 @@
     For more information, please refer to <http://unlicense.org>
 *///============================================================================
 #include "renderdevice.hpp"
+#include <memory>
+
+#if !defined(NX_OPENGL_ES)
+    #include "renderdevicegl.hpp"
+#else
+    #include "renderdevicegles2.hpp"
+#endif
+
+//----------------------------------------------------------
+static RenderDevice* getDevice()
+{
+    #if !defined(NX_OPENGL_ES)
+        return new RenderDeviceGL();
+    #else
+        return new RenderDeviceGLES2();
+    #endif
+}
+
+//----------------------------------------------------------
+RenderDevice& RenderDevice::instance()
+{
+    static std::unique_ptr<RenderDevice> rdi(getDevice());
+
+    return *rdi;
+}
 
 //----------------------------------------------------------
 uint32_t RenderDevice::calcTextureSize(TextureFormat format, int width, int height, int depth)
