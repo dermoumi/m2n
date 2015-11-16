@@ -33,12 +33,23 @@ local toTextureType = {
     ['3d'] = 1,
     ['cube'] = 2
 }
+local fromTextureType = {
+    [0] = '2d',
+    '3d',
+    'cube'
+}
+
+local toTextureFormat = {
+    -- TODO
+}
+local fromTextureFormat = {
+    -- TODO
+}
 
 local toFilter = {
     bilinear  = 0x0,
     trilinear = 0x1,
-    nearest   = 0x2,
-    mask      = 0x3
+    nearest   = 0x2
 }
 local fromFilter = {
     [0x0] = 'bilinear',
@@ -51,8 +62,7 @@ local toAniso = {
     [2]  = 0x04,
     [4]  = 0x08,
     [8]  = 0x10,
-    [16] = 0x20,
-    mask = 0x3C
+    [16] = 0x20
 }
 local fromAniso = {
     [0x00] = 1,
@@ -65,8 +75,7 @@ local fromAniso = {
 local toXRepeating = {
     clamp    = 0x00,
     wrap     = 0x40,
-    clampcol = 0x80,
-    mask     = 0xC0
+    clampcol = 0x80
 }
 local fromXRepeating = {
     [0x00] = 'clamp',
@@ -77,8 +86,7 @@ local fromXRepeating = {
 local toYRepeating = {
     clamp    = 0x000,
     wrap     = 0x100,
-    clampcol = 0x200,
-    mask     = 0x300
+    clampcol = 0x200
 }
 local fromYRepeating = {
     [0x000] = 'clamp',
@@ -89,8 +97,7 @@ local fromYRepeating = {
 local toZRepeating = {
     clamp    = 0x000,
     wrap     = 0x400,
-    clampcol = 0x800,
-    mask     = 0xC00
+    clampcol = 0x800
 }
 local fromZRepeating = {
     [0x000] = 'clamp',
@@ -105,17 +112,36 @@ local ffi = require 'ffi'
 local C = ffi.C
 
 ffi.cdef [[
-    typedef struct {
-        uint8_t texType;
-        uint32_t tex;
-        uint16_t width;
-        uint16_t height;
-        uint16_t depth;
-        uint16_t actualWidth;
-        uint16_t actualHeight;
-        uint32_t samplerState;
-        bool     invertCoords;
-    } NxTexture;
+    typedef struct NxTexture NxTexture;
+
+    NxTexture* nxTextureNew();
+    NxTexture* nxTextureFromData(uint8_t, uint8_t, uint32_t, uint16_t, uint16_t, uint16_t, uint32_t,
+        bool);
+    void nxTextureRelease(NxTexture*);
+    uint8_t nxTextureCreate(NxTexture*, uint8_t, uint8_t, uint16_t, uint16_t, uint16_t, bool, bool,
+        bool);
+    void nxTextureSetData(NxTexture*, const void*, int32_t, int32_t, int32_t, int32_t, int32_t,
+        int32_t, uint8_t, uint8_t);
+    void nxTextureBind(NxTexture*, uint8_t);
+    bool nxTextureData(const NxTexture*, void*, uint8_t, uint8_t);
+    void nxTextureSize(const NxTexture*, uint16_t*);
+    uint32_t nxTextureBufferSize(const NxTexture*);
+    void nxTextureSetFilter(NxTexture*, uint32_t);
+    void nxTextureSetAnisotropyLevel(NxTexture*, uint32_t);
+    void nxTextureSetRepeatingX(NxTexture*, uint32_t);
+    void nxTextureSetRepeatingY(NxTexture*, uint32_t);
+    void nxTextureSetRepeatingZ(NxTexture*, uint32_t);
+    void nxTextureSetLessOrEqual(NxTexture*, bool);
+    uint32_t nxTextureFilter(const NxTexture*);
+    uint32_t nxTextureAnisotropyLevel(const NxTexture*);
+    void nxTextureRepeating(const NxTexture*, uint32_t*);
+    bool nxTextureLessOrEqual(const NxTexture*);
+    uint32_t nxTextureNativeHandle(const NxTexture*);
+    bool nxTextureFlipCoords(const NxTexture*);
+    uint8_t nxTextureType(const NxTexture*);
+    uint8_t nxTextureFormat(const NxTexture*);
+    uint32_t nxTextureCalcBufferSize(uint8_t, uint16_t, uint16_t, uint16_t);
+    uint32_t nxTextureUsedMemory();
 ]]
 
 ------------------------------------------------------------
@@ -126,29 +152,6 @@ local Texture = class 'nx.texture'
 
 local Renderer = require 'nx.renderer'
 local Image    = require 'nx.image'
-
-------------------------------------------------------------
-local function destroy(cdata)
-    if cdata.tex ~= 0 then
-        C.nxRendererDestroyTexture(cdata.tex)
-    end
-
-    C.free(cdata)
-end
-
-------------------------------------------------------------
-local function validSize(size)
-    if Renderer.getCapabilities('npotTexturesSupported') then
-        return size
-    end
-
-    powerOfTwo = 1
-    while powerOfTwo < size do
-        powerOfTwo = powerOfTwo * 2
-    end
-
-    return powerOfTwo
-end
 
 ------------------------------------------------------------
 local function isNumber(val)
@@ -169,41 +172,29 @@ end
 
 ------------------------------------------------------------
 function Texture.static._fromRenderbuffer(rb, bufIndex)
-    local c = ffi.new('NxTexture')
-
-    c.texType      = (bufIndex == 32) and 12 or 0
-    c.tex          = C.nxRendererGetRenderbufferTexture(rb._cdata.rb, bufIndex)
-    c.width        = rb._cdata.width
-    c.height       = rb._cdata.height
-    c.depth        = 1
-    c.actualWidth  = c.width
-    c.actualHeight = c.height
-    c.samplerState = 0
-    c.invertCoords = true
-
     local texture = Texture:allocate()
-    texture._cdata = c
+    texture._cdata = C.nxTextureFromData(
+        (bufIndex == 32) and 12 or 0,
+        1,
+        C.nxRendererGetRenderbufferTexture(rb._cdata.rb, bufIndex),
+        rb._cdata.width,
+        rb._cdata.height,
+        1,
+        0,
+        true
+    )
     return texture
 end
 
 ------------------------------------------------------------
 function Texture.static.usedMemory()
-    return tonumber(nxRendererGetTextureMemory())
+    return C.nxTextureUsedMemory();
 end
 
 ------------------------------------------------------------
 function Texture:initialize(texType, width, height, depth, hasMips, mipMap)
-    local handle = ffi.cast('NxTexture*', C.malloc(ffi.sizeof('NxTexture')))
-    handle.texType      = 0
-    handle.tex          = 0
-    handle.width        = 0
-    handle.height       = 0
-    handle.depth        = 0
-    handle.actualWidth  = 0
-    handle.actualHeight = 0
-    handle.samplerState = 0
-    handle.invertCoords = false
-    self._cdata = ffi.gc(handle, destroy)
+    local handle = C.nxTextureNew()
+    self._cdata = ffi.gc(handle, C.nxTextureRelease)
 
     if texType and width and height then
         ok, err = self:create(texType, width, height, depth, hasMips, mipMap)
@@ -216,7 +207,7 @@ end
 ------------------------------------------------------------
 function Texture:release()
     if self._cdata == nil then return end
-    destroy(ffi.gc(self._cdata, nil))
+    C.nxTextureRelease(ffi.gc(self._cdata, nil))
     self._cdata = nil
 end
 
@@ -226,68 +217,34 @@ function Texture:create(texType, width, height, depth, hasMips, mipMap)
 
     if hasMips == nil then hasMips = true end
     if mipMap == nil then mipMap = true end
-
     depth = depth or 1
-    if width == 0 or height == 0 or depth == 0 then
-        return false, 'Cannot create texture: invalid texture size'
-    end
-
-    -- Compute internal texture dimensions depending on NPOT texture support
-    local actualWidth, actualHeight, actualDepth =
-        validSize(width), validSize(height), validSize(depth)
-
-    if
-        texType ~= '2d' and (actualWidth ~= width or actualHeight ~= height or actualDepth ~= depth)
-    then
-        return false, 'Cannot create texture: 3D and Cubemap textures cannot be non-power-of-two'
-    end
 
     texType = toTextureType[texType]
     if not texType then
         return false, 'Cannot create texture: invalid texture type'
     end
 
-    -- Check maximum texture size
-    local maxSize = Renderer.getCapabilities('maxTexSize')
-    if actualWidth > maxSize or actualHeight > maxSize or depth > maxSize then
+    local status = C.nxTextureCreate(self._cdata, texType, 1, width, height, depth, hasMips,
+        mipMap, Renderer.getCapabilities('sRGBTexturesSupported'))
+
+    if status == 1 then
+        return false, 'Cannot create texture: invalid texture size'
+    elseif status == 2 then
+        local max = Renderer.getCapabilities('maxTexSize')
         return false, ('Cannot create texture: internal texture size is too high ' ..
-            '(%ux%ux%u). Maximum is %ux%ux%u'):format(actualWidth, actualHeight, depth, maxSize,
-                maxSize, maxSize)
-    end
-
-    if self._cdata.tex ~= 0 then
-        C.nxRendererDestroyTexture(self._cdata.tex)
-    end
-
-    self._cdata.tex = C.nxRendererCreateTexture(texType, actualWidth, actualHeight, depth, 1,
-        hasMips, mipMap, Renderer.getCapabilities('sRGBTexturesSupported'))
-    if self._cdata.tex == 0 then
+            '(%ux%ux%u). Maximum is %ux%ux%u'):format(width, height, depth, max, max, max)
+    elseif status == 3 then
         return false, 'Cannot create texture'
     end
-
-    if texType == 2 then
-        for i = 0, 5 do
-            C.nxRendererUploadTextureData(self._cdata.tex, i, 0, nil)
-        end
-    else
-        C.nxRendererUploadTextureData(self._cdata.tex, 0, 0, nil)
-    end
-
-    self._cdata.texType      = texType
-    self._cdata.width        = width
-    self._cdata.height       = height
-    self._cdata.depth        = depth
-    self._cdata.actualWidth  = actualWidth
-    self._cdata.actualHeight = actualHeight
 
     return true
 end
 
 ------------------------------------------------------------
 function Texture:setData(data, a, b, c, d, e, f, g, h)
-    local x, y, z, width, height, depth, slice, mipLevel, wholeTexture
+    local x, y, z, width, height, depth, slice, mipLevel
     if not c then
-        wholeTexture, slice, mipLevel = true, a, b
+        x, y, z, width, height, depth, slice, mipLevel = -1, -1, -1, -1, -1, -1, a, b
     elseif self._cdata.texType == 1 then -- 3D maps
         x, y, z, width, height, depth, slice, mipLevel = a, b, c, d, e, f, g, h
     else
@@ -301,24 +258,13 @@ function Texture:setData(data, a, b, c, d, e, f, g, h)
     slice = slice or 0
     mipLevel = mipLevel or 0
 
-    if wholeTexture then
-        C.nxRendererUploadTextureData(self._cdata.tex, slice, mipLevel, data)
-    else
-        C.nxRendererUploadTextureSubData(
-            self._cdata.tex, slice, mipLevel, x, y, z, width, height, depth, data
-        )
-    end
+    C.nxTextureSetData(self._cdata, data, x, y, z, width, height, depth, slice, mipLevel)
 end
 
 ------------------------------------------------------------
 function Texture:bind(unit)
     if not self._cdata then return end
-    if unit < Renderer.getCapabilities('maxTexUnits') then
-        C.nxRendererSetTexture(unit, self._cdata.tex, self._cdata.samplerState)
-        return true
-    end
-
-    return false
+    C.nxTextureBind(self._cdata, unit)
 end
 
 ------------------------------------------------------------
@@ -326,12 +272,9 @@ function Texture:data(slice, mipLevel)
     slice    = slice or 0
     mipLevel = mipLevel or 0
 
-    local size = C.nxRendererCalcTextureSize(
-        1, self._cdata.actualWidth, self._cdata.actualHeight, self._cdata.depth
-    )
-    local buffer = ffi.new('uint8_t[?]', size)
+    local buffer = ffi.new('uint8_t[?]', C.nxTextureBufferSize(self._cdata))
 
-    if not C.nxRendererGetTextureData(self._cdata.tex, slice, mipLevel, buffer) then
+    if not C.nxTextureData(self._cdata, buffer, slice, mipLevel) then
         return nil, 'Could not recover texture data'
     end
 
@@ -339,81 +282,82 @@ function Texture:data(slice, mipLevel)
 end
 
 ------------------------------------------------------------
-function Texture:size(actualSize)
-    if actualSize then
-        return self._cdata.actualWidth, self._cdata.actualHeight, self._cdata.depth
-    else
-        return self._cdata.width, self._cdata.height, self._cdata.depth
-    end
+function Texture:size()
+    local sizePtr = ffi.new('uint16_t[3]')
+    C.nxTextureSize(self._cdata, sizePtr)
+    return tonumber(sizePtr[0]), tonumber(sizePtr[1]), tonumber(sizePtr[2])
 end
 
 ------------------------------------------------------------
 function Texture:setFilter(filter)
     filter = toFilter[filter]
-    if not filter or filter == toFilter.mask then return end
+    if not filter then return end
 
-    local c = self._cdata
-    c.samplerState = bit.bor(bit.band(c.samplerState, bit.bnot(toFilter.mask)), filter)
+    C.nxTextureSetFilter(self._cdata, filter)
 end
 
 ------------------------------------------------------------
 function Texture:setAnisotropyLevel(level)
     local aniso = toAniso[level]
-    if not aniso or aniso == toAniso.mask then return end
+    if not aniso then return end
 
-    local c = self._cdata
-    c.samplerState = bit.bor(bit.band(c.samplerState, bit.bnot(toAniso.mask)), aniso)
+    C.nxTextureSetAnisotropyLevel(self._cdata, aniso)
 end
 
 ------------------------------------------------------------
 function Texture:setRepeating(x, y, z)
-    if x == 'mask' or y == 'mask' or z == 'mask' then return end
-
     x, y, z = toXRepeating[x], toYRepeating[y], toZRepeating[z]
-    if not x or not y or not z then
-        local currX, currY, currZ = self:repeating()
-        x = x or toXRepeating[currX]
-        y = y or toYRepeating[currY]
-        z = z or toZRepeating[currZ]
-    end
 
-    local c = self._cdata
-    c.samplerState = bit.bor(bit.band(c.samplerState, bit.bnot(toXRepeating.mask)), x)
-    c.samplerState = bit.bor(bit.band(c.samplerState, bit.bnot(toYRepeating.mask)), y)
-    c.samplerState = bit.bor(bit.band(c.samplerState, bit.bnot(toZRepeating.mask)), z)
+    if x then C.nxTextureSetRepeatingX(self._cdata, x) end
+    if y then C.nxTextureSetRepeatingY(self._cdata, y) end
+    if z then C.nxTextureSetRepeatingZ(self._cdata, z) end
 end
 
 ------------------------------------------------------------
 function Texture:setLessOrEqual(lessOrEqual)
-    local c = self._cdata
-    if lessOrEqual then
-        c.samplerState = bit.bor(c.samplerState, 0x1000)
-    else
-        c.samplerState = bit.band(c.samplerState, bit.bnot(0x1000))
-    end
+    C.nxTextureSetLessOrEqual(self._cdata, not not lessOrEqual)
 end
 
 ------------------------------------------------------------
 function Texture:filter()
-    return fromFilter[bit.band(self._cdata.samplerState, toFilter.mask)] or 'bilinear'
+    return fromFilter[C.nxTextureFilter(self._cdata)] or 'bilinear'
 end
 
 ------------------------------------------------------------
 function Texture:anisotropyLevel()
-    return fromAniso[bit.band(self._cdata.samplerState, toAniso.mask)] or 1
+    return fromAniso[C.nxTextureAnisotropyLevel(self._cdata)] or 1
 end
 
 ------------------------------------------------------------
 function Texture:repeating()
-    local x = fromXRepeating[bit.band(self._cdata.samplerState, toXRepeating.mask)] or 'clamp'
-    local y = fromYRepeating[bit.band(self._cdata.samplerState, toYRepeating.mask)] or 'clamp'
-    local z = fromZRepeating[bit.band(self._cdata.samplerState, toZRepeating.mask)] or 'clamp'
+    local repeatingPtr = ffi.new('uint32_t[3]')
+    C.nxTextureRepeating(self._cdata, repeatingPtr)
+
+    local x = fromXRepeating[repeatingPtr[0]] or 'clamp'
+    local y = fromYRepeating[repeatingPtr[1]] or 'clamp'
+    local z = fromZRepeating[repeatingPtr[2]] or 'clamp'
+
     return x, y, z
 end
 
 ------------------------------------------------------------
 function Texture:lessOrEqual()
-    return bit.band(self._cdata.samplerState, 0x1000) == 0x1000
+    return C.nxTextureLessOrEqual(self._cdata)
+end
+
+------------------------------------------------------------
+function Texture:flipCoords()
+    return C.nxTextureFlipCoords(self._cdata)
+end
+
+------------------------------------------------------------
+function Texture:texType()
+    return fromTextureType[C.nxTextureType(self._cdata)]
+end
+
+------------------------------------------------------------
+function Texture:texFormat()
+    return fromTextureFormat[C.nxTextureFormat(self._cdata)]
 end
 
 ------------------------------------------------------------

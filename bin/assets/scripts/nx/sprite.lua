@@ -66,7 +66,7 @@ end
 
 ------------------------------------------------------------
 function Sprite:setTexture(texture, keepSubrect)
-    if texture._cdata.texType ~= 0 then -- only accept 2D textures
+    if texture:texType() ~= '2d' then -- only accept 2D textures
         return
     end
 
@@ -141,7 +141,7 @@ function Sprite:_render(camera, transMat, r, g, b, a)
             subB = (self._subY + self._subH) / texH
         end
 
-        if self._texture._cdata.invertCoords then
+        if self._texture:flipCoords() then
             local temp = subT
             subT = subB
             subB = temp

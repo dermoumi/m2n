@@ -59,23 +59,23 @@ uint32_t RenderDevice::calcTextureSize(TextureFormat format, int width, int heig
     case RGBA8:
         return width * height * depth * 4;
     case DXT1:
-        return std::max( width / 4, 1 ) * std::max( height / 4, 1 ) * depth * 8;
+        return std::max(width / 4, 1) * std::max(height / 4, 1) * depth * 8;
     case DXT3:
-        return std::max( width / 4, 1 ) * std::max( height / 4, 1 ) * depth * 16;
+        return std::max(width / 4, 1) * std::max(height / 4, 1) * depth * 16;
     case DXT5:
-        return std::max( width / 4, 1 ) * std::max( height / 4, 1 ) * depth * 16;
+        return std::max(width / 4, 1) * std::max(height / 4, 1) * depth * 16;
     case RGBA16F:
         return width * height * depth * 8;
     case RGBA32F:
         return width * height * depth * 16;
     case PVRTCI_2BPP:
     case PVRTCI_A2BPP:
-        return (std::max( width, 16 ) * std::max( height, 8 ) * 2 + 7) / 8;
+        return (std::max(width, 16) * std::max(height, 8) * 2 + 7) / 8;
     case PVRTCI_4BPP:
     case PVRTCI_A4BPP:
-        return (std::max( width, 8 ) * std::max( height, 8 ) * 4 + 7) / 8;
+        return (std::max(width, 8) * std::max(height, 8) * 4 + 7) / 8;
     case ETC1:
-        return std::max( width / 4, 1 ) * std::max( height / 4, 1 ) * depth * 8;
+        return std::max(width / 4, 1) * std::max(height / 4, 1) * depth * 8;
     default:
         return 0;
     }
