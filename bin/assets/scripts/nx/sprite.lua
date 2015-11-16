@@ -105,7 +105,7 @@ function Sprite:size()
 end
 
 ------------------------------------------------------------
-function Sprite:_render(camera, projectionMat, modelViewMat, r, g, b, a)
+function Sprite:_render(camera, transMat, r, g, b, a)
     if not self._texture then return end
 
     if self._updateBuffer then
@@ -168,7 +168,7 @@ function Sprite:_render(camera, projectionMat, modelViewMat, r, g, b, a)
         self._texture:bind(0)
 
         shader:bind()
-        shader:setUniform('uProjectionMat', projectionMat)
+        shader:setUniform('uTransMat', transMat)
         shader:setUniform('uColor', r, g, b, a)
         shader:setSampler('uTexture', 0)
 

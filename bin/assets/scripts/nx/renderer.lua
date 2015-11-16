@@ -153,11 +153,11 @@ function Renderer.init()
     defaultShaders[1] = Shader:new([[
         attribute vec2 aPosition;
         attribute vec2 aTexCoords;
-        uniform mat4 uProjectionMat;
+        uniform mat4 uTransMat;
         varying vec2 vTexCoords;
         void main() {
             vTexCoords  = aTexCoords;
-            gl_Position = uProjectionMat * vec4(aPosition, 0.0, 1.0);
+            gl_Position = uTransMat * vec4(aPosition, 0.0, 1.0);
         }
     ]], [[
         uniform sampler2D uTexture;
