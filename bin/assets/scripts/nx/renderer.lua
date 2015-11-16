@@ -40,6 +40,8 @@ ffi.cdef [[
         uint8_t format;
     } NxVertexLayoutAttrib;
 
+    typedef void* NxArrayBuffer;
+
     bool nxRendererInit();
     void nxRendererBegin();
     void nxRendererFinish();
@@ -49,10 +51,10 @@ ffi.cdef [[
     void nxRendererDraw(uint32_t, uint32_t, uint32_t);
     void nxRendererDrawIndexed(uint32_t, uint32_t, uint32_t);
     uint32_t nxRendererRegisterVertexLayout(uint8_t, const NxVertexLayoutAttrib*);
-    uint32_t nxRendererCreateVertexBuffer(uint32_t, const void*);
-    uint32_t nxRendererCreateIndexBuffer(uint32_t, const void*);
-    void nxRendererDestroyBuffer(uint32_t);
-    bool nxRendererUpdateBufferData(uint32_t, uint32_t, uint32_t, const void*);
+    NxArrayBuffer* nxRendererCreateVertexBuffer(uint32_t, const void*);
+    NxArrayBuffer* nxRendererCreateIndexBuffer(uint32_t, const void*);
+    void nxRendererDestroyBuffer(NxArrayBuffer*);
+    bool nxRendererUpdateBufferData(NxArrayBuffer*, uint32_t, uint32_t, const void*);
     uint32_t nxRendererGetBufferMemory();
     uint32_t nxRendererCalcTextureSize(uint32_t, int, int, int);
     uint32_t nxRendererCreateTexture(uint32_t, int, int, unsigned int, uint32_t, bool, bool, bool);
@@ -81,8 +83,8 @@ ffi.cdef [[
     bool nxRendererGetRenderbufferData(uint32_t, int, int*, int*, void*, int);
     void nxRendererSetViewport(int, int, int, int);
     void nxRendererSetScissorRect(int, int, int, int);
-    void nxRendererSetIndexBuffer(uint32_t, int);
-    void nxRendererSetVertexBuffer(uint32_t, uint32_t, uint32_t, uint32_t);
+    void nxRendererSetIndexBuffer(NxArrayBuffer*, int);
+    void nxRendererSetVertexBuffer(uint32_t, NxArrayBuffer*, uint32_t, uint32_t);
     void nxRendererSetVertexLayout(uint32_t);
     void nxRendererSetTexture(uint32_t, uint32_t, uint16_t);
     void nxRendererSetColorWriteMask(bool);

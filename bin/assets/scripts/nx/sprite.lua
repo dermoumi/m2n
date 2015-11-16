@@ -149,7 +149,8 @@ function Sprite:_render(camera, transMat, r, g, b, a)
         })
 
         if not self._vertexbuffer then
-            self._vertexbuffer = C.nxRendererCreateVertexBuffer(ffi.sizeof(buffer), buffer)
+            local handle = C.nxRendererCreateVertexBuffer(ffi.sizeof(buffer), buffer)
+            self._vertexbuffer = ffi.gc(handle, C.nxRendererDestroyBuffer)
         else
             C.nxRendererUpdateBufferData(self._vertexbuffer, 0, ffi.sizeof(buffer), buffer)
         end
@@ -174,7 +175,7 @@ function Sprite:_render(camera, transMat, r, g, b, a)
         shader:setSampler('uTexture', 0)
 
         C.nxRendererSetVertexBuffer(0, self._vertexbuffer, 0, 16)
-        C.nxRendererSetIndexBuffer(0, 0)
+        C.nxRendererSetIndexBuffer(nil, 0)
         C.nxRendererSetVertexLayout(Sprite._vertexLayout())
 
         C.nxRendererDraw(1, 0, 4)

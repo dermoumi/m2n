@@ -45,6 +45,8 @@ struct NxVertexLayoutAttrib
     uint8_t format;
 };
 
+using NxArrayBuffer = uint32_t;
+
 //----------------------------------------------------------
 // Locals
 //----------------------------------------------------------
@@ -134,28 +136,35 @@ NX_EXPORT uint32_t nxRendererRegisterVertexLayout(uint8_t numAttribs,
 }
 
 //----------------------------------------------------------
-NX_EXPORT uint32_t nxRendererCreateVertexBuffer(uint32_t size, const void* data)
+NX_EXPORT NxArrayBuffer* nxRendererCreateVertexBuffer(uint32_t size, const void* data)
 {
-    return rdi->createVertexBuffer(size, data);
+    auto* buffer = new NxArrayBuffer();
+    *buffer = rdi->createVertexBuffer(size, data);
+    return buffer;
 }
 
 //----------------------------------------------------------
-NX_EXPORT uint32_t nxRendererCreateIndexBuffer(uint32_t size, const void* data)
+NX_EXPORT NxArrayBuffer* nxRendererCreateIndexBuffer(uint32_t size, const void* data)
 {
-    return rdi->createIndexBuffer(size, data);
+    auto* buffer = new NxArrayBuffer();
+    *buffer = rdi->createIndexBuffer(size, data);
+    return buffer;
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxRendererDestroyBuffer(uint32_t buffer)
+NX_EXPORT void nxRendererDestroyBuffer(NxArrayBuffer* buffer)
 {
-    rdi->destroyBuffer(buffer);
+    if (!buffer) return;
+    rdi->destroyBuffer(*buffer);
+    delete buffer;
 }
 
 //----------------------------------------------------------
-NX_EXPORT bool nxRendererUpdateBufferData(uint32_t buffer, uint32_t offset, uint32_t size,
+NX_EXPORT bool nxRendererUpdateBufferData(NxArrayBuffer* buffer, uint32_t offset, uint32_t size,
     const void* data)
 {
-    return rdi->updateBufferData(buffer, offset, size, data);
+    if (!buffer) return false;
+    return rdi->updateBufferData(*buffer, offset, size, data);
 }
 
 //----------------------------------------------------------
@@ -335,16 +344,16 @@ NX_EXPORT void nxRendererSetScissorRect(int x, int y, int width, int height)
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxRendererSetIndexBuffer(uint32_t bufObj, int format)
+NX_EXPORT void nxRendererSetIndexBuffer(NxArrayBuffer* bufObj, int format)
 {
-    rdi->setIndexBuffer(bufObj, static_cast<RenderDevice::IndexFormat>(format));
+    rdi->setIndexBuffer(bufObj ? *bufObj : 0, static_cast<RenderDevice::IndexFormat>(format));
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxRendererSetVertexBuffer(uint32_t slot, uint32_t vbObj, uint32_t offset,
+NX_EXPORT void nxRendererSetVertexBuffer(uint32_t slot, NxArrayBuffer* vbObj, uint32_t offset,
     uint32_t stride)
 {
-    rdi->setVertexBuffer(slot, vbObj, offset, stride);
+    rdi->setVertexBuffer(slot, vbObj ? *vbObj : 0, offset, stride);
 }
 
 //----------------------------------------------------------
