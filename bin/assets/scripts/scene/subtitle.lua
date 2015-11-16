@@ -81,6 +81,9 @@ function SceneSubtitle:load()
     self.rb:texture():setRepeating('wrap', 'wrap')
 
     self.sprite = Sprite:new(self.texture)
+    self.sprite:setPosition(640, 360)
+    self.sprite:setOrigin(256, 256)
+
     self.rbSprite = Sprite:new(self.rb:texture())
 
     self.initialized = true
@@ -90,6 +93,11 @@ end
 ------------------------------------------------------------
 function SceneSubtitle:release()
     self:releaseTest()
+end
+
+------------------------------------------------------------
+function SceneSubtitle:update(dt)
+    self.sprite:setRotation(math.pi * dt + self.sprite:rotation())
 end
 
 ------------------------------------------------------------

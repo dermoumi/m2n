@@ -29,7 +29,8 @@
 -- Represents a 2D sprite in a 2D space
 ------------------------------------------------------------
 local class = require 'nx.class'
-local Sprite = class('nx.sprite')
+local Entity2D = require 'nx.entity2d'
+local Sprite = class('nx.sprite', Entity2D)
 
 local Renderer = require 'nx.renderer'
 local ffi = require 'ffi'
@@ -47,6 +48,8 @@ end
 
 ------------------------------------------------------------
 function Sprite:initialize(texture, subX, subY, subW, subH, normalized)
+    Entity2D.initialize(self)
+
     if not subX then
         self:setTexture(texture)
     else
@@ -154,23 +157,25 @@ function Sprite:_render(camera, transMat, r, g, b, a)
         self._updateBuffer = false
     end
 
+    transMat:combine(self:matrix())
+
     if self._vertexbuffer ~= 0 then
         local shader = self._shader or Sprite._defaultShader()
-        r = (r or 255) / 255
-        g = (g or 255) / 255
-        b = (b or 255) / 255
-        a = (a or 255) / 255
-
-        C.nxRendererSetVertexBuffer(0, self._vertexbuffer, 0, 16)
-        C.nxRendererSetIndexBuffer(0, 0)
-        C.nxRendererSetVertexLayout(Sprite._vertexLayout())
+        r = r or 255
+        g = g or 255
+        b = b or 255
+        a = a or 255
 
         self._texture:bind(0)
 
         shader:bind()
         shader:setUniform('uTransMat', transMat)
-        shader:setUniform('uColor', r, g, b, a)
+        shader:setUniform('uColor', r / 255, g / 255, b / 255, a / 255)
         shader:setSampler('uTexture', 0)
+
+        C.nxRendererSetVertexBuffer(0, self._vertexbuffer, 0, 16)
+        C.nxRendererSetIndexBuffer(0, 0)
+        C.nxRendererSetVertexLayout(Sprite._vertexLayout())
 
         C.nxRendererDraw(1, 0, 4)
     end
