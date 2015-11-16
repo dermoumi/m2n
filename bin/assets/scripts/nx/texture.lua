@@ -136,11 +136,9 @@ ffi.cdef [[
     uint32_t nxTextureAnisotropyLevel(const NxTexture*);
     void nxTextureRepeating(const NxTexture*, uint32_t*);
     bool nxTextureLessOrEqual(const NxTexture*);
-    uint32_t nxTextureNativeHandle(const NxTexture*);
     bool nxTextureFlipCoords(const NxTexture*);
     uint8_t nxTextureType(const NxTexture*);
     uint8_t nxTextureFormat(const NxTexture*);
-    uint32_t nxTextureCalcBufferSize(uint8_t, uint16_t, uint16_t, uint16_t);
     uint32_t nxTextureUsedMemory();
 ]]
 
@@ -149,19 +147,6 @@ ffi.cdef [[
 ------------------------------------------------------------
 local class = require 'nx.class'
 local Texture = class 'nx.texture'
-
-local Renderer = require 'nx.renderer'
-local Image    = require 'nx.image'
-
-------------------------------------------------------------
-local function isNumber(val)
-    return type(val) == 'number'
-end
-
-------------------------------------------------------------
-local function isCArray(a)
-    return type(a) == 'cdata' or type(a) == 'userdata'
-end
 
 ------------------------------------------------------------
 function Texture.static._fromCData(cdata)
@@ -214,6 +199,7 @@ end
 ------------------------------------------------------------
 function Texture:create(texType, width, height, depth, hasMips, mipMap)
     -- TODO: Texture formats
+    local Renderer = require('nx.renderer')
 
     if hasMips == nil then hasMips = true end
     if mipMap == nil then mipMap = true end
@@ -251,7 +237,7 @@ function Texture:setData(data, a, b, c, d, e, f, g, h)
         x, y, z, width, height, depth, slice, mipLevel = a, b, 0, c, d, 1, e, f
     end
 
-    if class.Object.isInstanceOf(data, Image) then
+    if class.Object.isInstanceOf(data, require('nx.image')) then
         data = data:data()
     end
 

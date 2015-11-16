@@ -150,12 +150,6 @@ NX_EXPORT bool nxTextureLessOrEqual(const NxTexture* texture)
 }
 
 //----------------------------------------------------------
-NX_EXPORT uint32_t nxTextureNativeHandle(const NxTexture* texture)
-{
-    return texture->nativeHandle();
-}
-
-//----------------------------------------------------------
 NX_EXPORT bool nxTextureFlipCoords(const NxTexture* texture)
 {
     return texture->flipCoords();
@@ -171,13 +165,6 @@ NX_EXPORT uint8_t nxTextureType(const NxTexture* texture)
 NX_EXPORT uint8_t nxTextureFormat(const NxTexture* texture)
 {
     return texture->texFormat();
-}
-
-//----------------------------------------------------------
-NX_EXPORT uint32_t nxTextureCalcBufferSize(uint8_t format, uint16_t width, uint16_t height,
-    uint16_t depth)
-{
-    return Texture::calcSize(format, width, height, depth);
 }
 
 //----------------------------------------------------------

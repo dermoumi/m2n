@@ -154,57 +154,6 @@ NX_EXPORT uint32_t nxRendererGetBufferMemory()
 }
 
 //----------------------------------------------------------
-NX_EXPORT uint32_t nxRendererCalcTextureSize(uint32_t format, int width, int height, int depth)
-{
-    return RenderDevice::instance().calcTextureSize(
-        static_cast<RenderDevice::TextureFormat>(format), width, height, depth
-    );
-}
-
-//----------------------------------------------------------
-NX_EXPORT uint32_t nxRendererCreateTexture(uint32_t type, int width, int height, unsigned int depth,
-    uint32_t format, bool hasMips, bool genMips, bool sRGB)
-{
-    return RenderDevice::instance().createTexture(
-        static_cast<RenderDevice::TextureType>(type), width, height, depth,
-        static_cast<RenderDevice::TextureFormat>(format), hasMips, genMips, sRGB
-    );
-}
-
-//----------------------------------------------------------
-NX_EXPORT void nxRendererUploadTextureData(uint32_t texObj, int slice, int mipLevel,
-    const void* pixels)
-{
-    RenderDevice::instance().uploadTextureData(texObj, slice, mipLevel, pixels);
-}
-
-//----------------------------------------------------------
-NX_EXPORT void nxRendererUploadTextureSubData(uint32_t texObj, int slice, int mipLevel,
-    unsigned int x, unsigned int y, unsigned int z, unsigned int width, unsigned int height,
-    unsigned int depth, const void* pixels)
-{
-    RenderDevice::instance().uploadTextureSubData(texObj, slice, mipLevel, x, y, z, width, height, depth, pixels);
-}
-
-//----------------------------------------------------------
-NX_EXPORT void nxRendererDestroyTexture(uint32_t texObj)
-{
-    RenderDevice::instance().destroyTexture(texObj);
-}
-
-//----------------------------------------------------------
-NX_EXPORT bool nxRendererGetTextureData(uint32_t texObj, int slice, int mipLevel, void* buffer)
-{
-    return RenderDevice::instance().getTextureData(texObj, slice, mipLevel, buffer);
-}
-
-//----------------------------------------------------------
-NX_EXPORT uint32_t nxRendererGetTextureMemory()
-{
-    return RenderDevice::instance().getTextureMemory();
-}
-
-//----------------------------------------------------------
 NX_EXPORT uint32_t nxRendererCreateShader(const char* vertexShader, const char* fragmentShader)
 {
     return RenderDevice::instance().createShader(vertexShader, fragmentShader);

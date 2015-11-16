@@ -56,14 +56,6 @@ ffi.cdef [[
     void nxRendererDestroyBuffer(NxArrayBuffer*);
     bool nxRendererUpdateBufferData(NxArrayBuffer*, uint32_t, uint32_t, const void*);
     uint32_t nxRendererGetBufferMemory();
-    uint32_t nxRendererCalcTextureSize(uint32_t, int, int, int);
-    uint32_t nxRendererCreateTexture(uint32_t, int, int, unsigned int, uint32_t, bool, bool, bool);
-    void nxRendererUploadTextureData(uint32_t, int, int, const void*);
-    void nxRendererUploadTextureSubData(uint32_t, int, int, unsigned int, unsigned int,
-        unsigned int, unsigned int, unsigned int, unsigned int, const void*);
-    void nxRendererDestroyTexture(uint32_t);
-    bool nxRendererGetTextureData(uint32_t, int, int, void*);
-    uint32_t nxRendererGetTextureMemory();
     uint32_t nxRendererCreateShader(const char*, const char*);
     void nxRendererDestroyShader(uint32_t);
     void nxRendererBindShader(uint32_t);
