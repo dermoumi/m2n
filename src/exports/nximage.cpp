@@ -36,57 +36,9 @@ struct PHYSFS_File;
 //==========================================================
 // A set of functions to create and manage images
 //==========================================================
-NX_EXPORT NxImage* nxImageCreateFill(unsigned int width, unsigned int height, uint8_t r,
-    uint8_t g, uint8_t b, uint8_t a)
+NX_EXPORT NxImage* nxImageNew()
 {
-    NxImage* image = new NxImage();
-    image->create(width, height, r, g, b, a);
-    return image;
-}
-
-//----------------------------------------------------------
-NX_EXPORT NxImage* nxImageCreateFromData(unsigned int width, unsigned int height,
-    const uint8_t* buffer)
-{
-    NxImage* image = new NxImage();
-    image->create(width, height, buffer);
-    return image;
-}
-
-//----------------------------------------------------------
-NX_EXPORT NxImage* nxImageCreateFromFile(const char* filename)
-{
-    NxImage* image = new NxImage();
-    if (image->open(filename)) return image;
-
-    delete image;
-    return nullptr;
-}
-
-//----------------------------------------------------------
-NX_EXPORT NxImage* nxImageCreateFromMemory(const void* buffer, size_t size)
-{
-    NxImage* image = new NxImage();
-    if (image->open(buffer, size)) return image;
-    
-    delete image;
-    return nullptr;
-}
-
-//----------------------------------------------------------
-NX_EXPORT NxImage* nxImageCreateFromHandle(PHYSFS_File* file, bool close)
-{
-    NxImage* image = new NxImage();
-    if (image->open(file, close)) return image;
-
-    delete image;
-    return nullptr;
-}
-
-//----------------------------------------------------------
-NX_EXPORT bool nxImageSave(const NxImage* image, const char* filename)
-{
-    return image->save(filename);
+    return new NxImage();
 }
 
 //----------------------------------------------------------
@@ -96,7 +48,45 @@ NX_EXPORT void nxImageRelease(NxImage* image)
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxImageGetSize(NxImage* image, unsigned int* sizePtr)
+NX_EXPORT void nxImageCreateFill(NxImage* image, uint32_t width, uint32_t height, uint8_t r,
+    uint8_t g, uint8_t b, uint8_t a)
+{
+    image->create(width, height, r, g, b, a);
+}
+
+//----------------------------------------------------------
+NX_EXPORT void nxImageCreateFromData(NxImage* image, uint32_t width, uint32_t height,
+    const uint8_t* buffer)
+{
+    image->create(width, height, buffer);
+}
+
+//----------------------------------------------------------
+NX_EXPORT bool nxImageOpenFromFile(NxImage* image, const char* filename)
+{
+    return image->open(filename);
+}
+
+//----------------------------------------------------------
+NX_EXPORT bool nxImageOpenFromMemory(NxImage* image, const void* buffer, size_t size)
+{
+    return image->open(buffer, size);
+}
+
+//----------------------------------------------------------
+NX_EXPORT bool nxImageOpenFromHandle(NxImage* image, PHYSFS_File* file, bool close)
+{
+    return image->open(file, close);
+}
+
+//----------------------------------------------------------
+NX_EXPORT bool nxImageSave(const NxImage* image, const char* filename)
+{
+    return image->save(filename);
+}
+
+//----------------------------------------------------------
+NX_EXPORT void nxImageGetSize(const NxImage* image, uint32_t* sizePtr)
 {
     image->getSize(&sizePtr[0], &sizePtr[1]);
 }
@@ -109,27 +99,27 @@ NX_EXPORT void nxImageColorMask(NxImage* image, uint8_t r, uint8_t g, uint8_t b,
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxImageCopy(NxImage* image, const NxImage* source, unsigned int destX,
-    unsigned int destY, int srcX, int srcY, int width, int height, bool applyAlpha)
+NX_EXPORT void nxImageCopy(NxImage* image, const NxImage* source, uint32_t destX,
+    uint32_t destY, int srcX, int srcY, int width, int height, bool applyAlpha)
 {
     image->copy(*source, destX, destY, srcX, srcY, width, height, applyAlpha);
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxImageSetPixel(NxImage* image, unsigned int x, unsigned int y, uint8_t r, uint8_t g,
+NX_EXPORT void nxImageSetPixel(NxImage* image, uint32_t x, uint32_t y, uint8_t r, uint8_t g,
     uint8_t b, uint8_t a)
 {
     image->setPixel(x, y, r, g, b, a);
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxImageGetPixel(NxImage* image, unsigned int x, unsigned int y, uint8_t* colPtr)
+NX_EXPORT void nxImageGetPixel(const NxImage* image, uint32_t x, uint32_t y, uint8_t* colPtr)
 {
     image->getPixel(x, y, &colPtr[0], &colPtr[1], &colPtr[2], &colPtr[3]);
 }
 
 //----------------------------------------------------------
-NX_EXPORT const uint8_t* nxImageGetPixelsPtr(NxImage* image)
+NX_EXPORT const uint8_t* nxImageGetPixelsPtr(const NxImage* image)
 {
     return image->getPixelsPtr();
 }
