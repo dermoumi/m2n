@@ -84,10 +84,11 @@ function SceneSubtitle:load()
 
     self.font = Font:new()
     self.font:open('assets/mplus-1c-regular.ttf')
-    self.font:glyph(56, 20)
-    self.font:glyph(65, 20)
+    for i = 48, 126 do
+        self.font:glyph(i, 30)
+    end
 
-    self.fontSprite = Sprite:new(self.font:texture(20))
+    self.fontSprite = Sprite:new(self.font:texture(30))
 
     self._processParent = true
 end

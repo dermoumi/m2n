@@ -38,7 +38,14 @@ ffi.cdef [[
     NxVectorFont* nxVectorFontNew();
     void nxVectorFontRelease(NxVectorFont*);
     bool nxVectorFontOpenFromFile(NxVectorFont*, const char*);
+    bool nxVectorFontOpenFromMemory(NxVectorFont*, const void*, size_t);
+    bool nxVectorFontOpenFromHandle(NxVectorFont*, PHYSFS_File*);
+    const char* nxVectorFontFamilyName(const NxVectorFont*);
     void nxVectorFontGlyph(const NxVectorFont*, uint32_t, uint32_t, bool, float*, uint32_t*);
+    float nxVectorFontKerning(const NxVectorFont*, uint32_t, uint32_t, uint32_t);
+    float nxVectorFontLineSpacing(const NxVectorFont*, uint32_t);
+    float nxVectorFontUnderlinePosition(const NxVectorFont*, uint32_t);
+    float nxVectorFontUnderlineThickness(const NxVectorFont*, uint32_t);
     const NxTexture* nxVectorFontTexture(const NxVectorFont*, uint32_t);
 ]]
 
@@ -49,6 +56,16 @@ local class = require 'nx.class'
 local VectorFont = class 'nx.vectorfont'
 
 local Texture = require 'nx.texture'
+
+------------------------------------------------------------
+local function isNumber(val)
+    return type(val) == 'number'
+end
+
+------------------------------------------------------------
+local function isCArray(a)
+    return type(a) == 'cdata' or type(a) == 'userdata'
+end
 
 ------------------------------------------------------------
 function VectorFont.static._fromCData(cdata)
@@ -64,8 +81,27 @@ function VectorFont:initialize()
 end
 
 ------------------------------------------------------------
-function VectorFont:open(filename)
-    return C.nxVectorFontOpenFromFile(self._cdata, filename)
+function VectorFont:open(a, b)
+    if isCArray(a) and isNumber(b) then
+        ok = C.nxVectorFontOpenFromMemory(self._cdata, a, b)
+    elseif type(a) == 'string' then
+        ok = C.nxVectorFontOpenFromFile(self._cdata, a)
+    elseif class.Object.isInstanceOf(a, require('nx.inputfile')) then
+        ok = C.nxVectorFontOpenFromHandle(self._cdata, a._cdata)
+    else
+        return false, 'Invalid parameters'
+    end
+
+    if not ok then
+        return 'Cannot open font'
+    end
+
+    return true
+end
+
+------------------------------------------------------------
+function VectorFont:familyName()
+    return ffi.string(C.nxVectorFontFamilyName(self._cdata))
 end
 
 ------------------------------------------------------------
@@ -76,6 +112,26 @@ function VectorFont:glyph(codePoint, charSize, bold)
 
     return fValues[0], fValues[1], fValues[2], fValues[3], fValues[4], uValues[0], uValues[1],
         uValues[2], uValues[4]
+end
+
+------------------------------------------------------------
+function VectorFont:kerning(first, second, charSize)
+    return C.nxVectorFontKerning(self._cdata, first, second, charSize)
+end
+
+------------------------------------------------------------
+function VectorFont:lineSpacing(charSize)
+    return C.nxVectorFontLineSpacing(self._cdata, charSize)
+end
+
+------------------------------------------------------------
+function VectorFont:underlinePosition(charSize)
+    return C.nxVectorFontUnderlinePosition(self._cdata, charSize)
+end
+
+------------------------------------------------------------
+function VectorFont:underlineThickness(charSize)
+    return C.nxVectorFontUnderlineThickness(self._data, charSize)
 end
 
 ------------------------------------------------------------
