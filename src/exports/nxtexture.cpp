@@ -38,13 +38,6 @@ NX_EXPORT NxTexture* nxTextureNew()
 }
 
 //----------------------------------------------------------
-NX_EXPORT NxTexture* nxTextureFromData(uint8_t type, uint8_t format, uint32_t handle,
-    uint16_t width, uint16_t height, uint16_t depth, uint32_t samplerState, bool rbTexture)
-{
-    return new Texture(type, format, handle, width, height, depth, samplerState, rbTexture);
-}
-
-//----------------------------------------------------------
 NX_EXPORT void nxTextureRelease(NxTexture* texture)
 {
     delete texture;

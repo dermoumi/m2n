@@ -39,6 +39,7 @@ local C = ffi.C
 
 ffi.cdef [[
     typedef struct NxRenderbuffer NxRenderbuffer;
+    typedef struct NxTexture NxTexture;
 
     NxRenderbuffer* nxRenderbufferNew();
     void nxRenderbufferRelease(NxRenderbuffer*);
@@ -47,8 +48,14 @@ ffi.cdef [[
     NxTexture* nxRenderbufferTexture(NxRenderbuffer*, uint8_t);
     void nxRenderbufferSize(const NxRenderbuffer*, uint16_t*);
     uint8_t nxRenderbufferFormat(const NxRenderbuffer*);
-    uint32_t nxRenderbufferNativeHandle(const NxRenderbuffer*);
+    void nxRenderbufferSetCurrent(const NxRenderbuffer*);
 ]]
+
+------------------------------------------------------------
+function Renderbuffer.static.setCurrent(buffer)
+    if buffer then buffer = buffer._cdata end
+    C.nxRenderbufferSetCurrent(buffer)
+end
 
 ------------------------------------------------------------
 function Renderbuffer.static._fromCData(cdata)
@@ -118,11 +125,6 @@ function Renderbuffer:size()
     local sizePtr = ffi.new('uint16_t[2]')
     C.nxRenderbufferSize(self._cdata, sizePtr)
     return tonumber(sizePtr[0]), tonumber(sizePtr[1])
-end
-
-------------------------------------------------------------
-function Renderbuffer:nativeHandle()
-    return C.nxRenderbufferNativeHandle(self._cdata)
 end
 
 ------------------------------------------------------------

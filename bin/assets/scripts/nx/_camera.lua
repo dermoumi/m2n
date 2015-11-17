@@ -33,6 +33,7 @@ local Camera = class 'nx._camera'
 
 local Window   = require 'nx.window'
 local Renderer = require 'nx.renderer'
+local Renderbuffer = require 'nx.renderbuffer'
 
 local ffi = require 'ffi'
 local C   = ffi.C
@@ -59,6 +60,7 @@ end
 ------------------------------------------------------------
 function Camera:setRenderbuffer(rb)
     self._rb = rb
+    self._needUpdate = true
 end
 
 ------------------------------------------------------------
@@ -96,8 +98,11 @@ end
 
 ------------------------------------------------------------
 function Camera:_setupDrawing()
+    if not self._needUpdate then return end
+    self._needUpdate = false
+
     -- Setup renderbuffer
-    C.nxRendererSetRenderbuffer(self._rb and self._rb:nativeHandle() or 0)
+    Renderbuffer.setCurrent(self._rb)
 
     -- Setup viewport
     C.nxRendererSetViewport(self:viewport())

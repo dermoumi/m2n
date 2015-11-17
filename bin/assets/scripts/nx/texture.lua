@@ -115,8 +115,6 @@ ffi.cdef [[
     typedef struct NxTexture NxTexture;
 
     NxTexture* nxTextureNew();
-    NxTexture* nxTextureFromData(uint8_t, uint8_t, uint32_t, uint16_t, uint16_t, uint16_t, uint32_t,
-        bool);
     void nxTextureRelease(NxTexture*);
     uint8_t nxTextureCreate(NxTexture*, uint8_t, uint8_t, uint16_t, uint16_t, uint16_t, bool, bool,
         bool);
@@ -152,22 +150,6 @@ local Texture = class 'nx.texture'
 function Texture.static._fromCData(cdata)
     local texture = Texture:allocate()
     texture._cdata = ffi.cast('NxTexture*', cdata)
-    return texture
-end
-
-------------------------------------------------------------
-function Texture.static._fromRenderbuffer(rb, bufIndex)
-    local texture = Texture:allocate()
-    texture._cdata = C.nxTextureFromData(
-        (bufIndex == 32) and 12 or 0,
-        1,
-        C.nxRendererGetRenderbufferTexture(rb._cdata.rb, bufIndex),
-        rb._cdata.width,
-        rb._cdata.height,
-        1,
-        0,
-        true
-    )
     return texture
 end
 

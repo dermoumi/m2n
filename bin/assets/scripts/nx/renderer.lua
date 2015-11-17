@@ -67,12 +67,6 @@ ffi.cdef [[
     const char* nxRendererGetDefaultVSCode();
     const char* nxRendererGetDefaultFSCode();
     uint32_t nxRendererGetCurrentShader();
-    uint32_t nxRendererCreateRenderbuffer(uint32_t, uint32_t, uint32_t, bool, uint32_t, uint32_t);
-    void nxRendererDestroyRenderbuffer(uint32_t);
-    uint32_t nxRendererGetRenderbufferTexture(uint32_t, uint32_t);
-    void nxRendererSetRenderbuffer(uint32_t);
-    void nxRendererGetRenderbufferSize(uint32_t, int*);
-    bool nxRendererGetRenderbufferData(uint32_t, int, int*, int*, void*, int);
     void nxRendererSetViewport(int, int, int, int);
     void nxRendererSetScissorRect(int, int, int, int);
     void nxRendererSetIndexBuffer(NxArrayBuffer*, int);

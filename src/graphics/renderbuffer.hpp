@@ -45,7 +45,8 @@ public:
 
     void size(uint16_t& width, uint16_t& height) const;
     uint8_t texFormat() const;
-    uint32_t nativeHandle() const;
+
+    static void setCurrent(const Renderbuffer* buffer);
 
 private:
     uint8_t  mFormat           {0u};

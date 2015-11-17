@@ -220,47 +220,6 @@ NX_EXPORT uint32_t nxRendererGetCurrentShader()
 }
 
 //----------------------------------------------------------
-NX_EXPORT uint32_t nxRendererCreateRenderbuffer(uint32_t width, uint32_t height, uint32_t format,
-    bool depth, uint32_t colBufs, uint32_t samples)
-{
-    return RenderDevice::instance().createRenderBuffer(
-        width, height, static_cast<RenderDevice::TextureFormat>(format), depth, colBufs, samples
-    );
-}
-
-//----------------------------------------------------------
-NX_EXPORT void nxRendererDestroyRenderbuffer(uint32_t rb)
-{
-    RenderDevice::instance().destroyRenderBuffer(rb);
-}
-
-//----------------------------------------------------------
-NX_EXPORT uint32_t nxRendererGetRenderbufferTexture(uint32_t rb, uint32_t bufIndex)
-{
-    return RenderDevice::instance().getRenderBufferTexture(rb, bufIndex);
-}
-
-//----------------------------------------------------------
-NX_EXPORT void nxRendererSetRenderbuffer(uint32_t rb)
-{
-    RenderDevice::instance().setRenderBuffer(rb);
-}
-
-//----------------------------------------------------------
-NX_EXPORT void nxRendererGetRenderbufferSize(uint32_t rb, int* size)
-{
-    RenderDevice::instance().getRenderBufferSize(rb, &size[0], &size[1]);
-}
-
-//----------------------------------------------------------
-NX_EXPORT bool nxRendererGetRenderbufferData(uint32_t rb, int bufIndex, int* size, int* compCount,
-    void* buffer, int bufferSize)
-{
-    return RenderDevice::instance().getRenderBufferData(rb, bufIndex, &size[0], &size[1], compCount, buffer,
-        bufferSize);
-}
-
-//----------------------------------------------------------
 NX_EXPORT void nxRendererSetViewport(int x, int y, int width, int height)
 {
     RenderDevice::instance().setViewport(x, y, width, height);
