@@ -32,9 +32,19 @@ local ffi = require 'ffi'
 local C = ffi.C
 
 ffi.cdef [[
-    typedef struct {
-        uint32_t id;
-    } NxShader;
+    typedef struct NxShader NxShader;
+
+    NxShader* nxShaderNew();
+    void nxShaderRelease(NxShader*);
+    bool nxShaderLoad(NxShader*, const char*, const char*);
+    void nxShaderSetUniform(NxShader*, int, uint8_t, float*);
+    void nxShaderSetSampler(NxShader*, int, int);
+    int nxShaderUniformLocation(const NxShader*, const char*);
+    int nxShaderSamplerLocation(const NxShader*, const char*);
+    const char* nxShaderLog();
+    void nxShaderBind(const NxShader*);
+    const char* nxShaderDefaultVSCode();
+    const char* nxShaderDefaultFSCode();
 ]]
 
 ------------------------------------------------------------
@@ -43,33 +53,22 @@ ffi.cdef [[
 local class  = require 'nx.class'
 local Shader = class 'nx.shader'
 
-local Renderer  = require 'nx.renderer'
 local InputFile = require 'nx.inputfile'
 local Matrix    = require 'nx.matrix'
 
 ------------------------------------------------------------
-local function destroy(cdata)
-    if cdata.id ~= 0 then
-        C.nxRendererDestroyShader(cdata.id)
-    end
-
-    C.free(cdata)
-end
-
-------------------------------------------------------------
 function Shader.static._fromCData(cdata)
     local shader = Shader:allocate()
+    shader._cdata = ffi.cast('NxShader*', cdata)
     shader._uniforms = {}
     shader._samplers = {}
-    shader._cdata = ffi.cast('NxShader*', cdata)
     return shader
 end
 
 ------------------------------------------------------------
 function Shader:initialize(vertexShader, fragmentShader)
-    local handle = ffi.cast('NxShader*', C.malloc(ffi.sizeof('NxShader')))
-    handle.id = 0
-    self._cdata = ffi.gc(handle, destroy)
+    local handle = C.nxShaderNew()
+    self._cdata = ffi.gc(handle, C.nxShaderRelease)
 
     self._uniforms = {}
     self._samplers = {}
@@ -84,13 +83,12 @@ end
 
 ------------------------------------------------------------
 function Shader:release()
-    destroy(ffi.gc(self._cdata, nil))
+    if self._cdata == nil then return end
+    C.nxShaderRelease(ffi.gc(self._cdata, nil))
 end
 
 ------------------------------------------------------------
 function Shader:load(vertexShader, fragmentShader)
-    C.nxRendererDestroyShader(self._cdata.id)
-
     local file, dontClose
     if class.Object.isInstanceOf(vertexShader, InputFile) then
         file = vertexShader
@@ -106,7 +104,7 @@ function Shader:load(vertexShader, fragmentShader)
         file = nil
     elseif type(vertexShader) ~= 'string' then
         -- Fall back to default vertex shader
-        vertexShader = C.nxRendererDefaultVSShader()
+        vertexShader = C.nxShaderDefaultVSCode()
     end
 
     if class.Object.isInstanceOf(fragmentShader, InputFile) then
@@ -123,12 +121,11 @@ function Shader:load(vertexShader, fragmentShader)
         file = nil
     elseif type(fragmentShader) ~= 'string' then
         -- Fall back to default fragment shader
-        fragmentShader = C.nxRendererDefaultFSShader()
+        fragmentShader = C.nxShaderDefaultFSCode()
     end
 
-    self._cdata.id = C.nxRendererCreateShader(vertexShader, fragmentShader)
-    if self._cdata.id == 0 then
-        return false, 'Cannot load shader: ' .. ffi.string(C.nxRendererGetShaderLog())
+    if not C.nxShaderLoad(self._cdata, vertexShader, fragmentShader) then
+        return false, 'Cannot load shader: ' .. ffi.string(C.nxShaderLog())
     end
 
     return true
@@ -136,7 +133,7 @@ end
 
 ------------------------------------------------------------
 function Shader:bind()
-    C.nxRendererBindShader(self._cdata.id)
+    C.nxShaderBind(self._cdata)
 end
 
 ------------------------------------------------------------
@@ -145,18 +142,14 @@ function Shader:setUniform(name, a, b, c, d)
         return false, 'Invalid parameters'
     end
 
-    local prevShader = C.nxRendererGetCurrentShader()
-    self:bind()
-
     local uniform = self._uniforms[name]
 
     if not uniform then
-        uniform = C.nxRendererGetShaderConstLoc(self._cdata.id, name)
+        uniform = C.nxShaderUniformLocation(self._cdata, name)
         self._uniforms[name] = uniform
     end
 
     if uniform == -1 then
-        C.nxRendererBindShader(prevShader)
         return false, 'Uniform "' .. name .. '" does not exist'
     end
 
@@ -178,9 +171,8 @@ function Shader:setUniform(name, a, b, c, d)
         uniformData = ffi.new('float[4]', {a, b, c, d})
     end
 
-    C.nxRendererSetShaderConst(uniform, uniformType, uniformData, 1)
+    C.nxShaderSetUniform(self._cdata, uniform, uniformType, uniformData)
 
-    C.nxRendererBindShader(prevShader)
     return true
 end
 
@@ -190,24 +182,19 @@ function Shader:setSampler(name, sampler)
         return false, 'Invalid parameters'
     end
 
-    local prevShader = C.nxRendererGetCurrentShader()
-    self:bind()
-
     local uniform = self._samplers[name]
 
     if not uniform then
-        uniform = C.nxRendererGetShaderSamplerLoc(self._cdata.id, name)
+        uniform = C.nxShaderSamplerLocation(self._cdata, name)
         self._samplers[name] = uniform
     end
 
     if uniform == -1 then
-        C.nxRendererBindShader(prevShader)
         return false, 'Sampler "' .. name .. '"does not exist'
     end
 
-    C.nxRendererSetShaderSampler(uniform, sampler)
+    C.nxShaderSetSampler(self._cdata, uniform, sampler)
 
-    C.nxRendererBindShader(prevShader)
     return true
 end
 
