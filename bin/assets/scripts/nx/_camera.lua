@@ -49,8 +49,8 @@ end
 function Camera:viewport()
     if self._vpX then
         return self._vpX, self._vpY, self._vpW, self._vpH
-    elseif self._renderbuffer then
-        return 0, 0, self._renderbuffer:size()
+    elseif self._rb then
+        return 0, 0, self._rb:size()
     else
         return 0, 0, Window:size()
     end
@@ -58,12 +58,12 @@ end
 
 ------------------------------------------------------------
 function Camera:setRenderbuffer(rb)
-    self._renderbuffer = rb
+    self._rb = rb
 end
 
 ------------------------------------------------------------
 function Camera:renderbuffer()
-    return self._renderbuffer
+    return self._rb
 end
 
 ------------------------------------------------------------
@@ -97,7 +97,7 @@ end
 ------------------------------------------------------------
 function Camera:_setupDrawing()
     -- Setup renderbuffer
-    C.nxRendererSetRenderbuffer(self._renderbuffer and self._renderbuffer._cdata.rb or 0)
+    C.nxRendererSetRenderbuffer(self._rb and self._rb:nativeHandle() or 0)
 
     -- Setup viewport
     C.nxRendererSetViewport(self:viewport())

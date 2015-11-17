@@ -26,38 +26,29 @@
 --]]----------------------------------------------------------------------------
 
 ------------------------------------------------------------
+-- Represents a renderable texture
+------------------------------------------------------------
+local class = require 'nx.class'
+local Renderbuffer = class 'nx.renderbuffer'
+
+------------------------------------------------------------
 -- ffi C declarations
 ------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
 ffi.cdef [[
-    typedef struct {
-        uint32_t rb;
-        uint16_t width;
-        uint16_t height;
-        bool     depth;
-        uint8_t  numColBufs;
-        uint8_t  samples;
-    } NxRenderbuffer;
+    typedef struct NxRenderbuffer NxRenderbuffer;
+
+    NxRenderbuffer* nxRenderbufferNew();
+    void nxRenderbufferRelease(NxRenderbuffer*);
+    uint8_t nxRenderbufferCreate(NxRenderbuffer*, uint8_t, uint16_t, uint16_t, bool, uint8_t,
+        uint8_t);
+    NxTexture* nxRenderbufferTexture(NxRenderbuffer*, uint8_t);
+    void nxRenderbufferSize(const NxRenderbuffer*, uint16_t*);
+    uint8_t nxRenderbufferFormat(const NxRenderbuffer*);
+    uint32_t nxRenderbufferNativeHandle(const NxRenderbuffer*);
 ]]
-
-------------------------------------------------------------
--- Represents a renderable texture
-------------------------------------------------------------
-local class = require 'nx.class'
-local Renderbuffer = class 'nx.renderbuffer'
-
-local Renderer = require 'nx.renderer'
-
-------------------------------------------------------------
-local function destroy(cdata)
-    if cdata.rb ~= 0 then
-        C.nxRendererDestroyRenderbuffer(cdata.rb)
-    end
-
-    C.free(cdata)
-end
 
 ------------------------------------------------------------
 function Renderbuffer.static._fromCData(cdata)
@@ -69,16 +60,8 @@ end
 
 ------------------------------------------------------------
 function Renderbuffer:initialize(width, height, depth, samples, numColBufs)
-    local handle = ffi.cast('NxRenderbuffer*', C.malloc(ffi.sizeof('NxRenderbuffer')))
-
-    handle.rb         = 0
-    handle.width      = 0
-    handle.height     = 0
-    handle.depth      = false
-    handle.numColBufs = 0
-    handle.samples    = 0
-    self._cdata = ffi.gc(handle, destroy)
-
+    local handle = C.nxRenderbufferNew();
+    self._cdata = ffi.gc(handle, C.nxRenderbufferRelease)
     self._textures = {}
 
     if width and height then
@@ -91,31 +74,23 @@ end
 
 ------------------------------------------------------------
 function Renderbuffer:release()
-    destroy(ffi.gc(self._cdata, nil))
+    if not self._cdata then return end
+    C.nxRenderbufferRelease(ffi.gc(self._cdata, nil))
+    self._cdata = nil
 end
 
 ------------------------------------------------------------
 function Renderbuffer:create(width, height, depth, samples, numColBufs)
-    if not width or not height or width == 0 or height == 0 then
-        return false, 'Cannot create renderbuffer: invalid dimensions'
-    end
-
     if depth == nil then depth = false end
     samples = samples or 0 -- TODO: fetch from settings
     numColBufs = numColBufs or 1
 
-    local c = self._cdata
-    c.rb = C.nxRendererCreateRenderbuffer(width, height, 1, depth, numColBufs, samples)
-
-    if c.rb == 0 then
+    local status = C.nxRenderbufferCreate(self._cdata, 1, width, height, depth, numColBufs, samples)
+    if status == 1 then
+        return false, 'Cannot create renderbuffer: invalid size'
+    elseif status == 2 then
         return false, 'Cannot create renderbuffer'
     end
-
-    c.width = width
-    c.height = height
-    c.depth = depth
-    c.numColBufs = numColBufs
-    c.samples = samples
 
     return true
 end
@@ -124,14 +99,14 @@ end
 function Renderbuffer:texture(bufIndex)
     if bufIndex == 'depth' then
         bufIndex = 32
-    elseif not bufIndex or bufIndex >= self._cdata.numColBufs then
+    elseif not bufIndex then
         bufIndex = 0
     end
 
     local texture = self._textures[bufIndex]
 
     if not texture then
-        texture = require('nx.texture')._fromRenderbuffer(self, bufIndex)
+        texture = require('nx.texture')._fromCData(C.nxRenderbufferTexture(self._cdata, bufIndex))
         self._textures[bufIndex] = texture
     end
 
@@ -140,7 +115,14 @@ end
 
 ------------------------------------------------------------
 function Renderbuffer:size()
-    return self._cdata.width, self._cdata.height
+    local sizePtr = ffi.new('uint16_t[2]')
+    C.nxRenderbufferSize(self._cdata, sizePtr)
+    return tonumber(sizePtr[0]), tonumber(sizePtr[1])
+end
+
+------------------------------------------------------------
+function Renderbuffer:nativeHandle()
+    return C.nxRenderbufferNativeHandle(self._cdata)
 end
 
 ------------------------------------------------------------
