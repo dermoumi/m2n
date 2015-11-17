@@ -20,7 +20,7 @@
 #define __FTSYSTEM_H__
 
 
-#include <ft2build.h>
+#include <freetype2/ft2build.h>
 
 
 FT_BEGIN_HEADER

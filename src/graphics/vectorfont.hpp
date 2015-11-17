@@ -26,9 +26,12 @@
 *///============================================================================
 #pragma once
 #include "../config.hpp"
+#include "font.hpp"
 
 #include <string>
+#include <memory>
 #include <vector>
+#include <map>
 
 //==========================================================
 // Declarations
@@ -36,39 +39,66 @@
 struct PHYSFS_File;
 
 //==========================================================
-// A class to load and handle images
+// Represents a vector font
 //==========================================================
-class Image
+class VectorFont : public Font
 {
 public:
-    Image() = default;
+    struct Info
+    {
+        std::string family;
+    };
 
-    void create(unsigned int width, unsigned int height,
-        uint8_t r, uint8_t g, uint8_t b, uint8_t a);
-    void create(unsigned int width, unsigned int height, const uint8_t* pixels);
+public:
+    VectorFont() = default;
+    virtual ~VectorFont();
 
     bool open(const std::string& filename);
     bool open(const void* data, size_t size);
     bool open(PHYSFS_File* file, bool closeFile);
 
-    bool save(const std::string& filename) const;
+    const Info& getInfo() const;
 
-    void getSize(unsigned int* width, unsigned int* height) const;
-    void createMaskFromColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a, uint8_t targetAlpha = 0);
-    void copy(const Image& source, unsigned int destX, unsigned  int destY,
-        int srcX, int srcY, int width, int height, bool applyAlpha = false);
-    void setPixel(unsigned int x, unsigned int y, uint8_t r, uint8_t g, uint8_t b, uint8_t a);
-    void getPixel(unsigned int x, unsigned int y, uint8_t* r, uint8_t* g, uint8_t* b,
-        uint8_t* a) const;
-    
-    const uint8_t* getPixelsPtr() const;
-    void flipHorizontally();
-    void flipVertically();
+    virtual const Glyph& glyph(uint32_t codePoint, uint32_t charSize, bool bold) const;
+    virtual float kerning(uint32_t first, uint32_t second, uint32_t charSize) const;
+    virtual float lineSpacing(uint32_t charSize) const;
+    virtual float underlinePosition(uint32_t charSize) const;
+    virtual float underlineThickness(uint32_t charSize) const;
+    virtual const Texture& texture(uint32_t charSize) const;
 
 private:
-    unsigned int mWidth;
-    unsigned int mHeight;
-    std::vector<uint8_t> mPixels;
-};
+    using GlyphTable = std::map<uint32_t, Glyph>;
+    struct Row
+    {
+        uint32_t top {0u};
+        uint32_t width {0u};
+        uint32_t height {0u};
+    };
 
-//==============================================================================
+    struct Page
+    {
+        GlyphTable       glyphs;
+        Texture          texture;
+        uint32_t         nextRow {3u};
+        std::vector<Row> rows;
+    };
+
+private:
+    void cleanup();
+    Glyph loadGlyph(uint32_t codePoint, uint32_t charSize, bool bold) const;
+    bool findGlyphRect(Page& page, uint32_t width, uint32_t height, uint32_t& coordsL,
+        uint32_t& coordsT, uint32_t& coordsR, uint32_t& coordsB) const;
+    bool ensureSize(uint32_t charSize) const;
+
+private:
+    class FreetypeHandle;
+    using FreetypePtr = std::shared_ptr<FreetypeHandle>;
+    using PageTable   = std::map<uint32_t, Page>;
+    using FilePtr     = std::shared_ptr<PHYSFS_File>;
+
+    Info        mInfo;
+    FreetypePtr mFreetype;
+    FilePtr     mFileHandle; // Used by open(const std::string&);
+    mutable PageTable            mPages;
+    mutable std::vector<uint8_t> mPixelBuffer;
+};

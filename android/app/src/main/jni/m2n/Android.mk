@@ -9,8 +9,7 @@ LOCAL_MODULE := main
 
 LOCAL_C_INCLUDES = \
     ${SRC_PATH} \
-    ${BASE_PATH}/extlibs/include \
-    ${BASE_PATH}/extlibs/include/luajit
+    ${BASE_PATH}/extlibs/include
 
 LOCAL_SRC_FILES := $(subst ${LOCAL_PATH}/,, \
     $(wildcard ${SRC_PATH}/*.cpp) \
@@ -18,7 +17,7 @@ LOCAL_SRC_FILES := $(subst ${LOCAL_PATH}/,, \
 
 LOCAL_CFLAGS := -std=c++11 -DNX_OPENGL_ES -DGL_GLEXT_PROTOTYPES
 LOCAL_LDFLAGS := ${LOCAL_LDFLAGS} -export-dynamic
-LOCAL_STATIC_LIBRARIES := SDL2_static libluajit libphysfs
+LOCAL_STATIC_LIBRARIES := SDL2_static libluajit libphysfs libfreetype2-static
 LOCAL_LDLIBS := -ldl -llog -lGLESv2
 
 $(call import-add-path,${BASE_PATH}/extlibs/android)

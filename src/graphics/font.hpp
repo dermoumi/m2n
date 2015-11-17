@@ -27,48 +27,37 @@
 #pragma once
 #include "../config.hpp"
 
-#include <string>
-#include <vector>
-
-//==========================================================
-// Declarations
-//==========================================================
-struct PHYSFS_File;
-
-//==========================================================
-// A class to load and handle images
-//==========================================================
-class Image
-{
-public:
-    Image() = default;
-
-    void create(unsigned int width, unsigned int height,
-        uint8_t r, uint8_t g, uint8_t b, uint8_t a);
-    void create(unsigned int width, unsigned int height, const uint8_t* pixels);
-
-    bool open(const std::string& filename);
-    bool open(const void* data, size_t size);
-    bool open(PHYSFS_File* file, bool closeFile);
-
-    bool save(const std::string& filename) const;
-
-    void getSize(unsigned int* width, unsigned int* height) const;
-    void createMaskFromColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a, uint8_t targetAlpha = 0);
-    void copy(const Image& source, unsigned int destX, unsigned  int destY,
-        int srcX, int srcY, int width, int height, bool applyAlpha = false);
-    void setPixel(unsigned int x, unsigned int y, uint8_t r, uint8_t g, uint8_t b, uint8_t a);
-    void getPixel(unsigned int x, unsigned int y, uint8_t* r, uint8_t* g, uint8_t* b,
-        uint8_t* a) const;
+#include "texture.hpp"
     
-    const uint8_t* getPixelsPtr() const;
-    void flipHorizontally();
-    void flipVertically();
-
-private:
-    unsigned int mWidth;
-    unsigned int mHeight;
-    std::vector<uint8_t> mPixels;
+//==========================================================
+// Holds information about a Font glyph
+//==========================================================
+struct Glyph
+{
+    float advance {0.f};
+    float left    {0.f};
+    float top     {0.f};
+    float width   {0.f};
+    float height  {0.f};
+    int   texLeft   {0};
+    int   texTop    {0};
+    int   texWidth  {0};
+    int   texHeight {0};
 };
 
-//==============================================================================
+//==========================================================
+// A base class for fonts
+//==========================================================
+class Font
+{
+public:
+    Font() = default;
+    virtual ~Font() = default;
+
+    virtual const Glyph& glyph(uint32_t codePoint, uint32_t charSize, bool bold) const = 0;
+    virtual float kerning(uint32_t first, uint32_t second, uint32_t charSize) const = 0;
+    virtual float lineSpacing(uint32_t charSize) const = 0;
+    virtual float underlinePosition(uint32_t charSize) const = 0;
+    virtual float underlineThickness(uint32_t charSize) const = 0;
+    virtual const Texture& texture(uint32_t charSize) const = 0;
+};
