@@ -113,7 +113,8 @@ function SceneSubtitle:onKeyDown(scancode)
         self._processParent = not self._processParent
     elseif scancode == 'space' then
         local w, h = self.rb:size()
-        local img = require('nx.image').create(w, h, self.rb:texture():data())
+        local img = require('nx.image').create(1024, 1024, 255, 128, 0, 255)
+        img:copy(self.rb:texture():data(), 0, 0, 1024, 0, 256, 1024, 512, true)
         img:save('helloworld.png')
     end
 end

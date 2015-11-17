@@ -99,10 +99,17 @@ NX_EXPORT void nxImageColorMask(NxImage* image, uint8_t r, uint8_t g, uint8_t b,
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxImageCopy(NxImage* image, const NxImage* source, uint32_t destX,
-    uint32_t destY, int srcX, int srcY, int width, int height, bool applyAlpha)
+NX_EXPORT void nxImageCopyPixels(NxImage* image, const uint8_t* source, int srcX, int srcY,
+    int stride, int dstX, int dstY, int dstW, int dstH, bool applyAlpha)
 {
-    image->copy(*source, destX, destY, srcX, srcY, width, height, applyAlpha);
+    image->copy(source, srcX, srcY, stride, dstX, dstY, dstW, dstH, applyAlpha);
+}
+
+//----------------------------------------------------------
+NX_EXPORT void nxImageCopy(NxImage* image, const NxImage* source, int srcX, int srcY, int dstX,
+    int dstY, int dstW, int dstH, bool applyAlpha)
+{
+    image->copy(*source, srcX, srcY, dstX, dstY, dstW, dstH, applyAlpha);
 }
 
 //----------------------------------------------------------

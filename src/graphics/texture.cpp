@@ -114,6 +114,12 @@ bool Texture::data(void* buffer, uint8_t slice, uint8_t mipLevel) const
 }
 
 //----------------------------------------------------------
+uint32_t Texture::bufferSize() const
+{
+    return calcSize(mFormat, mWidth, mHeight, mDepth);
+}
+
+//----------------------------------------------------------
 void Texture::size(uint16_t& width, uint16_t& height, uint16_t& depth) const
 {
     width = mWidth;
@@ -122,9 +128,21 @@ void Texture::size(uint16_t& width, uint16_t& height, uint16_t& depth) const
 }
 
 //----------------------------------------------------------
-uint32_t Texture::bufferSize() const
+uint16_t Texture::texWidth() const
 {
-    return calcSize(mFormat, mWidth, mHeight, mDepth);
+    return mWidth;
+}
+
+//----------------------------------------------------------
+uint16_t Texture::texHeight() const
+{
+    return mHeight;
+}
+
+//----------------------------------------------------------
+uint16_t Texture::texDepth() const
+{
+    return mDepth;
 }
 
 //----------------------------------------------------------

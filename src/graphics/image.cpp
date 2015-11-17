@@ -38,38 +38,35 @@
 //==========================================================
 // Locals
 //==========================================================
-namespace
+// stb_image callbacks that operate on a BinaryFile
+static int read(void* userdata, char* data, int size)
 {
-    // stb_image callbacks that operate on a BinaryFile
-    int read(void* userdata, char* data, int size)
-    {
-        auto* file = reinterpret_cast<PHYSFS_File*>(userdata);
-        auto status = PHYSFS_readBytes(file, data, size);
+    auto* file = reinterpret_cast<PHYSFS_File*>(userdata);
+    auto status = PHYSFS_readBytes(file, data, size);
 
-        return status;
-    }
+    return status;
+}
 
-    void skip(void* userdata, int size)
-    {
-        auto* file = static_cast<PHYSFS_File*>(userdata);
+static void skip(void* userdata, int size)
+{
+    auto* file = static_cast<PHYSFS_File*>(userdata);
 
-        auto pos = PHYSFS_tell(file);
-        if (pos < 0) PHYSFS_seek(file, 0);
-        else         PHYSFS_seek(file, pos + size);
-    }
+    auto pos = PHYSFS_tell(file);
+    if (pos < 0) PHYSFS_seek(file, 0);
+    else         PHYSFS_seek(file, pos + size);
+}
 
-    int eof(void* userdata)
-    {
-        auto* file = static_cast<PHYSFS_File*>(userdata);
+static int eof(void* userdata)
+{
+    auto* file = static_cast<PHYSFS_File*>(userdata);
 
-        auto pos = PHYSFS_tell(file);
-        if (pos < 0) return 1;
+    auto pos = PHYSFS_tell(file);
+    if (pos < 0) return 1;
 
-        auto size = PHYSFS_fileLength(file);
-        if (size < 0) return 1;
+    auto size = PHYSFS_fileLength(file);
+    if (size < 0) return 1;
 
-        return pos >= size;
-    }
+    return pos >= size;
 }
 
 //----------------------------------------------------------
@@ -272,42 +269,25 @@ void Image::createMaskFromColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a, uint
 }
 
 //----------------------------------------------------------
-void Image::copy(const Image& source, unsigned int destX, unsigned int destY, int srcX, int srcY,
-    int srcWidth, int srcHeight, bool applyAlpha)
+void Image::copy(const uint8_t* source, int srcX, int srcY, int stride, int dstX, int dstY,
+    int dstW, int dstH, bool applyAlpha)
 {
-    // Make sure that both images are valid
-    if (!source.mWidth || !source.mHeight || !mWidth || !mHeight) return;
-
-    // Adjust the source rectangle
-    if (srcWidth == 0 || srcHeight == 0) {
-        srcX = 0;
-        srcY = 0;
-        srcWidth = source.mWidth;
-        srcHeight = source.mHeight;
-    }
-    else {
-        if (srcX < 0) srcX = 0;
-        if (srcY < 0) srcY = 0;
-        if (srcWidth > static_cast<int>(source.mWidth))   srcWidth = source.mWidth;
-        if (srcHeight > static_cast<int>(source.mHeight)) srcHeight = source.mHeight;
-    }
-
     // Then find the valid bounds of the destination rectangle
-    int width  = srcWidth;
-    int height = srcHeight;
-    if (destX + width > mWidth)   width = mWidth - destX;
-    if (destY + height > mHeight) height = mHeight - destY;
+    int width  = dstW;
+    int height = dstH;
+    if (static_cast<uint32_t>(dstX + width)  > mWidth)  width  = mWidth - dstX;
+    if (static_cast<uint32_t>(dstY + height) > mHeight) height = mHeight - dstY;
 
     // Make sure the destination area is valid
-    if ((width <= 0) || (height <= 0)) return;
+    if (width <= 0 || height <= 0) return;
 
     // Precompute as much as possible
     int pitch     = 4 * width;
     int rows      = height;
-    int srcStride = 4 * source.mWidth;
+    int srcStride = 4 * stride;
     int dstStride = 4 * mWidth;
-    auto* srcPixels = &source.mPixels[0] + 4 * (srcX + srcY * source.mWidth);
-    auto* dstPixels = &mPixels[0] + 4 * (destX + destY * mWidth);
+    auto* srcPixels = &source[0] + 4 * (srcX + srcY * stride);
+    auto* dstPixels = &mPixels[0] + 4 * (dstX + dstY * mWidth);
 
     // Copy th pixels
     if (applyAlpha) {
@@ -338,6 +318,28 @@ void Image::copy(const Image& source, unsigned int destX, unsigned int destY, in
             dstPixels += dstStride;
         }
     }
+}
+
+//----------------------------------------------------------
+void Image::copy(const Image& source, int srcX, int srcY, int dstX, int dstY, int dstW, int dstH,
+    bool applyAlpha)
+{
+    // Make sure that both images are valid
+    if (!source.mWidth || !source.mHeight || !mWidth || !mHeight) return;
+
+    // Adjust the source rectangle
+    if (dstW == 0 || dstH == 0) {
+        srcX = 0;
+        srcY = 0;
+        dstW = source.mWidth;
+        dstX = source.mHeight;
+    }
+    else {
+        if (dstW + srcX > static_cast<int>(source.mWidth))  dstW = source.mWidth - srcX;
+        if (dstH + srcY > static_cast<int>(source.mHeight)) dstH = source.mHeight - srcY;
+    }
+
+    copy(source.getPixelsPtr(), srcX, srcY, source.mWidth, dstX, dstY, dstW, dstH, applyAlpha);
 }
 
 //----------------------------------------------------------

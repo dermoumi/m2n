@@ -43,8 +43,12 @@ public:
     void setData(const void* buffer, int32_t x, int32_t y, int32_t z, int32_t width,
         int32_t height, int32_t depth, uint8_t slice, uint8_t mipLevel);
     bool data(void* buffer, uint8_t slice, uint8_t mipLevel) const;
-    void size(uint16_t& width, uint16_t& height, uint16_t& depth) const;
     uint32_t bufferSize() const;
+
+    void size(uint16_t& width, uint16_t& height, uint16_t& depth) const;
+    uint16_t texWidth() const;
+    uint16_t texHeight() const;
+    uint16_t texDepth() const;
 
     void setFilter(uint32_t filter);
     void setAnisotropyLevel(uint32_t aniso);

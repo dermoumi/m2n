@@ -45,8 +45,8 @@ ffi.cdef [[
     bool nxImageSave(const NxImage*, const char*);
     void nxImageGetSize(const NxImage*, uint32_t*);
     void nxImageColorMask(NxImage*, uint8_t, uint8_t, uint8_t, uint8_t, uint8_t);
-    void nxImageCopy(NxImage*, const NxImage*, uint32_t, uint32_t, int, int, int, int,
-        bool);
+    void nxImageCopyPixels(NxImage*, const uint8_t*, int, int, int, int, int, int, int, bool);
+    void nxImageCopy(NxImage*, const NxImage*, int, int, int, int, int, int, bool);
     void nxImageSetPixel(NxImage*, uint32_t, uint32_t, uint8_t, uint8_t, uint8_t, uint8_t);
     void nxImageGetPixel(const NxImage*, uint32_t, uint32_t, uint8_t*);
     const uint8_t* nxImageGetPixelsPtr(const NxImage*);
@@ -182,15 +182,16 @@ function Image:setColorMask(r, g, b, a, alpha)
 end
 
 ------------------------------------------------------------
-function Image:copy(source, dstX, dstY, srcX, srcY, width, height, applyAlpha)
-    if self._cdata == nil or class.Object.isInstanceOf(source, Image) or
-        source._cdata.img == nil
-    then
-        return
-    end
+function Image:copy(source, a, b, c, d, e, f, g, h)
+    if self._cdata == nil then return end
 
-    C.nxImageCopy(self._cdata, source._cdata.img, dstX or 0, dstY or 0, srcX or 0, srcY or 0,
-        width or 0, height or 0, applyAlpha or false)
+    if class.Object.isInstanceOf(source, Image) then
+        C.nxImageCopy(self._cdata, source._cdata.img, a or 0, b or 0, c or 0, d or 0,
+            e or 0, f or 0, not not g)
+    else
+        C.nxImageCopyPixels(self._cdata, source, a or 0, b or 0, c or 0, d or 0, e or 0, f or 0,
+            g or 0, not not h)
+    end
 end
 
 ------------------------------------------------------------

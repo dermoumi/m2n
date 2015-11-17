@@ -55,8 +55,10 @@ public:
 
     void getSize(unsigned int* width, unsigned int* height) const;
     void createMaskFromColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a, uint8_t targetAlpha = 0);
-    void copy(const Image& source, unsigned int destX, unsigned  int destY,
-        int srcX, int srcY, int width, int height, bool applyAlpha = false);
+    void copy(const uint8_t* source, int srcX, int srcY, int stride, int dstX, int dstY,
+        int dstW, int dstH, bool applyAlpha);
+    void copy(const Image& source, int srcX, int srcY, int dstX, int dstY, int dstW, int dstH,
+        bool applyAlpha);
     void setPixel(unsigned int x, unsigned int y, uint8_t r, uint8_t g, uint8_t b, uint8_t a);
     void getPixel(unsigned int x, unsigned int y, uint8_t* r, uint8_t* g, uint8_t* b,
         uint8_t* a) const;
