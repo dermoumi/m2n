@@ -473,7 +473,7 @@ void VectorFont::findGlyphRect(Page& page, uint32_t width, uint32_t height, uint
             // Not enough space: resize the texture if possible
             uint16_t texWidth  = page.texture.texWidth();
             uint16_t texHeight = page.texture.texHeight();
-            uint16_t maxSize   = 1024; // TODO: Fix me!!!
+            uint16_t maxSize   = Texture::maxSize();
 
             if (texWidth * 2 <= maxSize && texHeight * 2 <= maxSize) {
                 // Make the texture twice as big

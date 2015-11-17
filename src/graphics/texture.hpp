@@ -70,6 +70,7 @@ public:
 
     static uint32_t calcSize(uint8_t format, uint16_t width, uint16_t height, uint16_t depth);
     static uint32_t usedMemory();
+    static uint16_t maxSize();
     static void bind(const Texture* texture, uint8_t texSlot);
 
 private:

@@ -42,7 +42,7 @@ Texture::Texture(uint8_t type, uint8_t format, uint32_t handle, uint16_t width, 
     mType(type), mFormat(format), mHandle(handle), mWidth(width), mHeight(height), mDepth(depth),
     mSamplerState(samplerState), mRbTexture(rbTexture)
 {
-    // Nothingh else to do
+    // Nothing else to do
 }
 
 //----------------------------------------------------------
@@ -63,8 +63,7 @@ uint8_t Texture::create(uint8_t type, uint8_t format, uint16_t width, uint16_t h
     }
 
     // Check maximum size
-    static uint16_t maxSize = maximumSize();
-    if (width > maxSize || height > maxSize || depth > maxSize) {
+    if (width > maxSize() || height > maxSize() || depth > maxSize()) {
         return 2;
     }
 
@@ -253,6 +252,13 @@ uint32_t Texture::calcSize(uint8_t format, uint16_t width, uint16_t height, uint
 uint32_t Texture::usedMemory()
 {
     return RenderDevice::instance().getTextureMemory();
+}
+
+//----------------------------------------------------------
+uint16_t Texture::maxSize()
+{
+    static uint16_t max = maximumSize();
+    return max;
 }
 
 //----------------------------------------------------------
