@@ -74,8 +74,8 @@ constexpr uint32_t glyphPadding = 1u;
 class VectorFont::FileWrapper
 {
 public:
-    FileWrapper() : handle(new PHYSFS_File()) {}
-    ~FileWrapper() {delete handle;}
+    FileWrapper() : handle() {}
+    ~FileWrapper() {if (handle) PHYSFS_close(handle);}
     PHYSFS_File* handle;
 };
 
