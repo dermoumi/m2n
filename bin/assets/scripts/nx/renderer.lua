@@ -56,17 +56,6 @@ ffi.cdef [[
     void nxRendererDestroyBuffer(NxArrayBuffer*);
     bool nxRendererUpdateBufferData(NxArrayBuffer*, uint32_t, uint32_t, const void*);
     uint32_t nxRendererGetBufferMemory();
-    uint32_t nxRendererCreateShader(const char*, const char*);
-    void nxRendererDestroyShader(uint32_t);
-    void nxRendererBindShader(uint32_t);
-    const char* nxRendererGetShaderLog();
-    int nxRendererGetShaderConstLoc(uint32_t, const char*);
-    int nxRendererGetShaderSamplerLoc(uint32_t, const char*);
-    void nxRendererSetShaderConst(int, uint32_t, float*, uint32_t);
-    void nxRendererSetShaderSampler(int, uint32_t);
-    const char* nxRendererGetDefaultVSCode();
-    const char* nxRendererGetDefaultFSCode();
-    uint32_t nxRendererGetCurrentShader();
     void nxRendererSetViewport(int, int, int, int);
     void nxRendererSetScissorRect(int, int, int, int);
     void nxRendererSetIndexBuffer(NxArrayBuffer*, int);
