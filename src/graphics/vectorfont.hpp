@@ -57,7 +57,7 @@ public:
     bool open(const void* data, size_t size);
     bool open(PHYSFS_File* file);
 
-    const Info& getInfo() const;
+    const Info& info() const;
 
     virtual const Glyph& glyph(uint32_t codePoint, uint32_t charSize, bool bold) const;
     virtual float kerning(uint32_t first, uint32_t second, uint32_t charSize) const;
@@ -71,7 +71,7 @@ private:
     struct Row
     {
         Row(uint32_t top, uint32_t height);
-        
+
         uint32_t top {0u};
         uint32_t width {0u};
         uint32_t height {0u};

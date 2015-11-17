@@ -41,6 +41,7 @@ local Shader = require 'nx.shader'
 local Texture = require 'nx.texture'
 local Renderbuffer = require 'nx.renderbuffer'
 local Sprite = require 'nx.sprite'
+local Font = require 'nx.vectorfont'
 local ffi = require 'ffi'
 local C = ffi.C
 
@@ -81,6 +82,13 @@ function SceneSubtitle:load()
     self.rbSprite:setPosition(640, 360)
     self.rbSprite:setOrigin(320, 180)
 
+    self.font = Font:new()
+    self.font:open('assets/mplus-1c-regular.ttf')
+    self.font:glyph(56, 20)
+    self.font:glyph(65, 20)
+
+    self.fontSprite = Sprite:new(self.font:texture(20))
+
     self._processParent = true
 end
 
@@ -102,6 +110,7 @@ function SceneSubtitle:render()
     self.camera:setRenderbuffer(nil)
     self.camera:setViewport(nil, nil, nil, nil)
     self.camera:draw(self.rbSprite)
+    self.camera:draw(self.fontSprite)
 end
 
 ------------------------------------------------------------

@@ -226,7 +226,7 @@ bool VectorFont::open(PHYSFS_File* file)
 }
 
 //----------------------------------------------------------
-const VectorFont::Info& VectorFont::getInfo() const
+const VectorFont::Info& VectorFont::info() const
 {
     return mInfo;
 }
