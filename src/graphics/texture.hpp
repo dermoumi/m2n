@@ -42,7 +42,6 @@ public:
         bool hasMips, bool mipMaps, bool sRGB);
     void setData(const void* buffer, int32_t x, int32_t y, int32_t z, int32_t width,
         int32_t height, int32_t depth, uint8_t slice, uint8_t mipLevel);
-    void bind(uint8_t texSlot);
     bool data(void* buffer, uint8_t slice, uint8_t mipLevel) const;
     void size(uint16_t& width, uint16_t& height, uint16_t& depth) const;
     uint32_t bufferSize() const;
@@ -67,6 +66,7 @@ public:
 
     static uint32_t calcSize(uint8_t format, uint16_t width, uint16_t height, uint16_t depth);
     static uint32_t usedMemory();
+    static void bind(const Texture* texture, uint8_t texSlot);
 
 private:
     uint8_t  mType         {0u};

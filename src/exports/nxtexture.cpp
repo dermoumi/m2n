@@ -58,12 +58,6 @@ NX_EXPORT void nxTextureSetData(NxTexture* texture, const void* buffer, int32_t 
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxTextureBind(NxTexture* texture, uint8_t texSlot)
-{
-    texture->bind(texSlot);
-}
-
-//----------------------------------------------------------
 NX_EXPORT bool nxTextureData(const NxTexture* texture, void* buffer, uint8_t slice,
     uint8_t mipLevel)
 {
@@ -164,4 +158,10 @@ NX_EXPORT uint8_t nxTextureFormat(const NxTexture* texture)
 NX_EXPORT uint32_t nxTextureUsedMemory()
 {
     return Texture::usedMemory();
+}
+
+//----------------------------------------------------------
+NX_EXPORT void nxTextureBind(const NxTexture* texture, uint8_t texSlot)
+{
+    Texture::bind(texture, texSlot);
 }

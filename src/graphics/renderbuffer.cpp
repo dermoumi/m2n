@@ -106,7 +106,7 @@ uint8_t Renderbuffer::texFormat() const
 }
 
 //----------------------------------------------------------
-void Renderbuffer::setCurrent(const Renderbuffer* buffer)
+void Renderbuffer::bind(const Renderbuffer* buffer)
 {
     RenderDevice::instance().setRenderBuffer(buffer ? buffer->mHandle : 0);
 }

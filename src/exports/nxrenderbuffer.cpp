@@ -70,7 +70,7 @@ NX_EXPORT uint8_t nxRenderbufferFormat(const NxRenderbuffer* buffer)
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxRenderbufferSetCurrent(const NxRenderbuffer* buffer)
+NX_EXPORT void nxRenderbufferBind(const NxRenderbuffer* buffer)
 {
-    Renderbuffer::setCurrent(buffer);
+    Renderbuffer::bind(buffer);
 }

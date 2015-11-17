@@ -46,7 +46,7 @@ public:
     void size(uint16_t& width, uint16_t& height) const;
     uint8_t texFormat() const;
 
-    static void setCurrent(const Renderbuffer* buffer);
+    static void bind(const Renderbuffer* buffer);
 
 private:
     uint8_t  mFormat           {0u};

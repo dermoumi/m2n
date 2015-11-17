@@ -66,6 +66,12 @@ function Shader.static._fromCData(cdata)
 end
 
 ------------------------------------------------------------
+function Shader.static.bind(shader)
+    if shader then shader = shader._cdata end
+    C.nxShaderBind(shader)
+end
+
+------------------------------------------------------------
 function Shader:initialize(vertexShader, fragmentShader)
     local handle = C.nxShaderNew()
     self._cdata = ffi.gc(handle, C.nxShaderRelease)

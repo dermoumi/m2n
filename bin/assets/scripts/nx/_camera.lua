@@ -102,7 +102,7 @@ function Camera:_setupDrawing()
     self._needUpdate = false
 
     -- Setup renderbuffer
-    Renderbuffer.setCurrent(self._rb)
+    Renderbuffer.bind(self._rb)
 
     -- Setup viewport
     C.nxRendererSetViewport(self:viewport())

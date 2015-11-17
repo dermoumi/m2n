@@ -48,13 +48,13 @@ ffi.cdef [[
     NxTexture* nxRenderbufferTexture(NxRenderbuffer*, uint8_t);
     void nxRenderbufferSize(const NxRenderbuffer*, uint16_t*);
     uint8_t nxRenderbufferFormat(const NxRenderbuffer*);
-    void nxRenderbufferSetCurrent(const NxRenderbuffer*);
+    void nxRenderbufferBind(const NxRenderbuffer*);
 ]]
 
 ------------------------------------------------------------
-function Renderbuffer.static.setCurrent(buffer)
+function Renderbuffer.static.bind(buffer)
     if buffer then buffer = buffer._cdata end
-    C.nxRenderbufferSetCurrent(buffer)
+    C.nxRenderbufferBind(buffer)
 end
 
 ------------------------------------------------------------
@@ -84,6 +84,11 @@ function Renderbuffer:release()
     if not self._cdata then return end
     C.nxRenderbufferRelease(ffi.gc(self._cdata, nil))
     self._cdata = nil
+end
+
+------------------------------------------------------------
+function Renderbuffer:bind()
+    C.nxRenderbufferBind(self._cdata)
 end
 
 ------------------------------------------------------------

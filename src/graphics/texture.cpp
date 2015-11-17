@@ -108,12 +108,6 @@ void Texture::setData(const void* buffer, int32_t x, int32_t y, int32_t z, int32
 }
 
 //----------------------------------------------------------
-void Texture::bind(uint8_t texSlot)
-{
-    RenderDevice::instance().setTexture(texSlot, mHandle, mSamplerState);
-}
-
-//----------------------------------------------------------
 bool Texture::data(void* buffer, uint8_t slice, uint8_t mipLevel) const
 {
     return RenderDevice::instance().getTextureData(mHandle, slice, mipLevel, buffer);
@@ -241,4 +235,15 @@ uint32_t Texture::calcSize(uint8_t format, uint16_t width, uint16_t height, uint
 uint32_t Texture::usedMemory()
 {
     return RenderDevice::instance().getTextureMemory();
+}
+
+//----------------------------------------------------------
+void Texture::bind(const Texture* texture, uint8_t texSlot)
+{
+    if (!texture) {
+        RenderDevice::instance().setTexture(texSlot, 0, 0);
+    }
+    else {
+        RenderDevice::instance().setTexture(texSlot, texture->mHandle, texture->mSamplerState);
+    }
 }

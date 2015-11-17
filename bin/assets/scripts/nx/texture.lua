@@ -120,7 +120,6 @@ ffi.cdef [[
         bool);
     void nxTextureSetData(NxTexture*, const void*, int32_t, int32_t, int32_t, int32_t, int32_t,
         int32_t, uint8_t, uint8_t);
-    void nxTextureBind(NxTexture*, uint8_t);
     bool nxTextureData(const NxTexture*, void*, uint8_t, uint8_t);
     void nxTextureSize(const NxTexture*, uint16_t*);
     uint32_t nxTextureBufferSize(const NxTexture*);
@@ -138,6 +137,7 @@ ffi.cdef [[
     uint8_t nxTextureType(const NxTexture*);
     uint8_t nxTextureFormat(const NxTexture*);
     uint32_t nxTextureUsedMemory();
+    void nxTextureBind(const NxTexture*, uint8_t);
 ]]
 
 ------------------------------------------------------------
@@ -156,6 +156,12 @@ end
 ------------------------------------------------------------
 function Texture.static.usedMemory()
     return C.nxTextureUsedMemory();
+end
+
+------------------------------------------------------------
+function Texture.static.bind(texture, slot)
+    if texture then texture = texture._cdata end
+    C.nxTextureBind(texture, slot)
 end
 
 ------------------------------------------------------------
@@ -230,9 +236,9 @@ function Texture:setData(data, a, b, c, d, e, f, g, h)
 end
 
 ------------------------------------------------------------
-function Texture:bind(unit)
+function Texture:bind(slot)
     if not self._cdata then return end
-    C.nxTextureBind(self._cdata, unit)
+    C.nxTextureBind(self._cdata, slot)
 end
 
 ------------------------------------------------------------
