@@ -28,7 +28,7 @@
 #include "../config.hpp"
 
 #include "texture.hpp"
-    
+
 //==========================================================
 // Holds information about a Font glyph
 //==========================================================
@@ -39,10 +39,10 @@ struct Glyph
     float top     {0.f};
     float width   {0.f};
     float height  {0.f};
-    int   texLeft   {0};
-    int   texTop    {0};
-    int   texWidth  {0};
-    int   texHeight {0};
+    uint32_t texLeft   {0};
+    uint32_t texTop    {0};
+    uint32_t texWidth  {0};
+    uint32_t texHeight {0};
 };
 
 //==========================================================

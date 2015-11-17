@@ -55,7 +55,7 @@ public:
 
     bool open(const std::string& filename);
     bool open(const void* data, size_t size);
-    bool open(PHYSFS_File* file, bool closeFile);
+    bool open(PHYSFS_File* file);
 
     const Info& getInfo() const;
 
@@ -70,6 +70,8 @@ private:
     using GlyphTable = std::map<uint32_t, Glyph>;
     struct Row
     {
+        Row(uint32_t top, uint32_t height);
+        
         uint32_t top {0u};
         uint32_t width {0u};
         uint32_t height {0u};
@@ -77,6 +79,8 @@ private:
 
     struct Page
     {
+        Page();
+
         GlyphTable       glyphs;
         Texture          texture;
         uint32_t         nextRow {3u};
@@ -86,19 +90,20 @@ private:
 private:
     void cleanup();
     Glyph loadGlyph(uint32_t codePoint, uint32_t charSize, bool bold) const;
-    bool findGlyphRect(Page& page, uint32_t width, uint32_t height, uint32_t& coordsL,
+    void findGlyphRect(Page& page, uint32_t width, uint32_t height, uint32_t& coordsL,
         uint32_t& coordsT, uint32_t& coordsR, uint32_t& coordsB) const;
     bool ensureSize(uint32_t charSize) const;
 
 private:
     class FreetypeHandle;
+    class FileWrapper;
     using FreetypePtr = std::shared_ptr<FreetypeHandle>;
     using PageTable   = std::map<uint32_t, Page>;
-    using FilePtr     = std::shared_ptr<PHYSFS_File>;
+    using FilePtr     = std::shared_ptr<FileWrapper>;
 
     Info        mInfo;
     FreetypePtr mFreetype;
-    FilePtr     mFileHandle; // Used by open(const std::string&);
+    FilePtr     mFile; // Used by open(const std::string&);
     mutable PageTable            mPages;
     mutable std::vector<uint8_t> mPixelBuffer;
 };
