@@ -428,7 +428,7 @@ Glyph VectorFont::loadGlyph(uint32_t codePoint, uint32_t charSize, bool bold) co
                     mPixelBuffer[index] = pixels[x];
                 }
 
-                pixels + bitmap.pitch;
+                pixels += bitmap.pitch;
             }
         }
 
@@ -446,8 +446,8 @@ Glyph VectorFont::loadGlyph(uint32_t codePoint, uint32_t charSize, bool bold) co
 }
 
 //----------------------------------------------------------
-void VectorFont::findGlyphRect(Page& page, uint32_t width, uint32_t height, uint32_t& coordsL,
-    uint32_t& coordsT, uint32_t& coordsR, uint32_t& coordsB) const
+void VectorFont::findGlyphRect(Page& page, uint32_t width, uint32_t height, uint32_t& coordsX,
+    uint32_t& coordsY, uint32_t& coordsW, uint32_t& coordsH) const
 {
     // Find the line that fits well the glyph
     Row* currentRow = nullptr;
@@ -458,9 +458,7 @@ void VectorFont::findGlyphRect(Page& page, uint32_t width, uint32_t height, uint
         if (ratio < 0.7f || ratio > 1.f) continue;
 
         // Check if there's enough horizontal space left in the row
-        uint16_t texWidth, texHeight, texDepth;
-        page.texture.size(texWidth, texHeight, texDepth);
-        if (width > texWidth - row.width) continue;
+        if (width > page.texture.texWidth() - row.width) continue;
 
         // Make sure that the current row passed all the test: we can select it
         currentRow = &row;
@@ -469,21 +467,37 @@ void VectorFont::findGlyphRect(Page& page, uint32_t width, uint32_t height, uint
 
     if (!currentRow) {
         uint32_t rowHeight = height * 1.1;
-        uint16_t texWidth, texHeight, texDepth;
-        page.texture.size(texWidth, texHeight, texDepth);
-        while (page.nextRow + rowHeight >= texHeight || width >= texWidth) {
+        while (
+            page.nextRow + rowHeight >= page.texture.texHeight() || width >= page.texture.texWidth()
+        ) {
             // Not enough space: resize the texture if possible
-            texWidth  *= 2;
-            texHeight *= 2;
-            uint16_t maxSize = 1024; // TODO: Fix me!!!
+            uint16_t texWidth  = page.texture.texWidth();
+            uint16_t texHeight = page.texture.texHeight();
+            uint16_t maxSize   = 1024; // TODO: Fix me!!!
 
-            if (texWidth <= maxSize && texHeight <= maxSize) {
+            if (texWidth * 2 <= maxSize && texHeight * 2 <= maxSize) {
                 // Make the texture twice as big
-                uint32_t bufSize = texWidth * texHeight * 4;
+                uint32_t bufSize = texWidth * texHeight * 16;
                 uint8_t* buffer = new uint8_t[bufSize];
                 page.texture.data(buffer, 0, 0);
 
-                // TODO: Fix me!!!
+                Image image;
+                image.create(texWidth * 2, texHeight * 2, 255, 255, 255, 0);
+                image.copy(buffer, 0, 0, texWidth, 0, 0, texWidth, texHeight, false);
+
+                page.texture.create(0, 1, texWidth * 2, texHeight * 2, 1, true, true, false);
+                page.texture.setData(image.getPixelsPtr(), -1, -1, -1, -1, -1, -1, 0, 0);
+            }
+            else {
+                Log::error(
+                    "Failed to add a new character to the font: "
+                    "The maximum texture size has been reached"
+                );
+
+                coordsX = 0;
+                coordsY = 0;
+                coordsW = 2;
+                coordsH = 2;
             }
         }
 
@@ -493,7 +507,12 @@ void VectorFont::findGlyphRect(Page& page, uint32_t width, uint32_t height, uint
         currentRow = &page.rows.back();
     }
 
-    // TODO: Fixe me!!!
+    coordsX = currentRow->width;
+    coordsY = currentRow->top;
+    coordsW = width;
+    coordsH = height;
+
+    currentRow->width += width;
 }
 
 //----------------------------------------------------------
