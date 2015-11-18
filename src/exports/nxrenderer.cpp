@@ -27,7 +27,6 @@
 #include "../config.hpp"
 #include "../system/log.hpp"
 #include "../graphics/renderdevice.hpp"
-#include "../graphics/shader.hpp"
 
 //----------------------------------------------------------
 // Declarations
@@ -41,21 +40,14 @@ struct NxVertexLayoutAttrib
     uint8_t format;
 };
 
-using NxShader = Shader;
+using NxArrayBuffer = uint32_t;
 
 //----------------------------------------------------------
 // Exported functions
 //----------------------------------------------------------
 NX_EXPORT bool nxRendererInit()
 {
-    // Initialize the render device
     return RenderDevice::instance().initialize();
-}
-
-//----------------------------------------------------------
-NX_EXPORT void nxRendererRelease()
-{
-    RenderDevice::instance().release();
 }
 
 //----------------------------------------------------------
@@ -124,6 +116,44 @@ NX_EXPORT uint32_t nxRendererRegisterVertexLayout(uint8_t numAttribs,
 }
 
 //----------------------------------------------------------
+NX_EXPORT NxArrayBuffer* nxRendererCreateVertexBuffer(uint32_t size, const void* data)
+{
+    auto* buffer = new NxArrayBuffer();
+    *buffer = RenderDevice::instance().createVertexBuffer(size, data);
+    return buffer;
+}
+
+//----------------------------------------------------------
+NX_EXPORT NxArrayBuffer* nxRendererCreateIndexBuffer(uint32_t size, const void* data)
+{
+    auto* buffer = new NxArrayBuffer();
+    *buffer = RenderDevice::instance().createIndexBuffer(size, data);
+    return buffer;
+}
+
+//----------------------------------------------------------
+NX_EXPORT void nxRendererDestroyBuffer(NxArrayBuffer* buffer)
+{
+    if (!buffer) return;
+    RenderDevice::instance().destroyBuffer(*buffer);
+    delete buffer;
+}
+
+//----------------------------------------------------------
+NX_EXPORT bool nxRendererUpdateBufferData(NxArrayBuffer* buffer, uint32_t offset, uint32_t size,
+    const void* data)
+{
+    if (!buffer) return false;
+    return RenderDevice::instance().updateBufferData(*buffer, offset, size, data);
+}
+
+//----------------------------------------------------------
+NX_EXPORT uint32_t nxRendererGetBufferMemory()
+{
+    return RenderDevice::instance().getBufferMemory();
+}
+
+//----------------------------------------------------------
 NX_EXPORT void nxRendererSetViewport(int x, int y, int width, int height)
 {
     RenderDevice::instance().setViewport(x, y, width, height);
@@ -136,9 +166,28 @@ NX_EXPORT void nxRendererSetScissorRect(int x, int y, int width, int height)
 }
 
 //----------------------------------------------------------
+NX_EXPORT void nxRendererSetIndexBuffer(NxArrayBuffer* bufObj, int format)
+{
+    RenderDevice::instance().setIndexBuffer(bufObj ? *bufObj : 0, static_cast<RenderDevice::IndexFormat>(format));
+}
+
+//----------------------------------------------------------
+NX_EXPORT void nxRendererSetVertexBuffer(uint32_t slot, NxArrayBuffer* vbObj, uint32_t offset,
+    uint32_t stride)
+{
+    RenderDevice::instance().setVertexBuffer(slot, vbObj ? *vbObj : 0, offset, stride);
+}
+
+//----------------------------------------------------------
 NX_EXPORT void nxRendererSetVertexLayout(uint32_t vlObj)
 {
     RenderDevice::instance().setVertexLayout(vlObj);
+}
+
+//----------------------------------------------------------
+NX_EXPORT void nxRendererSetTexture(uint32_t slot, uint32_t texObj, uint16_t samplerState)
+{
+    RenderDevice::instance().setTexture(slot, texObj, samplerState);
 }
 
 //----------------------------------------------------------
@@ -274,18 +323,6 @@ NX_EXPORT void nxRendererGetCapabilities(unsigned int* u, bool* b)
         &u[0], &u[1], &u[2], &u[3], &b[0], &b[1], &b[2], &b[3], &b[4], &b[5], &b[6], &b[7], &b[8],
         &b[9], &b[10], &b[11]
     );
-}
-
-//----------------------------------------------------------
-NX_EXPORT uint32_t nxRendererGetVertexLayout(uint32_t index)
-{
-    return RenderDevice::instance().vertexLayout(index);
-}
-
-//----------------------------------------------------------
-NX_EXPORT NxShader* nxRendererGetDefaultShader(uint32_t index)
-{
-    return RenderDevice::instance().defaultShader(index);
 }
 
 //==============================================================================

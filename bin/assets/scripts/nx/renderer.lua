@@ -40,10 +40,9 @@ ffi.cdef [[
         uint8_t format;
     } NxVertexLayoutAttrib;
 
-    typedef struct NxShader NxShader;
+    typedef void* NxArrayBuffer;
 
     bool nxRendererInit();
-    void nxRendererRelease();
     void nxRendererBegin();
     void nxRendererFinish();
     void nxRendererResetStates();
@@ -52,9 +51,17 @@ ffi.cdef [[
     void nxRendererDraw(uint32_t, uint32_t, uint32_t);
     void nxRendererDrawIndexed(uint32_t, uint32_t, uint32_t);
     uint32_t nxRendererRegisterVertexLayout(uint8_t, const NxVertexLayoutAttrib*);
+    NxArrayBuffer* nxRendererCreateVertexBuffer(uint32_t, const void*);
+    NxArrayBuffer* nxRendererCreateIndexBuffer(uint32_t, const void*);
+    void nxRendererDestroyBuffer(NxArrayBuffer*);
+    bool nxRendererUpdateBufferData(NxArrayBuffer*, uint32_t, uint32_t, const void*);
+    uint32_t nxRendererGetBufferMemory();
     void nxRendererSetViewport(int, int, int, int);
     void nxRendererSetScissorRect(int, int, int, int);
+    void nxRendererSetIndexBuffer(NxArrayBuffer*, int);
+    void nxRendererSetVertexBuffer(uint32_t, NxArrayBuffer*, uint32_t, uint32_t);
     void nxRendererSetVertexLayout(uint32_t);
+    void nxRendererSetTexture(uint32_t, uint32_t, uint16_t);
     void nxRendererSetColorWriteMask(bool);
     bool nxRendererGetColorWriteMask();
     void nxRendererSetFillMode(uint32_t);
@@ -76,9 +83,6 @@ ffi.cdef [[
     void nxRendererSetDepthFunc(uint32_t);
     uint32_t nxRendererGetDepthFunc();
     void nxRendererGetCapabilities(unsigned int*, bool*);
-
-    uint32_t nxRendererGetVertexLayout(uint32_t index);
-    NxShader* nxRendererGetDefaultShader(uint32_t index);
 ]]
 
 ------------------------------------------------------------
@@ -115,12 +119,33 @@ function Renderer.init()
     caps.occQueriesSupported      = b[10]
     caps.timerQueriesSupported    = b[11]
 
-    return true
-end
+    -- Initialize vertex layouts
+    vertexLayouts[1] = C.nxRendererRegisterVertexLayout(2, ffi.new('NxVertexLayoutAttrib[2]', {
+        {'aPosition',  0, 2, 0, 0},
+        {'aTexCoords', 0, 2, 8, 0}
+    }))
 
-------------------------------------------------------------
-function Renderer.release()
-    C.nxRendererRelease()
+    -- Initialize default shaders
+    local Shader = require('nx.shader')
+    defaultShaders[1] = Shader:new([[
+        attribute vec2 aPosition;
+        attribute vec2 aTexCoords;
+        uniform mat4 uTransMat;
+        varying vec2 vTexCoords;
+        void main() {
+            vTexCoords  = aTexCoords;
+            gl_Position = uTransMat * vec4(aPosition, 0.0, 1.0);
+        }
+    ]], [[
+        uniform sampler2D uTexture;
+        uniform vec4 uColor;
+        varying vec2 vTexCoords;
+        void main() {
+            gl_FragColor = texture2D(uTexture, vTexCoords) * uColor;
+        }
+    ]])
+
+    return true
 end
 
 ------------------------------------------------------------
@@ -148,26 +173,12 @@ end
 
 ------------------------------------------------------------
 function Renderer.vertexLayout(index)
-    local layout = vertexLayouts[index]
-
-    if not layout then
-        layout = C.nxRendererGetVertexLayout(index - 1)
-        vertexLayouts[index] = layout
-    end
-
-    return layout
+    return vertexLayouts[index]
 end
 
 ------------------------------------------------------------
 function Renderer.defaultShader(index)
-    local shader = defaultShaders[index]
-
-    if not shader then
-        shader = require('nx.shader')._fromCData(C.nxRendererGetDefaultShader(index - 1))
-        defaultShaders[index] = shader
-    end
-
-    return shader
+    return defaultShaders[index]
 end
 
 ------------------------------------------------------------

@@ -25,30 +25,13 @@
     For more information, please refer to <http://unlicense.org>
 *///============================================================================
 #include "renderdevice.hpp"
-
-#include "shader.hpp"
 #include <memory>
-#include <vector>
 
-#ifndef NX_OPENGL_ES
+#if !defined(NX_OPENGL_ES)
     #include "renderdevicegl.hpp"
 #else
     #include "renderdevicegles2.hpp"
 #endif
-
-#ifndef NX_GLSL
-    #ifndef NX_OPENGL_ES
-        #define NX_GLSL(version, shader) "#version " #version "\n" #shader
-    #else
-        #define NX_GLSL(version, shader) #shader
-    #endif
-#endif
-
-//----------------------------------------------------------
-// Locals
-//----------------------------------------------------------
-static std::vector<uint32_t> vertexLayouts;
-static std::vector<Shader> defaultShaders;
 
 //----------------------------------------------------------
 static RenderDevice* getDevice()
@@ -66,65 +49,6 @@ RenderDevice& RenderDevice::instance()
     static std::unique_ptr<RenderDevice> rdi(getDevice());
 
     return *rdi;
-}
-
-//----------------------------------------------------------
-void RenderDevice::release()
-{
-    // Free up shaders beforehand
-    defaultShaders.clear();
-}
-
-//----------------------------------------------------------
-bool RenderDevice::initialize()
-{
-    if (!initializeBackend()) return false;
-
-
-    vertexLayouts.resize(1);
-    RenderDevice::VertexLayoutAttrib posTexCoords[2] {
-        {"aPosition",  0, 2, 0, 0},
-        {"aTexCoords", 0, 2, 8, 0}
-    };
-    vertexLayouts[0] = RenderDevice::instance().registerVertexLayout(2, posTexCoords);
-
-    defaultShaders.resize(1);
-    defaultShaders[0].load(
-        NX_GLSL(120,
-            attribute vec2 aPosition;
-            attribute vec2 aTexCoords;
-            uniform mat4 uTransMat;
-            varying vec2 vTexCoords;
-            void main() {
-                vTexCoords  = aTexCoords;
-                gl_Position = uTransMat * vec4(aPosition, 0.0, 1.0);
-            }
-        ),
-        NX_GLSL(120,
-            uniform sampler2D uTexture;
-            uniform vec4 uColor;
-            varying vec2 vTexCoords;
-            void main() {
-                gl_FragColor = texture2D(uTexture, vTexCoords) * uColor;
-            }
-        )
-    );
-
-    return true;
-}
-
-//----------------------------------------------------------
-uint32_t RenderDevice::vertexLayout(uint32_t index)
-{
-    if (index > vertexLayouts.size()) return 0;
-    return vertexLayouts[index];
-}
-
-//----------------------------------------------------------
-Shader* RenderDevice::defaultShader(uint32_t index)
-{
-    if (index > defaultShaders.size()) return nullptr;
-    return &defaultShaders[index];
 }
 
 //----------------------------------------------------------
