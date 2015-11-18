@@ -32,6 +32,7 @@ local class = require 'nx.class'
 local Entity2D = require 'nx.entity2d'
 local Sprite = class('nx.sprite', Entity2D)
 
+local Arraybuffer = require 'nx.arraybuffer'
 local Renderer = require 'nx.renderer'
 local ffi = require 'ffi'
 local C = ffi.C
@@ -155,10 +156,9 @@ function Sprite:_render(camera, transMat, r, g, b, a)
         })
 
         if not self._vertexbuffer then
-            local handle = C.nxRendererCreateVertexBuffer(ffi.sizeof(buffer), buffer)
-            self._vertexbuffer = ffi.gc(handle, C.nxRendererDestroyBuffer)
+            self._vertexbuffer = Arraybuffer.vertexbuffer(ffi.sizeof(buffer), buffer)
         else
-            C.nxRendererUpdateBufferData(self._vertexbuffer, 0, ffi.sizeof(buffer), buffer)
+            self._vertexbuffer:setData(0, ffi.sizeof(buffer), buffer)
         end
 
         self._updateBuffer = false
@@ -166,7 +166,7 @@ function Sprite:_render(camera, transMat, r, g, b, a)
 
     transMat:combine(self:matrix())
 
-    if self._vertexbuffer ~= 0 then
+    if self._vertexbuffer then
         local shader = self._shader or Sprite._defaultShader()
         r = r or 255
         g = g or 255
@@ -180,8 +180,8 @@ function Sprite:_render(camera, transMat, r, g, b, a)
         shader:setUniform('uColor', r / 255, g / 255, b / 255, a / 255)
         shader:setSampler('uTexture', 0)
 
-        C.nxRendererSetVertexBuffer(0, self._vertexbuffer, 0, 16)
-        C.nxRendererSetIndexBuffer(nil, 0)
+        Arraybuffer.setVertexbuffer(self._vertexbuffer, 0, 0, 16)
+        Arraybuffer.setIndexbuffer(nil)
         C.nxRendererSetVertexLayout(Sprite._vertexLayout())
 
         C.nxRendererDraw(1, 0, 4)
