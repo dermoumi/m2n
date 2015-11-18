@@ -28,6 +28,8 @@
 
 #include <cmath>
 
+using utf8Inserter = std::back_insert_iterator<std::string>;
+
 //----------------------------------------------------------
 static const char* decodeUtf8(const char* begin, const char* end, uint32_t& output, uint32_t rep)
 {
@@ -45,8 +47,7 @@ static const char* decodeUtf8(const char* begin, const char* end, uint32_t& outp
     // decode the character
     int trailingBytes = trailing[static_cast<uint8_t>(*begin) / 4];
 
-    if (begin + trailingBytes < end)
-    {
+    if (begin + trailingBytes < end) {
         output = 0;
         switch(trailingBytes) {
             case 5: output += static_cast<uint8_t>(*begin++); output <<= 6;
@@ -58,14 +59,51 @@ static const char* decodeUtf8(const char* begin, const char* end, uint32_t& outp
         }
         output -= offsets[trailingBytes];
     }
-    else
-    {
+    else {
         // Incomplete character
         begin = end;
         output = rep;
     }
 
     return begin;
+}
+
+//----------------------------------------------------------
+static utf8Inserter encodeUtf8(uint32_t input, utf8Inserter output, uint8_t replacement)
+{
+    // Some useful precomputed data
+    static const uint8_t firstBytes[7] = {0x00, 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC};
+
+    // encode the character
+    if ((input > 0x0010FFFF) || ((input >= 0xD800) && (input <= 0xDBFF))) {
+        // Invalid character
+        if (replacement) *output++ = replacement;
+    }
+    else {
+        // Valid character
+
+        // Get the number of bytes to write
+        size_t bytestoWrite = 1;
+        if      (input <  0x80)       bytestoWrite = 1;
+        else if (input <  0x800)      bytestoWrite = 2;
+        else if (input <  0x10000)    bytestoWrite = 3;
+        else if (input <= 0x0010FFFF) bytestoWrite = 4;
+
+        // Extract the bytes to write
+        uint8_t bytes[4];
+        switch (bytestoWrite)
+        {
+            case 4: bytes[3] = static_cast<uint8_t>((input | 0x80) & 0xBF); input >>= 6;
+            case 3: bytes[2] = static_cast<uint8_t>((input | 0x80) & 0xBF); input >>= 6;
+            case 2: bytes[1] = static_cast<uint8_t>((input | 0x80) & 0xBF); input >>= 6;
+            case 1: bytes[0] = static_cast<uint8_t> (input | firstBytes[bytestoWrite]);
+        }
+
+        // Add them to the output
+        output = std::copy(bytes, bytes + bytestoWrite, output);
+    }
+
+    return output;
 }
 
 //----------------------------------------------------------
@@ -80,6 +118,21 @@ static std::u32string utf8ToUtf32(const std::string& str)
         uint32_t codepoint;
         begin = decodeUtf8(begin, end, codepoint, U'?');
         output += codepoint;
+    }
+
+    return output;
+}
+
+//----------------------------------------------------------
+static std::string utf32ToUtf8(const std::u32string& str)
+{
+    std::string output;
+    auto out = std::back_inserter(output);
+    auto begin = &str[0];
+    auto end = &str[0] + str.size();
+
+    while (begin < end) {
+        out = encodeUtf8(*begin++, out, '?');
     }
 
     return output;
@@ -139,7 +192,7 @@ const std::string& Text::utf8String() const
     static std::string utf8String;
 
     if (mNeedsUpdate) {
-        // TODO: convert this
+        utf8String = utf32ToUtf8(mString);
     }
 
     return utf8String;
@@ -212,9 +265,10 @@ void Text::bounds(float& x, float& y, float& w, float& h) const
 }
 
 //----------------------------------------------------------
-const Arraybuffer* Text::arraybuffer() const
+const Arraybuffer* Text::arraybuffer(uint32_t& vertexCount) const
 {
     ensureGeometryUpdate();
+    vertexCount = mVertexCount;
     return mVertices.get();
 }
 
@@ -227,12 +281,12 @@ void Text::ensureGeometryUpdate() const
     // Mark the geometry as updated
     mNeedsUpdate = false;
 
-    // Reset bounds
+    // Reset variables
     mBoundsX = mBoundsY = mBoundsW = mBoundsH = 0;
+    mVertexCount = 0;
 
     // No font or no string: nothing to draw
     if (!mFont || mString.empty()) {
-        mVertices = nullptr;
         return;
     }
 
@@ -251,8 +305,7 @@ void Text::ensureGeometryUpdate() const
     // We use the center point of the lowercase 'x' glyph as thee reference
     // We reuse teh underline thickness as the thickness of the strike through as well
     auto& xGlyph = mFont->glyph(U'x', mCharSize, bold);
-    float xBoundsX {xGlyph.left}, xBoundsY {xGlyph.top};
-    float xBoundsW {xGlyph.width}, xBoundsH {xGlyph.height};
+    float xBoundsX {xGlyph.left}, xBoundsH {xGlyph.height};
 
     float strikeThroughOffset = xBoundsX + xBoundsH / 2.f;
 
@@ -277,8 +330,7 @@ void Text::ensureGeometryUpdate() const
         prevChar = currChar;
 
         // If we're using the underlined style and there's a new line, draw a line
-        if (underlined && (currChar == U'\n'))
-        {
+        if (underlined && (currChar == U'\n')) {
             float top = std::floor(y + underlineOffset - (underlineThickness / 2) + 0.5f);
             float bottom = top + std::floor(underlineThickness + 0.5f);
 
@@ -295,8 +347,7 @@ void Text::ensureGeometryUpdate() const
 
         // If we're using strike through style and there's a new line, draw a line accross
         // all characters
-        if (strikeThrough && (currChar == U'\n'))
-        {
+        if (strikeThrough && (currChar == U'\n')) {
             float top = std::floor(y + strikeThroughOffset - (underlineThickness / 2) + 0.5f);
             float bottom = top + std::floor(underlineThickness + 0.5f);
 
@@ -317,8 +368,7 @@ void Text::ensureGeometryUpdate() const
             minX = std::min(minX, x);
             minY = std::min(minY, y);
 
-            switch (currChar)
-            {
+            switch (currChar) {
                 case U' ':  x += hspace;        break;
                 case U'\t': x += hspace * 4;    break;
                 case U'\n': x += vspace; x = 0; break;
@@ -340,6 +390,75 @@ void Text::ensureGeometryUpdate() const
         float right  = glyph.left + glyph.width;
         float bottom = glyph.top + glyph.height;
 
-        // TODO 
+        float u1 = glyph.texLeft;
+        float v1 = glyph.texTop;
+        float u2 = glyph.texLeft + glyph.texWidth;
+        float v2 = glyph.texTop + glyph.texHeight;
+
+        // Add a quad for the current character
+        float vertices[24] {
+            x + left - italic * top,     y + top,    u1, v1,
+            x + right - italic * top,    y + top,    u2, v1,
+            x + left - italic * bottom,  y + bottom, u1, v2,
+            x + left - italic * bottom,  y + bottom, u1, v2,
+            x + right - italic * top,    y + top,    u2, v1,
+            x + right - italic * bottom, y + bottom, u2, v2
+        };
+        buffer.insert(buffer.end(), std::begin(vertices), std::end(vertices));
+
+        // Update the current bounds
+        minX = std::min(minX, x + left - italic * bottom);
+        maxX = std::max(maxX, x + right - italic * top);
+        minY = std::min(minY, y + top);
+        maxY = std::max(maxY, y + bottom);
+
+        // Advance to the next character
+        x += glyph.advance;
+    }
+
+    // If we're using the underlined style, add the last line
+    if (underlined) {
+        float top = std::floor(y + underlineOffset - (underlineThickness / 2) + 0.5f);
+        float bottom = top + std::floor(underlineThickness + 0.5f);
+
+        float vertices[24] {
+            0.f, top,    1.f, 1.f,
+            x,   top,    1.f, 1.f,
+            0.f, bottom, 1.f, 1.f,
+            0.f, bottom, 1.f, 1.f,
+            x,   top,    1.f, 1.f,
+            x,   bottom, 1.f, 1.f
+        };
+        buffer.insert(buffer.end(), std::begin(vertices), std::end(vertices));
+    }
+
+    // If we're using the strike through style, add the last line across all characters
+    if (strikeThrough) {
+        float top = std::floor(y + strikeThroughOffset - (underlineThickness / 2) + 0.5f);
+        float bottom = top + std::floor(underlineThickness + 0.5f);
+
+        float vertices[24] {
+            0.f, top,    1.f, 1.f,
+            x,   top,    1.f, 1.f,
+            0.f, bottom, 1.f, 1.f,
+            0.f, bottom, 1.f, 1.f,
+            x,   top,    1.f, 1.f,
+            x,   bottom, 1.f, 1.f
+        };
+        buffer.insert(buffer.end(), std::begin(vertices), std::end(vertices));
+    }
+
+    mBoundsX = minX;
+    mBoundsY = minY;
+    mBoundsW = maxX - minX;
+    mBoundsH = maxY - minY;
+
+    mVertexCount = buffer.size() / 4;
+    if (!mVertices) {
+        mVertices = ArraybufferPtr(new Arraybuffer());
+        mVertices->createVertex(buffer.size() * 4, buffer.data());
+    }
+    else {
+        mVertices->setData(0, buffer.size() * 4, buffer.data());
     }
 }

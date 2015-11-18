@@ -42,6 +42,7 @@ local Texture = require 'nx.texture'
 local Renderbuffer = require 'nx.renderbuffer'
 local Sprite = require 'nx.sprite'
 local Font = require 'nx.vectorfont'
+local Text = require 'nx.text'
 local ffi = require 'ffi'
 local C = ffi.C
 
@@ -90,6 +91,11 @@ function SceneSubtitle:load()
 
     self.fontSprite = Sprite:new(self.font:texture(30))
 
+    self.text = Text:new()
+    self.text:setFont(self.font)
+    self.text:setString("Hello world 真島 ヒロ")
+    print(self.text:string());
+
     self._processParent = true
 end
 
@@ -111,7 +117,9 @@ function SceneSubtitle:render()
     self.camera:setRenderbuffer(nil)
     self.camera:setViewport(nil, nil, nil, nil)
     self.camera:draw(self.rbSprite)
-    self.camera:draw(self.fontSprite)
+
+    --self.camera:draw(self.fontSprite)
+    self.camera:draw(self.text)
 end
 
 ------------------------------------------------------------

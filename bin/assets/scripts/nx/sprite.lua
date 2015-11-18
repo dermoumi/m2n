@@ -119,6 +119,8 @@ function Sprite:_render(camera, transMat, r, g, b, a)
     if not self._texture then return end
     local texW, texH = self._texture:size()
 
+    transMat:combine(self:matrix())
+
     if self._updateBuffer then
         local w, h, subL, subT, subR, subB
 
@@ -158,10 +160,7 @@ function Sprite:_render(camera, transMat, r, g, b, a)
         self._updateBuffer = false
     end
 
-    transMat:combine(self:matrix())
-
     if self._vertexbuffer then
-        local shader = self._shader or Sprite._defaultShader()
         r = r or 255
         g = g or 255
         b = b or 255
@@ -169,10 +168,9 @@ function Sprite:_render(camera, transMat, r, g, b, a)
 
         self._texture:bind(0)
 
-        if self._normalized then
-            texW, texH = 1
-        end
+        if self._normalized then texW, texH = 1, 1 end
 
+        local shader = self._shader or Sprite._defaultShader()
         shader:bind()
         shader:setUniform('uTransMat', transMat)
         shader:setUniform('uColor', r / 255, g / 255, b / 255, a / 255)
