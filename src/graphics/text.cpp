@@ -28,8 +28,6 @@
 
 #include <cmath>
 
-using utf8Inserter = std::back_insert_iterator<std::string>;
-
 //----------------------------------------------------------
 static const char* decodeUtf8(const char* begin, const char* end, uint32_t& output, uint32_t rep)
 {
@@ -69,44 +67,6 @@ static const char* decodeUtf8(const char* begin, const char* end, uint32_t& outp
 }
 
 //----------------------------------------------------------
-static utf8Inserter encodeUtf8(uint32_t input, utf8Inserter output, uint8_t replacement)
-{
-    // Some useful precomputed data
-    static const uint8_t firstBytes[7] = {0x00, 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC};
-
-    // encode the character
-    if ((input > 0x0010FFFF) || ((input >= 0xD800) && (input <= 0xDBFF))) {
-        // Invalid character
-        if (replacement) *output++ = replacement;
-    }
-    else {
-        // Valid character
-
-        // Get the number of bytes to write
-        size_t bytestoWrite = 1;
-        if      (input <  0x80)       bytestoWrite = 1;
-        else if (input <  0x800)      bytestoWrite = 2;
-        else if (input <  0x10000)    bytestoWrite = 3;
-        else if (input <= 0x0010FFFF) bytestoWrite = 4;
-
-        // Extract the bytes to write
-        uint8_t bytes[4];
-        switch (bytestoWrite)
-        {
-            case 4: bytes[3] = static_cast<uint8_t>((input | 0x80) & 0xBF); input >>= 6;
-            case 3: bytes[2] = static_cast<uint8_t>((input | 0x80) & 0xBF); input >>= 6;
-            case 2: bytes[1] = static_cast<uint8_t>((input | 0x80) & 0xBF); input >>= 6;
-            case 1: bytes[0] = static_cast<uint8_t> (input | firstBytes[bytestoWrite]);
-        }
-
-        // Add them to the output
-        output = std::copy(bytes, bytes + bytestoWrite, output);
-    }
-
-    return output;
-}
-
-//----------------------------------------------------------
 static std::u32string utf8ToUtf32(const std::string& str)
 {
     std::u32string output;
@@ -118,21 +78,6 @@ static std::u32string utf8ToUtf32(const std::string& str)
         uint32_t codepoint;
         begin = decodeUtf8(begin, end, codepoint, U'?');
         output += codepoint;
-    }
-
-    return output;
-}
-
-//----------------------------------------------------------
-static std::string utf32ToUtf8(const std::u32string& str)
-{
-    std::string output;
-    auto out = std::back_inserter(output);
-    auto begin = &str[0];
-    auto end = &str[0] + str.size();
-
-    while (begin < end) {
-        out = encodeUtf8(*begin++, out, '?');
     }
 
     return output;
@@ -184,18 +129,6 @@ void Text::setStyle(uint8_t style)
 const std::u32string& Text::string() const
 {
     return mString;
-}
-
-//----------------------------------------------------------
-const std::string& Text::utf8String() const
-{
-    static std::string utf8String;
-
-    if (mNeedsUpdate) {
-        utf8String = utf32ToUtf8(mString);
-    }
-
-    return utf8String;
 }
 
 //----------------------------------------------------------

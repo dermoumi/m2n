@@ -94,7 +94,6 @@ function SceneSubtitle:load()
     self.text = Text:new()
     self.text:setFont(self.font)
     self.text:setString("Hello world 真島 ヒロ")
-    print(self.text:string());
 
     self._processParent = true
 end

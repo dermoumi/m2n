@@ -41,10 +41,6 @@ ffi.cdef [[
     void nxTextSetFont(NxText*, const void*);
     void nxTextSetCharacterSize(NxText*, uint32_t);
     void nxTextSetStyle(NxText*, uint8_t);
-    const char* nxTextString(const NxText*);
-    const void* nxTextFont(const NxText*);
-    uint32_t nxTextCharacterSize(const NxText*);
-    uint8_t nxTextStyle(const NxText*);
     void nxTextCharacterPosition(const NxText*, uint32_t, float*);
     void nxTextBounds(const NxText*, float*);
     const NxArraybuffer* nxTextArraybuffer(const NxText*, uint32_t*);
@@ -59,18 +55,6 @@ local Arraybuffer = require'nx.arraybuffer'
 local Texture = require 'nx.texture'
 
 local vertCountPtr = ffi.new('uint32_t[1]')
-
-------------------------------------------------------------
-function Text.static._fromCData(cdata)
-    local text = Text:allocate()
-
-    Entity2D.initialize(text)
-    text._cdata = ffi.cast('NxText*', cdata)
-    text._font = require('nx._font')._fromCData(nil)
-    text._arraybuffer = require('nx.arraybuffer')._fromCData(nil)
-
-    return text
-end
 
 ------------------------------------------------------------
 function Text.static._defaultShader()
@@ -89,8 +73,10 @@ function Text:initialize()
     local handle = C.nxTextNew()
     self._cdata = ffi.gc(handle, C.nxTextRelease)
 
-    self._font = require('nx._font')._fromCData(nil)
-    self._arraybuffer = require('nx.arraybuffer')._fromCData(nil)
+    self._string = ''
+    self._charSize = 30
+    self._style = 0
+    self._vertices = require('nx.arraybuffer')._fromCData(nil)
 end
 
 ------------------------------------------------------------
@@ -102,44 +88,46 @@ end
 
 ------------------------------------------------------------
 function Text:setString(str)
+    self._string = str
     C.nxTextSetString(self._cdata, str)
 end
 
 ------------------------------------------------------------
 function Text:setFont(font)
-    self._font._cdata = font._cdata
+    self._font = font
     C.nxTextSetFont(self._cdata, font._cdata)
 end
 
 ------------------------------------------------------------
 function Text:setCharacterSize(size)
+    self._charSize = size
     C.nxTextSetCharacterSize(self._cdata, size)
 end
 
 ------------------------------------------------------------
 function Text:setStyle(style)
+    self._style = style
     C.nxTextSetStyle(self._cdata, style)
 end
 
 ------------------------------------------------------------
 function Text:string()
-    return ffi.string(C.nxTextString(self._cdata))
+    return self._string
 end
 
 ------------------------------------------------------------
 function Text:font()
-    self._font._cdata = C.nxTextFont(self._cdata)
     return self._font
 end
 
 ------------------------------------------------------------
 function Text:characterSize()
-    return C.nxTextCharacterSize(self._cdata)
+    return self._charSize
 end
 
 ------------------------------------------------------------
 function Text:style()
-    return C.nxTextStyle(self._cdata)
+    return self._style
 end
 
 ------------------------------------------------------------
@@ -166,7 +154,7 @@ function Text:_render(camera, transMat, r, g, b, a)
         b = b or 255
         a = a or 255
         
-        local texture = self._font:texture(self:characterSize())
+        local texture = self._font:texture(self._charSize)
         texture:bind(0)
         local texW, texH = texture:size()
 
@@ -177,8 +165,8 @@ function Text:_render(camera, transMat, r, g, b, a)
         shader:setUniform('uTexSize', texW, texH)
         shader:setSampler('uTexture', 0)
 
-        local vertices = Arraybuffer._fromCData(C.nxTextArraybuffer(self._cdata, vertCountPtr))
-        Arraybuffer.setVertexbuffer(vertices, 0, 0, 16)
+        self._vertices._cdata = C.nxTextArraybuffer(self._cdata, vertCountPtr)
+        Arraybuffer.setVertexbuffer(self._vertices, 0, 0, 16)
         Arraybuffer.setIndexbuffer(nil)
         C.nxRendererSetVertexLayout(Text._vertexLayout())
 

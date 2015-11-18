@@ -71,30 +71,6 @@ NX_EXPORT void nxTextSetStyle(NxText* text, uint8_t style)
 }
 
 //----------------------------------------------------------
-NX_EXPORT const char* nxTextString(const NxText* text)
-{
-    return text->utf8String().data();
-}
-
-//----------------------------------------------------------
-NX_EXPORT const Font* nxTextFont(const Text* text)
-{
-    return text->font();
-}
-
-//----------------------------------------------------------
-NX_EXPORT uint32_t nxTextCharacterSize(const Text* text)
-{
-    return text->characterSize();
-}
-
-//----------------------------------------------------------
-NX_EXPORT uint8_t nxTextStyle(const Text* text)
-{
-    return text->style();
-}
-
-//----------------------------------------------------------
 NX_EXPORT void nxTextCharacterPosition(const Text* text, uint32_t index, float* posPtr)
 {
     text->characterPosition(index, posPtr[0], posPtr[1]);
