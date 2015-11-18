@@ -105,7 +105,7 @@ end
 ------------------------------------------------------------
 function Arraybuffer:release()
     if self._cdata == nil then return end
-    C.nxArraybufferRelease(ffi.gc(handle, nil))
+    C.nxArraybufferRelease(ffi.gc(self._cdata, nil))
 end
 
 ------------------------------------------------------------

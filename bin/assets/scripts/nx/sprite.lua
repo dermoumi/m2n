@@ -62,7 +62,7 @@ end
 ------------------------------------------------------------
 function Sprite:release()
     if not self._vertexbuffer then return end
-    C.nxRendererDestroyBuffer(ffi.gc(self._vertexbuffer, nil))
+    self._vertexbuffer:release()
 end
 
 ------------------------------------------------------------
