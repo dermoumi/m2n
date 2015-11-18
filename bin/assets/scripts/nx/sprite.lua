@@ -107,7 +107,7 @@ end
 function Sprite:size()
     if not self._texture then return 0, 0 end
     if self._normalized then
-        local w, h = self._texture:size(true)
+        local w, h = self._texture:size()
         return self._subW * w, self._subH * h
     else
         return self._subW, self._subH
@@ -117,29 +117,23 @@ end
 ------------------------------------------------------------
 function Sprite:_render(camera, transMat, r, g, b, a)
     if not self._texture then return end
+    local texW, texH = self._texture:size()
 
     if self._updateBuffer then
-        local texW, texH = self._texture:size(true)
         local w, h, subL, subT, subR, subB
+
+        subL = self._subX
+        subT = self._subY
+        subR = self._subX + self._subW
+        subB = self._subY + self._subH
 
         -- Calculate normalized coordinates
         if self._normalized then
             w = texW * self._subW
             h = texH * self._subH
-
-            subL = self._subX
-            subT = self._subY
-            subR = self._subX + self._subW
-            subB = self._subY + self._subH
-            print(texW, texH, self._subW, self._subH, self._subW * texW)
         else
             w = self._subW
             h = self._subH
-
-            subL = self._subX / texW
-            subT = self._subY / texH
-            subR = (self._subX + self._subW) / texW
-            subB = (self._subY + self._subH) / texH
         end
 
         if self._texture:flipCoords() then
@@ -175,9 +169,14 @@ function Sprite:_render(camera, transMat, r, g, b, a)
 
         self._texture:bind(0)
 
+        if self._normalized then
+            texW, texH = 1
+        end
+
         shader:bind()
         shader:setUniform('uTransMat', transMat)
         shader:setUniform('uColor', r / 255, g / 255, b / 255, a / 255)
+        shader:setUniform('uTexSize', texW, texH)
         shader:setSampler('uTexture', 0)
 
         Arraybuffer.setVertexbuffer(self._vertexbuffer, 0, 0, 16)
