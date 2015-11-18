@@ -39,7 +39,7 @@
 class RenderDeviceGLES2 : public RenderDevice
 {
 public:
-    bool initialize();
+    bool initializeBackend();
 
     void initStates();
     void resetStates();

@@ -61,7 +61,7 @@ static std::mutex cpMutex; // Capabilities mutex
 thread_local std::string shaderLog;
 
 //----------------------------------------------------------
-bool RenderDeviceGL::initialize()
+bool RenderDeviceGL::initializeBackend()
 {
     bool failed {false};
 

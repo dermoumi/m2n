@@ -39,7 +39,7 @@
 class RenderDeviceGL : public RenderDevice
 {
 public:
-    bool initialize();
+    bool initializeBackend();
 
     void initStates();
     void resetStates();

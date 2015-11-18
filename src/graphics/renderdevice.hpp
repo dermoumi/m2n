@@ -32,6 +32,8 @@
 #include <string>
 #include <mutex>
 
+class Shader;
+
 //==========================================================
 // Container for different objects used by the device
 //==========================================================
@@ -256,7 +258,13 @@ public:
     static RenderDevice& instance();
 
     virtual ~RenderDevice() = default;
-    virtual bool initialize() = 0;
+    bool initialize();
+    void release();
+
+    uint32_t vertexLayout(uint32_t index);
+    Shader* defaultShader(uint32_t index);
+
+    virtual bool initializeBackend() = 0;
 
     virtual void initStates() = 0;
     virtual void resetStates() = 0;
