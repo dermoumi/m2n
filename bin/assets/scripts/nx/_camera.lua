@@ -90,13 +90,6 @@ function Camera:clear(r, g, b, a, depth, col0, col1, col2, col3, clearDepth)
 end
 
 ------------------------------------------------------------
-function Camera:draw(drawable)
-    self:_setupDrawing()
-
-    drawable:_render(self, self:matrix():clone(), 255, 255, 255, 255)
-end
-
-------------------------------------------------------------
 function Camera:_setupDrawing()
     if not self._needUpdate then return end
     self._needUpdate = false

@@ -145,23 +145,16 @@ function Text:bounds()
 end
 
 ------------------------------------------------------------
-function Text:_render(camera, transMat, r, g, b, a)
-    transMat:combine(self:matrix())
-
+function Text:_render(camera, state)
     if self._font and self._font._cdata ~= nil then
-        r = r or 255
-        g = g or 255
-        b = b or 255
-        a = a or 255
-        
         local texture = self._font:texture(self._charSize)
         texture:bind(0)
         local texW, texH = texture:size()
 
         local shader = self._shader or Text._defaultShader()
         shader:bind()
-        shader:setUniform('uTransMat', transMat)
-        shader:setUniform('uColor', r / 255, g / 255, b / 255, a / 255)
+        shader:setUniform('uTransMat', state:matrix())
+        shader:setUniform('uColor', state:color(true))
         shader:setUniform('uTexSize', texW, texH)
         shader:setSampler('uTexture', 0)
 

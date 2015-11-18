@@ -28,9 +28,8 @@
 ------------------------------------------------------------
 -- Represents a 2D view in space
 ------------------------------------------------------------
-local class = require 'nx.class'
 local Camera = require 'nx._camera'
-local Camera2D = class('nx.camera2d', Camera)
+local Camera2D = Camera:subclass('nx.camera2d')
 
 local Matrix = require 'nx.matrix'
 
@@ -166,6 +165,15 @@ function Camera2D:invMatrix()
     end
 
     return self._invMatrix
+end
+
+------------------------------------------------------------
+function Camera2D:draw(drawable, state)
+    self:_setupDrawing()
+
+    state = state or require('nx.entity2d').State:new(self:matrix())
+
+    drawable:_draw(self, state:clone())
 end
 
 ------------------------------------------------------------
