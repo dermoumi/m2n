@@ -399,10 +399,10 @@ Glyph VectorFont::loadGlyph(uint32_t codePoint, uint32_t charSize, bool bold) co
         glyph.texHeight -= 2 * padding;
 
         // Compute the glyph's bounding box
-        glyph.left   = face->glyph->metrics.horiBearingX / static_cast<float>(1 << 6);
-        glyph.top    = face->glyph->metrics.horiBearingY / static_cast<float>(1 << 6);
-        glyph.width  = face->glyph->metrics.width  / static_cast<float>(1 << 6);
-        glyph.height = face->glyph->metrics.height / static_cast<float>(1 << 6);
+        glyph.left   =  face->glyph->metrics.horiBearingX / static_cast<float>(1 << 6);
+        glyph.top    = -face->glyph->metrics.horiBearingY / static_cast<float>(1 << 6);
+        glyph.width  =  face->glyph->metrics.width  / static_cast<float>(1 << 6);
+        glyph.height =  face->glyph->metrics.height / static_cast<float>(1 << 6);
 
         // Extract the glyph's pixels from the bitmap
         mPixelBuffer.resize(width * height * 4, 255);

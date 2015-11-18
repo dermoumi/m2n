@@ -72,7 +72,7 @@ local eventMapping = {
 ------------------------------------------------------------
 
 -- Create window
-local ok, err = Window.create("m2n", 1280, 720, {})
+local ok, err = Window.create("m2n", 1280, 720, {vsync = false})
 if not ok then
     Log.error('Cannot initialize window: ' + err)
     return 1
@@ -110,9 +110,9 @@ local lastTime         = Nx.getSystemTime()
 -- Main loop
 ------------------------------------------------------------
 while true do
-    local currentTime = Nx.getSystemTime()
-    local elapsedTime = currentTime - lastTime
-    lastTime = currentTime
+    local startTime = Nx.getSystemTime()
+    local elapsedTime = startTime - lastTime
+    lastTime = startTime
 
     local scene = Scene.currentScene()
 
@@ -150,9 +150,11 @@ while true do
     end
 
     -- Waiting out left time of the frame
-    local sleepTime = currentTime - Nx.getSystemTime() + framerateLimit;
-    if sleepTime > 0 then
-        Nx.sleep(sleepTime)
+    if framerateLimit ~= 0 then
+        local sleepTime = startTime - Nx.getSystemTime() + framerateLimit;
+        if sleepTime > 0 then
+            Nx.sleep(sleepTime)
+        end
     end
 
     -- Clean the scene stack

@@ -371,7 +371,7 @@ void Text::ensureGeometryUpdate() const
             switch (currChar) {
                 case U' ':  x += hspace;        break;
                 case U'\t': x += hspace * 4;    break;
-                case U'\n': x += vspace; x = 0; break;
+                case U'\n': y += vspace; x = 0; break;
             }
 
             // Update the current bounds (max coordinates)
@@ -397,10 +397,10 @@ void Text::ensureGeometryUpdate() const
 
         // Add a quad for the current character
         float vertices[24] {
-            x + left - italic * top,     y + top,    u1, v1,
+            x + left  - italic * top,    y + top,    u1, v1,
             x + right - italic * top,    y + top,    u2, v1,
-            x + left - italic * bottom,  y + bottom, u1, v2,
-            x + left - italic * bottom,  y + bottom, u1, v2,
+            x + left  - italic * bottom, y + bottom, u1, v2,
+            x + left  - italic * bottom, y + bottom, u1, v2,
             x + right - italic * top,    y + top,    u2, v1,
             x + right - italic * bottom, y + bottom, u2, v2
         };
