@@ -104,7 +104,7 @@ end
 function SceneSubtitle:update(dt)
     local w, h = Window:size()
     self.text:setString('FPS: ' .. math.floor(1/dt + .5)
-        .. '\n Screen size: ' .. w .. ' ' .. h)
+        .. '\nScreen size: ' .. w .. ' ' .. h)
     self.sprite:setRotation(math.pi * dt + self.sprite:rotation())
 end
 

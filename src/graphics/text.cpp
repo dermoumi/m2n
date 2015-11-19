@@ -318,15 +318,15 @@ void Text::ensureGeometryUpdate() const
         // Extract the current glyph's descripts
         const auto& glyph = mFont->glyph(currChar, mCharSize, bold);
 
-        float left   = glyph.left;
-        float top    = glyph.top;
-        float right  = glyph.left + glyph.width;
-        float bottom = glyph.top + glyph.height;
+        float left   = glyph.left - 0.25f;
+        float top    = glyph.top - 0.25f;
+        float right  = glyph.left + glyph.width + 0.25f;
+        float bottom = glyph.top + glyph.height + 0.25f;
 
-        float u1 = glyph.texLeft;
-        float v1 = glyph.texTop;
-        float u2 = glyph.texLeft + glyph.texWidth;
-        float v2 = glyph.texTop + glyph.texHeight;
+        float u1 = glyph.texLeft - 0.25f;
+        float v1 = glyph.texTop - 0.25f;
+        float u2 = glyph.texLeft + glyph.texWidth + 0.25f;
+        float v2 = glyph.texTop + glyph.texHeight + 0.25f;
 
         // Add a quad for the current character
         float vertices[24] {

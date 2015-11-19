@@ -565,5 +565,4 @@ VectorFont::Page::Page()
     // Create texture
     texture.create(0, 1, 128, 128, 1, true, true, false);
     texture.setData(image.getPixelsPtr(), -1, -1, -1, -1, -1, -1, 0, 0);
-    texture.setFilter(0x2);
 }

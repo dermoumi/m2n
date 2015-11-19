@@ -378,5 +378,6 @@ end
 function Window._mouseFocus(focus)
     hasMouseFocus = focus
 end
+
 ------------------------------------------------------------
 return Window
