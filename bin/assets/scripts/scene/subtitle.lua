@@ -42,6 +42,7 @@ local Texture = require 'nx.texture'
 local Renderbuffer = require 'nx.renderbuffer'
 local Sprite = require 'nx.sprite'
 local Font = require 'nx.vectorfont'
+local Window = require 'nx.window'
 local Text = require 'nx.text'
 local ffi = require 'ffi'
 local C = ffi.C
@@ -92,6 +93,7 @@ function SceneSubtitle:load()
     self.fontSprite = Sprite:new(self.font:texture(30))
 
     self.text = Text:new()
+    self.text:setCharacterSize(14)
     self.text:setFont(self.font)
     self.text:setString("Hello world 真島 ヒロ")
 
@@ -100,6 +102,9 @@ end
 
 ------------------------------------------------------------
 function SceneSubtitle:update(dt)
+    local w, h = Window:size()
+    self.text:setString('FPS: ' .. math.floor(1/dt + .5)
+        .. '\n Screen size: ' .. w .. ' ' .. h)
     self.sprite:setRotation(math.pi * dt + self.sprite:rotation())
 end
 
@@ -120,7 +125,7 @@ function SceneSubtitle:render()
     --self.camera:draw(self.fontSprite)
     self.camera:draw(self.text)
 
-    Renderer.drawFsQuad(self.rb:texture(), 640, 360)
+    -- Renderer.drawFsQuad(self.rb:texture(), 640, 360)
 end
 
 ------------------------------------------------------------

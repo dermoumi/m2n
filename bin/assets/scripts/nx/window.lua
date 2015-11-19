@@ -100,7 +100,7 @@ local drawableWidth, drawableHeight
 local hasFocus, hasMouseFocus 
 
 ------------------------------------------------------------
-local function getDrawableSize()
+local function drawableSize()
     local sizePtr = ffi.new('int[2]')
     C.nxWindowGetDrawableSize(sizePtr)
     return tonumber(sizePtr[0]), tonumber(sizePtr[1])
@@ -163,7 +163,7 @@ function Window.create(title, width, height, flags)
     end
 
     windowWidth, windowHeight     = width, height
-    drawableWidth, drawableHeight = getDrawableSize()
+    drawableWidth, drawableHeight = drawableSize()
     hasFocus, hasMouseFocus       = true, true
 
     -- Initial mouse focus is impossible with SDL < 2.0.4 (need to get global position)
@@ -222,7 +222,11 @@ function Window.ensureContext()
 end
 
 ------------------------------------------------------------
-function Window.size()
+function Window.size(drawableSize)
+    if drawableSize then
+        return drawableWidth, drawableHeight
+    end
+
     return windowWidth, windowHeight
 end
 
@@ -330,11 +334,6 @@ function Window.showMessageBox(title, message, type, attach)
 end
 
 ------------------------------------------------------------
-function Window.getDrawableSize()
-    return drawableWidth, drawableHeight
-end
-
-------------------------------------------------------------
 function Window.toPixel(x, y)
     return x * drawableWidth / windowWidth, y * drawableHeight / windowHeight
 end
@@ -367,7 +366,7 @@ end
 ------------------------------------------------------------
 function Window._resize(w, h)
     windowWidth,   windowHeight   = w, h
-    drawableWidth, drawableHeight = getDrawableSize()
+    drawableWidth, drawableHeight = drawableSize()
 end
 
 ------------------------------------------------------------
