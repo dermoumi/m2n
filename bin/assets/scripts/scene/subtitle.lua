@@ -119,6 +119,8 @@ function SceneSubtitle:render()
 
     --self.camera:draw(self.fontSprite)
     self.camera:draw(self.text)
+
+    Renderer.drawFsQuad(self.rb:texture(), 640, 360)
 end
 
 ------------------------------------------------------------

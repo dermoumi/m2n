@@ -95,6 +95,8 @@ local caps = {}
 local vertexLayouts = {}
 local defaultShaders = {}
 
+local vbFsQuad;
+
 ------------------------------------------------------------
 function Renderer.init()
     if not C.nxRendererInit() then return false end
@@ -146,6 +148,14 @@ function Renderer.init()
         }
     ]])
 
+    -- Create the Fullscreen quad vertex buffer
+    local buffer = ffi.new('float[12]', {
+        -1,  1, 0, 0,
+         3,  1, 2, 0,
+        -1, -3, 0, 2
+    })
+    vbFsQuad = require('nx.arraybuffer').vertexbuffer(ffi.sizeof(buffer), buffer)
+
     return true
 end
 
@@ -180,6 +190,32 @@ end
 ------------------------------------------------------------
 function Renderer.defaultShader(index)
     return defaultShaders[index]
+end
+
+------------------------------------------------------------
+function Renderer.drawFsQuad(texture, width, height)
+    if width and height then
+        local texW, texH = texture:size()
+        width, height = texW / width, texH / height
+    else
+        width, height = 1, 1
+    end
+
+    texture:bind(0)
+
+    local shader = defaultShaders[1]
+    shader:bind()
+    shader:setUniform('uTransMat', require('nx.matrix'):new())
+    shader:setUniform('uColor', 1, 1, 1, 1)
+    shader:setUniform('uTexSize', width, height)
+    shader:setSampler('uTexture', 0)
+
+    local Arraybuffer = require 'nx.arraybuffer'
+    Arraybuffer.setVertexbuffer(vbFsQuad, 0, 0, 16)
+    Arraybuffer.setIndexbuffer(nil)
+    C.nxRendererSetVertexLayout(vertexLayouts[1])
+
+    C.nxRendererDraw(0, 0, 3)
 end
 
 ------------------------------------------------------------
