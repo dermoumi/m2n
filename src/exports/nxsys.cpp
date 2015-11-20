@@ -29,11 +29,10 @@
 #include <SDL2/SDL.h>
 #include <string>
 #include <chrono>
+#include <thread>
 #if defined(NX_SYSTEM_WINDOWS) || defined(NX_SYSTEM_WINCE)
     #include <windows.h>
     #include <mmsystem.h>
-#else
-    #include <thread>
 #endif
 
 //----------------------------------------------------------
@@ -41,6 +40,9 @@
 //----------------------------------------------------------
 NX_EXPORT void nxSysSleep(double s)
 {
+    // Not all system tolerate negative sleep times
+    if (s <= 0) return;
+
     #if defined(NX_SYSTEM_WINDOWS) || defined(NX_SYSTEM_WINCE)
         // Taken from SFML ._.
 
@@ -50,15 +52,15 @@ NX_EXPORT void nxSysSleep(double s)
 
         // Set the timer resolution to the minimum for the Sleep call
         timeBeginPeriod(tc.wPeriodMin);
+    #endif
+        
+    // Wait...
+    auto time = std::chrono::duration<double>(s);
+    std::this_thread::sleep_for(time);
 
-        // Wait...
-        Sleep(s * 1000);
-
+    #if defined(NX_SYSTEM_WINDOWS) || defined(NX_SYSTEM_WINCE)
         // Reset the timer resolution back to the system default
         timeEndPeriod(tc.wPeriodMin);
-    #else
-        auto time = std::chrono::duration<double>(s);
-        std::this_thread::sleep_for(time);
     #endif
 }
 

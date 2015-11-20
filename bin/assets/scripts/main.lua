@@ -119,15 +119,12 @@ end
 local totalElapsedTime = 0
 local frameCount       = 0
 local lastTime         = Nx.getSystemTime()
+local elapsedTime      = 0
 
 ------------------------------------------------------------
 -- Main loop
 ------------------------------------------------------------
 while true do
-    local startTime = Nx.getSystemTime()
-    local elapsedTime = startTime - lastTime
-    lastTime = startTime
-
     local scene = Scene.currentScene()
 
     -- Process events
@@ -155,22 +152,18 @@ while true do
     -- Calculating FPS every whole second
     totalElapsedTime = totalElapsedTime + elapsedTime
     frameCount       = frameCount + 1
-    print(elapsedTime, frameCount)
     if totalElapsedTime > 1 then
-        local currentFPS = math.floor((frameCount / totalElapsedTime) + .5)
-        Window.setTitle('m2n [' .. currentFPS .. ']')
-       
+        Window.setTitle('m2n [' .. frameCount .. ']')
         totalElapsedTime = totalElapsedTime % 1
         frameCount = 0
     end
 
     -- Waiting out left time of the frame
-    if framerateLimit ~= 0 then
-        local sleepTime = startTime - Nx.getSystemTime() + framerateLimit;
-        if sleepTime > 0 then
-            Nx.sleep(sleepTime)
-        end
-    end
+    Nx.sleep(framerateLimit == 0 and 0 or lastTime - Nx.getSystemTime() + framerateLimit)
+
+    local currTime = Nx.getSystemTime()
+    elapsedTime = currTime - lastTime
+    lastTime = currTime
 
     -- Clean the scene stack
     Scene.clean()

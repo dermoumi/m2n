@@ -97,7 +97,7 @@ local Image = require 'nx.image'
 
 local windowWidth, windowHeight
 local drawableWidth, drawableHeight
-local hasFocus, hasMouseFocus 
+local hasFocus, hasMouseFocus
 
 ------------------------------------------------------------
 local function drawableSize()
@@ -125,6 +125,9 @@ local function checkFlags(flags)
     if flags.depthbits == nil      then flags.depthbits = 0 end
     if flags.stencilbits == nil    then flags.stencilbits = 0 end
     if flags.msaa == nil           then flags.msaa = 0 end
+
+    -- Windowed mode and fullscreen don't mix up well
+    if not flags.fullscreen then flags.vsync = false end
 
     return flags
 end
@@ -156,6 +159,8 @@ function Window.create(title, width, height, flags)
         flags.stencilbits,
         flags.msaa
     )
+
+    vSyncEnabled = flags.vsync
 
     if window == nil then
         require 'nx' -- For the GetSDLError() C declaration

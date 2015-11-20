@@ -130,7 +130,7 @@ bool GlContext::isVSyncEnabled() const
 void GlContext::setVSyncEnabled(bool enable)
 {
     if (enable) {
-        // Attempt to enable late-swap tearing
+        // // Attempt to enable late-swap tearing
         if (SDL_GL_SetSwapInterval(-1) == 0) return;
 
         // Late-swap tearing failed
