@@ -66,37 +66,10 @@ NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, int
     int display, bool vsync, bool resizable, bool borderless, int minWidth, int minHeight,
     bool highDpi, int refreshRate, int posX, int posY, int depthBits, int stencilBits, int msaa)
 {
-    // Destroy any other window before proceeding
-    if (window) SDL_DestroyWindow(window);
-
     // Get a valid display number
     display = std::max(0, std::min(display - 1, SDL_GetNumVideoDisplays() - 1));
 
-    Uint32 flags = SDL_WINDOW_OPENGL;
 
-    // Fullscreen
-    if (fullscreen == 3) {
-        // Add FULLSCREEN_DESKTOP flag is window sizes are the same as the desktop's mode
-        SDL_DisplayMode dm;
-        if (SDL_GetDesktopDisplayMode(display, &dm) == 0 && dm.w == width && dm.h == height) {
-            flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-        }
-
-        // If FULLSCREEN_DESKTOP wasn't added, add regulare FULLSCREEN flag
-        if ((flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == 0) {
-            flags |= SDL_WINDOW_FULLSCREEN;
-        }
-    }
-    else if (fullscreen == 2) {
-        flags |= SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_FULLSCREEN;
-    }
-    else if (fullscreen == 1) {
-        flags |= SDL_WINDOW_FULLSCREEN;
-    }
-
-    if (resizable)  flags |= SDL_WINDOW_RESIZABLE;
-    if (borderless) flags |= SDL_WINDOW_BORDERLESS;
-    if (highDpi)    flags |= SDL_WINDOW_ALLOW_HIGHDPI;
 
     if      (posX == -1) posX = SDL_WINDOWPOS_UNDEFINED_DISPLAY(display);
     else if (posX == -2) posX = SDL_WINDOWPOS_CENTERED_DISPLAY(display);
@@ -104,32 +77,70 @@ NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, int
     if      (posY == -1) posY = SDL_WINDOWPOS_UNDEFINED_DISPLAY(display);
     else if (posY == -2) posY = SDL_WINDOWPOS_CENTERED_DISPLAY(display);
 
-    // Set context attributes    
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
+    // Fullscreen
+    uint32_t fullscreenFlags = 0;
+    if (fullscreen == 3) {
+        // Add FULLSCREEN_DESKTOP flag is window sizes are the same as the desktop's mode
+        SDL_DisplayMode dm;
+        if (SDL_GetDesktopDisplayMode(display, &dm) == 0 && dm.w == width && dm.h == height) {
+            fullscreenFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+        }
 
-    SDL_GL_SetAttribute(SDL_GL_RED_SIZE,   8);
-    SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
-    SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE,  8);
-    SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
+        // If FULLSCREEN_DESKTOP wasn't added, add regulare FULLSCREEN flag
+        if ((fullscreenFlags & SDL_WINDOW_FULLSCREEN_DESKTOP) == 0) {
+            fullscreenFlags |= SDL_WINDOW_FULLSCREEN;
+        }
+    }
+    else if (fullscreen == 2) {
+        fullscreenFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_FULLSCREEN;
+    }
+    else if (fullscreen == 1) {
+        fullscreenFlags |= SDL_WINDOW_FULLSCREEN;
+    }
 
-    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE,   depthBits);
-    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, stencilBits);
+    if (!window) {
+        // No window yet, set up flags and create a new window
+        uint32_t flags = SDL_WINDOW_OPENGL | fullscreenFlags;
 
-    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, msaa ? 1 : 0);
-    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, msaa);
+        if (resizable)  flags |= SDL_WINDOW_RESIZABLE;
+        if (borderless) flags |= SDL_WINDOW_BORDERLESS;
+        if (highDpi)    flags |= SDL_WINDOW_ALLOW_HIGHDPI;
 
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, NX_GL_MAJOR);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, NX_GL_MINOR);
+        // Set context attributes    
+        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+        SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
 
-    #ifdef NX_OPENGL_ES
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-    #endif
+        SDL_GL_SetAttribute(SDL_GL_RED_SIZE,   8);
+        SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+        SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE,  8);
+        SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
 
-    SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
+        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE,   depthBits);
+        SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, stencilBits);
 
-    window = SDL_CreateWindow(title, posX, posY, width, height, flags);
-    SDL_SetWindowMinimumSize(window, minWidth, minHeight);
+        SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, msaa ? 1 : 0);
+        SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, msaa);
+
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, NX_GL_MAJOR);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, NX_GL_MINOR);
+
+        #ifdef NX_OPENGL_ES
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+        #endif
+
+        SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
+
+        window = SDL_CreateWindow(title, posX, posY, width, height, flags);
+    }
+    else {
+        // There's already a window
+        // try to change whatever settings we can and leave it at that
+        SDL_SetWindowTitle(window, title);
+        SDL_SetWindowPosition(window, posX, posY);
+        SDL_SetWindowSize(window, width, height);
+
+        SDL_SetWindowBordered(window, borderless ? SDL_FALSE : SDL_TRUE);
+    }
 
     // Set display mode
     SDL_DisplayMode target, closest;
@@ -141,6 +152,10 @@ NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, int
     if (SDL_GetClosestDisplayMode(display, &target, &closest) != nullptr) {
         SDL_SetWindowDisplayMode(window, &closest);
     }
+    SDL_SetWindowFullscreen(window, fullscreenFlags);
+
+
+    SDL_SetWindowMinimumSize(window, minWidth, minHeight);
 
     // Context settings
     auto* context = GlContext::ensure();
