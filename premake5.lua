@@ -93,7 +93,7 @@ project 'game'
     -- Windows specific
     filter 'system:windows'
         files        { 'game.rc' }
-        links        { 'opengl32', 'lua51', 'winmm' }
+        links        { 'SDL2main', 'opengl32', 'lua51', 'winmm' }
 
     -- All configs, again, because of linking order
     filter {}
