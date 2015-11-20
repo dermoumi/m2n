@@ -44,6 +44,7 @@ local Sprite = require 'nx.sprite'
 local Font = require 'nx.vectorfont'
 local Window = require 'nx.window'
 local Text = require 'nx.text'
+local Shape = require 'nx.shape'
 local ffi = require 'ffi'
 local C = ffi.C
 
@@ -97,6 +98,16 @@ function SceneSubtitle:load()
     self.text:setFont(self.font)
     self.text:setString("Hello world 真島 ヒロ")
 
+    self.shape = Shape:new()
+    self.shape:setTexture(self.texture)
+    self.shape:setVertexData('trianglestrip', true,
+        200, 200, 255, 0, 0, 255, 0, 0,
+        100, 300, 0, 255, 0, 255, 0, 1,
+        300, 300, 0, 0, 255, 255, 1, 0,
+        200, 400, 255, 255, 255, 255, 1, 1
+    )
+    -- self.shape:setIndexData(0, 1, 2, 3)
+
     self._processParent = true
 end
 
@@ -124,6 +135,8 @@ function SceneSubtitle:render()
 
     --self.camera:draw(self.fontSprite)
     self.camera:draw(self.text)
+
+    self.camera:draw(self.shape)
 
     -- Renderer.drawFsQuad(self.rb:texture(), 640, 360)
 end

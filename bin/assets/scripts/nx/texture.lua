@@ -259,7 +259,7 @@ end
 function Texture:size()
     local sizePtr = ffi.new('uint16_t[3]')
     C.nxTextureSize(self._cdata, sizePtr)
-    return tonumber(sizePtr[0]), tonumber(sizePtr[1]), tonumber(sizePtr[2])
+    return sizePtr[0], sizePtr[1], sizePtr[2]
 end
 
 ------------------------------------------------------------
