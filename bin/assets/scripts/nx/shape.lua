@@ -150,7 +150,7 @@ function Shape:_render(camera, state)
         shader:setSampler('uTexture', 0)
 
         Arraybuffer.setVertexbuffer(self._vertexBuffer, 0, 0, self._vertexSize)
-        Arraybuffer.setIndexbuffer(self._indexBuffer)
+        Arraybuffer.setIndexbuffer(self._indexBuffer, 16)
         C.nxRendererSetVertexLayout(Shape._vertexLayout(self._hasColor))
 
         if self._indexBuffer then

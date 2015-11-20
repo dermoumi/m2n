@@ -93,7 +93,7 @@ function Arraybuffer.static.setIndexbuffer(buffer, format)
     if buffer then buffer = buffer._cdata end
     if format ~= 16 and format ~= 32 then format = 16 end
 
-    C.nxArraybufferSetIndexbuffer(buffer, format / 2 - 1)
+    C.nxArraybufferSetIndexbuffer(buffer, format / 16 - 1)
 end
 
 ------------------------------------------------------------

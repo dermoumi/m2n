@@ -843,7 +843,7 @@ uint32_t RenderDeviceGL::createVertexBuffer(uint32_t size, const void* data)
 
 //----------------------------------------------------------
 uint32_t RenderDeviceGL::createIndexBuffer(uint32_t size, const void* data)
-{
+{   
     RDIBuffer buf;
 
     buf.type = GL_ELEMENT_ARRAY_BUFFER;
