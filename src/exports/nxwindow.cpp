@@ -140,20 +140,19 @@ NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, int
         SDL_SetWindowSize(window, width, height);
 
         SDL_SetWindowBordered(window, borderless ? SDL_FALSE : SDL_TRUE);
-    }
 
-    // Set display mode
-    SDL_DisplayMode target, closest;
-    target.w = width;
-    target.h = height;
-    target.refresh_rate = refreshRate;
-    target.format = 0;
-    target.driverdata = 0;
-    if (SDL_GetClosestDisplayMode(display, &target, &closest) != nullptr) {
-        SDL_SetWindowDisplayMode(window, &closest);
+        // Set display mode
+        SDL_DisplayMode target, closest;
+        target.w = width;
+        target.h = height;
+        target.refresh_rate = refreshRate;
+        target.format = 0;
+        target.driverdata = 0;
+        if (SDL_GetClosestDisplayMode(display, &target, &closest) != nullptr) {
+            SDL_SetWindowDisplayMode(window, &closest);
+        }
+        SDL_SetWindowFullscreen(window, fullscreenFlags);
     }
-    SDL_SetWindowFullscreen(window, fullscreenFlags);
-
 
     SDL_SetWindowMinimumSize(window, minWidth, minHeight);
 

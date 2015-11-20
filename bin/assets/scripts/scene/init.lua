@@ -41,17 +41,17 @@ function Scene.static.currentScene()
 end
 
 ------------------------------------------------------------
-function Scene.static.goTo(sceneName)
+function Scene.static.goTo(sceneName, ...)
     for i = #sceneStack, 1, -1 do
         releaseStack[#releaseStack + 1] = sceneStack[i]
         sceneStack[i] = nil
     end
 
-    return Scene.push(sceneName)
+    return Scene.push(sceneName, ...)
 end
 
 ------------------------------------------------------------
-function Scene.static.push(sceneName)
+function Scene.static.push(sceneName, ...)
     local sceneClass = require(sceneName)
 
     if not sceneClass or not class.Object.isSubclassOf(sceneClass, Scene) then
@@ -62,15 +62,16 @@ function Scene.static.push(sceneName)
     scene.parent = sceneStack[#sceneStack]
 
     sceneStack[#sceneStack + 1] = scene
-    return scene:load()
+    return scene:load(...)
 end
 
 ------------------------------------------------------------
-function Scene.static.back()
+function Scene.static.back(...)
     local scene = sceneStack[#sceneStack]
     releaseStack[#releaseStack + 1] = scene
 
     sceneStack[#sceneStack] = nil
+    if sceneStack[#sceneStack] then sceneStack[#sceneStack]:back(...) end
 end
 
 ------------------------------------------------------------
@@ -107,7 +108,7 @@ function Scene:_onEvent(e, a, b, c, d)
 end
 
 ------------------------------------------------------------
-function Scene:load()
+function Scene:load(...)
     -- Nothing to do
 end
 
@@ -118,6 +119,11 @@ end
 
 ------------------------------------------------------------
 function Scene:render()
+    -- Nothing to do
+end
+
+------------------------------------------------------------
+function Scene:back(...)
     -- Nothing to do
 end
 

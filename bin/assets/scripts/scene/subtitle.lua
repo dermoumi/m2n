@@ -131,7 +131,7 @@ end
 ------------------------------------------------------------
 function SceneSubtitle:onKeyDown(scancode)
     if scancode == 'f2' then
-        Scene.back()
+        Scene.back('hello from SceneSubtitle')
         return false
     elseif scancode == 'f3' then
         self._processParent = not self._processParent
