@@ -42,6 +42,12 @@ NX_EXPORT void nxLogDebug(const char* message)
 }
 
 //----------------------------------------------------------
+NX_EXPORT void nxLogWarning(const char* message)
+{
+    Log::warning(message);
+}
+
+//----------------------------------------------------------
 NX_EXPORT void nxLogInfo(const char* message)
 {
     Log::info(message);

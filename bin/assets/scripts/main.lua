@@ -68,11 +68,24 @@ local eventMapping = {
 }
 
 ------------------------------------------------------------
+-- Load settings
+------------------------------------------------------------
+local graphicsFlags
+
+local settings, err = loadfile('userdata/settings.lua')
+if not settings then
+    Log.warning('Could not load user settings: ' .. err)
+else
+    settings = settings()
+    graphicsFlags = settings.graphics
+end
+
+------------------------------------------------------------
 -- Renderer setup
 ------------------------------------------------------------
 
 -- Create window
-local ok, err = Window.create("m2n", 1280, 720, {vsync = false})
+local ok, err = Window.create("m2n", 1280, 720, graphicsFlags)
 if not ok then
     Log.error('Cannot initialize window: ' + err)
     return 1
@@ -101,6 +114,7 @@ if Nx.getPlatform() == 'android' or Nx.getPlatform() == 'ios' then
 else
     framerateLimit = 1/60
 end
+-- framerateLimit = 0
 
 local totalElapsedTime = 0
 local frameCount       = 0
@@ -141,8 +155,9 @@ while true do
     -- Calculating FPS every whole second
     totalElapsedTime = totalElapsedTime + elapsedTime
     frameCount       = frameCount + 1
+    print(elapsedTime, frameCount)
     if totalElapsedTime > 1 then
-        local currentFPS = math.floor(1 / (totalElapsedTime / frameCount) + .5)
+        local currentFPS = math.floor((frameCount / totalElapsedTime) + .5)
         Window.setTitle('m2n [' .. currentFPS .. ']')
        
         totalElapsedTime = totalElapsedTime % 1

@@ -34,6 +34,7 @@ local C = ffi.C
 ffi.cdef [[
     void nxLogVerbose(const char* message);
     void nxLogDebug(const char* message);
+    void nxLogWarning(const char* message);
     void nxLogInfo(const char* message);
     void nxLogError(const char* message);
     void nxLogFatal(const char* message);
@@ -52,6 +53,11 @@ end
 ------------------------------------------------------------
 function Log.debug(message)
     C.nxLogDebug(message)
+end
+
+------------------------------------------------------------
+function Log.warning(message)
+    C.nxLogWarning(message)
 end
 
 ------------------------------------------------------------
