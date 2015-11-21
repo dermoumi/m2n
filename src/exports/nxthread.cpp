@@ -27,23 +27,31 @@
 #include "../config.hpp"
 #include "../system/thread.hpp"
 
-#include <thread>
 #include <luajit/lua.hpp>
+#include <thread>
 
 //----------------------------------------------------------
 // Locals
 //----------------------------------------------------------
+
 struct NxThreadObj
 {
     std::thread* handle;
     lua_State* state;
+    bool ownsState;
     bool succeeded;
 };
 
-static void threadCallback(lua_State* state, bool& succeeded)
+static void threadCallback(NxThreadObj* thread)
 {
-    int argCount = lua_gettop(state) - 1; // Total elements in stack minus the function itself
-    succeeded = lua_pcall(state, argCount, -1, 0) == 0;
+    int argCount = lua_gettop(thread->state) - 1; // Total elements in stack minus the function itself
+    thread->succeeded = lua_pcall(thread->state, argCount, -1, 0) == 0;
+
+    if (thread->ownsState) {
+        lua_close(thread->state);
+        delete thread->handle;
+        delete thread;
+    }
 }
 
 //----------------------------------------------------------
@@ -53,7 +61,8 @@ NX_EXPORT NxThreadObj* nxThreadCreate(lua_State* state)
 {
     auto threadObj = new NxThreadObj();
     threadObj->state = state;
-    threadObj->handle = new std::thread(threadCallback, state, std::ref(threadObj->succeeded));
+    threadObj->ownsState = false;
+    threadObj->handle = new std::thread(threadCallback, threadObj);
     return threadObj;
 }
 
@@ -69,6 +78,13 @@ NX_EXPORT bool nxThreadWait(NxThreadObj* threadObj)
 {
     threadObj->handle->join();
     return threadObj->succeeded;
+}
+
+//----------------------------------------------------------
+NX_EXPORT void nxThreadDetach(NxThreadObj* threadObj)
+{
+    threadObj->ownsState = true;
+    threadObj->handle->detach();
 }
 
 //----------------------------------------------------------

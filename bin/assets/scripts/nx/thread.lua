@@ -33,15 +33,12 @@ local C = ffi.C
 
 ffi.cdef [[
     typedef struct lua_State lua_State;
-    typedef struct NxThreadObj {
-        void* handle;
-        lua_State* state;
-        bool succeeded;
-    } NxThreadObj;
+    typedef struct NxThreadObj NxThreadObj;
 
     NxThreadObj* nxThreadCreate(lua_State*);
     void nxThreadRelease(NxThreadObj*);
     bool nxThreadWait(NxThreadObj*);
+    void nxThreadDetach(NxThreadObj*);
     bool nxThreadIsMain();
 ]]
 
@@ -97,6 +94,13 @@ function Thread:join()
 
     -- If something's wrong
     return nil, self._vm:pop(1, true)
+end
+
+------------------------------------------------------------
+function Thread:detach()
+    C.nxThreadDetach(self._cdata)
+    ffi.gc(self._vm._cdata, nil)
+    ffi.gc(self._cdata, nil)
 end
 
 ------------------------------------------------------------
