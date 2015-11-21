@@ -30,7 +30,9 @@
 #include "system/filesystem.hpp"
 #include "system/log.hpp"
 #include "system/thread.hpp"
-    
+
+#include <soloud/soloud.h>
+#include <soloud/soloud_wav.h>
 #include <physfs/physfs.h>
 #include <SDL2/SDL.h>
 #include <string>
@@ -50,8 +52,21 @@ int main(int argc, char* argv[])
     Filesystem fs;
 
     // Initialize SDL
-    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER | SDL_INIT_JOYSTICK);
+    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER | SDL_INIT_JOYSTICK
+        | SDL_INIT_AUDIO );
+
     atexit(SDL_Quit);
+
+    // Soloud tests
+    SoLoud::Soloud soloud; // SoLoud engine
+
+    soloud.init(); // Initialize SoLoud
+
+    SoLoud::Wav wav;
+    wav.load("bin/assets/test.wav"); // Load a wave
+
+    int handle = soloud.play(wav); // Play the wave
+    soloud.setVolume(handle, 1.f);
 
     // Initialize the filesystem
     if (!fs.initialize((argc > 1) ? argv[0] : nullptr)) {
@@ -140,6 +155,8 @@ int main(int argc, char* argv[])
 
     }
     
+    soloud.deinit(); // Clean up!
+
     return retval;
 }
 //==============================================================================

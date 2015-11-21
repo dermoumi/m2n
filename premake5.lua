@@ -1,24 +1,12 @@
--- Helper function
-local source_dirs = {
-    'src/**/*.cpp',
-    'src/**/*.c',
-    'src/*.cpp',
-    'src/*.c'
-}
-
--- The global files to be compiled
-local include_dirs = {
-    'src',
-    'extlibs/include'
-}
-
 -- The solution
 solution 'm2n'
     configurations { 'Debug', 'Release', 'Debug32', 'Release32', 'Debug64', 'Release64' }
     location       '.'
     language       'C++'
-    targetdir      'bin'
-    includedirs    ( include_dirs )
+    includedirs {
+        'src',
+        'extlibs/include'
+    }
 
     -- Set default configurations depending on the current OS' architecture
     configmap {
@@ -51,31 +39,77 @@ solution 'm2n'
     filter { 'system:linux' }
         links        { 'pthread' }
 
-    -- Linking dirs and post build commands
+    -- Linking dirs
     filter { 'action:gmake', 'system:windows', 'architecture:x32' }
         libdirs      { 'extlibs/libs-mingw/x86' }
-        postbuildcommands { 'postbuild-win mingw/x86'}
     filter { 'action:gmake', 'system:windows', 'architecture:x64' }
         libdirs      { 'extlibs/libs-mingw/x64' }
-        postbuildcommands { 'postbuild-win mingw/x64'}
     filter { 'action:vs2013', 'system:windows', 'architecture:x32' }
         libdirs      { 'extlibs/libs-vs2013/x86' }
-        postbuildcommands { 'postbuild-win vs2013/x86'}
     filter { 'action:vs2013', 'system:windows', 'architecture:x64' }
         libdirs      { 'extlibs/libs-vs2013/x64' }
-        postbuildcommands { 'postbuild-win vs2013/x64'}
 
--- Archituectures
-filter 'configurations:*32'
-    architecture 'x32'
+    -- Archituectures
+    filter 'configurations:*32'
+        architecture 'x32'
 
-filter 'configurations:*64'
-    architecture 'x64'
+    filter 'configurations:*64'
+        architecture 'x64'
+
+-- Soloud
+project 'soloud'
+    targetname        'soloud'
+    kind              'StaticLib'
+    flags             { 'NoPCH' }
+    exceptionhandling "Off"
+    rtti              "Off"
+
+    includedirs {
+        'extlibs/include/soloud'
+    }
+
+    files {
+        'extlibs/src/soloud/backend/sdl2_static/**.c*',
+        'extlibs/src/soloud/audiosource/**.c*',
+        'extlibs/src/soloud/filter/**.c*',
+        'extlibs/src/soloud/core/**.c*'
+    }
+
+    defines { 'WITH_SDL2_STATIC' }
+
+    filter { 'action:gmake', 'system:not windows' }
+        targetdir 'extlibs/libs'
+    filter { 'action:gmake', 'system:windows', 'architecture:x32' }
+        targetdir 'extlibs/libs-mingw/x86'
+    filter { 'action:gmake', 'system:windows', 'architecture:x64' }
+        targetdir 'extlibs/libs-mingw/x64'
+    filter { 'action:vs2013', 'system:windows', 'architecture:x32' }
+        targetdir 'extlibs/libs-vs2013/x86'
+    filter { 'action:vs2013', 'system:windows', 'architecture:x64' }
+        targetdir 'extlibs/libs-vs2013/x64'
+
+    filter { 'configurations:Release*' }
+        flags { 'Optimize', 'OptimizeSpeed', 'NoEditAndContinue', 'No64BitChecks' }
+    filter { 'architecture:x32', 'configurations:Release*' }
+        flags { 'EnableSSE2' }
+
+    filter { 'action:vs2013', 'system:windows' }
+        defines { '_CRT_SECURE_NO_WARNINGS' }
+
+    filter { 'action:gmake', 'system:windows', 'architecture:x32' }
+        buildoptions { --[['-fPIC',]] '-msse4.1' }
 
 -- The project
 project 'game'
     targetname     'game'
-    files          ( source_dirs )
+    targetdir      'bin'
+
+    files {
+        'src/**/*.cpp',
+        'src/**/*.c',
+        'src/*.cpp',
+        'src/*.c'
+    }
 
     -- Debug config
     filter { 'configurations:Debug*' }
@@ -97,6 +131,14 @@ project 'game'
 
     -- All configs, again, because of linking order
     filter {}
-        links        { 'SDL2', 'physfs', 'freetype' }
+        links        { 'SDL2', 'physfs', 'freetype', 'soloud' }
 
-
+    -- Post build commands
+    filter { 'action:gmake', 'system:windows', 'architecture:x32' }
+        postbuildcommands { 'postbuild-win mingw/x86'}
+    filter { 'action:gmake', 'system:windows', 'architecture:x64' }
+        postbuildcommands { 'postbuild-win mingw/x64'}
+    filter { 'action:vs2013', 'system:windows', 'architecture:x32' }
+        postbuildcommands { 'postbuild-win vs2013/x86'}
+    filter { 'action:vs2013', 'system:windows', 'architecture:x64' }
+        postbuildcommands { 'postbuild-win vs2013/x64'}
