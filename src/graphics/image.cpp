@@ -231,6 +231,7 @@ bool Image::save(const std::string& filename) const
 
             if (file && PHYSFS_writeBytes(file, png, len) >= 0u) {
                 stbi_image_free(png);
+                PHYSFS_close(file);
                 return true;
             }
             else {
