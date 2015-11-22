@@ -30,10 +30,9 @@
 #include "system/filesystem.hpp"
 #include "system/log.hpp"
 #include "system/thread.hpp"
+#include "audio/audio.hpp"
 
-#include <soloud/soloud.h>
 #include <soloud/soloud_wav.h>
-#include <soloud/soloud_file.h>
 #include <physfs/physfs.h>
 #include <SDL2/SDL.h>
 #include <string>
@@ -46,44 +45,6 @@ int fatalError(const std::string& message, int retval = 1)
 
     return retval;
 }
-
-//----------------------------------------------------------
-class PhysfsFile : public SoLoud::File
-{
-public:
-    PhysfsFile() = default;
-    ~PhysfsFile() { if (mFile) PHYSFS_close(mFile); }
-
-    bool open(const char* filename) { return (mFile = PHYSFS_openRead(filename)) != nullptr; }
-
-    int eof()
-    {
-        return PHYSFS_eof(mFile);
-    }
-
-    unsigned int read(unsigned char* dst, unsigned int bytes)
-    {
-        return static_cast<unsigned int>(PHYSFS_readBytes(mFile, dst, bytes));
-    }
-
-    unsigned int length()
-    {
-        return static_cast<unsigned int>(PHYSFS_fileLength(mFile));
-    }
-
-    void seek(int offset)
-    {
-        PHYSFS_seek(mFile, offset);
-    }
-
-    unsigned int pos()
-    {
-        return static_cast<unsigned int>(PHYSFS_tell(mFile));
-    }
-
-private:
-    PHYSFS_File* mFile {nullptr};
-};
 
 //----------------------------------------------------------
 int main(int argc, char* argv[])
@@ -150,26 +111,13 @@ int main(int argc, char* argv[])
 
     #endif
 
-
-    // Soloud tests
-    SoLoud::Soloud soloud; // SoLoud engine
-
-    soloud.init(); // Initialize SoLoud
-
-    SoLoud::Wav wav;
-    PhysfsFile file;
-    if (file.open("assets/test.wav")) {
-        wav.loadFile(&file); // Load a wave
-        
-        soloud.play(wav); // Play the wave
-    }
-    else {
-        Log::error("Cannot load audio file");
-    }
+    // Initialize so loud
+    auto& soloud = Audio::instance();
+    soloud.init();
 
     // Set the current thread as the main thread
     Thread::setMain();
-    
+
     // Enable joystick events
     SDL_JoystickEventState(1);
     SDL_GameControllerEventState(1);
@@ -197,9 +145,8 @@ int main(int argc, char* argv[])
         if (!lua.runCode("boot.lua", bootCode, retval)) {
             return fatalError(lua.getErrorMessage());
         }
-
     }
-    
+
     soloud.deinit(); // Clean up!
 
     return retval;
