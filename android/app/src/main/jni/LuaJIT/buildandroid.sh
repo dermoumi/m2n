@@ -4,7 +4,7 @@
 #   https://github.com/moai/moai-dev/blob/master/ant/libmoai/jni/luajit/build.sh
 #================================================================#
 
-luajitsrc=../../../../../../extlibs/LuaJIT/
+luajitsrc=../../../../../../extlibs/src/LuaJIT/
 luajitdst=${PWD}
 
 host_os=`uname -s | tr "[:upper:]" "[:lower:]"`

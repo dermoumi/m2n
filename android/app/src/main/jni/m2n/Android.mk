@@ -17,7 +17,7 @@ LOCAL_SRC_FILES := $(subst ${LOCAL_PATH}/,, \
 
 LOCAL_CFLAGS := -std=c++11 -DNX_OPENGL_ES -DGL_GLEXT_PROTOTYPES
 LOCAL_LDFLAGS := ${LOCAL_LDFLAGS} -export-dynamic
-LOCAL_STATIC_LIBRARIES := SDL2_static SoLoud freetype2-static libluajit libphysfs
+LOCAL_STATIC_LIBRARIES := SDL2_static SoLoud freetype2-static PhysFS libluajit
 LOCAL_LDLIBS := -ldl -llog -lGLESv2
 
 $(call import-add-path,${BASE_PATH}/extlibs/android)
@@ -25,4 +25,3 @@ $(call import-add-path,${BASE_PATH}/extlibs/android)
 include $(BUILD_SHARED_LIBRARY)
 
 $(call import-module,SDL2)LOCAL_PATH := $(call my-dir)
-$(call import-module,PhysFS)LOCAL_PATH := $(call my-dir)
