@@ -51,7 +51,7 @@ ffi.cdef [[
 
 ------------------------------------------------------------
 local class = require 'nx.class'
-local AudioFilter = require 'nx.audiofilter'
+local AudioFilter = class 'nx.audiofilter'
 
 ------------------------------------------------------------
 function AudioFilter.static._fromCData(cdata)
