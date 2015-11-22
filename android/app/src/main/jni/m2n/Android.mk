@@ -20,8 +20,4 @@ LOCAL_LDFLAGS := ${LOCAL_LDFLAGS} -export-dynamic
 LOCAL_STATIC_LIBRARIES := SDL2_static SoLoud freetype2-static PhysFS libluajit
 LOCAL_LDLIBS := -ldl -llog -lGLESv2
 
-$(call import-add-path,${BASE_PATH}/extlibs/android)
-
 include $(BUILD_SHARED_LIBRARY)
-
-$(call import-module,SDL2)LOCAL_PATH := $(call my-dir)
