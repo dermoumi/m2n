@@ -41,6 +41,7 @@ ffi.cdef [[
     NxAudioSource* nxAudioMusicCreate();
     void nxAudioMusicOpenFile(NxAudioSource*, const char*);
     void nxAudioMusicOpenMemory(NxAudioSource*, uint8_t* buffer, size_t size);
+    double nxAudioMusicLength(NxAudioSource*);
 ]]
 
 ------------------------------------------------------------
@@ -63,6 +64,11 @@ function MusicSource:open(a, b)
     else
         C.nxAudioMusicOpenFile(self._cdata, a)
     end
+end
+
+------------------------------------------------------------
+function MusicSource:length()
+    return C.nxAudioMusicLength(self._cdata)
 end
 
 ------------------------------------------------------------

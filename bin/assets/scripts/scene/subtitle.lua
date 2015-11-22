@@ -55,12 +55,22 @@ function SceneSubtitle:load()
     self.camera = Camera2D:new(0, 0, 1280, 720)
 
     self.soundSource = SoundSource:new()
-    self.soundSource:open('assets/test.wav')
-    self.soundSource:play()
+    Thread:new(function(source)
+        source:open('assets/test.wav')
+        source:setLooping(true)
+        source:play()
+
+        print('1st source length: ' .. source:length())
+    end, self.soundSource):detach()
 
     self.musicSource = MusicSource:new()
-    self.musicSource:open('assets/askepticshypothesis.ogg')
-    self.musicSource:play()
+    Thread:new(function(source)
+        source:open('assets/askepticshypothesis.ogg')
+        source:setVolume(.1)
+        source:play()
+
+        print('2nd source length: ' .. source:length())
+    end, self.musicSource):detach()
 
     -- Load image
     local img = require('nx.image'):new()

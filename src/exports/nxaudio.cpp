@@ -81,6 +81,12 @@ NX_EXPORT void nxAudioSoundOpenMemory(NxAudioSource* source, uint8_t* buffer, si
 }
 
 //----------------------------------------------------------
+NX_EXPORT double nxAudioSoundLength(NxAudioSource* source)
+{
+    return static_cast<SoLoud::Wav*>(source->handle)->getLength();
+}
+
+//----------------------------------------------------------
 NX_EXPORT void nxAudioMusicOpenFile(NxAudioSource* source, const char* filename)
 {
     source->file = new Audio::File();
@@ -95,7 +101,73 @@ NX_EXPORT void nxAudioMusicOpenMemory(NxAudioSource* source, uint8_t* buffer, si
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxAudioPlay(NxAudioSource* source)
+NX_EXPORT double nxAudioMusicLength(NxAudioSource* source)
 {
-    Audio::instance().play(*source->handle);
+    return static_cast<SoLoud::WavStream*>(source->handle)->getLength();
+}
+
+//----------------------------------------------------------
+NX_EXPORT int nxAudioPlay(NxAudioSource* source)
+{
+    return Audio::instance().play(*source->handle);
+}
+
+//----------------------------------------------------------
+NX_EXPORT void nxAudioSetVolume(NxAudioSource* source, float volume)
+{
+    source->handle->setVolume(volume);
+}
+
+//----------------------------------------------------------
+NX_EXPORT void nxAudioSetLooping(NxAudioSource* source, bool looping)
+{
+    source->handle->setLooping(looping);
+}
+
+//----------------------------------------------------------
+NX_EXPORT void nxAudioSetSingleInstance(NxAudioSource* source, bool singleInstance)
+{
+    source->handle->setSingleInstance(singleInstance);
+}
+
+//----------------------------------------------------------
+NX_EXPORT void nxAudioSourceStop(NxAudioSource* source)
+{
+    source->handle->stop();
+}
+
+//----------------------------------------------------------
+NX_EXPORT void nxAudioSetInaudibleBehavior(NxAudioSource* source, bool ticks, bool kill)
+{
+    source->handle->setInaudibleBehavior(ticks, kill);
+}
+
+//----------------------------------------------------------
+NX_EXPORT void nxAudioSet3dMinMaxDistance(NxAudioSource* source, float min, float max)
+{
+    source->handle->set3dMinMaxDistance(min, max);
+}
+
+//----------------------------------------------------------
+NX_EXPORT void nxAudioSet3dAttenuation(NxAudioSource* source, uint32_t model, float rolloffFactor)
+{
+    source->handle->set3dAttenuation(model, rolloffFactor);
+}
+
+//----------------------------------------------------------
+NX_EXPORT void nxAudioSet3dDopplerFactor(NxAudioSource* source, float dopplerFactor)
+{
+    source->handle->set3dDopplerFactor(dopplerFactor);
+}
+
+//----------------------------------------------------------
+NX_EXPORT void nxAudioSet3dListenerRelative(NxAudioSource* source, bool relative)
+{
+    source->handle->set3dListenerRelative(relative);
+}
+
+//----------------------------------------------------------
+NX_EXPORT void nxAudioSet3dDistanceDelay(NxAudioSource* source, bool delay)
+{
+    source->handle->set3dDistanceDelay(delay);
 }

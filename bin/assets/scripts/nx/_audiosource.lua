@@ -35,7 +35,17 @@ ffi.cdef [[
     typedef struct NxAudioSource NxAudioSource;
 
     void nxAudioRelease(NxAudioSource*);
-    void nxAudioPlay(NxAudioSource*);
+    int nxAudioPlay(NxAudioSource*);
+    void nxAudioSetVolume(NxAudioSource*, float);
+    void nxAudioSetLooping(NxAudioSource*, bool);
+    void nxAudioSetSingleInstance(NxAudioSource*, bool);
+    void nxAudioSourceStop(NxAudioSource*);
+    void nxAudioSetInaudibleBehavior(NxAudioSource*, bool, bool);
+    void nxAudioSet3dMinMaxDistance(NxAudioSource*, float, float);
+    void nxAudioSet3dAttenuation(NxAudioSource*, uint32_t, float);
+    void nxAudioSet3dDopplerFactor(NxAudioSource*, float);
+    void nxAudioSet3dListenerRelative(NxAudioSource*, bool);
+    void nxAudioSet3dDistanceDelay(NxAudioSource*, bool);
 ]]
 
 ------------------------------------------------------------
@@ -50,6 +60,56 @@ end
 ------------------------------------------------------------
 function AudioSource:play()
     C.nxAudioPlay(self._cdata)
+end
+
+------------------------------------------------------------
+function AudioSource:setVolume(volume)
+    C.nxAudioSetVolume(self._cdata, volume)
+end
+
+------------------------------------------------------------
+function AudioSource:setLooping(looping)
+    C.nxAudioSetLooping(self._cdata, looping)
+end
+
+------------------------------------------------------------
+function AudioSource:setSingleInstance(singleInstance)
+    C.nxAudioSetSingleInstance(self._cdata, singleInstance)
+end
+
+------------------------------------------------------------
+function AudioSource:stop()
+    C.nxAudioSourceStop(self._cdata)
+end
+
+------------------------------------------------------------
+function AudioSource:setInaudibleBehavior(ticks, kill)
+    C.nxAudioSetInaudibleBehavior(self._cdata, ticks, kill)
+end
+
+------------------------------------------------------------
+function AudioSource:set3dMinMaxDistance(min, max)
+    C.nxAudioSet3dMinMaxDistance(self._cdata, min, max)
+end
+
+------------------------------------------------------------
+function AudioSource:set3dAttenuation(model, rolloffFactor)
+    C.nxAudioSet3dAttenuation(self._cdata, model, rolloffFactor)
+end
+
+------------------------------------------------------------
+function AudioSource:set3dDopplerFactor(factor)
+    C.nxAudioSet3dDopplerFactor(self._cdata, factor)
+end
+
+------------------------------------------------------------
+function AudioSource:set3dListenerRelative(enable)
+    C.nxAudioSet3dListenerRelative(self._cdata, enable)
+end
+
+------------------------------------------------------------
+function AudioSource:set3dDistanceDelay(enabled)
+    C.nxAudioSet3dDistanceDelay(self._cdata, enabled)
 end
 
 ------------------------------------------------------------
