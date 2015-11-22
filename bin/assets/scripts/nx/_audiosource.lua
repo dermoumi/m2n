@@ -34,7 +34,7 @@ local C = ffi.C
 ffi.cdef [[
     typedef struct NxAudioSource NxAudioSource;
 
-    void nxAudioRelease(NxAudioSource*);
+    void nxAudioSourceRelease(NxAudioSource*);
     int nxAudioPlay(NxAudioSource*);
     void nxAudioSetVolume(NxAudioSource*, float);
     void nxAudioSetLooping(NxAudioSource*, bool);
@@ -54,7 +54,7 @@ local AudioSource = class 'nx._audiosource'
 
 ------------------------------------------------------------
 function AudioSource:release()
-    C.nxAudioRelease(ffi.gc(self._cdata, nil))
+    C.nxAudioSourceRelease(ffi.gc(self._cdata, nil))
 end
 
 ------------------------------------------------------------

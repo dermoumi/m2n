@@ -30,6 +30,7 @@ local Log      = require 'nx.log'
 local Window   = require 'nx.window'
 local Events   = require 'nx.events'
 local Renderer = require 'nx.renderer'
+local Audio    = require 'nx.audio'
 local Scene    = require 'scene'
 
 ------------------------------------------------------------
@@ -101,6 +102,11 @@ end
 Window.setIcon('assets/icon.png')
 
 ------------------------------------------------------------
+-- Initialize Audio
+------------------------------------------------------------
+Audio.init()
+
+------------------------------------------------------------
 -- Startup scene
 ------------------------------------------------------------
 Scene.goTo('scene.title')
@@ -168,6 +174,11 @@ while true do
     -- Clean the scene stack
     Scene.clean()
 end
+
+------------------------------------------------------------
+-- Release stuff
+------------------------------------------------------------
+Audio.release()
 
 ------------------------------------------------------------
 -- The end?

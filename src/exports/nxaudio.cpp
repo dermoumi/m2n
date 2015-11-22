@@ -27,147 +27,22 @@
 #include "../config.hpp"
 #include "../audio/audio.hpp"
 
-#include <soloud/soloud_wav.h>
-#include <soloud/soloud_wavstream.h>
-
-//----------------------------------------------------------
-// Declarations
-//----------------------------------------------------------
-struct NxAudioSource
-{
-    SoLoud::AudioSource* handle {nullptr};
-    Audio::File* file {nullptr}; // Used if the audio source needs an active file
-};
+#include <SDL2/SDL.h>
 
 //----------------------------------------------------------
 // Exported functions
 //----------------------------------------------------------
-NX_EXPORT NxAudioSource* nxAudioSoundCreate()
+NX_EXPORT bool nxAudioInit()
 {
-    auto source = new NxAudioSource();
-    source->handle = new SoLoud::Wav();
-    return source;
-}
+    if (SDL_InitSubSystem(SDL_INIT_AUDIO) != 0) return false;
 
-
-//----------------------------------------------------------
-NX_EXPORT NxAudioSource* nxAudioMusicCreate()
-{
-    auto source = new NxAudioSource();
-    source->handle = new SoLoud::WavStream();
-    return source;
+    Audio::instance().init();
+    return true;
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxAudioRelease(NxAudioSource* source)
+NX_EXPORT void nxAudioRelease()
 {
-    delete source->handle;
-    delete source->file;
-    delete source;
-}
-
-//----------------------------------------------------------
-NX_EXPORT void nxAudioSoundOpenFile(NxAudioSource* source, const char* filename)
-{
-    Audio::File file;
-    file.open(filename);
-    static_cast<SoLoud::Wav*>(source->handle)->loadFile(&file);
-}
-
-//----------------------------------------------------------
-NX_EXPORT void nxAudioSoundOpenMemory(NxAudioSource* source, uint8_t* buffer, size_t size)
-{
-    static_cast<SoLoud::Wav*>(source->handle)->loadMem(buffer, size, true, false);
-}
-
-//----------------------------------------------------------
-NX_EXPORT double nxAudioSoundLength(NxAudioSource* source)
-{
-    return static_cast<SoLoud::Wav*>(source->handle)->getLength();
-}
-
-//----------------------------------------------------------
-NX_EXPORT void nxAudioMusicOpenFile(NxAudioSource* source, const char* filename)
-{
-    source->file = new Audio::File();
-    source->file->open(filename);
-    static_cast<SoLoud::WavStream*>(source->handle)->loadFile(source->file);
-}
-
-//----------------------------------------------------------
-NX_EXPORT void nxAudioMusicOpenMemory(NxAudioSource* source, uint8_t* buffer, size_t size)
-{
-    static_cast<SoLoud::WavStream*>(source->handle)->loadMem(buffer, size, true, false);
-}
-
-//----------------------------------------------------------
-NX_EXPORT double nxAudioMusicLength(NxAudioSource* source)
-{
-    return static_cast<SoLoud::WavStream*>(source->handle)->getLength();
-}
-
-//----------------------------------------------------------
-NX_EXPORT int nxAudioPlay(NxAudioSource* source)
-{
-    return Audio::instance().play(*source->handle);
-}
-
-//----------------------------------------------------------
-NX_EXPORT void nxAudioSetVolume(NxAudioSource* source, float volume)
-{
-    source->handle->setVolume(volume);
-}
-
-//----------------------------------------------------------
-NX_EXPORT void nxAudioSetLooping(NxAudioSource* source, bool looping)
-{
-    source->handle->setLooping(looping);
-}
-
-//----------------------------------------------------------
-NX_EXPORT void nxAudioSetSingleInstance(NxAudioSource* source, bool singleInstance)
-{
-    source->handle->setSingleInstance(singleInstance);
-}
-
-//----------------------------------------------------------
-NX_EXPORT void nxAudioSourceStop(NxAudioSource* source)
-{
-    source->handle->stop();
-}
-
-//----------------------------------------------------------
-NX_EXPORT void nxAudioSetInaudibleBehavior(NxAudioSource* source, bool ticks, bool kill)
-{
-    source->handle->setInaudibleBehavior(ticks, kill);
-}
-
-//----------------------------------------------------------
-NX_EXPORT void nxAudioSet3dMinMaxDistance(NxAudioSource* source, float min, float max)
-{
-    source->handle->set3dMinMaxDistance(min, max);
-}
-
-//----------------------------------------------------------
-NX_EXPORT void nxAudioSet3dAttenuation(NxAudioSource* source, uint32_t model, float rolloffFactor)
-{
-    source->handle->set3dAttenuation(model, rolloffFactor);
-}
-
-//----------------------------------------------------------
-NX_EXPORT void nxAudioSet3dDopplerFactor(NxAudioSource* source, float dopplerFactor)
-{
-    source->handle->set3dDopplerFactor(dopplerFactor);
-}
-
-//----------------------------------------------------------
-NX_EXPORT void nxAudioSet3dListenerRelative(NxAudioSource* source, bool relative)
-{
-    source->handle->set3dListenerRelative(relative);
-}
-
-//----------------------------------------------------------
-NX_EXPORT void nxAudioSet3dDistanceDelay(NxAudioSource* source, bool delay)
-{
-    source->handle->set3dDistanceDelay(delay);
+    Audio::instance().deinit();
+    SDL_QuitSubSystem(SDL_INIT_AUDIO);
 }

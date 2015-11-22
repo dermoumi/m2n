@@ -26,13 +26,11 @@
 *///============================================================================
 #include "config.hpp"
 
-#include "system/luavm.hpp"
 #include "system/filesystem.hpp"
-#include "system/log.hpp"
 #include "system/thread.hpp"
-#include "audio/audio.hpp"
+#include "system/luavm.hpp"
+#include "system/log.hpp"
 
-#include <soloud/soloud_wav.h>
 #include <physfs/physfs.h>
 #include <SDL2/SDL.h>
 #include <string>
@@ -52,9 +50,7 @@ int main(int argc, char* argv[])
     Filesystem fs;
 
     // Initialize SDL
-    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER | SDL_INIT_JOYSTICK
-        | SDL_INIT_AUDIO );
-
+    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER | SDL_INIT_JOYSTICK);
     atexit(SDL_Quit);
 
     // Initialize the filesystem
@@ -111,10 +107,6 @@ int main(int argc, char* argv[])
 
     #endif
 
-    // Initialize so loud
-    auto& soloud = Audio::instance();
-    soloud.init();
-
     // Set the current thread as the main thread
     Thread::setMain();
 
@@ -146,8 +138,6 @@ int main(int argc, char* argv[])
             return fatalError(lua.getErrorMessage());
         }
     }
-
-    soloud.deinit(); // Clean up!
 
     return retval;
 }

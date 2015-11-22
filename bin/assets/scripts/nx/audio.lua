@@ -26,50 +26,28 @@
 --]]----------------------------------------------------------------------------
 
 ------------------------------------------------------------
--- Represents an in-memory sound file
-------------------------------------------------------------
-local AudioSource = require 'nx._audiosource'
-local SoundSource = AudioSource:subclass('nx.soundsource')
-
-------------------------------------------------------------
 -- FFI C Declarations
 ------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
 ffi.cdef [[
-    NxAudioSource* nxAudioSoundCreate();
-    void nxAudioSoundOpenFile(NxAudioSource*, const char*);
-    void nxAudioSoundOpenMemory(NxAudioSource*, uint8_t*, size_t);
-    double nxAudioSoundLength(NxAudioSource*);
+    bool nxAudioInit();
+    void nxAudioRelease();
 ]]
 
 ------------------------------------------------------------
-function SoundSource.static._fromCData(cdata)
-    local soundSource = SoundSource:allocate()
-    soundSource._cdata = ffi.cast('NxAudioSource*', cdata)
-    return soundSource
+local Audio = {}
+
+------------------------------------------------------------
+function Audio.init()
+    return C.nxAudioInit()
 end
 
 ------------------------------------------------------------
-function SoundSource:initialize()
-    local handle = C.nxAudioSoundCreate()
-    self._cdata = ffi.gc(handle, C.nxAudioSourceRelease)
+function Audio.release()
+    C.nxAudioRelease()
 end
 
 ------------------------------------------------------------
-function SoundSource:open(a, b)
-    if b then
-        C.nxAudioSoundOpenMemory(self._cdata, a, b)
-    else
-        C.nxAudioSoundOpenFile(self._cdata, a)
-    end
-end
-
-------------------------------------------------------------
-function SoundSource:length()
-    return C.nxAudioSoundLength(self._cdata)
-end
-
-------------------------------------------------------------
-return SoundSource
+return Audio

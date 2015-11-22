@@ -54,7 +54,7 @@ end
 ------------------------------------------------------------
 function MusicSource:initialize()
     local handle = C.nxAudioMusicCreate()
-    self._cdata = ffi.gc(handle, C.nxAudioRelease)
+    self._cdata = ffi.gc(handle, C.nxAudioSourceRelease)
 end
 
 ------------------------------------------------------------
