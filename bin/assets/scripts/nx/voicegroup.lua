@@ -37,7 +37,6 @@ ffi.cdef [[
     } NxVoiceGroup;
 
     NxVoiceGroup* nxAudioVoiceNewGroup();
-    void nxAudioVoiceCreateGroup(NxVoiceGroup*);
     void nxAudioVoiceDestroyGroup(NxVoiceGroup*);
     void nxAudioVoiceAddToGroup(NxVoiceGroup*, uint32_t);
     bool nxAudioVoiceIsEmpty(NxVoiceGroup*);
@@ -68,11 +67,6 @@ end
 ------------------------------------------------------------
 function VoiceGroup:isGroup()
     return true
-end
-
-------------------------------------------------------------
-function VoiceGroup:create()
-    C.nxAudioVoiceCreateGroup(self._cdata)
 end
 
 ------------------------------------------------------------

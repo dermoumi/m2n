@@ -253,13 +253,7 @@ NX_EXPORT void nxAudioVoiceSet3dSourceDopplerFactor(uint32_t handle, float facto
 //----------------------------------------------------------
 NX_EXPORT NxVoiceGroup* nxAudioVoiceNewGroup()
 {
-    return new NxVoiceGroup({0});
-}
-
-//----------------------------------------------------------
-NX_EXPORT void nxAudioVoiceCreateGroup(NxVoiceGroup* group)
-{
-    group->handle = Audio::instance().createVoiceGroup();
+    return new NxVoiceGroup({Audio::instance().createVoiceGroup()});
 }
 
 //----------------------------------------------------------

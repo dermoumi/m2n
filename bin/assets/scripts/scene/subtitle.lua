@@ -55,7 +55,6 @@ function SceneSubtitle:load()
     self.camera = Camera2D:new(0, 0, 1280, 720)
 
     self.voiceGroup = require('nx.voicegroup'):new()
-    self.voiceGroup:create()
 
     self.soundSource = SoundSource:new()
     self.soundSource:open('assets/test.wav')
