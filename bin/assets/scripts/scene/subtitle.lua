@@ -45,12 +45,22 @@ local Font = require 'nx.vectorfont'
 local Window = require 'nx.window'
 local Text = require 'nx.text'
 local Shape = require 'nx.shape'
+local SoundSource = require 'nx.soundsource'
+local MusicSource = require 'nx.musicsource'
 local ffi = require 'ffi'
 local C = ffi.C
 
 ------------------------------------------------------------
 function SceneSubtitle:load()
     self.camera = Camera2D:new(0, 0, 1280, 720)
+
+    self.soundSource = SoundSource:new()
+    self.soundSource:open('assets/test.wav')
+    self.soundSource:play()
+
+    self.musicSource = MusicSource:new()
+    self.musicSource:open('assets/askepticshypothesis.ogg')
+    self.musicSource:play()
 
     -- Load image
     local img = require('nx.image'):new()

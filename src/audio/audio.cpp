@@ -28,27 +28,32 @@
 
 #include <physfs/physfs.h>
 
+//----------------------------------------------------------
 SoLoud::Soloud& Audio::instance()
 {
     static SoLoud::Soloud soloud;
     return soloud;
 }
 
+//----------------------------------------------------------
 Audio::File::~File()
 {
     if (mFile) PHYSFS_close(mFile);
 }
 
+//----------------------------------------------------------
 bool Audio::File::open(const char* filename)
 {
     return (mFile = PHYSFS_openRead(filename)) != nullptr;
 }
 
+//----------------------------------------------------------
 int Audio::File::eof()
 {
     return PHYSFS_eof(mFile);
 }
 
+//----------------------------------------------------------
 unsigned int Audio::File::read(unsigned char* dst, unsigned int bytes)
 {
     auto status = PHYSFS_readBytes(mFile, dst, bytes);
@@ -56,6 +61,7 @@ unsigned int Audio::File::read(unsigned char* dst, unsigned int bytes)
     return static_cast<unsigned int>(status);
 }
 
+//----------------------------------------------------------
 unsigned int Audio::File::length()
 {
     auto status = PHYSFS_fileLength(mFile);
@@ -63,11 +69,13 @@ unsigned int Audio::File::length()
     return static_cast<unsigned int>(status);
 }
 
+//----------------------------------------------------------
 void Audio::File::seek(int offset)
 {
     PHYSFS_seek(mFile, offset);
 }
 
+//----------------------------------------------------------
 unsigned int Audio::File::pos()
 {
     auto status = PHYSFS_tell(mFile);
