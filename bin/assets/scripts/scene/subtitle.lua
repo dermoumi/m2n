@@ -66,9 +66,10 @@ function SceneSubtitle:load()
 
     self.musicSource = MusicSource:new()
     Thread:new(function(source)
+        -- local source = self.musicSource
         source:open('assets/askepticshypothesis.ogg')
         source:setVolume(.1)
-        source:play()
+        local voice = source:play()
 
         print('2nd source length: ' .. source:length())
     end, self.musicSource):detach()

@@ -57,6 +57,17 @@ ffi.cdef [[
 local class = require 'nx.class'
 local AudioSource = class 'nx._audiosource'
 
+local AudioInstance = require 'nx._audioinstance'
+
+------------------------------------------------------------
+local toAttenuationModel = {
+    [0] = 'none',
+    [1] = 'inverse',
+    [2] = 'linear',
+    [3] = 'exponential'
+}
+AudioSource.static._toAttenuationModel = toAttenuationModel;
+
 ------------------------------------------------------------
 function AudioSource:release()
     C.nxAudioSourceRelease(ffi.gc(self._cdata, nil))
@@ -64,27 +75,37 @@ end
 
 ------------------------------------------------------------
 function AudioSource:play(volume, pan, paused, bus)
-    C.nxAudioPlay(self._cdata, volume or -1, pan or 0, not not paused, bus or 0)
+    local handle = C.nxAudioPlay(self._cdata, volume or -1, pan or 0, not not paused, bus or 0)
+
+    return AudioInstance:new(handle)
 end
 
 ------------------------------------------------------------
 function AudioSource:playClocked(interval, volume, pan, bus)
-    C.nxAudioPlayClocked(self._cdata, interval, volume or -1, pan or 0, not not paused, bus or 0)
+    local handle = C.nxAudioPlayClocked(
+        self._cdata, interval, volume or -1, pan or 0, not not paused, bus or 0
+    )
+
+    return AudioInstance:new(handle)
 end
 
 ------------------------------------------------------------
 function AudioSource:play3d(x, y, z, velX, velY, velZ, volume, paused, bus)
-    C.nxAudioPlay3d(
+    local handle = C.nxAudioPlay3d(
         self._cdata, x, y, z, velX or 1, velY or 1, velZ or 1, volume or -1, not not paused,
         bus or 0
     )
+
+    return AudioInstance:new(handle)
 end
 
 ------------------------------------------------------------
 function AudioSource:play3dClocked(interval, x, y, z, velX, velY, velZ, volume, bus)
-    C.nxAudioPlay3dClocked(
+    local handle = C.nxAudioPlay3dClocked(
         self._cdata, interval, x, y, z, velX or 0, velY or 0, velZ or 0, volume or -1, bus or 0
     )
+
+    return AudioInstance:new(handle)
 end
 
 ------------------------------------------------------------
@@ -119,6 +140,7 @@ end
 
 ------------------------------------------------------------
 function AudioSource:set3dAttenuation(model, rolloffFactor)
+    model = toAttenuationModel[model] or 0
     C.nxAudioSet3dAttenuation(self._cdata, model, rolloffFactor)
 end
 
