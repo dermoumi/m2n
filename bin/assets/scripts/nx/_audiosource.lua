@@ -57,7 +57,7 @@ ffi.cdef [[
 local class = require 'nx.class'
 local AudioSource = class 'nx._audiosource'
 
-local AudioInstance = require 'nx._audioinstance'
+local AudioVoice = require 'nx._audiovoice'
 
 ------------------------------------------------------------
 local toAttenuationModel = {
@@ -77,7 +77,7 @@ end
 function AudioSource:play(volume, pan, paused, bus)
     local handle = C.nxAudioPlay(self._cdata, volume or -1, pan or 0, not not paused, bus or 0)
 
-    return AudioInstance:new(handle)
+    return AudioVoice:new(handle)
 end
 
 ------------------------------------------------------------
@@ -86,7 +86,7 @@ function AudioSource:playClocked(interval, volume, pan, bus)
         self._cdata, interval, volume or -1, pan or 0, not not paused, bus or 0
     )
 
-    return AudioInstance:new(handle)
+    return AudioVoice:new(handle)
 end
 
 ------------------------------------------------------------
@@ -96,7 +96,7 @@ function AudioSource:play3d(x, y, z, velX, velY, velZ, volume, paused, bus)
         bus or 0
     )
 
-    return AudioInstance:new(handle)
+    return AudioVoice:new(handle)
 end
 
 ------------------------------------------------------------
@@ -105,7 +105,7 @@ function AudioSource:play3dClocked(interval, x, y, z, velX, velY, velZ, volume, 
         self._cdata, interval, x, y, z, velX or 0, velY or 0, velZ or 0, volume or -1, bus or 0
     )
 
-    return AudioInstance:new(handle)
+    return AudioVoice:new(handle)
 end
 
 ------------------------------------------------------------

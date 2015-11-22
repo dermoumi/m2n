@@ -30,214 +30,214 @@
 //----------------------------------------------------------
 // Exported functions
 //----------------------------------------------------------
-NX_EXPORT void nxAudioInstanceSeek(uint32_t handle, double position)
+NX_EXPORT void nxAudioVoiceSeek(uint32_t handle, double position)
 {
     Audio::instance().seek(handle, position);
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxAudioInstanceStop(uint32_t handle)
+NX_EXPORT void nxAudioVoiceStop(uint32_t handle)
 {
     Audio::instance().stop(handle);
 }
 
 //----------------------------------------------------------
-NX_EXPORT double nxAudioInstanceStreamTime(uint32_t handle)
+NX_EXPORT double nxAudioVoiceStreamTime(uint32_t handle)
 {
     return Audio::instance().getStreamTime(handle);
 }
 
 //----------------------------------------------------------
-NX_EXPORT bool nxAudioInstancePaused(uint32_t handle)
+NX_EXPORT bool nxAudioVoicePaused(uint32_t handle)
 {
     return Audio::instance().getPause(handle);
 }
 
 //----------------------------------------------------------
-NX_EXPORT float nxAudioInstanceVolume(uint32_t handle)
+NX_EXPORT float nxAudioVoiceVolume(uint32_t handle)
 {
     return Audio::instance().getVolume(handle);
 }
 
 //----------------------------------------------------------
-NX_EXPORT float nxAudioInstanceOverallVolume(uint32_t handle)
+NX_EXPORT float nxAudioVoiceOverallVolume(uint32_t handle)
 {
     return Audio::instance().getOverallVolume(handle);
 }
 
 //----------------------------------------------------------
-NX_EXPORT float nxAudioInstancePan(uint32_t handle)
+NX_EXPORT float nxAudioVoicePan(uint32_t handle)
 {
     return Audio::instance().getPan(handle);
 }
 
 //----------------------------------------------------------
-NX_EXPORT float nxAudioInstanceSamplerate(uint32_t handle)
+NX_EXPORT float nxAudioVoiceSamplerate(uint32_t handle)
 {
     return Audio::instance().getSamplerate(handle);
 }
 
 //----------------------------------------------------------
-NX_EXPORT bool nxAudioInstanceProtected(uint32_t handle)
+NX_EXPORT bool nxAudioVoiceProtected(uint32_t handle)
 {
     return Audio::instance().getProtectVoice(handle);
 }
 
 //----------------------------------------------------------
-NX_EXPORT bool nxAudioInstanceValid(uint32_t handle)
+NX_EXPORT bool nxAudioVoiceValid(uint32_t handle)
 {
     return Audio::instance().isValidVoiceHandle(handle);
 }
 
 //----------------------------------------------------------
-NX_EXPORT float nxAudioInstanceRelativePlaySpeed(uint32_t handle)
+NX_EXPORT float nxAudioVoiceRelativePlaySpeed(uint32_t handle)
 {
     return Audio::instance().getRelativePlaySpeed(handle);
 }
 
 //----------------------------------------------------------
-NX_EXPORT bool nxAudioInstanceLooping(uint32_t handle)
+NX_EXPORT bool nxAudioVoiceLooping(uint32_t handle)
 {
     return Audio::instance().getLooping(handle);
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxAudioInstanceSetLooping(uint32_t handle, bool enabled)
+NX_EXPORT void nxAudioVoiceSetLooping(uint32_t handle, bool enabled)
 {
     Audio::instance().setLooping(handle, enabled);
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxAudioInstanceSetInaudibleBehavior(uint32_t handle, bool tick, bool kill)
+NX_EXPORT void nxAudioVoiceSetInaudibleBehavior(uint32_t handle, bool tick, bool kill)
 {
     Audio::instance().setInaudibleBehavior(handle, tick, kill);
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxAudioInstanceSetPaused(uint32_t handle, bool paused)
+NX_EXPORT void nxAudioVoiceSetPaused(uint32_t handle, bool paused)
 {
     Audio::instance().setPause(handle, paused);
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxAudioInstanceSetRelativePlaySpeed(uint32_t handle, float speed)
+NX_EXPORT void nxAudioVoiceSetRelativePlaySpeed(uint32_t handle, float speed)
 {
     Audio::instance().setRelativePlaySpeed(handle, speed);
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxAudioInstanceSetProtected(uint32_t handle, bool protect)
+NX_EXPORT void nxAudioVoiceSetProtected(uint32_t handle, bool protect)
 {
     Audio::instance().setProtectVoice(handle, protect);
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxAudioInstanceSetSamplerate(uint32_t handle, float samplerate)
+NX_EXPORT void nxAudioVoiceSetSamplerate(uint32_t handle, float samplerate)
 {
     Audio::instance().setSamplerate(handle, samplerate);
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxAudioInstanceSetPan(uint32_t handle, float pan)
+NX_EXPORT void nxAudioVoiceSetPan(uint32_t handle, float pan)
 {
     Audio::instance().setPan(handle, pan);
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxAudioInstanceSetAbsolutePan(uint32_t handle, float l, float r, float lb, float rb,
+NX_EXPORT void nxAudioVoiceSetAbsolutePan(uint32_t handle, float l, float r, float lb, float rb,
     float c, float s)
 {
     Audio::instance().setPanAbsolute(handle, l, r, lb, rb, c, s);
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxAudioInstanceSetVolume(uint32_t handle, float volume)
+NX_EXPORT void nxAudioVoiceSetVolume(uint32_t handle, float volume)
 {
     Audio::instance().setVolume(handle, volume);
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxAudioInstanceSetDelaySamples(uint32_t handle, uint32_t samples)
+NX_EXPORT void nxAudioVoiceSetDelaySamples(uint32_t handle, uint32_t samples)
 {
     Audio::instance().setDelaySamples(handle, samples);
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxAudioInstanceFadeVolume(uint32_t handle, float to, double t)
+NX_EXPORT void nxAudioVoiceFadeVolume(uint32_t handle, float to, double t)
 {
     Audio::instance().fadeVolume(handle, to, t);
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxAudioInstanceFadePan(uint32_t handle, float to, double t)
+NX_EXPORT void nxAudioVoiceFadePan(uint32_t handle, float to, double t)
 {
     Audio::instance().fadePan(handle, to, t);
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxAudioInstanceFadeRelativePlaySpeed(uint32_t handle, float to, double t)
+NX_EXPORT void nxAudioVoiceFadeRelativePlaySpeed(uint32_t handle, float to, double t)
 {
     Audio::instance().fadeRelativePlaySpeed(handle, to, t);
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxAudioInstanceSchedulePause(uint32_t handle, double t)
+NX_EXPORT void nxAudioVoiceSchedulePause(uint32_t handle, double t)
 {
     Audio::instance().schedulePause(handle, t);
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxAudioInstanceScheduleStop(uint32_t handle, double t)
+NX_EXPORT void nxAudioVoiceScheduleStop(uint32_t handle, double t)
 {
     Audio::instance().scheduleStop(handle, t);
 }
 
 //----------------------------------------------------------
-NX_EXPORT uint32_t nxAudioInstanceLoopCount(uint32_t handle)
+NX_EXPORT uint32_t nxAudioVoiceLoopCount(uint32_t handle)
 {
     return Audio::instance().getLoopCount(handle);
 }
 
 //----------------------------------------------------------
-NX_EXPORT float nxAudioInstanceInfo(uint32_t handle, uint32_t key)
+NX_EXPORT float nxAudioVoiceInfo(uint32_t handle, uint32_t key)
 {
     return Audio::instance().getInfo(handle, key);
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxAudioInstanceSet3dSourceParameters(uint32_t handle, float x, float y, float z,
+NX_EXPORT void nxAudioVoiceSet3dSourceParameters(uint32_t handle, float x, float y, float z,
     float velX, float velY, float velZ)
 {
     Audio::instance().set3dSourceParameters(handle, x, y, z, velX, velY, velZ);
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxAudioInstanceSet3dSourcePosition(uint32_t handle, float x, float y, float z)
+NX_EXPORT void nxAudioVoiceSet3dSourcePosition(uint32_t handle, float x, float y, float z)
 {
     Audio::instance().set3dSourcePosition(handle, x, y, z);
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxAudioInstanceSet3dSourceVelocity(uint32_t handle, float x, float y, float z)
+NX_EXPORT void nxAudioVoiceSet3dSourceVelocity(uint32_t handle, float x, float y, float z)
 {
     Audio::instance().set3dSourceVelocity(handle, x, y, z);
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxAudioInstanceSet3dSourceMinMaxDistance(uint32_t handle, float min, float max)
+NX_EXPORT void nxAudioVoiceSet3dSourceMinMaxDistance(uint32_t handle, float min, float max)
 {
     Audio::instance().set3dSourceMinMaxDistance(handle, min, max);
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxAudioInstanceSet3dSourceAttenuation(uint32_t handle, uint32_t model,
+NX_EXPORT void nxAudioVoiceSet3dSourceAttenuation(uint32_t handle, uint32_t model,
     float rolloffFactor)
 {
     Audio::instance().set3dSourceAttenuation(handle, model, rolloffFactor);
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxAudioInstanceSet3dSourceDopplerFactor(uint32_t handle, float factor)
+NX_EXPORT void nxAudioVoiceSet3dSourceDopplerFactor(uint32_t handle, float factor)
 {
     Audio::instance().set3dSourceDopplerFactor(handle, factor);
 }
