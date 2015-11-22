@@ -32,6 +32,8 @@ local ffi = require 'ffi'
 local C = ffi.C
 
 ffi.cdef [[
+    typedef struct NxAudioFilter NxAudioFilter;
+
     bool nxAudioInit();
     void nxAudioRelease();
     void nxAudioStopAll();
@@ -55,6 +57,7 @@ ffi.cdef [[
     void nxAudioSet3dListenerAt(float, float, float);
     void nxAudioSet3dListenerUp(float, float, float);
     void nxAudioSet3dListenerVelocity(float, float, float);
+    void nxAudioSetGlobalFilter(NxAudioFilter*, uint32_t);
 ]]
 
 ------------------------------------------------------------
@@ -83,6 +86,12 @@ end
 ------------------------------------------------------------
 function Audio.setGlobalVolume(volume)
     C.nxAudioSetGlobalVolume(volume)
+end
+
+------------------------------------------------------------
+function Audio.setGlobalFilter(filter, id)
+    if filter then filter = filter._cdata end
+    C.nxAudioSetGlobalFilter(filter, id or 0)
 end
 
 ------------------------------------------------------------

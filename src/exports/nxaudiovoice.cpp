@@ -251,6 +251,26 @@ NX_EXPORT void nxAudioVoiceSet3dSourceDopplerFactor(uint32_t handle, float facto
 }
 
 //----------------------------------------------------------
+NX_EXPORT void nxAudioVoiceSetFilterParameter(uint32_t handle, uint32_t filterID,
+    uint32_t attribute, float value)
+{
+    Audio::instance().setFilterParameter(handle, filterID, attribute, value);
+}
+
+//----------------------------------------------------------
+NX_EXPORT float nxAudioVoiceFilterParamter(uint32_t handle, uint32_t filterID, uint32_t attribute)
+{
+    return Audio::instance().getFilterParameter(handle, filterID, attribute);
+}
+
+//----------------------------------------------------------
+NX_EXPORT void nxAudioVoiceFadeFilterParameter(uint32_t handle, uint32_t filterID,
+    uint32_t attribute, float from, float to, double t)
+{
+    Audio::instance().fadeFilterParameter(handle, filterID, attribute, from, to, t);
+}
+
+//----------------------------------------------------------
 NX_EXPORT NxVoiceGroup* nxAudioVoiceNewGroup()
 {
     return new NxVoiceGroup({Audio::instance().createVoiceGroup()});

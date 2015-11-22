@@ -30,6 +30,11 @@
 #include <SDL2/SDL.h>
 
 //----------------------------------------------------------
+// Declarations
+//----------------------------------------------------------
+using NxAudioFilter = SoLoud::Filter;
+
+//----------------------------------------------------------
 // Exported functions
 //----------------------------------------------------------
 NX_EXPORT bool nxAudioInit()
@@ -167,4 +172,10 @@ NX_EXPORT void nxAudioSet3dListenerUp(float upX, float upY, float upZ)
 NX_EXPORT void nxAudioSet3dListenerVelocity(float velX, float velY, float velZ)
 {
     Audio::instance().set3dListenerVelocity(velX, velY, velZ);
+}
+
+//----------------------------------------------------------
+NX_EXPORT void nxAudioSetGlobalFilter(NxAudioFilter* filter, uint32_t id)
+{
+    Audio::instance().setGlobalFilter(id, filter);
 }

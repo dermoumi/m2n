@@ -67,6 +67,9 @@ ffi.cdef [[
     void nxAudioVoiceSet3dSourceMinMaxDistance(uint32_t, float, float);
     void nxAudioVoiceSet3dSourceAttenuation(uint32_t, uint32_t, float);
     void nxAudioVoiceSet3dSourceDopplerFactor(uint32_t, float);
+    void nxAudioVoiceSetFilterParameter(uint32_t, uint32_t, uint32_t, float);
+    float nxAudioVoiceFilterParamter(uint32_t, uint32_t, uint32_t);
+    void nxAudioVoiceFadeFilterParameter(uint32_t, uint32_t, uint32_t, float, float, double);
 ]]
 
 ------------------------------------------------------------
@@ -185,6 +188,11 @@ function AudioVoice:set3dDopplerFactor(factor)
 end
 
 ------------------------------------------------------------
+function AudioVoice:setFilterParameter(id, attribute, value)
+    C.nxAudioVoiceSetFilterParameter(self:_handle(), id, attribute, value)
+end
+
+------------------------------------------------------------
 function AudioVoice:time()
     return C.nxAudioVoiceStreamTime(self:_handle())
 end
@@ -245,6 +253,11 @@ function AudioVoice:info(key)
 end
 
 ------------------------------------------------------------
+function AudioVoice:filterParameter(id, attribute)
+    return C.nxAudioVoiceFilterParamter(self:_handle(), id, attribute)
+end
+
+------------------------------------------------------------
 function AudioVoice:fadeVolume(to, time)
     C.nxAudioVoiceFadeVolume(self:_handle(), to, time)
 end
@@ -257,6 +270,11 @@ end
 ------------------------------------------------------------
 function AudioVoice:fadePlaySpeed(to, time)
     C.nxAudioVoiceFadeRelativePlaySpeed(self:_handle(), to, time)
+end
+
+------------------------------------------------------------
+function AudioVoice:fadeFilterParameter(id, attribute, from, to, time)
+    C.nxAudioVoiceFadeFilterParameter(self:_handle(), id, attribute, from, to, time)
 end
 
 ------------------------------------------------------------

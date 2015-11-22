@@ -54,6 +54,10 @@ local C = ffi.C
 function SceneSubtitle:load()
     self.camera = Camera2D:new(0, 0, 1280, 720)
 
+    self.echoFilter = require('nx.audioechofilter'):new()
+    self.echoFilter:setParams(.5, .5)
+    require('nx.audio').setGlobalFilter(self.echoFilter)
+
     self.voiceGroup = require('nx.audiovoicegroup'):new()
 
     self.soundSource = SoundSource:new()
