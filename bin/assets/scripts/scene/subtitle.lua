@@ -54,25 +54,21 @@ local C = ffi.C
 function SceneSubtitle:load()
     self.camera = Camera2D:new(0, 0, 1280, 720)
 
-    self.soundSource = SoundSource:new()
-    Thread:new(function(source)
-        source:open('assets/test.wav')
-        source:setLooping(true)
-        source:set3dListenerRelative(false)
-        source:play3d(0.01, 0, 0)
+    self.voiceGroup = require('nx.voicegroup'):new()
+    self.voiceGroup:create()
 
-        print('1st source length: ' .. source:length())
-    end, self.soundSource):detach()
+    self.soundSource = SoundSource:new()
+    self.soundSource:open('assets/test.wav')
+    self.soundSource:setLooping(true)
+    self.soundSource:set3dListenerRelative(false)
+    self.voiceGroup:add(self.soundSource:play(-1, 0, true))
 
     self.musicSource = MusicSource:new()
-    Thread:new(function(source)
-        -- local source = self.musicSource
-        source:open('assets/askepticshypothesis.ogg')
-        source:setVolume(.1)
-        local voice = source:play()
+    self.musicSource:open('assets/askepticshypothesis.ogg')
+    self.musicSource:setVolume(.1)
+    self.voiceGroup:add(self.musicSource:play(-1, 0, true))
 
-        print('2nd source length: ' .. source:length())
-    end, self.musicSource):detach()
+    self.voiceGroup:pause(false)
 
     -- Load image
     local img = require('nx.image'):new()

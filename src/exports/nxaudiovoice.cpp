@@ -28,6 +28,14 @@
 #include "../audio/audio.hpp"
 
 //----------------------------------------------------------
+// Declarations
+//----------------------------------------------------------
+struct NxVoiceGroup
+{
+    uint32_t handle;
+};
+
+//----------------------------------------------------------
 // Exported functions
 //----------------------------------------------------------
 NX_EXPORT void nxAudioVoiceSeek(uint32_t handle, double position)
@@ -240,4 +248,35 @@ NX_EXPORT void nxAudioVoiceSet3dSourceAttenuation(uint32_t handle, uint32_t mode
 NX_EXPORT void nxAudioVoiceSet3dSourceDopplerFactor(uint32_t handle, float factor)
 {
     Audio::instance().set3dSourceDopplerFactor(handle, factor);
+}
+
+//----------------------------------------------------------
+NX_EXPORT NxVoiceGroup* nxAudioVoiceNewGroup()
+{
+    return new NxVoiceGroup({0});
+}
+
+//----------------------------------------------------------
+NX_EXPORT void nxAudioVoiceCreateGroup(NxVoiceGroup* group)
+{
+    group->handle = Audio::instance().createVoiceGroup();
+}
+
+//----------------------------------------------------------
+NX_EXPORT void nxAudioVoiceDestroyGroup(NxVoiceGroup* group)
+{
+    Audio::instance().destroyVoiceGroup(group->handle);
+    delete group;
+}
+
+//----------------------------------------------------------
+NX_EXPORT void nxAudioVoiceAddToGroup(NxVoiceGroup* group, uint32_t voice)
+{
+    Audio::instance().addVoiceToGroup(group->handle, voice);
+}
+
+//----------------------------------------------------------
+NX_EXPORT bool nxAudioVoiceIsEmpty(NxVoiceGroup* group)
+{
+    return Audio::instance().isVoiceGroupEmpty(group->handle);
 }

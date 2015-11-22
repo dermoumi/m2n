@@ -84,179 +84,189 @@ function AudioVoice:initialize(handle)
 end
 
 ------------------------------------------------------------
+function AudioVoice:_handle()
+    return self._cdata
+end
+
+------------------------------------------------------------
+function AudioVoice:isGroup()
+    return false
+end
+
+------------------------------------------------------------
 function AudioVoice:seek(pos)
-    C.nxAudioVoiceSeek(self._cdata, pos)
+    C.nxAudioVoiceSeek(self:_handle(), pos)
 end
 
 ------------------------------------------------------------
 function AudioVoice:pause(paused)
-    C.nxAudioVoiceSetPaused(self._cdata, paused)
+    C.nxAudioVoiceSetPaused(self:_handle(), paused)
 end
 
 ------------------------------------------------------------
 function AudioVoice:stop()
-    C.nxAudioVoiceStop(self._cdata)
+    C.nxAudioVoiceStop(self:_handle())
 end
 
 ------------------------------------------------------------
 function AudioVoice:protect(protected)
-    C.nxAudioVoiceSetProtected(self._cdata, protected)
+    C.nxAudioVoiceSetProtected(self:_handle(), protected)
 end
 
 ------------------------------------------------------------
 function AudioVoice:setLooping(enabled)
-    C.nxAudioVoiceSetLooping(self._cdata, enabled)
+    C.nxAudioVoiceSetLooping(self:_handle(), enabled)
 end
 
 ------------------------------------------------------------
 function AudioVoice:setInaudibleBehavior(tick, kill)
-    C.nxAudioVoiceSetInaudibleBehavior(self._cdata, tick, kill)
+    C.nxAudioVoiceSetInaudibleBehavior(self:_handle(), tick, kill)
 end
 
 ------------------------------------------------------------
 function AudioVoice:setPlaySpeed(factor)
-    C.nxAudioVoiceSetRelativePlaySpeed(self._cdata, factor)
+    C.nxAudioVoiceSetRelativePlaySpeed(self:_handle(), factor)
 end
 
 ------------------------------------------------------------
 function AudioVoice:setSamplerate(samplerate)
-    C.nxAudioVoiceSetSamplerate(self._cdata, samplerate)
+    C.nxAudioVoiceSetSamplerate(self:_handle(), samplerate)
 end
 
 ------------------------------------------------------------
 function AudioVoice:setPan(pan)
-    C.nxAudioVoiceSetPan(self._cdata, pan)
+    C.nxAudioVoiceSetPan(self:_handle(), pan)
 end
 
 ------------------------------------------------------------
 function AudioVoice:setAbsolutePan(l, r, lb, rb, c, s)
-    C.nxAudioVoiceSetAbsolutePan(self._cdata, l, r, lb or 0, rb or 0, c or 0, s or 0)
+    C.nxAudioVoiceSetAbsolutePan(self:_handle(), l, r, lb or 0, rb or 0, c or 0, s or 0)
 end
 
 ------------------------------------------------------------
 function AudioVoice:setVolume(vol)
-    C.nxAudioVoiceSetVolume(self._cdata, vol)
+    C.nxAudioVoiceSetVolume(self:_handle(), vol)
 end
 
 ------------------------------------------------------------
 function AudioVoice:setDelaySamples(samples)
-    C.nxAudioVoiceSetDelaySamples(self._cdata, samples)
+    C.nxAudioVoiceSetDelaySamples(self:_handle(), samples)
 end
 
 ------------------------------------------------------------
 function AudioVoice:set3dParameters(x, y, z, velX, velY, velZ)
-    C.nxAudioVoiceSet3dSourceParameters(self._cdata, x, y, z, velX or 0, velY or 0, velZ or 0)
+    C.nxAudioVoiceSet3dSourceParameters(self:_handle(), x, y, z, velX or 0, velY or 0, velZ or 0)
 end
 
 ------------------------------------------------------------
 function AudioVoice:set3dPosition(x, y, z)
-    C.nxAudioVoiceSet3dSourcePosition(self._cdata, x, y, z)
+    C.nxAudioVoiceSet3dSourcePosition(self:_handle(), x, y, z)
 end
 
 ------------------------------------------------------------
 function AudioVoice:set3dVelocity(x, y, z)
-    C.nxAudioVoiceSet3dSourceVelocity(self._cdata, x, y, z)
+    C.nxAudioVoiceSet3dSourceVelocity(self:_handle(), x, y, z)
 end
 
 ------------------------------------------------------------
 function AudioVoice:set3dMinMaxDistance(min, max)
-    C.nxAudioVoiceSet3dSourceMinMaxDistance(self._cdata, min, max)
+    C.nxAudioVoiceSet3dSourceMinMaxDistance(self:_handle(), min, max)
 end
 
 ------------------------------------------------------------
 function AudioVoice:set3dAttenuation(model, rolloffFactor)
     model = require('nx._audiosource')._toAttenuationModel[model] or 0
-    C.nxAudioVoiceSet3dSourceAttenuation(self._cdata, model, rolloffFactor)
+    C.nxAudioVoiceSet3dSourceAttenuation(self:_handle(), model, rolloffFactor)
 end
 
 ------------------------------------------------------------
 function AudioVoice:set3dDopplerFactor(factor)
-    C.nxAudioVoiceSet3dSourceDopplerFactor(self._cdata, factor)
+    C.nxAudioVoiceSet3dSourceDopplerFactor(self:_handle(), factor)
 end
 
 ------------------------------------------------------------
 function AudioVoice:time()
-    return C.nxAudioVoiceStreamTime(self._cdata)
+    return C.nxAudioVoiceStreamTime(self:_handle())
 end
 
 ------------------------------------------------------------
 function AudioVoice:paused()
-    return C.nxAudioVoicePaused(self._cdata)
+    return C.nxAudioVoicePaused(self:_handle())
 end
 
 ------------------------------------------------------------
 function AudioVoice:volume()
-    return C.nxAudioVoiceVolume(self._cdata)
+    return C.nxAudioVoiceVolume(self:_handle())
 end
 
 ------------------------------------------------------------
 function AudioVoice:overallVolume()
-    return C.nxAudioVoiceOverallVolume(self._cdata);
+    return C.nxAudioVoiceOverallVolume(self:_handle());
 end
 
 ------------------------------------------------------------
 function AudioVoice:pan()
-    return C.nxAudioVoicePan(self._cdata)
+    return C.nxAudioVoicePan(self:_handle())
 end
 
 ------------------------------------------------------------
 function AudioVoice:samplerate()
-    return C.nxAudioVoiceSamplerate(self._cdata)
+    return C.nxAudioVoiceSamplerate(self:_handle())
 end
 
 ------------------------------------------------------------
 function AudioVoice:protected()
-    return C.nxAudioVoiceProtected(self._cdata)
+    return C.nxAudioVoiceProtected(self:_handle())
 end
 
 ------------------------------------------------------------
 function AudioVoice:valid()
-    return C.nxAudioVoiceValid(self._cdata)
+    return C.nxAudioVoiceValid(self:_handle())
 end
 
 ------------------------------------------------------------
 function AudioVoice:playSpeed()
-    return C.nxAudioVoiceRelativePlaySpeed(self._cdata)
+    return C.nxAudioVoiceRelativePlaySpeed(self:_handle())
 end
 
 ------------------------------------------------------------
 function AudioVoice:looping()
-    return C.nxAudioVoiceLooping(self._cdata)
+    return C.nxAudioVoiceLooping(self:_handle())
 end
 
 ------------------------------------------------------------
 function AudioVoice:loopCount()
-    return C.nxAudioVoiceLoopCount(self._cdata)
+    return C.nxAudioVoiceLoopCount(self:_handle())
 end
 
 ------------------------------------------------------------
 function AudioVoice:info(key)
-    return C.nxAudioVoiceInfo(self._cdata, key)
+    return C.nxAudioVoiceInfo(self:_handle(), key)
 end
 
 ------------------------------------------------------------
 function AudioVoice:fadeVolume(to, time)
-    C.nxAudioVoiceFadeVolume(self._cdata, to, time)
+    C.nxAudioVoiceFadeVolume(self:_handle(), to, time)
 end
 
 ------------------------------------------------------------
 function AudioVoice:fadePan(to, time)
-    C.nxAudioVoiceFadePan(self._cdata, to, time)
+    C.nxAudioVoiceFadePan(self:_handle(), to, time)
 end
 
 ------------------------------------------------------------
 function AudioVoice:fadePlaySpeed(to, time)
-    C.nxAudioVoiceFadeRelativePlaySpeed(self._cdata, to, time)
+    C.nxAudioVoiceFadeRelativePlaySpeed(self:_handle(), to, time)
 end
 
 ------------------------------------------------------------
 function AudioVoice:schedulePause(time)
-    C.nxAudioVoiceSchedulePause(self._cdata, time)
+    C.nxAudioVoiceSchedulePause(self:_handle(), time)
 end
 
 ------------------------------------------------------------
 function AudioVoice:scheduleStop(time)
-    C.nxAudioVoiceScheduleStop(self._cdata, stop)
+    C.nxAudioVoiceScheduleStop(self:_handle(), stop)
 end
 
 ------------------------------------------------------------
