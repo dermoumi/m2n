@@ -107,20 +107,21 @@ NX_EXPORT double nxAudioMusicLength(NxAudioSource* source)
 }
 
 //----------------------------------------------------------
-NX_EXPORT int nxAudioPlay(NxAudioSource* source, float volume, float pan, bool paused, uint32_t bus)
+NX_EXPORT uint32_t nxAudioPlay(NxAudioSource* source, float volume, float pan, bool paused,
+    uint32_t bus)
 {
     return Audio::instance().play(*source->handle, volume, pan, paused, bus);
 }
 
 //----------------------------------------------------------
-NX_EXPORT int nxAudioPlayClocked(NxAudioSource* source, double interval, float volume, float pan,
-    uint32_t bus)
+NX_EXPORT uint32_t nxAudioPlayClocked(NxAudioSource* source, double interval, float volume,
+    float pan, uint32_t bus)
 {
     return Audio::instance().playClocked(interval, *source->handle, volume, pan, bus);
 }
 
 //----------------------------------------------------------
-NX_EXPORT int nxAudioPlay3d(NxAudioSource* source, float x, float y, float z, float velX,
+NX_EXPORT uint32_t nxAudioPlay3d(NxAudioSource* source, float x, float y, float z, float velX,
     float velY, float velZ, float volume, bool paused, uint32_t bus)
 {
     return Audio::instance().play3d(
@@ -129,7 +130,7 @@ NX_EXPORT int nxAudioPlay3d(NxAudioSource* source, float x, float y, float z, fl
 }
 
 //----------------------------------------------------------
-NX_EXPORT int nxAudioPlay3dClocked(NxAudioSource* source, double interval, float x, float y,
+NX_EXPORT uint32_t nxAudioPlay3dClocked(NxAudioSource* source, double interval, float x, float y,
     float z, float velX, float velY, float velZ, float volume, uint32_t bus)
 {
     return Audio::instance().play3dClocked(

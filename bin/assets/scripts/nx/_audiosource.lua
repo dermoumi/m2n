@@ -35,11 +35,11 @@ ffi.cdef [[
     typedef struct NxAudioSource NxAudioSource;
 
     void nxAudioSourceRelease(NxAudioSource*);
-    int nxAudioPlay(NxAudioSource*, float, float, bool, uint32_t);
-    int nxAudioPlayClocked(NxAudioSource*, double, float, float, uint32_t);
-    int nxAudioPlay3d(NxAudioSource*, float, float, float, float, float, float, float, bool,
+    uint32_t nxAudioPlay(NxAudioSource*, float, float, bool, uint32_t);
+    uint32_t nxAudioPlayClocked(NxAudioSource*, double, float, float, uint32_t);
+    uint32_t nxAudioPlay3d(NxAudioSource*, float, float, float, float, float, float, float, bool,
         uint32_t);
-    int nxAudioPlay3dClocked(NxAudioSource*, double, float, float, float, float, float, float,
+    uint32_t nxAudioPlay3dClocked(NxAudioSource*, double, float, float, float, float, float, float,
         float, uint32_t);
     void nxAudioSetVolume(NxAudioSource*, float);
     void nxAudioSetLooping(NxAudioSource*, bool);
