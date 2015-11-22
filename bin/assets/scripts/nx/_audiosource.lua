@@ -35,7 +35,12 @@ ffi.cdef [[
     typedef struct NxAudioSource NxAudioSource;
 
     void nxAudioSourceRelease(NxAudioSource*);
-    int nxAudioPlay(NxAudioSource*);
+    int nxAudioPlay(NxAudioSource*, float, float, bool, uint32_t);
+    int nxAudioPlayClocked(NxAudioSource*, double, float, float, uint32_t);
+    int nxAudioPlay3d(NxAudioSource*, float, float, float, float, float, float, float, bool,
+        uint32_t);
+    int nxAudioPlay3dClocked(NxAudioSource*, double, float, float, float, float, float, float,
+        float, uint32_t);
     void nxAudioSetVolume(NxAudioSource*, float);
     void nxAudioSetLooping(NxAudioSource*, bool);
     void nxAudioSetSingleInstance(NxAudioSource*, bool);
@@ -58,8 +63,28 @@ function AudioSource:release()
 end
 
 ------------------------------------------------------------
-function AudioSource:play()
-    C.nxAudioPlay(self._cdata)
+function AudioSource:play(volume, pan, paused, bus)
+    C.nxAudioPlay(self._cdata, volume or -1, pan or 0, not not paused, bus or 0)
+end
+
+------------------------------------------------------------
+function AudioSource:playClocked(interval, volume, pan, bus)
+    C.nxAudioPlayClocked(self._cdata, interval, volume or -1, pan or 0, not not paused, bus or 0)
+end
+
+------------------------------------------------------------
+function AudioSource:play3d(x, y, z, velX, velY, velZ, volume, paused, bus)
+    C.nxAudioPlay3d(
+        self._cdata, x, y, z, velX or 1, velY or 1, velZ or 1, volume or -1, not not paused,
+        bus or 0
+    )
+end
+
+------------------------------------------------------------
+function AudioSource:play3dClocked(interval, x, y, z, velX, velY, velZ, volume, bus)
+    C.nxAudioPlay3dClocked(
+        self._cdata, interval, x, y, z, velX or 0, velY or 0, velZ or 0, volume or -1, bus or 0
+    )
 end
 
 ------------------------------------------------------------
