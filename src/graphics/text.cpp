@@ -92,8 +92,6 @@ void Text::setString(const std::string& str)
 //----------------------------------------------------------
 void Text::setString(const std::u32string& str)
 {
-    if (mString == str) return;
-
     mString = str;
     mNeedsUpdate = true;
 }

@@ -102,16 +102,6 @@ end
 Window.setIcon('assets/icon.png')
 
 ------------------------------------------------------------
--- Initialize Audio
-------------------------------------------------------------
-Audio.init()
-
-------------------------------------------------------------
--- Startup scene
-------------------------------------------------------------
-Scene.goTo('scene.title')
-
-------------------------------------------------------------
 -- Handling FPS
 ------------------------------------------------------------
 local framerateLimit
@@ -121,11 +111,17 @@ else
     framerateLimit = 1/60
 end
 -- framerateLimit = 0
+Window.setFramerateLimit(framerateLimit)
 
-local totalElapsedTime = 0
-local frameCount       = 0
-local lastTime         = Nx.getSystemTime()
-local elapsedTime      = 0
+------------------------------------------------------------
+-- Initialize Audio
+------------------------------------------------------------
+Audio.init()
+
+------------------------------------------------------------
+-- Startup scene
+------------------------------------------------------------
+Scene.goTo('scene.title')
 
 ------------------------------------------------------------
 -- Main loop
@@ -147,29 +143,13 @@ while true do
     -- Check if the window is still open
     if not Window.isOpen() then break end
     
-    scene:_update(elapsedTime)
+    scene:_update(Window.frameTime())
 
     Renderer.begin()
     scene:_render()
     Renderer.finish()
 
     Window.display()
-
-    -- Calculating FPS every whole second
-    totalElapsedTime = totalElapsedTime + elapsedTime
-    frameCount       = frameCount + 1
-    if totalElapsedTime > 1 then
-        Window.setTitle('m2n [' .. frameCount .. ']')
-        totalElapsedTime = totalElapsedTime % 1
-        frameCount = 0
-    end
-
-    -- Waiting out left time of the frame
-    Nx.sleep(framerateLimit == 0 and 0 or lastTime - Nx.getSystemTime() + framerateLimit)
-
-    local currTime = Nx.getSystemTime()
-    elapsedTime = currTime - lastTime
-    lastTime = currTime
 
     -- Clean the scene stack
     Scene.clean()

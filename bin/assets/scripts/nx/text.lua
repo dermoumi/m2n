@@ -88,6 +88,7 @@ end
 
 ------------------------------------------------------------
 function Text:setString(str)
+    if self._string == str then return end
     self._string = str
     C.nxTextSetString(self._cdata, str)
 end

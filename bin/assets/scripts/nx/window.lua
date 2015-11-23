@@ -93,11 +93,15 @@ end
 ------------------------------------------------------------
 local Window = {}
 
+local Nx = require 'nx'
 local Image = require 'nx.image'
 
 local windowWidth, windowHeight
 local drawableWidth, drawableHeight
 local hasFocus, hasMouseFocus
+
+local totalElapsedTime, frameCount, currentFPS
+local elapsedTime, lastTime, framerateLimit
 
 ------------------------------------------------------------
 local function drawableSize()
@@ -171,6 +175,13 @@ function Window.create(title, width, height, flags)
     drawableWidth, drawableHeight = drawableSize()
     hasFocus, hasMouseFocus       = true, true
 
+    totalElapsedTime = 0
+    frameCount       = 0
+    currentFPS       = 0
+    elapsedTime      = 0
+    framerateLimit   = 0
+    lastTime         = Nx.getSystemTime()
+
     -- Initial mouse focus is impossible with SDL < 2.0.4 (need to get global position)
     -- local Mouse = require 'nx.mouse'
     -- local mX, mY = Mouse.getPosition()
@@ -193,10 +204,46 @@ end
 ------------------------------------------------------------
 function Window.display()
     C.nxWindowDisplay()
+
+    -- Calculating FPS every whole second
+    totalElapsedTime = totalElapsedTime + elapsedTime
+    frameCount       = frameCount + 1
+    if totalElapsedTime > 1 then
+        currentFPS = frameCount / totalElapsedTime
+        totalElapsedTime = totalElapsedTime % 1
+        frameCount = 0
+    end
+
+    -- Waiting out left time of the frame
+    Nx.sleep(framerateLimit == 0 and 0 or lastTime - Nx.getSystemTime() + framerateLimit)
+
+    local currTime = Nx.getSystemTime()
+    elapsedTime = currTime - lastTime
+    lastTime = currTime
 end
 
 ------------------------------------------------------------
-function Window.getFlags()
+function Window.setFramerateLimit(limit)
+    framerateLimit = limit or 0
+end
+
+------------------------------------------------------------
+function Window.framerateLimit()
+    return framerateLimit
+end
+
+------------------------------------------------------------
+function Window.currentFPS()
+    return math.floor(currentFPS + .5)
+end
+
+------------------------------------------------------------
+function Window.frameTime()
+    return elapsedTime
+end
+
+------------------------------------------------------------
+function Window.flags()
     local flags = {}
     local flagsPtr = ffi.new('int[14]')
 

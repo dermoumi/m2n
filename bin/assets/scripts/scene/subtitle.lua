@@ -120,7 +120,7 @@ function SceneSubtitle:load()
     self.text = Text:new()
     self.text:setCharacterSize(14)
     self.text:setFont(self.font)
-    self.text:setString("Hello world 真島 ヒロ")
+    self.text:setString("Hello world 真島e ヒロ")
 
     self.shape = Shape:new()
     self.shape:setTexture(self.texture)
@@ -140,10 +140,11 @@ end
 
 ------------------------------------------------------------
 function SceneSubtitle:update(dt)
-    local w, h = Window:size()
-    self.text:setString('FPS: ' .. math.floor(1/dt + .5)
-        .. '\nScreen size: ' .. w .. ' ' .. h)
     self.sprite:setRotation(math.pi * dt + self.sprite:rotation())
+
+    local w, h = Window.size()
+    local fps = Window.currentFPS()
+    self.text:setString(string.format('FPS: %i\nScreen size: %i %i', fps, w, h))
 end
 
 ------------------------------------------------------------
