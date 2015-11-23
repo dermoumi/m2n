@@ -77,6 +77,17 @@ local class = require 'nx.class'
 local AudioVoice = class 'nx._audiovoice'
 
 ------------------------------------------------------------
+local toFilterAttribute = {
+    wet        = 0,
+    samplerate = 1,
+    delay      = 1,
+    boost      = 1,
+    bitdepth   = 2,
+    frequency  = 2,
+    resonance  = 3
+}
+
+------------------------------------------------------------
 function AudioVoice.static._fromCData(data)
     return AudioVoice:new(data)
 end
@@ -189,6 +200,7 @@ end
 
 ------------------------------------------------------------
 function AudioVoice:setFilterParameter(id, attribute, value)
+    attribute = toFilterAttribute[attribute] or -1
     C.nxAudioVoiceSetFilterParameter(self:_handle(), id, attribute, value)
 end
 
@@ -254,6 +266,7 @@ end
 
 ------------------------------------------------------------
 function AudioVoice:filterParameter(id, attribute)
+    attribute = toFilterAttribute[attribute] or -1
     return C.nxAudioVoiceFilterParamter(self:_handle(), id, attribute)
 end
 
@@ -274,6 +287,7 @@ end
 
 ------------------------------------------------------------
 function AudioVoice:fadeFilterParameter(id, attribute, to, time)
+    attribute = toFilterAttribute[attribute] or -1
     C.nxAudioVoiceFadeFilterParameter(self:_handle(), id, attribute, to, time)
 end
 
