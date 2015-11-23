@@ -53,14 +53,16 @@ function State:initialize(transMatrix, r, g, b, a, blendSrc, blendDst)
     self._colB = b or 255
     self._colA = a or 255
 
-    self:setBlending(blendSrc, blendDst)
+    self._blendSrc, self._blendDst = blendSrc or 'alpha', blendDst
 end
 
 ------------------------------------------------------------
 function State:clone()
-    local newState = State:new(self:matrix():clone(), self:color())
-    newState._blendSrc, newState._blendDst = self._blendSrc, self._blendDst
-    return newState
+    return State:new(
+        self:matrix():clone(),
+        self._corR, self._colG, self._colB, self._colA,
+        self._blendSrc, self._blendDst
+    )
 end
 
 ------------------------------------------------------------
@@ -86,23 +88,7 @@ function State:color(normalize)
 end
 
 ------------------------------------------------------------
-function State:setBlending(src, dst)
-    if src == 'alpha' then
-        self._blendSrc, self._blendDst = 3, 2
-    elseif src == 'add' then
-        self._blendSrc, self._blendDst = 1, 1
-    elseif src == 'multiply' then
-        self._blendSrc, self._blendDst = 4, 0
-    elseif src == 'none' then
-        self._blendSrc, self._blendDst = 1, 0
-    else
-        self._blendSrc = toFactor[src] or 2
-        self._blendDst = toFactor[dst] or 3
-    end
-end
-
-------------------------------------------------------------
-function State:blending()
+function State:blendMode()
     return self._blendSrc, self._blendDst
 end
 

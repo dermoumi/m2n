@@ -152,8 +152,7 @@ function Text:_render(camera, state)
         texture:bind(0)
         local texW, texH = texture:size()
 
-        local blendSrc, blendDst = state:blending()
-        C.nxRendererSetBlendMode(blendSrc ~= 1 or blendDst ~= 0, blendSrc, blendDst)
+        Renderer.setBlendMode(state:blendMode())
 
         local shader = self._shader or Text._defaultShader()
         shader:bind()

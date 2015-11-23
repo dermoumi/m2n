@@ -161,8 +161,7 @@ function Sprite:_render(camera, state)
     if self._vertexbuffer then
         self._texture:bind(0)
 
-        local blendSrc, blendDst = state:blending()
-        C.nxRendererSetBlendMode(blendSrc ~= 1 or blendDst ~= 0, blendSrc, blendDst)
+        Renderer.setBlendMode(state:blendMode())
 
         if self._normalized then texW, texH = 1, 1 end
 

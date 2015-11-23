@@ -360,24 +360,24 @@ function Renderer.alphaToCoverageEnabled()
 end
 
 ------------------------------------------------------------
-function Renderer.setBlendingMode(srcFactor, dstFactor)
+function Renderer.setBlendMode(srcFactor, dstFactor)
     if srcFactor == 'none' or (srcFactor == 'one' and dstFactor == 'zero') then
-        nxRendererSetBlendMode(false, 1, 0)
+        C.nxRendererSetBlendMode(false, 1, 0)
     elseif srcFactor == 'alpha' then
-        nxRendererSetBlendMode(true, 3, 2)
+        C.nxRendererSetBlendMode(true, 2, 3)
     elseif srcFactor == 'add' then
-        nxRendererSetBlendMode(true, 1, 1)
+        C.nxRendererSetBlendMode(true, 1, 1)
     elseif srcFactor == 'multiply' then
-        nxRendererSetBlendMode(true, 4, 0)
+        C.nxRendererSetBlendMode(true, 4, 0)
     else
-        nxRendererSetBlendMode(true, toBlendFactor[srcFactor], toBlendFactor[dstFactor])
+        C.nxRendererSetBlendMode(true, toBlendFactor[srcFactor], toBlendFactor[dstFactor])
     end
 end
 
 ------------------------------------------------------------
 function Renderer.blendMode()
     local factors = ffi.new('uint32_t[2]')
-    if nxRendererGetBlendMode(factors) then
+    if C.nxRendererGetBlendMode(factors) then
         return true, fromBlendFactor[factors[0]], fromBlendFactor[factors[1]]
     end
     
