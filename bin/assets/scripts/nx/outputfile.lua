@@ -96,11 +96,6 @@ end
 
 ------------------------------------------------------------
 function OutputFile:write(buffer, size)
-    -- Make sure the file is open
-    if not self._cdata then
-        return nil, 'No file open'
-    end
-    
     -- If no size supplied, assume size of buffer string
     if not size then
         size = #buffer
@@ -109,108 +104,61 @@ function OutputFile:write(buffer, size)
     local bytesWrittenPtr = ffi.new('size_t[1]')
 
     local ok = C.nxFsWrite(self._cdata, buffer, size, bytesWrittenPtr)
-    if not ok then
-        return false, ffi.string(C.nxFsGetError())
-    end
+    if not ok then return false, ffi.string(C.nxFsGetError()) end
 
     return true
 end
 
 ------------------------------------------------------------
 function OutputFile:writeS8(val)
-    -- Make sure the file is open
-    if not self._cdata then
-        return nil, 'No file open'
-    end
-
     if C.nxFsWriteS8(self._cdata, val) then return true end
     return false, ffi.string(C.nxFsGetError())
 end
 
 ------------------------------------------------------------
 function OutputFile:writeS16(val)
-    -- Make sure the file is open
-    if not self._cdata then
-        return nil, 'No file open'
-    end
-
     if C.nxFsWriteS16(self._cdata, val) then return true end
     return false, ffi.string(C.nxFsGetError())
 end
 
 ------------------------------------------------------------
 function OutputFile:writeS32(val)
-    -- Make sure the file is open
-    if not self._cdata then
-        return nil, 'No file open'
-    end
-
     if C.nxFsWriteS32(self._cdata, val) then return true end
     return false, ffi.string(C.nxFsGetError())
 end
 
 ------------------------------------------------------------
 function OutputFile:writeU8(val)
-    -- Make sure the file is open
-    if not self._cdata then
-        return nil, 'No file open'
-    end
-
     if C.nxFsWriteU8(self._cdata, val) then return true end
     return false, ffi.string(C.nxFsGetError())
 end
 
 ------------------------------------------------------------
 function OutputFile:writeU16(val)
-    -- Make sure the file is open
-    if not self._cdata then
-        return nil, 'No file open'
-    end
-
     if C.nxFsWriteU16(self._cdata, val) then return true end
     return false, ffi.string(C.nxFsGetError())
 end
 
 ------------------------------------------------------------
 function OutputFile:writeU32(val)
-    -- Make sure the file is open
-    if not self._cdata then
-        return nil, 'No file open'
-    end
-
     if C.nxFsWriteU32(self._cdata, val) then return true end
     return false, ffi.string(C.nxFsGetError())
 end
 
 ------------------------------------------------------------
 function OutputFile:writeFloat(val)
-    -- Make sure the file is open
-    if not self._cdata then
-        return nil, 'No file open'
-    end
-
     if C.nxFsWriteFloat(self._cdata, val) then return true end
     return false, ffi.string(C.nxFsGetError())
 end
 
 ------------------------------------------------------------
 function OutputFile:writeDouble(val)
-    -- Make sure the file is open
-    if not self._cdata then
-        return nil, 'No file open'
-    end
-
     if C.nxFsWriteDouble(self._cdata, val) then return true end
     return false, ffi.string(C.nxFsGetError())
 end
 
 ------------------------------------------------------------
 function OutputFile:writeString(str)
-    -- Make sure the file is open
-    if not self._cdata then
-        return nil, 'No file open'
-    end
-
     if C.nxFsWriteString(self._cdata, str) then return true end
     return false, ffi.string(C.nxFsGetError())
 end
