@@ -66,20 +66,15 @@ end
 ------------------------------------------------------------
 function BinaryFile:close()
     -- Make sure the file is open
-    if self._cdata then
-        -- Make the cdata unmanaged before setting it to nil
-        C.nxFsClose(ffi.gc(self._cdata, nil))
-        self._cdata = nil
-    end
+    if self._cdata == nil then return end
+
+    -- Make the cdata unmanaged before setting it to nil
+    C.nxFsClose(ffi.gc(self._cdata, nil))
+    self._cdata = nil
 end
 
 ------------------------------------------------------------
 function BinaryFile:size()
-    -- Make sure the file is open
-    if not self._cdata then
-        return 0, 'No file open'
-    end
-
     local size = ffi.new('size_t[1]')
     if not C.nxFsSize(self._cdata, size) then
         return 0, ffi.string(C.nxFsGetError())
@@ -90,11 +85,6 @@ end
 
 ------------------------------------------------------------
 function BinaryFile:tell()
-    -- Make sure the file is open
-    if not self._cdata then
-        return 0, 'No file open'
-    end
-
     local position = ffi.new('size_t[1]')
     if not C.nxFsTell(self._cdata, position) then
         return 0, ffi.string(C.nxFsGetError())
@@ -105,21 +95,8 @@ end
 
 ------------------------------------------------------------
 function BinaryFile:seek(position)
-    -- Make sure the file is open
-    if not self._cdata then
-        return false, 'No file open'
-    end
-
-    -- Make sure the argument is valid
-    if type(position) ~= 'number' then
-        return false, 'Invalid argument'
-    end
-
-    if C.nxFsSeek(self._cdata, position) then
-        return true
-    else
-        return false, ffi.string(C.nxFsGetError())
-    end
+    if C.nxFsSeek(self._cdata, position) then return true end
+    return false, ffi.string(C.nxFsGetError())
 end
 
 ------------------------------------------------------------

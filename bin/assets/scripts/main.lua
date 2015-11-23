@@ -104,14 +104,9 @@ Window.setIcon('assets/icon.png')
 ------------------------------------------------------------
 -- Handling FPS
 ------------------------------------------------------------
-local framerateLimit
-if Nx.getPlatform() == 'android' or Nx.getPlatform() == 'ios' then
-    framerateLimit = 1/30
-else
-    framerateLimit = 1/60
-end
--- framerateLimit = 0
-Window.setFramerateLimit(framerateLimit)
+Window.setFramerateLimit(
+    (Nx.getPlatform() == 'android' or Nx.getPlatform() == 'ios') and 1/30 or 1/60
+)
 
 ------------------------------------------------------------
 -- Initialize Audio
