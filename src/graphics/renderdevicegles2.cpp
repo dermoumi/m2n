@@ -162,6 +162,7 @@ void RenderDeviceGLES2::resetStates()
 
     setColorWriteMask(true);
     mPendingMask = 0xFFFFFFFFu;
+    mVertexBufUpdated = true;
     commitStates();
 
     // Bind buffers
@@ -237,10 +238,17 @@ bool RenderDeviceGLES2::commitStates(uint32_t filter)
 
         // Bind vertex buffers
         if (mask & VertexLayouts) {
-            if (!applyVertexLayout()) return false;
+            if (
+                mNewVertexLayout != mCurVertexLayout || mPrevShaderID != mCurShaderID ||
+                mVertexBufUpdated
+            ) {
+                if (!applyVertexLayout()) return false;
+                    
+                mCurVertexLayout  = mNewVertexLayout;
+                mPrevShaderID     = mCurShaderID;
+                mVertexBufUpdated = false;
+            }
 
-            mCurVertexLayout = mNewVertexLayout;
-            mPrevShaderID    = mCurShaderID;
             mPendingMask &= ~VertexLayouts;
         }
     }
@@ -1222,12 +1230,11 @@ void RenderDeviceGLES2::setIndexBuffer(uint32_t bufObj, IndexFormat format)
 void RenderDeviceGLES2::setVertexBuffer(uint32_t slot, uint32_t vbObj, uint32_t offset,
     uint32_t stride)
 {
-    if (slot >= 16) {
-        Log::warning("Attempting to set Vertex buffer at slot >= 16");
-        return;
-    }
+    auto& vbSlot = mVertBufSlots[slot];
+    if (vbSlot.vbObj == vbObj && vbSlot.offset == offset && vbSlot.stride == stride) return;
 
-    mVertBufSlots[slot] = {vbObj, offset, stride};
+    vbSlot = {vbObj, offset, stride};
+    mVertexBufUpdated = true;
     mPendingMask |= VertexLayouts;
 }
 

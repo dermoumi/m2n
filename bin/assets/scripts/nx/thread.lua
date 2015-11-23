@@ -73,7 +73,12 @@ function Thread:initialize(func, ...)
     vm:push(func, ...)
 
     self._vm = vm
-    self._cdata = ffi.gc(handle, C.nxThreadRelease)
+
+    local thread = self
+    self._cdata = ffi.gc(handle, function(cdata)
+        C.nxThreadDetach(ffi.gc(cdata, nil))
+        ffi.gc(thread._vm._cdata, nil)
+    end)
 end
 
 ------------------------------------------------------------
@@ -90,9 +95,14 @@ end
 
 ------------------------------------------------------------
 function Thread:detach()
-    C.nxThreadDetach(self._cdata)
+    C.nxThreadDetach(ffi.gc(self._cdata, nil))
     ffi.gc(self._vm._cdata, nil)
-    ffi.gc(self._cdata, nil)
+end
+
+------------------------------------------------------------
+function Thread:release()
+    if self._cdata == nil then return end
+    C.nxThreadRelease(ffi.gc(self._cdata, nil))
 end
 
 ------------------------------------------------------------
