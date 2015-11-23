@@ -51,6 +51,7 @@ ffi.cdef [[
     void nxAudioSet3dDopplerFactor(NxAudioSource*, float);
     void nxAudioSet3dListenerRelative(NxAudioSource*, bool);
     void nxAudioSet3dDistanceDelay(NxAudioSource*, bool);
+    void nxAudioSourceSetFilter(NxAudioSource*, NxAudioFilter*, uint32_t);
 ]]
 
 ------------------------------------------------------------
@@ -157,6 +158,12 @@ end
 ------------------------------------------------------------
 function AudioSource:set3dDistanceDelay(enabled)
     C.nxAudioSet3dDistanceDelay(self._cdata, enabled)
+end
+
+------------------------------------------------------------
+function AudioSource:setFilter(filter, id)
+    if filter then filter = filter._cdata end
+    C.nxAudioSourceSetFilter(self._cdata, filter, id or 0)
 end
 
 ------------------------------------------------------------

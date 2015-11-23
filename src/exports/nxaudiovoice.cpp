@@ -265,9 +265,9 @@ NX_EXPORT float nxAudioVoiceFilterParamter(uint32_t handle, uint32_t filterID, u
 
 //----------------------------------------------------------
 NX_EXPORT void nxAudioVoiceFadeFilterParameter(uint32_t handle, uint32_t filterID,
-    uint32_t attribute, float from, float to, double t)
+    uint32_t attribute, float to, double t)
 {
-    Audio::instance().fadeFilterParameter(handle, filterID, attribute, from, to, t);
+    Audio::instance().fadeFilterParameter(handle, filterID, attribute, to, t);
 }
 
 //----------------------------------------------------------

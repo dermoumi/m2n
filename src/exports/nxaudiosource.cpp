@@ -33,6 +33,7 @@
 //----------------------------------------------------------
 // Declarations
 //----------------------------------------------------------
+using NxAudioFilter = SoLoud::Filter;
 struct NxAudioSource
 {
     SoLoud::AudioSource* handle {nullptr};
@@ -196,4 +197,10 @@ NX_EXPORT void nxAudioSet3dListenerRelative(NxAudioSource* source, bool relative
 NX_EXPORT void nxAudioSet3dDistanceDelay(NxAudioSource* source, bool delay)
 {
     source->handle->set3dDistanceDelay(delay);
+}
+
+//----------------------------------------------------------
+NX_EXPORT void nxAudioSourceSetFilter(NxAudioSource* source, NxAudioFilter* filter, uint32_t id)
+{
+    source->handle->setFilter(id, filter);
 }

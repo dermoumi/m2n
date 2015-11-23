@@ -56,12 +56,12 @@ function SceneSubtitle:load()
 
     self.echoFilter = require('nx.audioechofilter'):new()
     self.echoFilter:setParams(.5, .5)
-    require('nx.audio').setGlobalFilter(self.echoFilter)
 
     self.voiceGroup = require('nx.audiovoicegroup'):new()
 
     self.soundSource = SoundSource:new()
     self.soundSource:open('assets/test.wav')
+    self.soundSource:setFilter(self.echoFilter)
     self.soundSource:setLooping(true)
     self.soundSource:set3dListenerRelative(false)
     self.voiceGroup:add(self.soundSource:play(-1, 0, true))
