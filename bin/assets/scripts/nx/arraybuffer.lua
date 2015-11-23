@@ -49,6 +49,7 @@ ffi.cdef [[
 ------------------------------------------------------------
 local class = require 'nx.class'
 local Arraybuffer = class 'nx.arraybuffer'
+
 ------------------------------------------------------------
 function Arraybuffer.static._fromCData(cdata)
     local buffer = Arraybuffer:allocate()
