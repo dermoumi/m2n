@@ -293,6 +293,7 @@ private:
     uint32_t mIndexFormat {0u};
     uint32_t mActiveVertexAttribsMask {0u};
     uint32_t mPendingMask {0u};
+    bool mVertexBufUpdated {true};
 
     int mMaxTextureUnits      {0};
     int mMaxTextureSize       {0};

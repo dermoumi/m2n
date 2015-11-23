@@ -173,6 +173,7 @@ void RenderDeviceGL::resetStates()
 
     setColorWriteMask(true);
     mPendingMask = 0xFFFFFFFFu;
+    mVertexBufUpdated = true;
     commitStates();
 
     // Bind buffers
@@ -248,10 +249,17 @@ bool RenderDeviceGL::commitStates(uint32_t filter)
 
         // Bind vertex buffers
         if (mask & VertexLayouts) {
-            if (!applyVertexLayout()) return false;
+            if (
+                mNewVertexLayout != mCurVertexLayout || mPrevShaderID != mCurShaderID ||
+                mVertexBufUpdated
+            ) {
+                if (!applyVertexLayout()) return false;
+                    
+                mCurVertexLayout  = mNewVertexLayout;
+                mPrevShaderID     = mCurShaderID;
+                mVertexBufUpdated = false;
+            }
 
-            mCurVertexLayout = mNewVertexLayout;
-            mPrevShaderID    = mCurShaderID;
             mPendingMask &= ~VertexLayouts;
         }
     }
@@ -1230,7 +1238,11 @@ void RenderDeviceGL::setIndexBuffer(uint32_t bufObj, IndexFormat format)
 void RenderDeviceGL::setVertexBuffer(uint32_t slot, uint32_t vbObj, uint32_t offset,
     uint32_t stride)
 {
-    mVertBufSlots[slot] = {vbObj, offset, stride};
+    auto& vbSlot = mVertBufSlots[slot];
+    if (vbSlot.vbObj == vbObj && vbSlot.offset == offset && vbSlot.stride == stride) return;
+
+    mVertexBufUpdated = true;
+    vbSlot = {vbObj, offset, stride};
     mPendingMask |= VertexLayouts;
 }
 
@@ -1513,12 +1525,6 @@ bool RenderDeviceGL::applyVertexLayout()
             if (attribIndex >= 0) {
                 VertexLayoutAttrib& attrib = vl.attribs[i];
                 const auto& vbSlot = mVertBufSlots[attrib.vbSlot];
-
-                if (mBuffers.getRef(vbSlot.vbObj).glObj == 0 ||
-                    mBuffers.getRef(vbSlot.vbObj).type != GL_ARRAY_BUFFER) {
-                    Log::error("Attempting to reference an invalid vertex buffer");
-                    return false;
-                }
 
                 GLenum format = toVertexFormat[attrib.format];
                 glBindBuffer(GL_ARRAY_BUFFER, mBuffers.getRef(vbSlot.vbObj).glObj);
