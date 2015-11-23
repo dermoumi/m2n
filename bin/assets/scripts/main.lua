@@ -109,14 +109,16 @@ Window.setFramerateLimit(
 )
 
 ------------------------------------------------------------
--- Initialize Audio
-------------------------------------------------------------
-Audio.init()
-
-------------------------------------------------------------
 -- Startup scene
 ------------------------------------------------------------
-Scene.goTo('scene.title')
+local worker = require('game.worker'):new()
+worker:addTask(function()
+    Audio.init()
+end)
+
+Scene.goTo('scene.load', worker, function()
+    Scene.goTo('scene.title')
+end)
 
 ------------------------------------------------------------
 -- Main loop
