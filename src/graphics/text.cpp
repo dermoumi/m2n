@@ -384,12 +384,14 @@ void Text::ensureGeometryUpdate() const
     mBoundsW = maxX - minX;
     mBoundsH = maxY - minY;
 
-    mVertexCount = buffer.size() / 4;
-    if (!mVertices) {
-        mVertices = ArraybufferPtr(new Arraybuffer());
-        mVertices->createVertex(buffer.size() * 4, buffer.data());
+    auto vertexCount = buffer.size() / 4;
+    if (!mVertices) mVertices = ArraybufferPtr(new Arraybuffer());
+
+    if (mVertexCount != vertexCount) {
+        mVertices->createVertex(buffer.size() * sizeof(float), buffer.data());
+        mVertexCount = vertexCount;
     }
     else {
-        mVertices->setData(0, buffer.size() * 4, buffer.data());
+        mVertices->setData(0, buffer.size() * sizeof(float), buffer.data());
     }
 }

@@ -111,11 +111,8 @@ function SceneSubtitle:load()
 
     self.font = Font:new()
     self.font:open('assets/mplus-1c-regular.ttf')
-    for i = 48, 126 do
-        self.font:glyph(i, 30)
-    end
 
-    self.fontSprite = Sprite:new(self.font:texture(30))
+    self.fontSprite = Sprite:new(self.font:texture(14))
 
     self.text = Text:new()
     self.text:setCharacterSize(14)
@@ -144,7 +141,7 @@ function SceneSubtitle:update(dt)
 
     local w, h = Window.size()
     local fps = Window.currentFPS()
-    self.text:setString(string.format('FPS: %i\nScreen size: %i %i', fps, w, h))
+    self.text:setString(('FPS: %i\nScreen size: %i %i'):format(fps, w, h))
 end
 
 ------------------------------------------------------------
@@ -161,8 +158,8 @@ function SceneSubtitle:render()
     self.camera:setViewport(nil, nil, nil, nil)
     self.camera:draw(self.rbSprite)
 
-    --self.camera:draw(self.fontSprite)
     self.camera:draw(self.text)
+    -- self.camera:draw(self.fontSprite)
 
     self.camera:draw(self.shape)
 
