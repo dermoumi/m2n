@@ -225,7 +225,7 @@ public:
 
     enum DepthFunc
     {
-        LessEqueal,
+        LessEqual,
         Less,
         Equal,
         Greater,
@@ -350,8 +350,8 @@ public:
     virtual DepthFunc getDepthFunc() const = 0;
 
     // Capabilities
-    virtual void getCapabilities(unsigned int* maxTexUnits, unsigned int* maxTexSize,
-        unsigned int* maxCubeTexSize, unsigned int* maxColBufs, bool* dxt, bool* pvrtci, bool* etc1,
+    virtual void getCapabilities(uint32_t* maxTexUnits, uint32_t* maxTexSize,
+        uint32_t* maxCubeTexSize, uint32_t* maxColBufs, bool* dxt, bool* pvrtci, bool* etc1,
         bool* texFloat, bool* texDepth, bool* texSS, bool* tex3d, bool* texNPOT, bool* texSRGB,
         bool* rtms, bool* occQuery, bool* timerQuery) const = 0;
 };

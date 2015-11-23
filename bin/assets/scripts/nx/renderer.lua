@@ -48,8 +48,8 @@ ffi.cdef [[
     void nxRendererResetStates();
     bool nxRendererCommitStates(uint32_t);
     void nxRendererClear(uint8_t, uint8_t, uint8_t, uint8_t, float, bool, bool, bool, bool, bool);
-    void nxRendererDraw(uint32_t, uint32_t, uint32_t);
-    void nxRendererDrawIndexed(uint32_t, uint32_t, uint32_t);
+    void nxRendererDraw(uint8_t, uint32_t, uint32_t);
+    void nxRendererDrawIndexed(uint8_t, uint32_t, uint32_t);
     uint32_t nxRendererRegisterVertexLayout(uint8_t, const NxVertexLayoutAttrib*);
     NxArrayBuffer* nxRendererCreateVertexBuffer(uint32_t, const void*);
     NxArrayBuffer* nxRendererCreateIndexBuffer(uint32_t, const void*);
@@ -58,31 +58,31 @@ ffi.cdef [[
     uint32_t nxRendererGetBufferMemory();
     void nxRendererSetViewport(int, int, int, int);
     void nxRendererSetScissorRect(int, int, int, int);
-    void nxRendererSetIndexBuffer(NxArrayBuffer*, int);
-    void nxRendererSetVertexBuffer(uint32_t, NxArrayBuffer*, uint32_t, uint32_t);
-    void nxRendererSetVertexLayout(uint32_t);
-    void nxRendererSetTexture(uint32_t, uint32_t, uint16_t);
+    void nxRendererSetIndexBuffer(NxArrayBuffer*, uint8_t);
+    void nxRendererSetVertexBuffer(uint8_t, NxArrayBuffer*, uint32_t, uint32_t);
+    void nxRendererSetVertexLayout(uint8_t);
+    void nxRendererSetTexture(uint8_t, uint32_t, uint16_t);
     void nxRendererSetColorWriteMask(bool);
     bool nxRendererGetColorWriteMask();
-    void nxRendererSetFillMode(uint32_t);
-    uint32_t nxRendererGetFillMode();
-    void nxRendererSetCullMode(uint32_t);
-    uint32_t nxRendererGetCullMode();
+    void nxRendererSetFillMode(uint8_t);
+    uint8_t nxRendererGetFillMode();
+    void nxRendererSetCullMode(uint8_t);
+    uint8_t nxRendererGetCullMode();
     void nxRendererSetScissorTest(bool);
     bool nxRendererGetScissorTest();
     void nxRendererSetMultisampling(bool);
     bool nxRendererGetMultisampling();
     void nxRendererSetAlphaToCoverage(bool);
     bool nxRendererGetAlphaToCoverage();
-    void nxRendererSetBlendMode(bool, uint32_t, uint32_t);
-    bool nxRendererGetBlendMode(uint32_t*);
+    void nxRendererSetBlendMode(bool, uint8_t, uint8_t);
+    bool nxRendererGetBlendMode(uint8_t*);
     void nxRendererSetDepthMask(bool);
     bool nxRendererGetDepthMask();
     void nxRendererSetDepthTest(bool);
     bool nxRendererGetDepthTest();
-    void nxRendererSetDepthFunc(uint32_t);
-    uint32_t nxRendererGetDepthFunc();
-    void nxRendererGetCapabilities(unsigned int*, bool*);
+    void nxRendererSetDepthFunc(uint8_t);
+    uint8_t nxRendererGetDepthFunc();
+    void nxRendererGetCapabilities(uint32_t*, bool*);
 ]]
 
 ------------------------------------------------------------
@@ -94,6 +94,58 @@ local Renderer = {}
 local caps = {}
 local vertexLayouts = {}
 local defaultShaders = {}
+
+local toFillMode = {
+    solid = 0,
+    wireframe = 1
+}
+local fromFillMode = {
+    [0] = 'solid',
+    [1] = 'wireframe'
+}
+
+local toCullMode = {
+    back = 0,
+    front = 1,
+    none = 2
+}
+local fromCullMode = {
+    [0] = 'back',
+    [1] = 'front',
+    [2] = 'none'
+}
+
+local toBlendFactor = {
+    zero        = 0,
+    one         = 1,
+    srcalpha    = 2,
+    invsrcalpha = 3,
+    dstcolor    = 4
+}
+local fromBlendFactor = {
+    [0] = 'zero',
+    [1] = 'one',
+    [2] = 'srcalpha',
+    [3] = 'invsrcalpha',
+    [4] = 'dstcolor'
+}
+
+local toDepthFunc = {
+    lequal = 0,
+    less = 1,
+    equal = 2,
+    greater = 3,
+    gequal = 4,
+    always = 5
+}
+local fromDepthFunc = {
+    [0] = 'lequal',
+    [1] = 'less',
+    [2] = 'equal',
+    [3] = 'greater',
+    [4] = 'gequal',
+    [5] = 'always'
+}
 
 local vbFsQuad;
 
@@ -245,6 +297,121 @@ function Renderer.drawFsQuad(texture, width, height)
     C.nxRendererSetVertexLayout(vertexLayouts[1])
 
     C.nxRendererDraw(0, 0, 3)
+end
+
+------------------------------------------------------------
+function Renderer.enableColorWriteMask(enabled)
+    C.nxRendererSetColorWriteMask(enabled)
+end
+
+------------------------------------------------------------
+function Renderer.colorWriteMaskEnabled()
+    return C.nxRendererGetColorWriteMask()
+end
+
+------------------------------------------------------------
+function Renderer.setFillMode(mode)
+    C.nxRendererSetFillMode(toFillMode[mode])
+end
+
+------------------------------------------------------------
+function Renderer.fillMode()
+    return fromFillMode[C.nxRendererGetFillMode()]
+end
+
+------------------------------------------------------------
+function Renderer.setCullMode(mode)
+    C.nxRendererSetCullMode(toCullMode[mode])
+end
+
+------------------------------------------------------------
+function Renderer.cullMode()
+    return fromCullMode[C.nxRendererGetCullMode()]
+end
+
+------------------------------------------------------------
+function Renderer.enableScissorTest(enabled)
+    C.nxRendererSetScissorTest(enabled)
+end
+
+------------------------------------------------------------
+function Renderer.scissorTestEnabled()
+    return C.nxRendererGetScissorTest()
+end
+
+------------------------------------------------------------
+function Renderer.enableMultisampling(enabled)
+    C.nxRendererSetMultisampling(enabled)
+end
+
+------------------------------------------------------------
+function Renderer.multisamplingEnabled()
+    return C.nxRendererGetMultisampling()
+end
+
+------------------------------------------------------------
+function Renderer.enableAlphaToCoverage(enabled)
+    C.nxRendererSetAlphaToCoverage(enabled)
+end
+
+------------------------------------------------------------
+function Renderer.alphaToCoverageEnabled()
+    return C.nxRendererGetAlphaToCoverage()
+end
+
+------------------------------------------------------------
+function Renderer.setBlendingMode(srcFactor, dstFactor)
+    if srcFactor == 'none' or (srcFactor == 'one' and dstFactor == 'zero') then
+        nxRendererSetBlendMode(false, 1, 0)
+    elseif srcFactor == 'alpha' then
+        nxRendererSetBlendMode(true, 3, 2)
+    elseif srcFactor == 'add' then
+        nxRendererSetBlendMode(true, 1, 1)
+    elseif srcFactor == 'multiply' then
+        nxRendererSetBlendMode(true, 4, 0)
+    else
+        nxRendererSetBlendMode(true, toBlendFactor[srcFactor], toBlendFactor[dstFactor])
+    end
+end
+
+------------------------------------------------------------
+function Renderer.blendMode()
+    local factors = ffi.new('uint32_t[2]')
+    if nxRendererGetBlendMode(factors) then
+        return true, fromBlendFactor[factors[0]], fromBlendFactor[factors[1]]
+    end
+    
+    return false
+end
+
+------------------------------------------------------------
+function Renderer.enabledDepthMask(enabled)
+    C.nxRendererSetDepthMask(enabled)
+end
+
+------------------------------------------------------------
+function Renderer.depthMaskEnabled()
+    return C.nxRendererGetDepthMask()
+end
+
+------------------------------------------------------------
+function Renderer.enabledDepthTest(enabled)
+    C.nxRendererSetDepthTest(enabled)
+end
+
+------------------------------------------------------------
+function Renderer.depthTestEnabled()
+    return C.nxRendererGetDepthTest()
+end
+
+------------------------------------------------------------
+function Renderer.setDepthFunc(func)
+    C.nxRendererSetDepthFunc(toDepthFunc[func])
+end
+
+------------------------------------------------------------
+function Renderer.depthFunc()
+    return fromDepthFunc[C.nxRendererGetDepthFunc()]
 end
 
 ------------------------------------------------------------
