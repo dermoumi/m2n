@@ -243,6 +243,12 @@ function LuaVM:initialize()
 end
 
 ------------------------------------------------------------
+function LuaVM:release()
+    if self._cdata == nil then return end
+    C.lua_close(ffi.gc(self._cdata, nil))
+end
+
+------------------------------------------------------------
 function LuaVM:isOpen()
     return self._cdata ~= nil
 end
