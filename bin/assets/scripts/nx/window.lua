@@ -311,18 +311,14 @@ end
 
 ------------------------------------------------------------
 function Window.desktopSize(display)
-    display = display or 1
-
     local sizePtr = ffi.new('int[2]')
-    if not C.nxWindowGetDesktopSize(display, sizePtr) then return end
+    if not C.nxWindowGetDesktopSize(display or 1, sizePtr) then return end
     return tonumber(sizePtr[0]), tonumber(sizePtr[1])
 end
 
 ------------------------------------------------------------
 function Window.displayName(display)
-    display = display or 1
-
-    local name = C.nxWindowGetDisplayName(display)
+    local name = C.nxWindowGetDisplayName(display or 1)
     if name == nil then return '' end
 
     return ffi.string(name)
@@ -357,10 +353,8 @@ end
 
 ------------------------------------------------------------
 function Window.displayModes(display)
-    display = display or 1
-
     local countPtr = ffi.new('size_t[1]')
-    local modesPtr = C.nxWindowGetDisplayModes(display, countPtr)
+    local modesPtr = C.nxWindowGetDisplayModes(display or 1, countPtr)
 
     local modes = {}
     for i = 1, tonumber(countPtr[0]) / 2 do
@@ -380,9 +374,7 @@ end
 
 ------------------------------------------------------------
 function Window.showMessageBox(title, message, type, attach)
-    if not attach then attach = false end
-
-    C.nxWindowSimpleMessageBox(title, message, MsgBoxType[type] or MsgBoxType.error, attach)
+    C.nxWindowSimpleMessageBox(title, message, MsgBoxType[type] or MsgBoxType.error, not not attach)
 end
 
 ------------------------------------------------------------
@@ -399,12 +391,12 @@ end
 function Window.setIcon(icon)
     if type(icon) == 'string' then
         icon = Image.load(icon)
+        if not icon then return false, 'Unable to load icon' end
     end
-
-    if not require('nx.class').Object.isInstanceOf(icon, Image) then return end
 
     local w, h = icon:size()
     C.nxWindowSetIcon(w, h, icon:data())
+    return true
 end
 
 ------------------------------------------------------------

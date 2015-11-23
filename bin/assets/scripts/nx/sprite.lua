@@ -171,7 +171,6 @@ function Sprite:_render(camera, state)
         shader:setSampler('uTexture', 0)
 
         Arraybuffer.setVertexbuffer(self._vertexbuffer, 0, 0, 16)
-        Arraybuffer.setIndexbuffer(nil)
         C.nxRendererSetVertexLayout(Sprite._vertexLayout())
 
         C.nxRendererDraw(1, 0, 4)
