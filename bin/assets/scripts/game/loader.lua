@@ -45,8 +45,10 @@ function Loader.load(objType, id)
     local func = loaderFunc[objType]
     if not func then return false, 'No loader function assigned to this object type'
 
-    item, err = func(id)
-    if not item then return false, err or 'An error has occurred while loading "' .. id .. '"' end
+    item = require(objType):new()
+    
+    local ok, err = func(obj, id)
+    if not ok then return false, err or 'An error has occurred while loading "' .. id .. '"' end
 
     return Cache.add(id, item)
 end
