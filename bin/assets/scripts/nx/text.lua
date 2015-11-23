@@ -152,6 +152,9 @@ function Text:_render(camera, state)
         texture:bind(0)
         local texW, texH = texture:size()
 
+        local blendSrc, blendDst = state:blending()
+        C.nxRendererSetBlendMode(blendSrc ~= 1 or blendDst ~= 0, blendSrc, blendDst)
+
         local shader = self._shader or Text._defaultShader()
         shader:bind()
         shader:setUniform('uTransMat', state:matrix())
@@ -161,7 +164,6 @@ function Text:_render(camera, state)
 
         self._vertices._cdata = C.nxTextArraybuffer(self._cdata, vertCountPtr)
         Arraybuffer.setVertexbuffer(self._vertices, 0, 0, 16)
-        Arraybuffer.setIndexbuffer(nil)
         C.nxRendererSetVertexLayout(Text._vertexLayout())
 
         C.nxRendererDraw(0, 0, vertCountPtr[0])

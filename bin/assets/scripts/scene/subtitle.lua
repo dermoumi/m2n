@@ -147,7 +147,6 @@ end
 ------------------------------------------------------------
 function SceneSubtitle:render()
     C.nxRendererSetCullMode(3)
-    C.nxRendererSetBlendMode(true, 2, 3)
 
     self.camera:setRenderbuffer(self.rb)
     self.camera:setViewport(0, 0, 640, 360)
@@ -155,8 +154,8 @@ function SceneSubtitle:render()
     self.camera:draw(self.sprite)
 
     self.camera:setRenderbuffer(nil)
-    self.camera:setViewport(nil, nil, nil, nil)
-    self.camera:draw(self.rbSprite)
+    self.camera:setViewport(nil)
+    self.camera:draw(self.rbSprite, require('nx.entity2d').State:new(nil, nil, nil, nil, nil, 'add'))
 
     self.camera:draw(self.text)
     -- self.camera:draw(self.fontSprite)

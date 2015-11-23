@@ -37,18 +37,30 @@ local Matrix = require 'nx.matrix'
 local State = class 'nx.entity2d.state'
 Entity2D.static.State = State
 
+local toFactor = {
+    zero        = 0,
+    one         = 1,
+    srcalpha    = 2,
+    invsrcalpha = 3,
+    dstcolor    = 4
+}
+
 ------------------------------------------------------------
-function State:initialize(transMatrix, r, g, b, a)
-    self._transMatrix = transMatrix or Matrix:new()
+function State:initialize(transMatrix, r, g, b, a, blendSrc, blendDst)
+    self._transMatrix = transMatrix
     self._colR = r or 255
     self._colG = g or 255
     self._colB = b or 255
     self._colA = a or 255
+
+    self:setBlending(blendSrc, blendDst)
 end
 
 ------------------------------------------------------------
 function State:clone()
-    return State:new(self:matrix():clone(), self:color())
+    local newState = State:new(self:matrix():clone(), self:color())
+    newState._blendSrc, newState._blendDst = self._blendSrc, self._blendDst
+    return newState
 end
 
 ------------------------------------------------------------
@@ -71,6 +83,27 @@ function State:color(normalize)
     else
         return self._colR, self._colG, self._colB, self._colA
     end
+end
+
+------------------------------------------------------------
+function State:setBlending(src, dst)
+    if src == 'alpha' then
+        self._blendSrc, self._blendDst = 3, 2
+    elseif src == 'add' then
+        self._blendSrc, self._blendDst = 1, 1
+    elseif src == 'multiply' then
+        self._blendSrc, self._blendDst = 4, 0
+    elseif src == 'none' then
+        self._blendSrc, self._blendDst = 1, 0
+    else
+        self._blendSrc = toFactor[src] or 2
+        self._blendDst = toFactor[dst] or 3
+    end
+end
+
+------------------------------------------------------------
+function State:blending()
+    return self._blendSrc, self._blendDst
 end
 
 ------------------------------------------------------------

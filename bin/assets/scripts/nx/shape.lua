@@ -142,6 +142,9 @@ function Shape:_render(camera, state)
         local texture = self._texture or defaultTexture
         texture:bind(0)
 
+        local blendSrc, blendDst = state:blending()
+        C.nxRendererSetBlendMode(blendSrc ~= 1 or blendDst ~= 0, blendSrc, blendDst)
+
         local shader = self._shader or Shape._defaultShader(self._hasColor)
         shader:bind()
         shader:setUniform('uTransMat', state:matrix())

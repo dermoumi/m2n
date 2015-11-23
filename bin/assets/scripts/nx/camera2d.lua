@@ -171,7 +171,12 @@ end
 function Camera2D:draw(drawable, state)
     self:_setupDrawing()
 
-    state = state or require('nx.entity2d').State:new(self:matrix())
+    state = state or require('nx.entity2d').State:new()
+    if state:matrix() then
+        state:matrix():combine(self:matrix())
+    else
+        state._transMatrix = self:matrix()
+    end
 
     drawable:_draw(self, state:clone())
 end
