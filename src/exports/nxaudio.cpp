@@ -113,9 +113,15 @@ NX_EXPORT void nxAudioFadeGlobalVolume(float to, double t)
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxAudioSetVisualizationEnabled(bool enabled)
+NX_EXPORT void nxAudioEnableVisualization(bool enabled)
 {
     Audio::instance().setVisualizationEnable(enabled);
+}
+
+//----------------------------------------------------------
+NX_EXPORT const float* nxAudioCalcFFTData()
+{
+    return Audio::instance().calcFFT();
 }
 
 //----------------------------------------------------------

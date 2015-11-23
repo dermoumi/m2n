@@ -52,6 +52,18 @@ ffi.cdef [[
     void nxAudioSet3dListenerRelative(NxAudioSource*, bool);
     void nxAudioSet3dDistanceDelay(NxAudioSource*, bool);
     void nxAudioSourceSetFilter(NxAudioSource*, NxAudioFilter*, uint32_t);
+
+    NxAudioSource* nxAudioBusCreate();
+    uint32_t nxAudioSourcePlayThrough(NxAudioSource*, NxAudioSource*, float, float, bool);
+    uint32_t nxAudioSourcePlayClockedThrough(NxAudioSource*, NxAudioSource*, double, float, float);
+    uint32_t nxAudioSourcePlay3dThrough(NxAudioSource*, NxAudioSource*, float, float, float, float,
+        float, float, float, bool);
+    uint32_t nxAudioSourcePlay3dClockedThrough(NxAudioSource*, NxAudioSource*, double, float, float,
+        float, float, float, float, float);
+    void nxAudioBusSetChannels(NxAudioSource*, uint32_t);
+    void nxAudioBusEnableVisualization(NxAudioSource*, bool);
+    const float* nxAudioBusCalcFFT(NxAudioSource*);
+    const float* nxAudioBusCurrentWaveData(NxAudioSource*);
 ]]
 
 ------------------------------------------------------------
@@ -71,39 +83,76 @@ AudioSource.static._toAttenuationModel = toAttenuationModel;
 
 ------------------------------------------------------------
 function AudioSource:release()
+    if self._cdata == nil then return end
     C.nxAudioSourceRelease(ffi.gc(self._cdata, nil))
 end
 
 ------------------------------------------------------------
-function AudioSource:play(volume, pan, paused, bus)
-    local handle = C.nxAudioPlay(self._cdata, volume or -1, pan or 0, not not paused, bus or 0)
+function AudioSource:play(volume, pan, paused)
+    local handle = C.nxAudioPlay(self._cdata, volume or -1, pan or 0, not not paused, 0)
 
     return AudioVoice:new(handle)
 end
 
 ------------------------------------------------------------
-function AudioSource:playClocked(interval, volume, pan, bus)
+function AudioSource:playClocked(interval, volume, pan)
     local handle = C.nxAudioPlayClocked(
-        self._cdata, interval, volume or -1, pan or 0, not not paused, bus or 0
+        self._cdata, interval, volume or -1, pan or 0, not not paused, 0
     )
 
     return AudioVoice:new(handle)
 end
 
 ------------------------------------------------------------
-function AudioSource:play3d(x, y, z, velX, velY, velZ, volume, paused, bus)
+function AudioSource:play3d(x, y, z, velX, velY, velZ, volume, paused)
     local handle = C.nxAudioPlay3d(
-        self._cdata, x, y, z, velX or 1, velY or 1, velZ or 1, volume or -1, not not paused,
-        bus or 0
+        self._cdata, x, y, z, velX or 1, velY or 1, velZ or 1, volume or -1, not not paused, 0
     )
 
     return AudioVoice:new(handle)
 end
 
 ------------------------------------------------------------
-function AudioSource:play3dClocked(interval, x, y, z, velX, velY, velZ, volume, bus)
+function AudioSource:play3dClocked(interval, x, y, z, velX, velY, velZ, volume)
     local handle = C.nxAudioPlay3dClocked(
-        self._cdata, interval, x, y, z, velX or 0, velY or 0, velZ or 0, volume or -1, bus or 0
+        self._cdata, interval, x, y, z, velX or 0, velY or 0, velZ or 0, volume or -1, 0
+    )
+
+    return AudioVoice:new(handle)
+end
+
+------------------------------------------------------------
+function AudioSource:playThrough(bus, volume, pan, paused)
+    local handle = C.nxAudioSourcePlayThrough(
+        self._cdata, bus._cdata, volume or -1, pan or 0, not not paused
+    )
+
+    return AudioVoice:new(handle)
+end
+
+------------------------------------------------------------
+function AudioSource:playClockedThrough(bus, interval, volume, pan)
+    local handle = C.nxAudioSourcePlayClockedThrough(
+        self._cdata, bus._cdata, interval, volume or -1, pan or 0
+    )
+
+    return AudioVoice:new(handle)
+end
+
+------------------------------------------------------------
+function AudioSource:play3dThrough(bus, x, y, z, velX, velY, velZ, volume, paused)
+    local handle = C.nxAudioSourcePlay3dThrough(
+        self._cdata, bus._cdata, x, y, z, velX or 0, velY or 0, velZ or 0, volume or -1,
+        not not paused
+    )
+
+    return AudioVoice:new(handle)
+end
+
+------------------------------------------------------------
+function AudioSource:play3dClockedThrough(bus, interval, x, y, z, velX, velY, velZ, volume)
+    local handle = C.nxAudioSourcePlay3dClockedThrough(
+        self._cdata, bus._cdata, interval, x, y, z, velX or 0, velY or 0, velZ or 0, volume or -1
     )
 
     return AudioVoice:new(handle)

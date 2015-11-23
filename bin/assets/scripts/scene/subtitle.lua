@@ -59,12 +59,15 @@ function SceneSubtitle:load()
 
     self.voiceGroup = require('nx.audiovoicegroup'):new()
 
+    self.audiobus = require('nx.audiobus'):new()
+    self.audiobus:setFilter(self.echoFilter)
+    self.audiobus:play()
+
     self.soundSource = SoundSource:new()
     self.soundSource:open('assets/test.wav')
-    self.soundSource:setFilter(self.echoFilter)
     self.soundSource:setLooping(true)
     self.soundSource:set3dListenerRelative(false)
-    self.voiceGroup:add(self.soundSource:play(-1, 0, true))
+    self.voiceGroup:add(self.soundSource:playThrough(self.audiobus, -1, 0, true))
 
     self.musicSource = MusicSource:new()
     self.musicSource:open('assets/askepticshypothesis.ogg')

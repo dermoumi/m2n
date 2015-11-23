@@ -46,7 +46,8 @@ ffi.cdef [[
     void nxAudioSetGlobalVolume(float);
     void nxAudioPauseAll(bool);
     void nxAudioFadeGlobalVolume(float, double);
-    void nxAudioSetVisualizationEnabled(bool);
+    void nxAudioEnableVisualization(bool);
+    const float* nxAudioCalcFFTData();
     const float* nxAudioCurrentWaveData();
     void nxAudioUpdate3dAudio();
     void nxAudioSet3dSoundSpeed(float);
@@ -100,8 +101,8 @@ function Audio.setMaxActiveVoiceCount(count)
 end
 
 ------------------------------------------------------------
-function Audio.setVisualizationEnabled(enabled)
-    C.nxAudioSetVisualizationEnabled(enabled)
+function Audio.enableVisualization(enabled)
+    C.nxAudioEnableVisualization(enabled)
 end
 
 ------------------------------------------------------------
@@ -164,6 +165,11 @@ end
 ------------------------------------------------------------
 function Audio.maxActiveVoiceCount()
     return C.nxAudioMaxActiveVoiceCount()
+end
+
+------------------------------------------------------------
+function Audio.calcFFTData()
+    return C.nxAudioCalcFFTData()
 end
 
 ------------------------------------------------------------

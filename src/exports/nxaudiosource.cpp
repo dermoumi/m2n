@@ -204,3 +204,71 @@ NX_EXPORT void nxAudioSourceSetFilter(NxAudioSource* source, NxAudioFilter* filt
 {
     source->handle->setFilter(id, filter);
 }
+
+//----------------------------------------------------------
+NX_EXPORT NxAudioSource* nxAudioBusCreate()
+{
+    auto source = new NxAudioSource();
+    source->handle = new SoLoud::Bus();
+    return source;
+}
+
+//----------------------------------------------------------
+NX_EXPORT uint32_t nxAudioSourcePlayThrough(NxAudioSource* source, NxAudioSource* bus, float volume,
+    float pan, bool paused)
+{
+    return static_cast<SoLoud::Bus*>(bus->handle)->play(*source->handle, volume, pan, paused);
+}
+
+//----------------------------------------------------------
+NX_EXPORT uint32_t nxAudioSourcePlayClockedThrough(NxAudioSource* source, NxAudioSource* bus,
+    double interval, float volume, float pan)
+{
+    return static_cast<SoLoud::Bus*>(bus->handle)->playClocked(
+        interval, *source->handle, volume, pan
+    );
+}
+
+//----------------------------------------------------------
+NX_EXPORT uint32_t nxAudioSourcePlay3dThrough(NxAudioSource* source, NxAudioSource* bus,
+    float posX, float posY, float posZ, float velX, float velY, float velZ, float volume,
+    bool paused)
+{
+    return static_cast<SoLoud::Bus*>(bus->handle)->play3d(
+        *source->handle, posX, posY, posZ, velX, velY, velZ, volume, paused
+    );
+}
+
+//----------------------------------------------------------
+NX_EXPORT uint32_t nxAudioSourcePlay3dClockedThrough(NxAudioSource* source, NxAudioSource* bus,
+    double interval, float posX, float posY, float posZ, float velX, float velY, float velZ,
+    float volume)
+{
+    return static_cast<SoLoud::Bus*>(bus->handle)->play3dClocked(
+        interval, *source->handle, posX, posY, posZ, velX, velY, velZ, volume
+    );
+}
+
+//----------------------------------------------------------
+NX_EXPORT void nxAudioBusSetChannels(NxAudioSource* bus, uint32_t channels)
+{
+    static_cast<SoLoud::Bus*>(bus->handle)->setChannels(channels);
+}
+
+//----------------------------------------------------------
+NX_EXPORT void nxAudioBusEnableVisualization(NxAudioSource* bus, bool enabled)
+{
+    static_cast<SoLoud::Bus*>(bus->handle)->setVisualizationEnable(enabled);
+}
+
+//----------------------------------------------------------
+NX_EXPORT const float* nxAudioBusCalcFFT(NxAudioSource* bus)
+{
+    return static_cast<SoLoud::Bus*>(bus->handle)->calcFFT();
+}
+
+//----------------------------------------------------------
+NX_EXPORT const float* nxAudioBusCurrentWaveData(NxAudioSource* bus)
+{
+    return static_cast<SoLoud::Bus*>(bus->handle)->getWave();
+}
