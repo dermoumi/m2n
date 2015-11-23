@@ -64,21 +64,13 @@ end
 
 ------------------------------------------------------------
 function Thread:initialize(func, ...)
-    if type(func) ~= 'function' then
-        return nil, 'Callback is not a function'
-    end
-
     local vm, err = LuaVM:new()
-    if not vm then
-        return nil, err
-    end
-
-    vm:push(func, ...)
+    if not vm then return nil, err end
 
     local handle = C.nxThreadCreate(vm._cdata)
-    if handle == nil then
-        return nil, 'Cannot create a new thread'
-    end
+    if handle == nil then return nil, 'Cannot create a new thread' end
+
+    vm:push(func, ...)
 
     self._vm = vm
     self._cdata = ffi.gc(handle, C.nxThreadRelease)
