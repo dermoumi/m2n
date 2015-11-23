@@ -74,10 +74,10 @@ local AudioVoice = require 'nx._audiovoice'
 
 ------------------------------------------------------------
 local toAttenuationModel = {
-    [0] = 'none',
-    [1] = 'inverse',
-    [2] = 'linear',
-    [3] = 'exponential'
+    none        = 0,
+    inverse     = 1,
+    linear      = 2,
+    exponential = 3
 }
 AudioSource.static._toAttenuationModel = toAttenuationModel;
 
