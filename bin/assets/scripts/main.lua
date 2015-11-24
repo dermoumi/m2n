@@ -113,7 +113,12 @@ Window.setFramerateLimit(
 ------------------------------------------------------------
 local worker = require('game.worker'):new()
 worker:addTask(function()
-    Audio.init()
+    if not require('nx.audio').init() then
+        require('nx.log').error('Could not initialize sound system')
+        return false
+    end
+    
+    return true
 end)
 
 Scene.goTo('scene.load', worker, function()

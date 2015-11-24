@@ -30,6 +30,7 @@
 #include "system/thread.hpp"
 #include "system/luavm.hpp"
 #include "system/log.hpp"
+#include "audio/audio.hpp"
 
 #include <physfs/physfs.h>
 #include <SDL2/SDL.h>
@@ -109,6 +110,7 @@ int main(int argc, char* argv[])
 
     // Set the current thread as the main thread
     Thread::setMain();
+    Audio::instance();
 
     // Enable joystick events
     SDL_JoystickEventState(1);

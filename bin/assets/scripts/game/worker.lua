@@ -47,6 +47,7 @@ function Worker:addFile(objType, id)
     local obj = require(objType):new()
 
     Thread:new(function(loader, obj, filename, loadedCount)
+        loadedCount = require('ffi').cast('uint32_t*', loadedCount)
         if not loader(obj, filename) then
             loadedCount[1] = loadedCount[1] + 1
         else
@@ -61,12 +62,13 @@ end
 ------------------------------------------------------------
 function Worker:addTask(taskFunc, ...)
     Thread:new(function(loadedCount, func, ...)
+        loadedCount = require('ffi').cast('uint32_t*', loadedCount)
         if not func(...) then
             loadedCount[1] = loadedCount[1] + 1
         else
             loadedCount[0] = loadedCount[0] + 1
         end
-    end, loadedCount, taskFunc, ...):detach()
+    end, self._loadedCount, taskFunc, ...):detach()
 
     self._totalCount = self._totalCount + 1
 end

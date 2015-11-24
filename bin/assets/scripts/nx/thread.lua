@@ -75,10 +75,7 @@ function Thread:initialize(func, ...)
     self._vm = vm
 
     local thread = self
-    self._cdata = ffi.gc(handle, function(cdata)
-        C.nxThreadDetach(ffi.gc(cdata, nil))
-        ffi.gc(thread._vm._cdata, nil)
-    end)
+    self._cdata = ffi.gc(handle, C.nxThreadRelease)
 end
 
 ------------------------------------------------------------

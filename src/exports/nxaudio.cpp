@@ -29,6 +29,8 @@
 
 #include <SDL2/SDL.h>
 
+static bool initialized {false};
+
 //----------------------------------------------------------
 // Declarations
 //----------------------------------------------------------
@@ -42,14 +44,17 @@ NX_EXPORT bool nxAudioInit()
     if (SDL_InitSubSystem(SDL_INIT_AUDIO) != 0) return false;
 
     Audio::instance().init();
+
+    initialized = true;
     return true;
 }
 
 //----------------------------------------------------------
 NX_EXPORT void nxAudioRelease()
 {
+    if (!initialized) return;
+
     Audio::instance().deinit();
-    SDL_QuitSubSystem(SDL_INIT_AUDIO);
 }
 
 //----------------------------------------------------------

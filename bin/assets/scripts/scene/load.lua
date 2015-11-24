@@ -34,12 +34,12 @@ function SceneLoad:load(worker, callback)
     self.worker = worker
     self.callback = callback
 
-    self.camera = Camera2D:new(0, 0, 1280, 720)
+    self.camera = require('nx.camera2d'):new(0, 0, 1280, 720)
 end
 
 ------------------------------------------------------------
 function SceneLoad:update(dt)
-    local loaded, failed, total = worker:progress()
+    local loaded, failed, total = self.worker:progress()
 
     if loaded + failed == total then
         Scene.back()
