@@ -99,7 +99,50 @@ project 'soloud'
     filter { 'action:gmake', 'system:windows', 'architecture:x32' }
         buildoptions { --[['-fPIC',]] '-msse4.1' }
 
--- The project
+-- PhysFS
+project 'physfs'
+    targetname     'physfs'
+    language       'C'
+    kind           'StaticLib'
+
+    includedirs {
+        'extlibs/include/physfs'
+    }
+
+    files {
+        'extlibs/src/PhysFS/lzma/C/7zCrc.c',
+        'extlibs/src/PhysFS/lzma/C/Compress/Lzma/LzmaDecode.c',
+        'extlibs/src/PhysFS/*.c',
+        'extlibs/src/PhysFS/lzma/C/Archive/7z/*.c',
+        'extlibs/src/PhysFS/lzma/C/Compress/Branch/*.c'
+    }
+
+    defines {
+        'PHYSFS_NO_CDROM_SUPPORT=1',
+        'HAVE_GCC_DESTRUCTOR=1',
+        'OPT_GENERIC',
+        'REAL_IS_FLOAT',
+        'PHYSFS_SUPPORTS_ZIP=1',
+        'PHYSFS_SUPPORTS_7Z=1',
+        'PHYSFS_SUPPORTS_GRP=0',
+        'PHYSFS_SUPPORTS_QPAK=0',
+        'PHYSFS_SUPPORTS_HOG=0',
+        'PHYSFS_SUPPORTS_MVL=0',
+        'PHYSFS_SUPPORTS_WAD=0'
+    }
+
+    filter { 'action:gmake', 'system:not windows' }
+        targetdir 'extlibs/libs'
+    filter { 'action:gmake', 'system:windows', 'architecture:x32' }
+        targetdir 'extlibs/libs-mingw/x86'
+    filter { 'action:gmake', 'system:windows', 'architecture:x64' }
+        targetdir 'extlibs/libs-mingw/x64'
+    filter { 'action:vs2013', 'system:windows', 'architecture:x32' }
+        targetdir 'extlibs/libs-vs2013/x86'
+    filter { 'action:vs2013', 'system:windows', 'architecture:x64' }
+        targetdir 'extlibs/libs-vs2013/x64'
+
+-- The Game
 project 'game'
     targetname     'game'
     targetdir      'bin'

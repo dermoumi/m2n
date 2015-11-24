@@ -129,10 +129,10 @@ end
 
 -- Makes the initial loading slower for testing purpose
 -- TODO: Remove this when finished
-worker:addTask(function()
-    require('nx').sleep(2)
-    return true
-end)
+--worker:addTask(function()
+--   require('nx').sleep(2)
+--   return true
+--end)
 
 Scene.goTo('scene.load', worker, function()
     Scene.goTo('scene.title')
