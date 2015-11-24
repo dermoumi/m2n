@@ -30,9 +30,30 @@ local Scene = require 'scene'
 local SceneLoad = Scene:subclass('scene.load')
 
 ------------------------------------------------------------
-function SceneLoad:load(worker, callback)
-    self.worker = worker
-    self.callback = callback
+function SceneLoad:load(colR, colG, colB, colA, worker, callback)
+    if not colB or not colA then
+        worker = colR
+        callback = colG
+        self.colR, self.colG, self.colB, self.colA = 0, 0, 0, 255
+    else
+        self.colR, self.colG, self.colB, self.colA = colR, colG, colB, colA
+    end
+
+    if not callback then
+        self.worker = require('game.worker'):new()
+        callback = worker
+    else
+        self.worker = worker
+    end
+
+    if type(callback) == 'function' then
+        self.callback = callback
+    else
+        self.worker:addScene(callback)
+        self.callback = function()
+            Scene.push(callback)
+        end
+    end
 
     self.camera = require('nx.camera2d'):new(0, 0, 1280, 720)
 end
@@ -49,7 +70,7 @@ end
 
 ------------------------------------------------------------
 function SceneLoad:render()
-    self.camera:clear(0, 0, 0)
+    self.camera:clear(self.colR, self.colG, self.colB, self.colA)
 end
 
 ------------------------------------------------------------

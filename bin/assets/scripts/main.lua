@@ -109,6 +109,25 @@ Window.setFramerateLimit(
 )
 
 ------------------------------------------------------------
+-- Setup loaders
+------------------------------------------------------------
+local Loader = require('game.loader')
+
+Loader.registerFunc('nx.soundsource', function(obj, id)
+    obj:open(id)
+    return true
+end)
+
+Loader.registerFunc('nx.musicsource', function(obj, id)
+    obj:open(id)
+    return true
+end)
+
+Loader.registerFunc('nx.image', function(obj, id)
+    return obj:load(id)
+end)
+
+------------------------------------------------------------
 -- Startup scene
 ------------------------------------------------------------
 local worker = require('game.worker'):new()
@@ -130,9 +149,8 @@ worker:addTask(function()
    return true
 end)
 
-Scene.goTo('scene.load', worker, function()
-    Scene.goTo('scene.title')
-end)
+-- Load scene title
+Scene.goTo('scene.load', worker, 'scene.title')
 
 -----------------------------------------------------------a-
 -- Main loop

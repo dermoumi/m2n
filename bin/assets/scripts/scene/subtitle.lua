@@ -47,8 +47,16 @@ local Text = require 'nx.text'
 local Shape = require 'nx.shape'
 local SoundSource = require 'nx.soundsource'
 local MusicSource = require 'nx.musicsource'
+local Cache = require 'game.cache'
 local ffi = require 'ffi'
 local C = ffi.C
+
+------------------------------------------------------------
+function SceneSubtitle.static.setupWorker(worker)
+    worker:addFile('nx.soundsource', 'assets/test.wav')
+    worker:addFile('nx.musicsource', 'assets/askepticshypothesis.ogg')
+    worker:addFile('nx.image', 'assets/pasrien.png')
+end
 
 ------------------------------------------------------------
 function SceneSubtitle:load()
@@ -60,28 +68,23 @@ function SceneSubtitle:load()
     self.voiceGroup = require('nx.audiovoicegroup'):new()
 
     self.audiobus = require('nx.audiobus'):new()
-    self.audiobus:setFilter(self.echoFilter)
+    --self.audiobus:setFilter(self.echoFilter)
     self.audiobus:play()
 
-    self.soundSource = SoundSource:new()
-    self.soundSource:open('assets/test.wav')
+    self.soundSource = Cache.get('assets/test.wav')
     self.soundSource:setLooping(true)
     self.soundSource:set3dListenerRelative(false)
     self.voiceGroup:add(self.soundSource:playThrough(self.audiobus, -1, 0, true))
 
-    self.musicSource = MusicSource:new()
-    self.musicSource:open('assets/askepticshypothesis.ogg')
+    self.musicSource = Cache.get('assets/askepticshypothesis.ogg')
     self.musicSource:setVolume(.1)
     self.voiceGroup:add(self.musicSource:play(-1, 0, true))
 
     self.voiceGroup:pause(false)
 
     -- Load image
-    local img = require('nx.image'):new()
-    local ok, err = img:load('assets/pasrien.png')
-    if not ok then
-        print("Couldn't load image: " .. err)
-    end
+    local img = Cache.get('assets/pasrien.png')
+    if not img then print('Could not load image') end
     local imgWidth, imgHeight = img:size()
 
     -- Create texture
@@ -92,7 +95,7 @@ function SceneSubtitle:load()
     self.texture:setAnisotropyLevel(8)
     self.texture:setRepeating('clamp', 'wrap')
 
-    img:release()
+    Cache.release('assets/pasrien.png')
 
     -- Create renderbuffer
     self.rb = Renderbuffer:new()
@@ -196,6 +199,9 @@ function SceneSubtitle:release()
     self.rb:release()
     self.sprite:release()
     self.rbSprite:release()
+
+    Cache.release('assets/test.wav')
+    Cache.release('assets/askepticshypothesis.ogg')
 end
 
 ------------------------------------------------------------

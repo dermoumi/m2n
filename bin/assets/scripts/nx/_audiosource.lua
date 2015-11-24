@@ -33,6 +33,7 @@ local C = ffi.C
 
 ffi.cdef [[
     typedef struct NxAudioSource NxAudioSource;
+    typedef struct NxAudioFilter NxAudioFilter;
 
     void nxAudioSourceRelease(NxAudioSource*);
     uint32_t nxAudioPlay(NxAudioSource*, float, float, bool, uint32_t);

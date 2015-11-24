@@ -56,7 +56,7 @@ function Worker:addFile(objType, id)
     end, loaderFunc, obj, id, self._loadedCount):detach()
 
     self._totalCount = self._totalCount + 1
-    Cache.add(id, obj)
+    require('game.cache').add(id, obj)
 end
 
 ------------------------------------------------------------
@@ -71,6 +71,17 @@ function Worker:addTask(taskFunc, ...)
     end, self._loadedCount, taskFunc, ...):detach()
 
     self._totalCount = self._totalCount + 1
+end
+
+------------------------------------------------------------
+function Worker:addScene(scene)
+    -- Do not add twice
+    if self.addedScenes and self.addedScenes[scene] then return end
+
+    local Scene = require(scene)
+    if Scene.setupWorker then
+        Scene.setupWorker(self)
+    end
 end
 
 ------------------------------------------------------------
