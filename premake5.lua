@@ -2,7 +2,7 @@
 solution 'm2n'
     configurations { 'Debug', 'Release', 'Debug32', 'Release32', 'Debug64', 'Release64' }
     location       '.'
-    language       'C++'
+    language       'C'
     includedirs {
         'src',
         'extlibs/include'
@@ -25,11 +25,6 @@ solution 'm2n'
         kind         'WindowedApp'
         defines      { 'NDEBUG' }
         flags        { 'Optimize' }
-
-    -- GCC specific
-    filter { 'action:gmake' }
-        buildoptions { '-std=c++11' }
-        linkoptions  { "-static-libgcc -static-libstdc++" }
 
     -- MinGW specific
     filter { 'action:gmake', 'system:windows' }
@@ -56,49 +51,6 @@ solution 'm2n'
     filter 'configurations:*64'
         architecture 'x64'
 
--- Soloud
-project 'soloud'
-    targetname        'soloud'
-    kind              'StaticLib'
-    flags             { 'NoPCH' }
-    exceptionhandling "Off"
-    rtti              "Off"
-
-    includedirs {
-        'extlibs/include/soloud'
-    }
-
-    files {
-        'extlibs/src/soloud/backend/sdl2_static/**.c*',
-        'extlibs/src/soloud/audiosource/**.c*',
-        'extlibs/src/soloud/filter/**.c*',
-        'extlibs/src/soloud/core/**.c*'
-    }
-
-    defines { 'WITH_SDL2_STATIC' }
-
-    filter { 'action:gmake', 'system:not windows' }
-        targetdir 'extlibs/libs'
-    filter { 'action:gmake', 'system:windows', 'architecture:x32' }
-        targetdir 'extlibs/libs-mingw/x86'
-    filter { 'action:gmake', 'system:windows', 'architecture:x64' }
-        targetdir 'extlibs/libs-mingw/x64'
-    filter { 'action:vs2013', 'system:windows', 'architecture:x32' }
-        targetdir 'extlibs/libs-vs2013/x86'
-    filter { 'action:vs2013', 'system:windows', 'architecture:x64' }
-        targetdir 'extlibs/libs-vs2013/x64'
-
-    filter { 'configurations:Release*' }
-        flags { 'Optimize', 'OptimizeSpeed', 'NoEditAndContinue', 'No64BitChecks' }
-    filter { 'architecture:x32', 'configurations:Release*' }
-        flags { 'EnableSSE2' }
-
-    filter { 'action:vs2013', 'system:windows' }
-        defines { '_CRT_SECURE_NO_WARNINGS' }
-
-    filter { 'action:gmake', 'system:windows', 'architecture:x32' }
-        buildoptions { --[['-fPIC',]] '-msse4.1' }
-
 -- PhysFS
 project 'physfs'
     targetname     'physfs'
@@ -115,6 +67,10 @@ project 'physfs'
         'extlibs/src/PhysFS/*.c',
         'extlibs/src/PhysFS/lzma/C/Archive/7z/*.c',
         'extlibs/src/PhysFS/lzma/C/Compress/Branch/*.c'
+    }
+
+    excludes {
+        'extlibs/src/PhysFS/lzma/C/Archive/7z/7zMain.c'
     }
 
     defines {
@@ -142,10 +98,59 @@ project 'physfs'
     filter { 'action:vs2013', 'system:windows', 'architecture:x64' }
         targetdir 'extlibs/libs-vs2013/x64'
 
+-- Soloud
+project 'soloud'
+    targetname        'soloud'
+    kind              'StaticLib'
+    flags             { 'NoPCH' }
+    exceptionhandling 'Off'
+    rtti              'Off'
+    language          'C++'
+
+    includedirs {
+        'extlibs/include/soloud'
+    }
+
+    files {
+        'extlibs/src/soloud/backend/sdl2_static/**.c*',
+        'extlibs/src/soloud/audiosource/**.c*',
+        'extlibs/src/soloud/filter/**.c*',
+        'extlibs/src/soloud/core/**.c*'
+    }
+
+    defines { 'WITH_SDL2_STATIC' }
+
+    filter { 'action:gmake' }
+        buildoptions { '-x c++ -std=c++11' }
+        linkoptions  { "-static-libgcc -static-libstdc++" }
+        
+    filter { 'action:gmake', 'system:not windows' }
+        targetdir 'extlibs/libs'
+    filter { 'action:gmake', 'system:windows', 'architecture:x32' }
+        targetdir 'extlibs/libs-mingw/x86'
+    filter { 'action:gmake', 'system:windows', 'architecture:x64' }
+        targetdir 'extlibs/libs-mingw/x64'
+    filter { 'action:vs2013', 'system:windows', 'architecture:x32' }
+        targetdir 'extlibs/libs-vs2013/x86'
+    filter { 'action:vs2013', 'system:windows', 'architecture:x64' }
+        targetdir 'extlibs/libs-vs2013/x64'
+
+    filter { 'configurations:Release*' }
+        flags { 'Optimize', 'OptimizeSpeed', 'NoEditAndContinue', 'No64BitChecks' }
+    filter { 'architecture:x32', 'configurations:Release*' }
+        flags { 'EnableSSE2' }
+
+    filter { 'action:vs2013', 'system:windows' }
+        defines { '_CRT_SECURE_NO_WARNINGS' }
+
+    filter { 'action:gmake', 'system:windows', 'architecture:x32' }
+        buildoptions { --[['-fPIC',]] '-msse4.1' }
+
 -- The Game
 project 'game'
-    targetname     'game'
-    targetdir      'bin'
+    targetname 'game'
+    targetdir  'bin'
+    language   'C++'
 
     files {
         'src/**/*.cpp',
@@ -171,6 +176,11 @@ project 'game'
     filter 'system:windows'
         files        { 'game.rc' }
         links        { 'SDL2main', 'opengl32', 'lua51', 'winmm' }
+
+    -- GCC specific
+    filter { 'action:gmake' }
+        buildoptions { '-x c++ -std=c++11' }
+        linkoptions  { "-static-libgcc -static-libstdc++" }
 
     -- All configs, again, because of linking order
     filter {}
