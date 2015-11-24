@@ -53,8 +53,15 @@ Nx.sleep = C.nxSysSleep
 Nx.getSystemTime = C.nxSysGetTime
 
 ------------------------------------------------------------
-function Nx.getPlatform()
-    return platform
+function Nx.platform(a, b, ...)
+    if not a then return platform end
+    if not b then return platform == a end
+
+    for i, v in ipairs({a, b, ...}) do
+        if v == platform then return true end
+    end
+
+    return false
 end
 
 ------------------------------------------------------------

@@ -105,7 +105,7 @@ Window.setIcon('assets/icon.png')
 -- Handling FPS
 ------------------------------------------------------------
 Window.setFramerateLimit(
-    (Nx.getPlatform() == 'android' or Nx.getPlatform() == 'ios') and 1/30 or 1/60
+    Nx.platform('android', 'ios') and 1/30 or 1/60
 )
 
 ------------------------------------------------------------
@@ -113,7 +113,7 @@ Window.setFramerateLimit(
 ------------------------------------------------------------
 local worker = require('game.worker'):new()
 
-if Nx.getPlatform() == 'windows' or Nx.getPlatform() == 'linux' then
+if Nx.platform('windows', 'linux') then
     -- On some systems initializing SDL Audio takes some time, load it in a worker
     worker:addTask(function()
         if not require('nx.audio').init() then
