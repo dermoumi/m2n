@@ -113,8 +113,8 @@ Window.setFramerateLimit(
 ------------------------------------------------------------
 local worker = require('game.worker'):new()
 
-if Nx.getPlatform() == 'windows' then
-    -- On windows initializing SDL Audio takes some time, load it in a worker
+if Nx.getPlatform() == 'windows' or Nx.getPlatform() == 'linux' then
+    -- On some systems initializing SDL Audio takes some time, load it in a worker
     worker:addTask(function()
         if not require('nx.audio').init() then
             require('nx.log').error('Could not initialize sound system')
@@ -124,15 +124,16 @@ if Nx.getPlatform() == 'windows' then
         return true
     end)
 else
+    -- Some other systems don't support loading threaded SDL audio initializing
     require('nx.audio').init()
 end
 
 -- Makes the initial loading slower for testing purpose
 -- TODO: Remove this when finished
---worker:addTask(function()
---   require('nx').sleep(2)
---   return true
---end)
+worker:addTask(function()
+   require('nx').sleep(.4)
+   return true
+end)
 
 Scene.goTo('scene.load', worker, function()
     Scene.goTo('scene.title')
