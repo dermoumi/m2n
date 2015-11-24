@@ -112,14 +112,20 @@ Window.setFramerateLimit(
 -- Startup scene
 ------------------------------------------------------------
 local worker = require('game.worker'):new()
-worker:addTask(function()
-    if not require('nx.audio').init() then
-        require('nx.log').error('Could not initialize sound system')
-        return false
-    end
-    
-    return true
-end)
+
+if Nx.getPlatform() == 'android' then
+    -- In android, the audio subsystem must be initialized in the main thread
+    require('nx.audio').init()
+else
+    worker:addTask(function()
+        if not require('nx.audio').init() then
+            require('nx.log').error('Could not initialize sound system')
+            return false
+        end
+        
+        return true
+    end)
+end
 
 Scene.goTo('scene.load', worker, function()
     Scene.goTo('scene.title')
