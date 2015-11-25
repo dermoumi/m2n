@@ -33,14 +33,12 @@ local Texture2D = Texture:subclass('nx.texture2d')
 function Texture2D.static._fromCData(cdata)
     local texture = Texture2D:allocate()
     texture._cdata = require('ffi').cast('NxTexture*', cdata)
-    print('cdata', texture._cdata)
     return texture
 end
 
 ------------------------------------------------------------
 function Texture2D:initialize(width, height, hasMips, mipMap)
     Texture.initialize(self)
-    print('2cdata', self._cdata)
 
     if width and height then
         ok, err = self:create(width, height, hasMips, mipMap)
