@@ -39,7 +39,7 @@ end
 function Loader.load(objType, id)
     local Cache = require 'game.cache'
 
-    local item = Cache.get(id)
+    local item = Cache.get(id, true)
     if item then return item end
 
     local func = loaderFunc[objType]

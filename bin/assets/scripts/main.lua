@@ -118,11 +118,6 @@ Loader.registerFunc('nx.soundsource', function(obj, id)
     return true
 end)
 
-Loader.registerFunc('nx.musicsource', function(obj, id)
-    obj:open(id)
-    return true
-end)
-
 Loader.registerFunc('nx.image', function(obj, id)
     return obj:load(id)
 end)

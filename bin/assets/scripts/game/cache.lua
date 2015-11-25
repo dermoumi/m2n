@@ -31,12 +31,12 @@ local Cache = {}
 local items = {}
 
 ------------------------------------------------------------
-function Cache.get(id, dontCount)
+function Cache.get(id, addLoadCount)
     local item = items[id]
     if not item then return nil end
 
-    if not dontCount then
-        item.instanceCount = item.instanceCount + 1
+    if addLoadCount then
+        item.loadCount = item.loadCount + 1
     end
 
     return item.obj
@@ -47,11 +47,9 @@ function Cache.release(id)
     local item = items[id]
     if not item then return end
 
-    item.instanceCount = item.instanceCount - 1
-    if item.instanceCount <= 0 then
-        if item.obj.release then 
-            item.obj:release()
-        end
+    item.loadCount = item.loadCount - 1
+    if item.loadCount <= 0 then
+        if item.obj.release then item.obj:release() end
         items[id] = nil
     end
 end
@@ -59,7 +57,7 @@ end
 ------------------------------------------------------------
 function Cache.add(id, newObj)
     items[id] = {
-        instanceCount = 0,
+        loadCount = 1,
         obj = newObj
     }
 

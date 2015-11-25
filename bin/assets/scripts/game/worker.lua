@@ -43,8 +43,13 @@ end
 
 ------------------------------------------------------------
 function Worker:addFile(objType, id)
+    local Cache = require('game.cache')
+
+    local obj = Cache.get(id, true)
+    if obj then return end
+
     local loaderFunc = Loader._func(objType)
-    local obj = require(objType):new()
+    obj = require(objType):new()
 
     Thread:new(function(loader, obj, filename, loadedCount)
         loadedCount = require('ffi').cast('uint32_t*', loadedCount)
@@ -56,7 +61,7 @@ function Worker:addFile(objType, id)
     end, loaderFunc, obj, id, self._loadedCount):detach()
 
     self._totalCount = self._totalCount + 1
-    require('game.cache').add(id, obj)
+    Cache.add(id, obj)
 end
 
 ------------------------------------------------------------

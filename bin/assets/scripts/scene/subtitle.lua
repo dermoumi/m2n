@@ -54,7 +54,6 @@ local C = ffi.C
 ------------------------------------------------------------
 function SceneSubtitle.static.setupWorker(worker)
     worker:addFile('nx.soundsource', 'assets/test.wav')
-    worker:addFile('nx.musicsource', 'assets/askepticshypothesis.ogg')
     worker:addFile('nx.image', 'assets/pasrien.png')
 end
 
@@ -73,12 +72,12 @@ function SceneSubtitle:load()
 
     self.soundSource = Cache.get('assets/test.wav')
     self.soundSource:setLooping(true)
-    self.soundSource:set3dListenerRelative(false)
     self.voiceGroup:add(self.soundSource:playThrough(self.audiobus, -1, 0, true))
 
-    self.musicSource = Cache.get('assets/askepticshypothesis.ogg')
+    self.musicSource = MusicSource:new()
+    self.musicSource:open('assets/askepticshypothesis.ogg')
     self.musicSource:setVolume(.1)
-    self.voiceGroup:add(self.musicSource:play(-1, 0, true))
+    self.voiceGroup:add(self.musicSource:playThrough(self.audiobus, -1, 0, true))
 
     self.voiceGroup:pause(false)
 
@@ -200,8 +199,8 @@ function SceneSubtitle:release()
     self.sprite:release()
     self.rbSprite:release()
 
+    self.audiobus:stop()
     Cache.release('assets/test.wav')
-    Cache.release('assets/askepticshypothesis.ogg')
 end
 
 ------------------------------------------------------------
