@@ -130,27 +130,7 @@ end)
 ------------------------------------------------------------
 -- Startup scene
 ------------------------------------------------------------
-local worker = require('game.worker'):new()
-
--- Initializing Audio is slow so we're doing it in a worker
-worker:addTask(function()
-    if not require('nx.audio').init() then
-        require('nx.log').error('Could not initialize sound system')
-        return false
-    end
-    
-    return true
-end)
-
--- Makes the initial loading slower for testing purpose
--- TODO: Remove this when finished
-worker:addTask(function()
-   require('nx').sleep(.4)
-   return true
-end)
-
--- Load scene title
-Scene.goTo('scene.load', worker, 'scene.title')
+Scene.goTo('scene.load', 'scene.boot')
 
 -----------------------------------------------------------a-
 -- Main loop

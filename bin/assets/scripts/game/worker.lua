@@ -79,17 +79,6 @@ function Worker:addTask(taskFunc, ...)
 end
 
 ------------------------------------------------------------
-function Worker:addScene(scene)
-    -- Do not add twice
-    if self.addedScenes and self.addedScenes[scene] then return end
-
-    local Scene = require(scene)
-    if Scene.setupWorker then
-        Scene.setupWorker(self)
-    end
-end
-
-------------------------------------------------------------
 function Worker:progress()
     return tonumber(self._loadedCount[0]), tonumber(self._loadedCount[1]), self._totalCount
 end

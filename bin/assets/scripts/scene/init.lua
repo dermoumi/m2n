@@ -41,24 +41,19 @@ function Scene.static.currentScene()
 end
 
 ------------------------------------------------------------
-function Scene.static.goTo(sceneName, ...)
+function Scene.static.goTo(scene, ...)
     for i = #sceneStack, 1, -1 do
         releaseStack[#releaseStack + 1] = sceneStack[i]
         sceneStack[i] = nil
     end
 
-    return Scene.push(sceneName, ...)
+    return Scene.push(scene, ...)
 end
 
 ------------------------------------------------------------
-function Scene.static.push(sceneName, ...)
-    local sceneClass = require(sceneName)
+function Scene.static.push(scene, ...)
+    if type(scene) == 'string' then scene = require(scene):new() end
 
-    if not sceneClass or not class.Object.isSubclassOf(sceneClass, Scene) then
-        return false
-    end
-
-    local scene  = sceneClass:new()
     scene.parent = sceneStack[#sceneStack]
 
     sceneStack[#sceneStack + 1] = scene
@@ -105,6 +100,11 @@ function Scene:_onEvent(e, a, b, c, d)
     end
 
     return true
+end
+
+------------------------------------------------------------
+function Scene:preload(worker, ...)
+    -- Nothing to do
 end
 
 ------------------------------------------------------------

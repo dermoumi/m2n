@@ -52,9 +52,14 @@ local ffi = require 'ffi'
 local C = ffi.C
 
 ------------------------------------------------------------
-function SceneSubtitle.static.setupWorker(worker)
+function SceneSubtitle:preload(worker)
     worker:addFile('nx.soundsource', 'assets/test.wav')
     worker:addFile('nx.texture2d', 'assets/pasrien.png')
+
+    self.musicSource = MusicSource:new()
+    worker:addTask(function(music)
+        music:open('assets/askepticshypothesis.ogg')
+    end, self.musicSource)
 end
 
 ------------------------------------------------------------
@@ -74,8 +79,6 @@ function SceneSubtitle:load()
     self.soundSource:setLooping(true)
     self.voiceGroup:add(self.soundSource:playThrough(self.audiobus, -1, 0, true))
 
-    self.musicSource = MusicSource:new()
-    self.musicSource:open('assets/askepticshypothesis.ogg')
     self.musicSource:setVolume(.1)
     self.voiceGroup:add(self.musicSource:playThrough(self.audiobus, -1, 0, true))
 

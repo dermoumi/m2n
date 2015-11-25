@@ -39,11 +39,6 @@ local Renderer = require 'nx.renderer'
 local Log = require 'nx.log'
 
 ------------------------------------------------------------
-function SceneTitle.static.setupWorker(worker)
-    -- Nothing to do
-end
-
-------------------------------------------------------------
 function SceneTitle:load()
     local caps = Renderer.getCapabilities()
 

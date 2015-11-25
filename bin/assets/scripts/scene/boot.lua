@@ -27,52 +27,32 @@
 
 ------------------------------------------------------------
 local Scene = require 'scene'
-local SceneLoad = Scene:subclass('scene.load')
+local SceneBoot = Scene:subclass('scene.boot')
 
 ------------------------------------------------------------
-function SceneLoad:load(colR, colG, colB, colA, nextScene, ...)
-    if not colG then
-        self.params = {colG, colB, colA, nextScene, ...}
-        nextScene = colR
-        self.colR, self.colG, self.colB, self.colA = 0, 0, 0, 255
-    else
-        self.params = {...}
-        self.colR, self.colG, self.colB, self.colA = colR, colG, colB, colA or 255
-    end
+function SceneBoot:preload(worker)
+    -- Initializing Audio is slow so we're doing it in a worker
+    worker:addTask(function()
+        if not require('nx.audio').init() then
+            require('nx.log').error('Could not initialize sound system')
+            return false
+        end
+        
+        return true
+    end)
 
-    if type(nextScene) == 'string' then
-        nextScene = require(nextScene):new()
-    end
-
-    self.worker = require('game.worker'):new()
-
-    self.nextScene = nextScene
-    self.nextScene:preload(self.worker, ...)
-
-    self:check()
-
-    self.camera = require('nx.camera2d'):new(0, 0, 1280, 720)
+    -- Makes the initial loading slower for testing purpose
+    -- TODO: Remove this when finished
+    worker:addTask(function()
+       require('nx').sleep(.4)
+       return true
+    end)
 end
 
 ------------------------------------------------------------
-function SceneLoad:update(dt)
-    self:check()
+function SceneBoot:load()
+    Scene.goTo('scene.load', 'scene.title')
 end
 
 ------------------------------------------------------------
-function SceneLoad:render()
-    self.camera:clear(self.colR, self.colG, self.colB, self.colA)
-end
-
-------------------------------------------------------------
-function SceneLoad:check()
-    local loaded, failed, total = self.worker:progress()
-
-    if loaded + failed == total then
-        Scene.back()
-        Scene.push(self.nextScene, unpack(self.params, 1, table.maxn(self.params)))
-    end
-end
-
-------------------------------------------------------------
-return SceneLoad
+return SceneBoot
