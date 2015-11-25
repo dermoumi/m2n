@@ -54,10 +54,11 @@ static GLenum toVertexFormat[] = {GL_FLOAT, GL_UNSIGNED_BYTE};
 static GLenum toIndexFormat[]  = {GL_UNSIGNED_SHORT, GL_UNSIGNED_INT};
 static GLenum toPrimType[]     = {GL_TRIANGLES, GL_TRIANGLE_STRIP};
 static GLenum toTexType[]      = {GL_TEXTURE_2D, GL_TEXTURE_3D, GL_TEXTURE_CUBE_MAP};
+static GLenum toTexBinding[]   = {
+    GL_TEXTURE_BINDING_2D, GL_TEXTURE_BINDING_3D, GL_TEXTURE_BINDING_CUBE_MAP
+};
 
 static std::mutex vlMutex; // Vertex layouts mutex
-static std::mutex txMutex; // Texture operations mutex
-static std::mutex cpMutex; // Capabilities mutex
 thread_local std::string shaderLog;
 
 //----------------------------------------------------------
@@ -428,6 +429,10 @@ uint32_t RenderDeviceGL::createTexture(TextureType type, int width, int height,
     if (tex.glObj == 0) return 0;
 
     glActiveTexture(GL_TEXTURE15);
+    
+    int lastTexture;
+    glGetIntegerv(toTexBinding[tex.type], &lastTexture);
+
     glBindTexture(tex.type, tex.glObj);
 
     float borderColor[] = {1.0f, 1.0f, 1.0f, 1.0f};
@@ -436,14 +441,7 @@ uint32_t RenderDeviceGL::createTexture(TextureType type, int width, int height,
     tex.samplerState = 0;
     applySamplerState(tex);
 
-    glBindTexture(tex.type, 0);
-    {
-        std::lock_guard<std::mutex> lock(txMutex);
-        if (mTexSlots[15].texObj) {
-            auto& tex15 = mTextures.getRef(mTexSlots[15].texObj);
-            glBindTexture(tex15.type, tex15.glObj);
-        }
-    }
+    glBindTexture(tex.type, lastTexture);
 
     // Calculate memory requirements
     tex.memSize = calcTextureSize(format, width, height, depth);
@@ -463,6 +461,10 @@ void RenderDeviceGL::uploadTextureData(uint32_t texObj, int slice, int mipLevel,
     auto format     = tex.format;
 
     glActiveTexture(GL_TEXTURE15);
+
+    int lastTexture;
+    glGetIntegerv(toTexBinding[tex.type], &lastTexture);
+
     glBindTexture(tex.type, tex.glObj);
 
     int inputFormat = GL_RGBA;
@@ -520,14 +522,7 @@ void RenderDeviceGL::uploadTextureData(uint32_t texObj, int slice, int mipLevel,
         glDisable(tex.type);
     }
 
-    glBindTexture(tex.type, 0);
-    {
-        std::lock_guard<std::mutex> lock(txMutex);
-        if (mTexSlots[15].texObj) {
-            auto& tex15 = mTextures.getRef(mTexSlots[15].texObj);
-            glBindTexture(tex15.type, tex15.glObj);
-        }
-    }
+    glBindTexture(tex.type, lastTexture);
 }
 
 //----------------------------------------------------------
@@ -547,6 +542,10 @@ void RenderDeviceGL::uploadTextureSubData(uint32_t texObj, int slice, int mipLev
     }
 
     glActiveTexture(GL_TEXTURE15);
+
+    int lastTexture;
+    glGetIntegerv(toTexBinding[tex.type], &lastTexture);
+    
     glBindTexture(tex.type, tex.glObj);
 
     int inputFormat = GL_RGBA;
@@ -596,14 +595,7 @@ void RenderDeviceGL::uploadTextureSubData(uint32_t texObj, int slice, int mipLev
         glDisable(tex.type);
     }
 
-    glBindTexture(tex.type, 0);
-    {
-        std::lock_guard<std::mutex> lock(txMutex);
-        if (mTexSlots[15].texObj) {
-            auto& tex15 = mTextures.getRef(mTexSlots[15].texObj);
-            glBindTexture(tex15.type, tex15.glObj);
-        }
-    }
+    glBindTexture(tex.type, lastTexture);
 }
 
 //----------------------------------------------------------
@@ -627,6 +619,10 @@ bool RenderDeviceGL::getTextureData(uint32_t texObj, int slice, int mipLevel, vo
 
     int fmt, type, compressed = 0;
     glActiveTexture(GL_TEXTURE15);
+
+    int lastTexture;
+    glGetIntegerv(toTexBinding[tex.type], &lastTexture);
+    
     glBindTexture(tex.type, tex.glObj);
 
     switch(tex.format) {
@@ -650,14 +646,7 @@ bool RenderDeviceGL::getTextureData(uint32_t texObj, int slice, int mipLevel, vo
         glGetTexImage(target, mipLevel, fmt, type, buffer);
     }
 
-    glBindTexture(tex.type, 0);
-    {
-        std::lock_guard<std::mutex> lock(txMutex);
-        if (mTexSlots[15].texObj) {
-            auto& tex15 = mTextures.getRef(mTexSlots[15].texObj);
-            glBindTexture(tex15.type, tex15.glObj);
-        }
-    }
+    glBindTexture(tex.type, lastTexture);
 
     return true;
 }
@@ -1399,7 +1388,6 @@ void RenderDeviceGL::getCapabilities(uint32_t* maxTexUnits, uint32_t* maxTexSize
         bool* texFloat, bool* texDepth, bool* texSS, bool* tex3D, bool* texNPOT, bool* texSRGB,
         bool* rtms, bool* occQuery, bool* timerQuery) const
 {
-    std::lock_guard<std::mutex> lock(cpMutex);
     if (maxTexUnits)   *maxTexUnits   = mMaxTextureUnits;
     if (maxTexSize)    *maxTexSize    = mMaxTextureSize;
     if (maxCubTexSize) *maxCubTexSize = mMaxCubeTextureSize;
