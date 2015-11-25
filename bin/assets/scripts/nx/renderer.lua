@@ -91,9 +91,9 @@ ffi.cdef [[
 local Renderer = {}
 
 ------------------------------------------------------------
-local caps = {}
 local vertexLayouts = {}
 local defaultShaders = {}
+local caps
 
 local toFillMode = {
     solid = 0,
@@ -152,26 +152,6 @@ local vbFsQuad;
 ------------------------------------------------------------
 function Renderer.init()
     if not C.nxRendererInit() then return false end
-
-    local u, b = ffi.new('unsigned int[4]'), ffi.new('bool[12]')
-    C.nxRendererGetCapabilities(u, b)
-
-    caps.maxTexUnits     = tonumber(u[0])
-    caps.maxTexSize      = tonumber(u[1])
-    caps.maxCubeTexSize  = tonumber(u[2])
-    caps.maxColorBuffers = tonumber(u[3])
-    caps.dxtSupported             = b[0]
-    caps.pvrtciSupported          = b[1]
-    caps.etc1Supported            = b[2]
-    caps.floatTexturesSupported   = b[3]
-    caps.textureDepthSupported    = b[4]
-    caps.textureShadowSampling    = b[5]
-    caps.texture3DSupported       = b[6]
-    caps.npotTexturesSupported    = b[7]
-    caps.sRGBTexturesSupported    = b[8]
-    caps.rtMultisamplingSupported = b[9]
-    caps.occQueriesSupported      = b[10]
-    caps.timerQueriesSupported    = b[11]
 
     -- Initialize vertex layouts
     vertexLayouts[1] = C.nxRendererRegisterVertexLayout(2, ffi.new('NxVertexLayoutAttrib[2]', {
@@ -252,6 +232,30 @@ end
 
 ------------------------------------------------------------
 function Renderer.getCapabilities(cap)
+    if not caps then
+        caps = {}
+
+        local u, b = ffi.new('unsigned int[4]'), ffi.new('bool[12]')
+        C.nxRendererGetCapabilities(u, b)
+
+        caps.maxTexUnits     = tonumber(u[0])
+        caps.maxTexSize      = tonumber(u[1])
+        caps.maxCubeTexSize  = tonumber(u[2])
+        caps.maxColorBuffers = tonumber(u[3])
+        caps.dxtSupported             = b[0]
+        caps.pvrtciSupported          = b[1]
+        caps.etc1Supported            = b[2]
+        caps.floatTexturesSupported   = b[3]
+        caps.textureDepthSupported    = b[4]
+        caps.textureShadowSampling    = b[5]
+        caps.texture3DSupported       = b[6]
+        caps.npotTexturesSupported    = b[7]
+        caps.sRGBTexturesSupported    = b[8]
+        caps.rtMultisamplingSupported = b[9]
+        caps.occQueriesSupported      = b[10]
+        caps.timerQueriesSupported    = b[11]
+    end
+    
     if not cap then
         local capsClone = {}
         for i, v in pairs(caps) do
