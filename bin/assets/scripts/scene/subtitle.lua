@@ -94,8 +94,6 @@ function SceneSubtitle:load()
     self.texture:setAnisotropyLevel(8)
     self.texture:setRepeating('clamp', 'wrap')
 
-    Cache.release('assets/pasrien.png')
-
     -- Create renderbuffer
     self.rb = Renderbuffer:new()
     if not self.rb:create(1024, 512) then
@@ -201,6 +199,7 @@ function SceneSubtitle:release()
 
     self.audiobus:stop()
     Cache.release('assets/test.wav')
+    Cache.release('assets/pasrien.png')
 end
 
 ------------------------------------------------------------

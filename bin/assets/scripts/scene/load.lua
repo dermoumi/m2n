@@ -55,22 +55,29 @@ function SceneLoad:load(colR, colG, colB, colA, worker, callback)
         end
     end
 
+    self:check()
+
     self.camera = require('nx.camera2d'):new(0, 0, 1280, 720)
 end
 
 ------------------------------------------------------------
 function SceneLoad:update(dt)
+    self:check()
+end
+
+------------------------------------------------------------
+function SceneLoad:render()
+    self.camera:clear(self.colR, self.colG, self.colB, self.colA)
+end
+
+------------------------------------------------------------
+function SceneLoad:check()
     local loaded, failed, total = self.worker:progress()
 
     if loaded + failed == total then
         Scene.back()
         self.callback()
     end
-end
-
-------------------------------------------------------------
-function SceneLoad:render()
-    self.camera:clear(self.colR, self.colG, self.colB, self.colA)
 end
 
 ------------------------------------------------------------

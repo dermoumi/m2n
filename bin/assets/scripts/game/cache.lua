@@ -30,6 +30,8 @@ local Cache = {}
 
 local items = {}
 
+local Log = require 'nx.log'
+
 ------------------------------------------------------------
 function Cache.get(id, addLoadCount)
     local item = items[id]
@@ -56,6 +58,8 @@ end
 
 ------------------------------------------------------------
 function Cache.add(id, newObj)
+    Log.info('Adding to cache: ' .. id)
+
     items[id] = {
         loadCount = 1,
         obj = newObj
