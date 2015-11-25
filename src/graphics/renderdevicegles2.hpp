@@ -126,6 +126,8 @@ public:
     void setDepthFunc(DepthFunc depthFunc);
     DepthFunc getDepthFunc() const;
 
+    void sync();
+
     // Capabilities
     void getCapabilities(uint32_t* maxTexUnits, uint32_t* maxTexSize,
         uint32_t* maxCubTexSize, uint32_t* maxColBufs, bool* dxt, bool* pvrtci, bool* etc1,

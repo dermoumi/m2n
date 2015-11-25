@@ -1383,6 +1383,12 @@ RenderDevice::DepthFunc RenderDeviceGL::getDepthFunc() const
 }
 
 //----------------------------------------------------------
+void RenderDeviceGL::sync()
+{
+    glFinish();
+}
+
+//----------------------------------------------------------
 void RenderDeviceGL::getCapabilities(uint32_t* maxTexUnits, uint32_t* maxTexSize,
         uint32_t* maxCubTexSize, uint32_t* maxColBufs, bool* dxt, bool* pvrtci, bool* etc1,
         bool* texFloat, bool* texDepth, bool* texSS, bool* tex3D, bool* texNPOT, bool* texSRGB,

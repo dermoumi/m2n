@@ -82,6 +82,7 @@ ffi.cdef [[
     bool nxRendererGetDepthTest();
     void nxRendererSetDepthFunc(uint8_t);
     uint8_t nxRendererGetDepthFunc();
+    void nxRendererSync();
     void nxRendererGetCapabilities(uint32_t*, bool*);
 ]]
 
@@ -416,6 +417,11 @@ end
 ------------------------------------------------------------
 function Renderer.depthFunc()
     return fromDepthFunc[C.nxRendererGetDepthFunc()]
+end
+
+------------------------------------------------------------
+function Renderer.sync()
+    C.nxRendererSync()
 end
 
 ------------------------------------------------------------

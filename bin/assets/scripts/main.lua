@@ -120,7 +120,10 @@ end)
 
 Loader.registerFunc('nx.texture2d', function(obj, id)
     require('nx.window').ensureContext()
-    return obj:load(id)
+    if not obj:load(id) then return false end
+
+    require('nx.renderer').sync()
+    return true
 end)
 
 Loader.registerFunc('nx.image', function(obj, id)

@@ -317,6 +317,12 @@ NX_EXPORT uint8_t nxRendererGetDepthFunc()
 }
 
 //----------------------------------------------------------
+NX_EXPORT void nxRendererSync()
+{
+    RenderDevice::instance().sync();
+}
+
+//----------------------------------------------------------
 NX_EXPORT void nxRendererGetCapabilities(uint32_t* u, bool* b)
 {
     RenderDevice::instance().getCapabilities(

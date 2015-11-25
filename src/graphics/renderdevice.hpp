@@ -349,6 +349,8 @@ public:
     virtual void setDepthFunc(DepthFunc depthFunc) = 0;
     virtual DepthFunc getDepthFunc() const = 0;
 
+    virtual void sync() = 0;
+
     // Capabilities
     virtual void getCapabilities(uint32_t* maxTexUnits, uint32_t* maxTexSize,
         uint32_t* maxCubeTexSize, uint32_t* maxColBufs, bool* dxt, bool* pvrtci, bool* etc1,
