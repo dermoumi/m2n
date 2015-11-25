@@ -171,9 +171,7 @@ function Texture:initialize(texType, width, height, depth, hasMips, mipMap)
 
     if texType and width and height then
         ok, err = self:create(texType, width, height, depth, hasMips, mipMap)
-        if not ok then
-            return nil, err
-        end
+        if not ok then return nil, err end
     end
 end
 
@@ -219,7 +217,7 @@ function Texture:setData(data, a, b, c, d, e, f, g, h)
     local x, y, z, width, height, depth, slice, mipLevel
     if not c then
         x, y, z, width, height, depth, slice, mipLevel = -1, -1, -1, -1, -1, -1, a, b
-    elseif self._cdata.texType == 1 then -- 3D maps
+    elseif C.nxTextureType(self._cdata) == 1 then -- 3D maps
         x, y, z, width, height, depth, slice, mipLevel = a, b, c, d, e, f, g, h
     else
         x, y, z, width, height, depth, slice, mipLevel = a, b, 0, c, d, 1, e, f

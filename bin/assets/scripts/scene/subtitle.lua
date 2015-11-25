@@ -38,7 +38,7 @@ local Renderer = require 'nx.renderer'
 local Thread = require 'nx.thread'
 local Camera2D = require 'nx.camera2d'
 local Shader = require 'nx.shader'
-local Texture = require 'nx.texture'
+local Texture2D = require 'nx.texture2d'
 local Renderbuffer = require 'nx.renderbuffer'
 local Sprite = require 'nx.sprite'
 local Font = require 'nx.vectorfont'
@@ -54,7 +54,6 @@ local C = ffi.C
 ------------------------------------------------------------
 function SceneSubtitle.static.setupWorker(worker)
     worker:addFile('nx.soundsource', 'assets/test.wav')
-    worker:addFile('nx.image', 'assets/pasrien.png')
 end
 
 ------------------------------------------------------------
@@ -81,15 +80,9 @@ function SceneSubtitle:load()
 
     self.voiceGroup:pause(false)
 
-    -- Load image
-    local img = Cache.get('assets/pasrien.png')
-    if not img then print('Could not load image') end
-    local imgWidth, imgHeight = img:size()
-
     -- Create texture
-    self.texture = Texture:new()
-    self.texture:create('2d', imgWidth, imgHeight)
-    self.texture:setData(img)
+    self.texture = Texture2D:new()
+    self.texture:load('assets/pasrien.png')
     self.texture:setFilter('nearest')
     self.texture:setAnisotropyLevel(8)
     self.texture:setRepeating('clamp', 'wrap')
@@ -199,7 +192,6 @@ function SceneSubtitle:release()
 
     self.audiobus:stop()
     Cache.release('assets/test.wav')
-    Cache.release('assets/pasrien.png')
 end
 
 ------------------------------------------------------------
