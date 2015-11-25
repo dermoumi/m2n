@@ -54,6 +54,7 @@ local C = ffi.C
 ------------------------------------------------------------
 function SceneSubtitle.static.setupWorker(worker)
     worker:addFile('nx.soundsource', 'assets/test.wav')
+    worker:addFile('nx.texture2d', 'assets/pasrien.png')
 end
 
 ------------------------------------------------------------
@@ -81,8 +82,7 @@ function SceneSubtitle:load()
     self.voiceGroup:pause(false)
 
     -- Create texture
-    self.texture = Texture2D:new()
-    self.texture:load('assets/pasrien.png')
+    self.texture = Cache.get('assets/pasrien.png')
     self.texture:setFilter('nearest')
     self.texture:setAnisotropyLevel(8)
     self.texture:setRepeating('clamp', 'wrap')
@@ -185,13 +185,13 @@ end
 
 ------------------------------------------------------------
 function SceneSubtitle:release()
-    self.texture:release()
     self.rb:release()
     self.sprite:release()
     self.rbSprite:release()
 
     self.audiobus:stop()
     Cache.release('assets/test.wav')
+    Cache.release('assets/pasrien.png')
 end
 
 ------------------------------------------------------------

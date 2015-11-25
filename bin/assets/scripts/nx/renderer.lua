@@ -260,7 +260,7 @@ function Renderer.getCapabilities(cap)
         return capsClone
     end
 
-    return caps[cap]
+    return not not caps[cap]
 end
 
 ------------------------------------------------------------

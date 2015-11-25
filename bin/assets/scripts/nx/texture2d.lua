@@ -30,15 +30,17 @@ local Texture = require 'nx.texture'
 local Texture2D = Texture:subclass('nx.texture2d')
 
 ------------------------------------------------------------
-function Texture2D._fromCData(cdata)
+function Texture2D.static._fromCData(cdata)
     local texture = Texture2D:allocate()
     texture._cdata = require('ffi').cast('NxTexture*', cdata)
+    print('cdata', texture._cdata)
     return texture
 end
 
 ------------------------------------------------------------
-function Texture2D:initilize(width, height, hasMips, mipMap)
-    Texture.initilize()
+function Texture2D:initialize(width, height, hasMips, mipMap)
+    Texture.initialize(self)
+    print('2cdata', self._cdata)
 
     if width and height then
         ok, err = self:create(width, height, hasMips, mipMap)
@@ -57,10 +59,13 @@ function Texture2D:load(filename, hasMips, mipMap)
     if not image then return false, err end
 
     local width, height = image:size()
+
     ok, err = self:create(width, height, hasMips, mipMap)
     if not ok then return false, err end
 
     self:setData(image:data())
+
+    image:release()
 
     return true
 end
