@@ -75,4 +75,9 @@ function SceneLoad:check()
 end
 
 ------------------------------------------------------------
+function SceneLoad:processParent()
+    return false
+end
+
+------------------------------------------------------------
 return SceneLoad
