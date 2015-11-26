@@ -41,7 +41,6 @@ namespace
 {
     static PHYSFS_Io* assetsIO = nullptr;
 
-    static JavaVM* jvm = nullptr;
     static jclass mainClassObj = nullptr;
     static jmethodID fsListAssetDirectoryMID = nullptr;
     static jmethodID fsIsDirectoryMID = nullptr;
@@ -198,19 +197,7 @@ namespace
         static std::mutex mutex;
         bool attachedThread = false;
 
-        JNIEnv* env;
-        {
-            std::lock_guard<std::mutex> lock_guard(mutex);
-            if (jvm->GetEnv((void**)&env, JNI_VERSION_1_4) == JNI_EDETACHED) {
-                jint rs = jvm->AttachCurrentThread(&env, nullptr);
-                if (rs != JNI_OK) {
-                    PHYSFS_setErrorCode(PHYSFS_ERR_OTHER_ERROR);
-                    return;
-                }
-
-                attachedThread = true;
-            }
-        }
+        JNIEnv* env = (JNIEnv*)SDL_AndroidGetJNIEnv();
 
         jstring path = env->NewStringUTF(dirName);
         jstring dirs = (jstring) env->CallStaticObjectMethod(mainClassObj,
@@ -230,11 +217,6 @@ namespace
         }
         else {
             PHYSFS_setErrorCode(PHYSFS_ERR_OTHER_ERROR);
-        }
-
-        if (attachedThread) {
-            std::lock_guard<std::mutex> lock_guard(mutex);
-            jvm->DetachCurrentThread();
         }
     }
 
@@ -272,7 +254,7 @@ namespace
     //------------------------------------------------------
     PHYSFS_Io* unsupportedIOFunc(void*, const char*)
     {
-        Log::info("Unsupported IO func");
+        Log::error("Unsupported IO func");
         PHYSFS_setErrorCode(PHYSFS_ERR_READ_ONLY);
         return nullptr;
     }
@@ -280,7 +262,7 @@ namespace
     //------------------------------------------------------
     int unsupportedIntFunc(void*, const char*)
     {
-        Log::info("Unsupported IO func");
+        Log::error("Unsupported IO func");
         PHYSFS_setErrorCode(PHYSFS_ERR_READ_ONLY);
         return 0;
     }
@@ -303,45 +285,21 @@ namespace
         }
 
         // Check if directory
-        {
-            static std::mutex mutex;
-            bool attachedThread = false;
+        JNIEnv* env = (JNIEnv*)SDL_AndroidGetJNIEnv();
 
-            JNIEnv* env;
-            {
-                std::lock_guard<std::mutex> lock_guard(mutex);
-                if (jvm->GetEnv((void**)&env, JNI_VERSION_1_4) == JNI_EDETACHED) {
-                    jint rs = jvm->AttachCurrentThread(&env, nullptr);
-                    if (rs != JNI_OK) {
-                        PHYSFS_setErrorCode(PHYSFS_ERR_OTHER_ERROR);
-                        return 0;
-                    }
+        jstring path = env->NewStringUTF(filename);
+        jboolean isDir = env->CallStaticBooleanMethod(mainClassObj, fsIsDirectoryMID, path);
+        env->DeleteLocalRef(path);
 
-                    attachedThread = true;
-                }
-            }
-
-            jstring path = env->NewStringUTF(filename);
-            jboolean isDir = env->CallStaticBooleanMethod(mainClassObj, fsIsDirectoryMID, path);
-            env->DeleteLocalRef(path);
-
-            if (isDir) {
-                stat->filesize = -1;
-                stat->filetype = PHYSFS_FILETYPE_DIRECTORY;
-            }
-            else {
-                PHYSFS_setErrorCode(PHYSFS_ERR_OTHER_ERROR);
-            }
-
-            if (attachedThread) {
-                std::lock_guard<std::mutex> lock_guard(mutex);
-                jvm->DetachCurrentThread();
-            }
-
-            return 1;
+        if (isDir) {
+            stat->filesize = -1;
+            stat->filetype = PHYSFS_FILETYPE_DIRECTORY;
+        }
+        else {
+            PHYSFS_setErrorCode(PHYSFS_ERR_OTHER_ERROR);
         }
 
-        return 0;
+        return 1;
     }
 
     //------------------------------------------------------
@@ -377,13 +335,6 @@ bool Filesystem::initialize(const char* arg0)
         JNIEnv* env = (JNIEnv*)SDL_AndroidGetJNIEnv();
         if (!env) {
             Log::fatal("Cannot acquire the JNIEnv from SDL");
-            return false;
-        }
-
-        // Get the Java VM
-        jint rs = env->GetJavaVM(&jvm);
-        if (rs != JNI_OK) {
-            Log::fatal("cannot acquire the Java VM");
             return false;
         }
 
