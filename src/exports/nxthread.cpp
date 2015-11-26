@@ -36,7 +36,7 @@
 
 struct NxThreadObj
 {
-    std::thread* handle;
+    std::thread handle;
     lua_State* state;
     bool ownsState;
     bool succeeded;
@@ -49,7 +49,6 @@ static void threadCallback(NxThreadObj* thread)
 
     if (thread->ownsState) {
         lua_close(thread->state);
-        delete thread->handle;
         delete thread;
     }
 }
@@ -61,7 +60,6 @@ NX_EXPORT NxThreadObj* nxThreadCreate(lua_State* state)
 {
     auto threadObj = new NxThreadObj();
     threadObj->state     = state;
-    threadObj->handle    = nullptr;
     
     return threadObj;
 }
@@ -69,7 +67,6 @@ NX_EXPORT NxThreadObj* nxThreadCreate(lua_State* state)
 //----------------------------------------------------------
 NX_EXPORT void nxThreadRelease(NxThreadObj* threadObj)
 {
-    delete threadObj->handle;
     delete threadObj;
 }
 
@@ -77,8 +74,8 @@ NX_EXPORT void nxThreadRelease(NxThreadObj* threadObj)
 NX_EXPORT bool nxThreadWait(NxThreadObj* threadObj)
 {
     threadObj->ownsState = false;
-    threadObj->handle = new std::thread(threadCallback, threadObj);
-    threadObj->handle->join();
+    threadObj->handle = std::thread(threadCallback, threadObj);
+    threadObj->handle.join();
     
     return threadObj->succeeded;
 }
@@ -87,8 +84,8 @@ NX_EXPORT bool nxThreadWait(NxThreadObj* threadObj)
 NX_EXPORT void nxThreadDetach(NxThreadObj* threadObj)
 {
     threadObj->ownsState = true;
-    threadObj->handle = new std::thread(threadCallback, threadObj);
-    threadObj->handle->detach();
+    threadObj->handle = std::thread(threadCallback, threadObj);
+    threadObj->handle.detach();
 }
 
 //----------------------------------------------------------
