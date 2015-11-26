@@ -85,6 +85,13 @@ function Scene:_update(dt)
 end
 
 ------------------------------------------------------------
+function Scene:_fixedUpdate(dt)
+    if self:processParent() and self.parent then self.parent:_fixedUpdate(dt) end
+
+    self:fixedUpdate(dt)
+end
+
+------------------------------------------------------------
 function Scene:_render()
     if self:processParent() and self.parent then self.parent:_render() end
 
@@ -114,6 +121,11 @@ end
 
 ------------------------------------------------------------
 function Scene:update(dt)
+    -- Nothing to do
+end
+
+------------------------------------------------------------
+function Scene:fixedUpdate(dt)
     -- Nothing to do
 end
 

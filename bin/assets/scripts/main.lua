@@ -104,6 +104,8 @@ Window.setIcon('assets/icon.png')
 ------------------------------------------------------------
 -- Handling FPS
 ------------------------------------------------------------
+local totalTime = 0
+local fixedFrameTime = 1/30
 Window.setFramerateLimit(
     Nx.platform('android', 'ios') and 1/30 or 1/60
 )
@@ -127,7 +129,7 @@ end)
 ------------------------------------------------------------
 Scene.goTo('scene.load', 'scene.boot')
 
------------------------------------------------------------a-
+------------------------------------------------------------
 -- Main loop
 ------------------------------------------------------------
 while true do
@@ -148,6 +150,12 @@ while true do
     if not Window.isOpen() then break end
     
     scene:_update(Window.frameTime())
+
+    totalTime = totalTime + Window.frameTime()
+    for i = 1, totalTime / fixedFrameTime do
+        scene:_fixedUpdate(fixedFrameTime)
+    end
+    totalTime = totalTime % fixedFrameTime
 
     Renderer.begin()
     scene:_render()
