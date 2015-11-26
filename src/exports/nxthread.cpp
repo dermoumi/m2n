@@ -30,6 +30,11 @@
 #include <luajit/lua.hpp>
 #include <thread>
 
+#if defined(NX_SYSTEM_ANDROID)
+    #include <jni.h>
+    #include <SDL2/SDL.h>
+#endif
+
 //----------------------------------------------------------
 // Locals
 //----------------------------------------------------------
@@ -49,6 +54,18 @@ static void threadCallback(NxThreadObj* thread)
 
     if (thread->ownsState) {
         lua_close(thread->state);
+
+        #if defined(NX_SYSTEM_ANDROID)
+        JNIEnv* env = (JNIEnv*)SDL_AndroidGetJNIEnv();
+        if (env) {
+            static JavaVM* jvm = nullptr;
+            jint rs = env->GetJavaVM(&jvm);
+            if (rs == JNI_OK) {
+                jvm->DetachCurrentThread();
+            }
+        }
+        #endif
+
         delete thread;
     }
 }

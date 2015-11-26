@@ -881,10 +881,8 @@ uint32_t RenderDeviceGLES2::createRenderBuffer(uint32_t width, uint32_t height,
     uint32_t maxSamples = 0;
     if (glExt::EXT_multisampled_render_to_texture || glExt::ANGLE_framebuffer_multisample) {
         GLint value;
-        Log::info(glExt::EXT_multisampled_render_to_texture ? "a" : "b");
         glGetIntegerv(glExt::EXT_multisampled_render_to_texture ?
             GL_MAX_SAMPLES_EXT : GL_MAX_SAMPLES_ANGLE, &value);
-        Log::info(glExt::EXT_multisampled_render_to_texture ? "a" : "b");
         maxSamples = static_cast<uint32_t>(value);
     }
 

@@ -198,6 +198,10 @@ namespace
         bool attachedThread = false;
 
         JNIEnv* env = (JNIEnv*)SDL_AndroidGetJNIEnv();
+        if (!env) {
+            PHYSFS_setErrorCode(PHYSFS_ERR_OTHER_ERROR);
+            return;
+        }
 
         jstring path = env->NewStringUTF(dirName);
         jstring dirs = (jstring) env->CallStaticObjectMethod(mainClassObj,
@@ -286,6 +290,10 @@ namespace
 
         // Check if directory
         JNIEnv* env = (JNIEnv*)SDL_AndroidGetJNIEnv();
+        if (!env) {
+            PHYSFS_setErrorCode(PHYSFS_ERR_OTHER_ERROR);
+            return 0;
+        }
 
         jstring path = env->NewStringUTF(filename);
         jboolean isDir = env->CallStaticBooleanMethod(mainClassObj, fsIsDirectoryMID, path);
@@ -297,6 +305,7 @@ namespace
         }
         else {
             PHYSFS_setErrorCode(PHYSFS_ERR_OTHER_ERROR);
+            return 0;
         }
 
         return 1;
