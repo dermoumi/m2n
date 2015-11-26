@@ -118,14 +118,6 @@ Loader.registerFunc('nx.soundsource', function(obj, id)
     return true
 end)
 
-Loader.registerFunc('nx.texture2d', function(obj, id)
-    require('nx.window').ensureContext()
-    if not obj:load(id) then return false end
-
-    require('nx.renderer').sync()
-    return true
-end)
-
 Loader.registerFunc('nx.image', function(obj, id)
     return obj:load(id)
 end)

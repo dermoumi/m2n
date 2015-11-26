@@ -52,9 +52,13 @@ function Texture2D:create(width, height, hasMips, mipMap)
 end
 
 ------------------------------------------------------------
-function Texture2D:load(filename, hasMips, mipMap)
-    local image, err = require('nx.image').load(filename)
-    if not image then return false, err end
+function Texture2D:load(image, hasMips, mipMap)
+    local localImage = false
+    if type(image) == 'string' then
+        image, err = require('nx.image').load(image)
+        if not image then return false, err end
+        localImage = true
+    end
 
     local width, height = image:size()
 
@@ -63,7 +67,7 @@ function Texture2D:load(filename, hasMips, mipMap)
 
     self:setData(image:data())
 
-    image:release()
+    if localImage then image:release() end
 
     return true
 end
