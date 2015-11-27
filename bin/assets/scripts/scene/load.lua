@@ -49,10 +49,17 @@ function SceneLoad:initialize(a, b, ...)
     self.colB = settings.b or 0
     self.colA = settings.a or 255
 
-    self.messageColR = settings.messageColR or 255
-    self.messageColG = settings.messageColG or 255
-    self.messageColB = settings.messageColB or 255
-    self.messageColA = settings.messageColA or 255
+    local r, g, b, a = self.colR, self.colG, self.colB, self.colA
+    if (math.max(r, g, b) + math.min(r, g, b)) < 408 then
+        r, g, b, a = 255, 255, 255, 255
+    else
+        r, g, b, a = 0, 0, 0, 255
+    end
+
+    self.messageColR = settings.messageColR or r
+    self.messageColG = settings.messageColG or g
+    self.messageColB = settings.messageColB or b
+    self.messageColA = settings.messageColA or a
     self.message = settings.message or 'LOADING %i%%'
 end
 
