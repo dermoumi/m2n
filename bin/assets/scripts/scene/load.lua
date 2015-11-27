@@ -48,12 +48,26 @@ function SceneLoad:initialize(a, b, ...)
     self.colG = settings.g or 0
     self.colB = settings.b or 0
     self.colA = settings.a or 255
+
+    self.messageColR = settings.messageColR or 255
+    self.messageColG = settings.messageColG or 255
+    self.messageColB = settings.messageColB or 255
+    self.messageColA = settings.messageColA or 255
+    self.message = settings.message or 'LOADING %i%%'
 end
 
 ------------------------------------------------------------
 function SceneLoad:load()
     self.worker = require('game.worker'):new()
     self.nextScene:preload(self.worker)
+
+    self.lastPercent = 0
+
+    self.text = require('nx.text'):new()
+    self.text:setFont(require('game.font'))
+    self.text:setCharacterSize(20)
+    self.text:setString(self.message:format(0))
+    self.text:setColor(self.messageColR, self.messageColG, self.messageColB, self.messageColA)
 
     self:check()
 
@@ -63,11 +77,17 @@ end
 ------------------------------------------------------------
 function SceneLoad:update(dt)
     self:check()
+
+    local x, y, w, h = self.camera:viewport()
+    self.text:setPosition(30, h - 50)
 end
 
 ------------------------------------------------------------
 function SceneLoad:render()
+    require('nx.renderer').setCullMode('none')
+
     self.camera:fillFsQuad(self.colR, self.colG, self.colB, self.colA)
+    self.camera:draw(self.text)
 end
 
 ------------------------------------------------------------
@@ -78,6 +98,12 @@ function SceneLoad:check()
         self.nextScene._preloaded = true
         Scene.back()
         Scene.push(self.nextScene)
+    end
+
+    local percent = total ~= 0 and math.floor(100 * (loaded + failed) / total + 0.5) or 1
+    if self.lastPercent ~= percent then
+        self.text:setString(self.message:format(percent))
+        self.lastPercent = percent
     end
 end
 

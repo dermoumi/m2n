@@ -31,7 +31,7 @@ local SceneBoot = Scene:subclass('scene.boot')
 
 ------------------------------------------------------------
 function SceneBoot:needsPreload()
-    return true, {r = 255}
+    return true
 end
 
 ------------------------------------------------------------
@@ -42,7 +42,7 @@ function SceneBoot:preload(worker)
             require('nx.log').error('Could not initialize sound system')
             return false
         end
-        
+
         return true
     end)
 

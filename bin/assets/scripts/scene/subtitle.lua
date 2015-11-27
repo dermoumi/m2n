@@ -75,14 +75,6 @@ end
 function SceneSubtitle:load()
     self.camera = Camera2D:new(0, 0, 1280, 720)
 
-    Thread:new(function()
-        local Filesystem = require('nx.filesystem')
-        local files = Filesystem.enumerateFiles('assets/')
-        for i, v in ipairs(files) do
-            print('Enumerated file: ', v, ' is directory: ', Filesystem.isDirectory('assets/' .. v))
-        end
-    end):detach()
-
     self.echoFilter = require('nx.audioechofilter'):new()
     self.echoFilter:setParams(.5, .5)
 
