@@ -52,12 +52,12 @@ end
 
 ------------------------------------------------------------
 function Scene.static.push(scene, ...)
-    if type(scene) == 'string' then scene = require(scene):new() end
+    if type(scene) == 'string' then scene = require(scene):new(...) end
 
     scene.parent = sceneStack[#sceneStack]
 
     sceneStack[#sceneStack + 1] = scene
-    return scene:load(...)
+    return scene:load()
 end
 
 ------------------------------------------------------------

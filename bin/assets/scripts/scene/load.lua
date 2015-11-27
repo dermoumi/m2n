@@ -30,24 +30,25 @@ local Scene = require 'scene'
 local SceneLoad = Scene:subclass('scene.load')
 
 ------------------------------------------------------------
-function SceneLoad:load(colR, colG, colB, colA, nextScene, ...)
+function SceneLoad:initialize(colR, colG, colB, colA, nextScene, ...)
     if not colG then
-        self.params = {colG, colB, colA, nextScene, ...}
-        nextScene = colR
         self.colR, self.colG, self.colB, self.colA = 0, 0, 0, 255
+
+        if type(colR) == 'string' then
+            self.nextScene = require(colR):new(colR, colB, colA, nextScene, ...)
+        end
     else
-        self.params = {...}
         self.colR, self.colG, self.colB, self.colA = colR, colG, colB, colA or 255
+        if type(nextScene) == 'string' then
+            self.nextScene = require(nextScene):new(...)
+        end
     end
+end
 
-    if type(nextScene) == 'string' then
-        nextScene = require(nextScene):new()
-    end
-
+------------------------------------------------------------
+function SceneLoad:load(colR, colG, colB, colA, nextScene, ...)
     self.worker = require('game.worker'):new()
-
-    self.nextScene = nextScene
-    self.nextScene:preload(self.worker, ...)
+    self.nextScene:preload(self.worker)
 
     self:check()
 
@@ -70,7 +71,7 @@ function SceneLoad:check()
 
     if loaded + failed == total then
         Scene.back()
-        Scene.push(self.nextScene, unpack(self.params, 1, table.maxn(self.params)))
+        Scene.push(self.nextScene)
     end
 end
 
