@@ -94,7 +94,7 @@ local Renderer = {}
 ------------------------------------------------------------
 local vertexLayouts = {}
 local defaultShaders = {}
-local caps
+local defaultTexture, vbFsQuad, caps
 
 local toFillMode = {
     solid = 0,
@@ -147,8 +147,6 @@ local fromDepthFunc = {
     [4] = 'gequal',
     [5] = 'always'
 }
-
-local vbFsQuad;
 
 ------------------------------------------------------------
 function Renderer.init()
@@ -212,11 +210,16 @@ function Renderer.init()
 
     -- Create the Fullscreen quad vertex buffer
     local buffer = ffi.new('float[12]', {
-        -1,  1, 0, 0,
          3,  1, 2, 0,
+        -1,  1, 0, 0,
         -1, -3, 0, 2
     })
     vbFsQuad = require('nx.arraybuffer').vertexbuffer(ffi.sizeof(buffer), buffer)
+
+    -- Create the default, empty texture
+    defaultTexture = require('nx.texture'):new()
+    defaultTexture:create('2d', 1, 1, 1, 0, 0)
+    defaultTexture:setData(ffi.new('uint8_t[4]', {255, 255, 255, 255}), 0, 0)
 
     return true
 end
@@ -279,6 +282,11 @@ function Renderer.defaultShader(index)
 end
 
 ------------------------------------------------------------
+function Renderer.defaultTexture()
+    return defaultTexture
+end
+
+------------------------------------------------------------
 function Renderer.drawFsQuad(texture, width, height)
     if width and height then
         local texW, texH = texture:size()
@@ -298,7 +306,24 @@ function Renderer.drawFsQuad(texture, width, height)
 
     local Arraybuffer = require 'nx.arraybuffer'
     Arraybuffer.setVertexbuffer(vbFsQuad, 0, 0, 16)
-    Arraybuffer.setIndexbuffer(nil)
+    C.nxRendererSetVertexLayout(vertexLayouts[1])
+
+    C.nxRendererDraw(0, 0, 3)
+end
+
+------------------------------------------------------------
+function Renderer.fillFsQuad(r, g, b, a)
+    defaultTexture:bind(0)
+
+    local shader = defaultShaders[1]
+    shader:bind()
+    shader:setUniform('uTransMat', require('nx.matrix'):new())
+    shader:setUniform('uColor', (r or 0)/255, (g or 0)/255, (b or 0)/255, (a or 255)/255)
+    shader:setUniform('uTexSize', 1, 1)
+    shader:setSampler('uTexture', 0)
+
+    local Arraybuffer = require 'nx.arraybuffer'
+    Arraybuffer.setVertexbuffer(vbFsQuad, 0, 0, 16)
     C.nxRendererSetVertexLayout(vertexLayouts[1])
 
     C.nxRendererDraw(0, 0, 3)

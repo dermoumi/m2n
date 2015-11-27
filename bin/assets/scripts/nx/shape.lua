@@ -52,10 +52,6 @@ local Renderer = require 'nx.renderer'
 local Arraybuffer = require 'nx.arraybuffer'
 
 ------------------------------------------------------------
-local defaultTexture = require('nx.texture'):new()
-defaultTexture:create('2d', 1, 1, 1, 0, 0)
-defaultTexture:setData(ffi.new('uint8_t[4]', {255, 255, 255, 255}), 0, 0)
-
 local toPrimitive = {
     triangles = 0,
     trianglestrip = 1,
@@ -139,7 +135,7 @@ end
 ------------------------------------------------------------
 function Shape:_render(camera, state)
     if self._vertexBuffer then
-        local texture = self._texture or defaultTexture
+        local texture = self._texture or Renderer.defaultTexture()
         texture:bind(0)
 
         Renderer.setBlendMode(state:blendMode())

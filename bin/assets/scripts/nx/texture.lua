@@ -236,7 +236,7 @@ end
 ------------------------------------------------------------
 function Texture:bind(slot)
     if not self._cdata then return end
-    C.nxTextureBind(self._cdata, slot)
+    C.nxTextureBind(self._cdata, slot or 0)
 end
 
 ------------------------------------------------------------

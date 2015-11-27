@@ -62,7 +62,8 @@ end
 
 ------------------------------------------------------------
 function SceneLoad:render()
-    self.camera:clear(self.colR, self.colG, self.colB, self.colA)
+    require('nx.renderbuffer').bind(nil)
+    require('nx.renderer').fillFsQuad(self.colR, self.colG, self.colB, self.colA)
 end
 
 ------------------------------------------------------------
