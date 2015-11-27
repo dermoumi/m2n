@@ -312,8 +312,10 @@ function Renderer.drawFsQuad(texture, width, height)
 end
 
 ------------------------------------------------------------
-function Renderer.fillFsQuad(r, g, b, a)
+function Renderer.fillFsQuad(r, g, b, a, blendMode)
     defaultTexture:bind(0)
+
+    Renderer.setBlendMode(blendMode or 'alpha')
 
     local shader = defaultShaders[1]
     shader:bind()

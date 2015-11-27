@@ -188,9 +188,9 @@ function Camera2D:drawFsQuad(texture, width, height)
 end
 
 ------------------------------------------------------------
-function Camera2D:fillFsQuad(r, g, b, a)
+function Camera2D:fillFsQuad(r, g, b, a, blendMode)
     self:apply()
-    require('nx.renderer').fillFsQuad(r, g, b, a)
+    require('nx.renderer').fillFsQuad(r, g, b, a, blendMode)
 end
 
 ------------------------------------------------------------

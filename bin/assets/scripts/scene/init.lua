@@ -53,11 +53,15 @@ end
 ------------------------------------------------------------
 function Scene.static.push(scene, ...)
     if type(scene) == 'string' then scene = require(scene):new(...) end
-
     scene.parent = sceneStack[#sceneStack]
 
-    sceneStack[#sceneStack + 1] = scene
-    return scene:load()
+    local needsPreload, settings = scene:needsPreload()
+    if needsPreload and not scene._preloaded then
+        return Scene.push('scene.load', settings, scene)
+    else
+        sceneStack[#sceneStack + 1] = scene
+        return scene:load()
+    end
 end
 
 ------------------------------------------------------------
@@ -110,12 +114,17 @@ function Scene:_onEvent(e, a, b, c, d)
 end
 
 ------------------------------------------------------------
-function Scene:preload(worker, ...)
+function Scene:needsPreload()
+    return false
+end
+
+------------------------------------------------------------
+function Scene:preload(worker)
     -- Nothing to do
 end
 
 ------------------------------------------------------------
-function Scene:load(...)
+function Scene:load()
     -- Nothing to do
 end
 

@@ -30,23 +30,28 @@ local Scene = require 'scene'
 local SceneLoad = Scene:subclass('scene.load')
 
 ------------------------------------------------------------
-function SceneLoad:initialize(colR, colG, colB, colA, nextScene, ...)
-    if not colG then
-        self.colR, self.colG, self.colB, self.colA = 0, 0, 0, 255
+function SceneLoad:initialize(a, b, ...)
+    local settings
 
-        if type(colR) == 'string' then
-            self.nextScene = require(colR):new(colR, colB, colA, nextScene, ...)
-        end
+    if type(a) == 'string' then
+        settings = {}
+        self.nextScene = require(a):new(b, ...)
+    elseif type(a) == 'table' and a.isSubclassOf then
+        settings = {}
+        self.nextScene = a
     else
-        self.colR, self.colG, self.colB, self.colA = colR, colG, colB, colA or 255
-        if type(nextScene) == 'string' then
-            self.nextScene = require(nextScene):new(...)
-        end
+        settings = a or {}
+        self.nextScene = type(b) == 'string' and require(b):new(...) or b
     end
+
+    self.colR = settings.r or 0
+    self.colG = settings.g or 0
+    self.colB = settings.b or 0
+    self.colA = settings.a or 255
 end
 
 ------------------------------------------------------------
-function SceneLoad:load(colR, colG, colB, colA, nextScene, ...)
+function SceneLoad:load()
     self.worker = require('game.worker'):new()
     self.nextScene:preload(self.worker)
 
@@ -70,6 +75,7 @@ function SceneLoad:check()
     local loaded, failed, total = self.worker:progress()
 
     if loaded + failed == total then
+        self.nextScene._preloaded = true
         Scene.back()
         Scene.push(self.nextScene)
     end

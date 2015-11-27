@@ -52,6 +52,13 @@ local ffi = require 'ffi'
 local C = ffi.C
 
 ------------------------------------------------------------
+function SceneSubtitle:needsPreload()
+    return true, {
+        r = 0, g = 0, b = 255, a = 50
+    }
+end
+
+------------------------------------------------------------
 function SceneSubtitle:preload(worker)
     worker:addFile('nx.soundsource', 'assets/test.wav')
     worker:addFile('nx.image', 'assets/pasrien.png')
@@ -160,7 +167,7 @@ function SceneSubtitle:render()
 
     self.camera:setRenderbuffer(nil)
     self.camera:setViewport(nil)
-    self.camera:draw(self.rbSprite, require('nx.entity2d').State:new(nil, nil, nil, nil, nil, 'add'))
+    self.camera:draw(self.rbSprite)
 
     self.camera:draw(self.text)
     -- self.camera:draw(self.fontSprite)

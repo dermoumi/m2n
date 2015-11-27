@@ -42,7 +42,7 @@ local Log = require 'nx.log'
 function SceneTitle:load()
     self.camera = require('nx.camera2d')
 
-    Scene.push('scene.load', 0, 0, 255, 255, 'scene.subtitle')
+    Scene.push('scene.subtitle')
 end
 
 ------------------------------------------------------------
@@ -55,11 +55,9 @@ function SceneTitle:render()
 end
 
 ------------------------------------------------------------
-function SceneTitle:onKeyDown(scancode, a, repeated)
-    if repeated then return end
-
+function SceneTitle:onKeyDown(scancode, _, repeated)
     if scancode == 'f1' then
-        Scene.push('scene.load', 255, 255, 255, 128, 'scene.subtitle')
+        Scene.push('scene.subtitle')
     elseif scancode == 'f10' then
         require('nx.window').create('m2n-', 1280, 720, {})
     elseif scancode == 'f11' then

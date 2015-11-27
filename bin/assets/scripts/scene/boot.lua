@@ -30,6 +30,11 @@ local Scene = require 'scene'
 local SceneBoot = Scene:subclass('scene.boot')
 
 ------------------------------------------------------------
+function SceneBoot:needsPreload()
+    return true, {r = 255}
+end
+
+------------------------------------------------------------
 function SceneBoot:preload(worker)
     -- Initializing Audio is slow so we're doing it in a worker
     worker:addTask(function()
@@ -61,7 +66,7 @@ function SceneBoot:load()
         Log.info(i .. ': ' .. tostring(v))
     end
 
-    Scene.goTo('scene.load', 0, 0, 255, 255, 'scene.title')
+    Scene.goTo('scene.title')
 end
 
 ------------------------------------------------------------
