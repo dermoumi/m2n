@@ -30,7 +30,6 @@ local Log      = require 'nx.log'
 local Window   = require 'nx.window'
 local Events   = require 'nx.events'
 local Renderer = require 'nx.renderer'
-local Audio    = require 'nx.audio'
 local Scene    = require 'scene'
 
 ------------------------------------------------------------
@@ -111,7 +110,7 @@ Window.setFramerateLimit(
 )
 
 ------------------------------------------------------------
--- Setup loaders
+-- Setup loader
 ------------------------------------------------------------
 local Loader = require('game.loader')
 
@@ -123,6 +122,12 @@ end)
 Loader.registerFunc('nx.image', function(obj, id)
     return obj:load(id)
 end)
+
+Loader.registerFunc('nx.vectorfont', function(obj, id)
+    return obj:open(id)
+end)
+
+Loader.load('nx.vectorfont', 'assets/mplus-1c-regular.ttf')
 
 ------------------------------------------------------------
 -- Startup scene
@@ -148,7 +153,7 @@ while true do
 
     -- Check if the window is still open
     if not Window.isOpen() then break end
-    
+
     scene:_update(Window.frameTime())
 
     totalTime = totalTime + Window.frameTime()
@@ -170,7 +175,7 @@ end
 ------------------------------------------------------------
 -- Release stuff
 ------------------------------------------------------------
-Audio.release()
+require('nx.audio').release()
 
 ------------------------------------------------------------
 -- The end?

@@ -47,7 +47,7 @@ function Loader.load(objType, id)
 
     item = require(objType):new()
 
-    local ok, err = func(obj, id)
+    local ok, err = func(item, id)
     if not ok then return false, err or 'An error has occurred while loading "' .. id .. '"' end
 
     return Cache.add(id, item)

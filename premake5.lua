@@ -123,7 +123,7 @@ project 'soloud'
     filter { 'action:gmake' }
         buildoptions { '-x c++ -std=c++11' }
         linkoptions  { "-static-libgcc -static-libstdc++" }
-        
+
     filter { 'action:gmake', 'system:not windows' }
         targetdir 'extlibs/libs'
     filter { 'action:gmake', 'system:windows', 'architecture:x32' }
