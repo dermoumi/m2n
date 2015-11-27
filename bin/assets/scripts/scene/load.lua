@@ -78,14 +78,14 @@ function SceneLoad:load()
 
     self:check()
 
-    self.camera = require('nx.camera2d'):new(0, 0, 1280, 720)
+    self.camera = require('nx.camera2d'):new(0, 0, require('nx.window').size())
 end
 
 ------------------------------------------------------------
 function SceneLoad:update(dt)
     self:check()
 
-    local x, y, w, h = self.camera:viewport()
+    local w, h = self.camera:size()
     self.text:setPosition(30, h - 50)
 end
 
@@ -112,6 +112,11 @@ function SceneLoad:check()
         self.text:setString(self.message:format(percent))
         self.lastPercent = percent
     end
+end
+
+------------------------------------------------------------
+function SceneLoad:onResize(w, h)
+    self.camera:reset(0, 0, w, h)
 end
 
 ------------------------------------------------------------

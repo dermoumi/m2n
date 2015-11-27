@@ -69,6 +69,10 @@ function SceneSubtitle:preload(worker)
     worker:addTask(function(music)
         music:open('assets/askepticshypothesis.ogg')
     end, self.musicSource)
+
+    worker:addTask(function()
+        require('nx').sleep(1.4)
+    end)
 end
 
 ------------------------------------------------------------

@@ -44,8 +44,6 @@ function Camera:setViewport(left, top, width, height)
     self._vpY = top
     self._vpW = width
     self._vpH = height
-
-    self._updated = false
 end
 
 ------------------------------------------------------------
@@ -93,14 +91,16 @@ end
 
 ------------------------------------------------------------
 function Camera:apply()
-    if self._updated then return end
-    self._updated = true
-
-    -- Setup renderbuffer
-    Renderbuffer.bind(self._rb)
-
     -- Setup viewport
+    -- Needs to be always re-set since the window's size could change at anytime
     C.nxRendererSetViewport(self:viewport())
+
+    if not self._updated then
+        -- Setup renderbuffer
+        Renderbuffer.bind(self._rb)
+
+        self._updated = true
+    end
 end
 
 ------------------------------------------------------------
