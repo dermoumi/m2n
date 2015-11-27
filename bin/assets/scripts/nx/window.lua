@@ -100,8 +100,9 @@ local windowWidth, windowHeight
 local drawableWidth, drawableHeight
 local hasFocus, hasMouseFocus
 
-local totalElapsedTime, frameCount, currentFPS
-local elapsedTime, lastTime, framerateLimit
+local lastTime
+local totalElapsedTime, frameCount, currentFPS, elapsedTime = 0, 0, 0, 0
+local originalFramerateLimit, framerateLimit = 0, 0
 
 ------------------------------------------------------------
 local function drawableSize()
@@ -164,8 +165,6 @@ function Window.create(title, width, height, flags)
         flags.msaa
     )
 
-    vSyncEnabled = flags.vsync
-
     if window == nil then
         require 'nx' -- For the GetSDLError() C declaration
         return nil, ffi.string(C.nxSysGetSDLError())
@@ -175,11 +174,7 @@ function Window.create(title, width, height, flags)
     drawableWidth, drawableHeight = drawableSize()
     hasFocus, hasMouseFocus       = true, true
 
-    totalElapsedTime = 0
-    frameCount       = 0
-    currentFPS       = 0
-    elapsedTime      = 0
-    framerateLimit   = 0
+    framerateLimit   = flags.vsync and 0 or originalFramerateLimit
     lastTime         = Nx.getSystemTime()
 
     -- Initial mouse focus is impossible with SDL < 2.0.4 (need to get global position)
@@ -225,6 +220,7 @@ end
 ------------------------------------------------------------
 function Window.setFramerateLimit(limit)
     framerateLimit = limit or 0
+    originalFramerateLimit = framerateLimit
 end
 
 ------------------------------------------------------------
