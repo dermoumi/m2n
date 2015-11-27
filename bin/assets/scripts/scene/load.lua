@@ -91,8 +91,6 @@ end
 
 ------------------------------------------------------------
 function SceneLoad:render()
-    require('nx.renderer').setCullMode('none')
-
     self.camera:fillFsQuad(self.colR, self.colG, self.colB, self.colA)
     self.camera:draw(self.text)
 end

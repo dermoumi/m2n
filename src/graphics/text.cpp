@@ -266,11 +266,11 @@ void Text::ensureGeometryUpdate() const
             float bottom = top + std::floor(underlineThickness + 0.5f);
 
             float vertices[24] {
+                x,   top,    1.f, 1.f,
                 0.f, top,    1.f, 1.f,
-                x,   top,    1.f, 1.f,
-                0.f, bottom, 1.f, 1.f,
                 0.f, bottom, 1.f, 1.f,
                 x,   top,    1.f, 1.f,
+                0.f, bottom, 1.f, 1.f,
                 x,   bottom, 1.f, 1.f
             };
             buffer.insert(buffer.end(), std::begin(vertices), std::end(vertices));
@@ -283,11 +283,11 @@ void Text::ensureGeometryUpdate() const
             float bottom = top + std::floor(underlineThickness + 0.5f);
 
             float vertices[24] {
+                x,   top,    1.f, 1.f,
                 0.f, top,    1.f, 1.f,
-                x,   top,    1.f, 1.f,
-                0.f, bottom, 1.f, 1.f,
                 0.f, bottom, 1.f, 1.f,
                 x,   top,    1.f, 1.f,
+                0.f, bottom, 1.f, 1.f,
                 x,   bottom, 1.f, 1.f
             };
             buffer.insert(buffer.end(), std::begin(vertices), std::end(vertices));
@@ -328,11 +328,11 @@ void Text::ensureGeometryUpdate() const
 
         // Add a quad for the current character
         float vertices[24] {
+            x + right - italic * top,    y + top,    u2, v1,
             x + left  - italic * top,    y + top,    u1, v1,
-            x + right - italic * top,    y + top,    u2, v1,
-            x + left  - italic * bottom, y + bottom, u1, v2,
             x + left  - italic * bottom, y + bottom, u1, v2,
             x + right - italic * top,    y + top,    u2, v1,
+            x + left  - italic * bottom, y + bottom, u1, v2,
             x + right - italic * bottom, y + bottom, u2, v2
         };
         buffer.insert(buffer.end(), std::begin(vertices), std::end(vertices));
@@ -353,11 +353,11 @@ void Text::ensureGeometryUpdate() const
         float bottom = top + std::floor(underlineThickness + 0.5f);
 
         float vertices[24] {
+            x,   top,    1.f, 1.f,
             0.f, top,    1.f, 1.f,
-            x,   top,    1.f, 1.f,
-            0.f, bottom, 1.f, 1.f,
             0.f, bottom, 1.f, 1.f,
             x,   top,    1.f, 1.f,
+            0.f, bottom, 1.f, 1.f,
             x,   bottom, 1.f, 1.f
         };
         buffer.insert(buffer.end(), std::begin(vertices), std::end(vertices));
@@ -369,11 +369,11 @@ void Text::ensureGeometryUpdate() const
         float bottom = top + std::floor(underlineThickness + 0.5f);
 
         float vertices[24] {
+            x,   top,    1.f, 1.f,
             0.f, top,    1.f, 1.f,
-            x,   top,    1.f, 1.f,
-            0.f, bottom, 1.f, 1.f,
             0.f, bottom, 1.f, 1.f,
             x,   top,    1.f, 1.f,
+            0.f, bottom, 1.f, 1.f,
             x,   bottom, 1.f, 1.f
         };
         buffer.insert(buffer.end(), std::begin(vertices), std::end(vertices));

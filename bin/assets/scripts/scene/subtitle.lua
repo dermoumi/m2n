@@ -153,8 +153,6 @@ end
 
 ------------------------------------------------------------
 function SceneSubtitle:render()
-    C.nxRendererSetCullMode(3)
-
     self.camera:setRenderbuffer(self.rb)
     self.camera:setViewport(0, 0, 640, 360)
     self.camera:clear(255, 255, 255, 128)

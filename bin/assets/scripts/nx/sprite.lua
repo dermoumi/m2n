@@ -144,8 +144,8 @@ function Sprite:_render(camera, state)
 
         local buffer = ffi.new('float[16]', {
             0, 0, subL, subT,
-            w, 0, subR, subT,
             0, h, subL, subB,
+            w, 0, subR, subT,
             w, h, subR, subB
         })
 
