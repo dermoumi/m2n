@@ -62,8 +62,7 @@ end
 
 ------------------------------------------------------------
 function SceneLoad:render()
-    require('nx.renderbuffer').bind(nil)
-    require('nx.renderer').fillFsQuad(self.colR, self.colG, self.colB, self.colA)
+    self.camera:fillFsQuad(self.colR, self.colG, self.colB, self.colA)
 end
 
 ------------------------------------------------------------
@@ -74,6 +73,16 @@ function SceneLoad:check()
         Scene.back()
         Scene.push(self.nextScene)
     end
+end
+
+------------------------------------------------------------
+function SceneLoad:updateParent()
+    return true
+end
+
+------------------------------------------------------------
+function SceneLoad:renderParent()
+    return true
 end
 
 ------------------------------------------------------------

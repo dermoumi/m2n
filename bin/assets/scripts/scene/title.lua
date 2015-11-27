@@ -40,18 +40,9 @@ local Log = require 'nx.log'
 
 ------------------------------------------------------------
 function SceneTitle:load()
-    local caps = Renderer.getCapabilities()
-
-    Log.info('================================')
-    Log.info('GPU Capabilities:')
-    Log.info('--------------------------------')
-    for i, v in pairs(caps) do
-        Log.info(i .. ':\t' .. tostring(v))
-    end
-
     self.camera = require('nx.camera2d')
 
-    Scene.push('scene.load', 'scene.subtitle')
+    Scene.push('scene.load', 0, 0, 255, 255, 'scene.subtitle')
 end
 
 ------------------------------------------------------------
@@ -68,7 +59,7 @@ function SceneTitle:onKeyDown(scancode, a, repeated)
     if repeated then return end
 
     if scancode == 'f1' then
-        Scene.push('scene.load', 255, 255, 255, 255, 'scene.subtitle')
+        Scene.push('scene.load', 255, 255, 255, 128, 'scene.subtitle')
     elseif scancode == 'f10' then
         require('nx.window').create('m2n-', 1280, 720, {})
     elseif scancode == 'f11' then

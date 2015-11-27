@@ -169,7 +169,7 @@ end
 
 ------------------------------------------------------------
 function Camera2D:draw(drawable, state)
-    self:_setupDrawing()
+    self:apply()
 
     state = state or require('nx.entity2d').State:new()
     if state:matrix() then
@@ -179,6 +179,18 @@ function Camera2D:draw(drawable, state)
     end
 
     drawable:_draw(self, state:clone())
+end
+
+------------------------------------------------------------
+function Camera2D:drawFsQuad(texture, width, height)
+    self:apply()
+    require('nx.renderer').drawFsQuad(texture, width, height)
+end
+
+------------------------------------------------------------
+function Camera2D:fillFsQuad(r, g, b, a)
+    self:apply()
+    require('nx.renderer').fillFsQuad(r, g, b, a)
 end
 
 ------------------------------------------------------------

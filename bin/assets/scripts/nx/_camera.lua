@@ -44,6 +44,8 @@ function Camera:setViewport(left, top, width, height)
     self._vpY = top
     self._vpW = width
     self._vpH = height
+
+    self._updated = false
 end
 
 ------------------------------------------------------------
@@ -60,7 +62,7 @@ end
 ------------------------------------------------------------
 function Camera:setRenderbuffer(rb)
     self._rb = rb
-    self._needUpdate = true
+    self._updated = false
 end
 
 ------------------------------------------------------------
@@ -75,7 +77,7 @@ end
 
 ------------------------------------------------------------
 function Camera:clear(r, g, b, a, depth, col0, col1, col2, col3, clearDepth)
-    self:_setupDrawing()
+    self:apply()
 
     -- Make sure of values
     if col0 == nil then col0 = true end
@@ -90,9 +92,9 @@ function Camera:clear(r, g, b, a, depth, col0, col1, col2, col3, clearDepth)
 end
 
 ------------------------------------------------------------
-function Camera:_setupDrawing()
-    if not self._needUpdate then return end
-    self._needUpdate = false
+function Camera:apply()
+    if self._updated then return end
+    self._updated = true
 
     -- Setup renderbuffer
     Renderbuffer.bind(self._rb)

@@ -79,21 +79,21 @@ end
 
 ------------------------------------------------------------
 function Scene:_update(dt)
-    if self:processParent() and self.parent then self.parent:_update(dt) end
+    if self:updateParent() and self.parent then self.parent:_update(dt) end
 
     self:update(dt)
 end
 
 ------------------------------------------------------------
 function Scene:_fixedUpdate(dt)
-    if self:processParent() and self.parent then self.parent:_fixedUpdate(dt) end
+    if self:updateParent() and self.parent then self.parent:_fixedUpdate(dt) end
 
     self:fixedUpdate(dt)
 end
 
 ------------------------------------------------------------
 function Scene:_render()
-    if self:processParent() and self.parent then self.parent:_render() end
+    if self:renderParent() and self.parent then self.parent:_render() end
 
     self:render()
 end
@@ -293,6 +293,16 @@ end
 ------------------------------------------------------------
 function Scene:processParent()
     return true
+end
+
+------------------------------------------------------------
+function Scene:updateParent()
+    return self:processParent()
+end
+
+------------------------------------------------------------
+function Scene:renderParent()
+    return self:processParent()
 end
 
 ------------------------------------------------------------

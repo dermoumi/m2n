@@ -44,14 +44,24 @@ function SceneBoot:preload(worker)
     -- Makes the initial loading slower for testing purpose
     -- TODO: Remove this when finished
     worker:addTask(function()
-       require('nx').sleep(.4)
+       require('nx').sleep(1.4)
        return true
     end)
 end
 
 ------------------------------------------------------------
 function SceneBoot:load()
-    Scene.goTo('scene.load', 'scene.title')
+    local caps = require('nx.renderer').getCapabilities()
+
+    local Log = require('nx.log')
+    Log.info('================================')
+    Log.info('GPU Capabilities:')
+    Log.info('--------------------------------')
+    for i, v in pairs(caps) do
+        Log.info(i .. ': ' .. tostring(v))
+    end
+
+    Scene.goTo('scene.load', 0, 0, 255, 255, 'scene.title')
 end
 
 ------------------------------------------------------------

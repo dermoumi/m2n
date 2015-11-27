@@ -210,9 +210,9 @@ function Renderer.init()
 
     -- Create the Fullscreen quad vertex buffer
     local buffer = ffi.new('float[12]', {
-         3,  1, 2, 0,
         -1,  1, 0, 0,
-        -1, -3, 0, 2
+        -1, -3, 0, 2,
+         3,  1, 2, 0
     })
     vbFsQuad = require('nx.arraybuffer').vertexbuffer(ffi.sizeof(buffer), buffer)
 
