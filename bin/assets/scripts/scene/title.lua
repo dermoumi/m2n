@@ -39,7 +39,37 @@ local Renderer = require 'nx.renderer'
 local Log = require 'nx.log'
 
 ------------------------------------------------------------
+function SceneTitle:needsPreload()
+    return true, {
+        message = 'INITIALIZING %i%%'
+    }
+end
+
+------------------------------------------------------------
+function SceneTitle:preload(worker)
+    -- Initializing Audio is slow so we're doing it in a worker
+    worker:addTask(function()
+        if not require('nx.audio').init() then
+            require('nx.log').error('Could not initialize sound system')
+            return false
+        end
+
+        return true
+    end)
+end
+
+------------------------------------------------------------
 function SceneTitle:load()
+    local caps = require('nx.renderer').getCapabilities()
+
+    local Log = require('nx.log')
+    Log.info('================================')
+    Log.info('GPU Capabilities:')
+    Log.info('--------------------------------')
+    for i, v in pairs(caps) do
+        Log.info(i .. ': ' .. tostring(v))
+    end
+
     self.camera = require('nx.camera2d')
 
     Scene.push('scene.subtitle')

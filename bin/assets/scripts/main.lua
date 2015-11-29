@@ -132,7 +132,7 @@ Loader.load('nx.vectorfont', 'assets/mplus-1c-regular.ttf')
 ------------------------------------------------------------
 -- Startup scene
 ------------------------------------------------------------
-Scene.goTo('scene.boot')
+Scene.goTo('scene.title')
 
 ------------------------------------------------------------
 -- Main loop

@@ -41,6 +41,8 @@ using NxAudioFilter = SoLoud::Filter;
 //----------------------------------------------------------
 NX_EXPORT bool nxAudioInit()
 {
+    if (initialized) return true;
+
     if (SDL_InitSubSystem(SDL_INIT_AUDIO) != 0) return false;
 
     Audio::instance().init();

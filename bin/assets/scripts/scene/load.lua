@@ -76,11 +76,12 @@ function SceneLoad:load()
     self.text:setString(self.message:format(0))
     self.text:setColor(self.messageColR, self.messageColG, self.messageColB, self.messageColA)
 
-    self:check()
+    self.camera = require('nx.camera2d'):new(0, 0, require('nx.window').size())
+
+    if self:check() then return end
 
     self.parentLoading = self.parent and self.parent._isLoading
 
-    self.camera = require('nx.camera2d'):new(0, 0, require('nx.window').size())
     self:performTransition(self.camera)
 end
 
@@ -88,26 +89,31 @@ end
 function SceneLoad:update(dt)
     self:check()
 
+    self.fadePercent = 1
+
+    -- Calculate fading percent if there's any ongoing fading
+    if self._transitionTime and not self._transitionFadingIn then
+        self.fadePercent = self._transitionTime / self:transitionDuration()
+    end
+
     local w, h = self.camera:size()
     self.text:setPosition(30, h - 50)
+    self.text:setColor(
+        self.messageColR, self.messageColG, self.messageColB, self.messageColA * self.fadePercent
+    )
 end
 
 ------------------------------------------------------------
 function SceneLoad:render()
     local fadePercent = 1
-    if self._transitionTime and not self._transitionFadingIn then
-        fadePercent = self._transitionTime / self:transitionDuration()
-    end
 
+    -- Draw overlay quad only if there's a scene *currently* rendering behind
     if self.parent and not self.parentLoading then
-        self.camera:fillFsQuad(self.colR, self.colG, self.colB, self.colA * fadePercent)
+        self.camera:fillFsQuad(self.colR, self.colG, self.colB, self.colA * self.fadePercent)
     else
         self.camera:clear(self.colR, self.colG, self.colB)
     end
 
-    self.text:setColor(
-        self.messageColR, self.messageColG, self.messageColB, self.messageColA * fadePercent
-    )
     self.camera:draw(self.text)
 end
 
@@ -128,11 +134,18 @@ function SceneLoad:check()
     local loaded, failed, total = self.worker:progress()
 
     if loaded + failed == total then
-        self:performTransition(self.camera, function()
+        local function callback()
             self.nextScene._preloaded = true
             Scene.back()
             Scene.push(self.nextScene)
-        end)
+        end
+
+        if self._isLoading then
+            callback()
+            return true
+        else
+            self:performTransition(self.camera, callback)
+        end
     end
 
     local percent = total ~= 0 and math.floor(100 * (loaded + failed) / total + 0.5) or 1
