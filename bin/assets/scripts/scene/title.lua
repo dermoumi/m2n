@@ -70,6 +70,10 @@ function SceneTitle:onKeyDown(scancode, _, repeated)
         else
             print('Lua usage: ' .. tostring(collectgarbage('count') * 1024))
         end
+    elseif scancode == 'a' then
+        self:performTransition(self.camera, function()
+            Scene.goTo('scene.title')
+        end)
     end
 end
 

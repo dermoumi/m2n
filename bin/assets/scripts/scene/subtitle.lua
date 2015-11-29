@@ -55,9 +55,7 @@ local GameFont = require 'game.font'
 
 ------------------------------------------------------------
 function SceneSubtitle:needsPreload()
-    return true, {
-        r = 255, g = 255, b = 255, a = 255
-    }
+    return true
 end
 
 ------------------------------------------------------------
@@ -140,6 +138,8 @@ function SceneSubtitle:load()
     self.shape:setIndexData(0, 1, 3, 6)
 
     self._processParent = true
+
+    self:performTransition(self.camera)
 end
 
 ------------------------------------------------------------

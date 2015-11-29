@@ -78,7 +78,10 @@ function SceneLoad:load()
 
     self:check()
 
+    self.parentLoading = self.parent and self.parent._isLoading
+
     self.camera = require('nx.camera2d'):new(0, 0, require('nx.window').size())
+    self:performTransition(self.camera)
 end
 
 ------------------------------------------------------------
@@ -91,8 +94,33 @@ end
 
 ------------------------------------------------------------
 function SceneLoad:render()
-    self.camera:fillFsQuad(self.colR, self.colG, self.colB, self.colA)
+    local fadePercent = 1
+    if self._transitionTime and not self._transitionFadingIn then
+        fadePercent = self._transitionTime / self:transitionDuration()
+    end
+
+    if self.parent and not self.parentLoading then
+        self.camera:fillFsQuad(self.colR, self.colG, self.colB, self.colA * fadePercent)
+    else
+        self.camera:clear(self.colR, self.colG, self.colB)
+    end
+
+    self.text:setColor(
+        self.messageColR, self.messageColG, self.messageColB, self.messageColA * fadePercent
+    )
     self.camera:draw(self.text)
+end
+
+------------------------------------------------------------
+function SceneLoad:renderTransition(camera, time, duration, fadingIn)
+    if not self.parent or self._transitionFadingIn then
+        Scene.renderTransition(self, camera, time, duration, fadingIn)
+    end
+end
+
+------------------------------------------------------------
+function SceneLoad:transitionColor()
+    return self.colR, self.colG, self.colB, self.colA
 end
 
 ------------------------------------------------------------
@@ -100,9 +128,11 @@ function SceneLoad:check()
     local loaded, failed, total = self.worker:progress()
 
     if loaded + failed == total then
-        self.nextScene._preloaded = true
-        Scene.back()
-        Scene.push(self.nextScene)
+        self:performTransition(self.camera, function()
+            self.nextScene._preloaded = true
+            Scene.back()
+            Scene.push(self.nextScene)
+        end)
     end
 
     local percent = total ~= 0 and math.floor(100 * (loaded + failed) / total + 0.5) or 1

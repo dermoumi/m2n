@@ -47,7 +47,7 @@ function Scene.static.goTo(scene, ...)
         sceneStack[i] = nil
     end
 
-    return Scene.push(scene, ...)
+    Scene.push(scene, ...)
 end
 
 ------------------------------------------------------------
@@ -57,10 +57,13 @@ function Scene.static.push(scene, ...)
 
     local needsPreload, settings = scene:needsPreload()
     if needsPreload and not scene._preloaded then
-        return Scene.push('scene.load', settings, scene)
+        Scene.push('scene.load', settings, scene)
     else
         sceneStack[#sceneStack + 1] = scene
-        return scene:load()
+
+        scene._isLoading = true
+        scene:load()
+        scene._isLoading = false
     end
 end
 
@@ -85,6 +88,7 @@ end
 function Scene:_update(dt)
     if self:updateParent() and self.parent then self.parent:_update(dt) end
 
+    if self._transitionTime then self:updateTransition(dt) end
     self:update(dt)
 end
 
@@ -100,11 +104,22 @@ function Scene:_render()
     if self:renderParent() and self.parent then self.parent:_render() end
 
     self:render()
+    if self._transitionTime then
+        local camera = self._transitionCamera
+        local time = self._transitionTime
+        local duration = self:transitionDuration()
+        local fadeIn = self._transitionFadingIn
+
+        self:renderTransition(camera, time, duration, fadeIn)
+    end
 end
 
 ------------------------------------------------------------
 function Scene:_onEvent(e, a, b, c, d)
-    if self[e](self, a, b, c, d) == false then
+    if self._transitionTime then
+        -- While transitioning, disable most events
+        return true
+    elseif self[e](self, a, b, c, d) == false then
         return false
     elseif self:processParent() and self.parent then
         return self.parent:_onEvent(e, a, b, c, d)
@@ -116,6 +131,62 @@ end
 ------------------------------------------------------------
 function Scene:needsPreload()
     return false
+end
+
+------------------------------------------------------------
+function Scene:updateTransition(dt)
+    local duration = self:transitionDuration(self._transitionFadingIn)
+
+    if self._transitionTime >= duration then
+        self._transitionTime = nil
+    else
+        self._transitionTime = math.min(duration, self._transitionTime + dt)
+        if self._transitionTime >= duration and self._transitionCallback then
+            self._transitionCallback()
+        end
+    end
+end
+
+------------------------------------------------------------
+function Scene:performTransition(camera, arg)
+    if self._transitionTime then return end
+
+    local currentScene = Scene.currentScene()
+    if self == currentScene then
+        self._transitionTime = 0
+        self._transitionCamera = camera
+
+        if type(arg) == 'function' then
+            -- Has a callback, assume it's a fade out transition
+            self._transitionFadingIn = true
+            self._transitionCallback = arg
+        else
+            self._transitionFadingIn = false
+            self._transitionCallback = nil
+        end
+    else
+        currentScene:performTransition(camera, arg)
+    end
+end
+
+------------------------------------------------------------
+function Scene:renderTransition(camera, time, duration, fadingIn)
+    local r, g, b, a = self:transitionColor()
+
+    a = a * (time / duration)
+    if not fadingIn then a = 255 - a end
+
+    camera:fillFsQuad(r, g, b, a)
+end
+
+------------------------------------------------------------
+function Scene:transitionColor()
+    return 0, 0, 0, 255
+end
+
+------------------------------------------------------------
+function Scene:transitionDuration()
+    return .1
 end
 
 ------------------------------------------------------------
