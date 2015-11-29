@@ -39,10 +39,14 @@ local Renderer = require 'nx.renderer'
 local Log = require 'nx.log'
 
 ------------------------------------------------------------
+function SceneTitle:initialize(settings)
+    settings = settings or {}
+    self.firstRun = settings.firstRun
+end
+
+------------------------------------------------------------
 function SceneTitle:needsPreload()
-    return true, {
-        message = 'INITIALIZING %i%%'
-    }
+    return true, self.firstRun and {message = 'INITIALIZING %i%%'} or {}
 end
 
 ------------------------------------------------------------
