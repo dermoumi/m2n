@@ -71,7 +71,7 @@ end
 
 ------------------------------------------------------------
 function SceneSubtitle:load()
-    self.camera = Camera2D:new(0, 0, 1280, 720)
+    self.camera = Camera2D:new()
 
     self.echoFilter = require('nx.audioechofilter'):new()
     self.echoFilter:setParams(.5, .5)

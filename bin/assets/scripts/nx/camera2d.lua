@@ -94,11 +94,12 @@ end
 ------------------------------------------------------------
 function Camera2D:reset(x, y, width, height)
     local c = self._cdata
+    local winWidth, winHeight = require('nx.window'):size()
 
     x = x or 0
     y = y or 0
-    width  = width  or 1
-    height = height or 1
+    width  = width  or winWidth
+    height = height or winHeight
 
     c.centerX  = x + width / 2
     c.centerY  = y + height / 2

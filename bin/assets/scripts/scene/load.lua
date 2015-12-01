@@ -76,7 +76,7 @@ function SceneLoad:load()
     self.text:setString(self.message:format(0))
     self.text:setColor(self.messageColR, self.messageColG, self.messageColB, self.messageColA)
 
-    self.camera = require('nx.camera2d'):new(0, 0, require('nx.window').size())
+    self.camera = require('nx.camera2d'):new()
 
     if self:check() then return end
 
