@@ -27,6 +27,7 @@
 #include "vectorfont.hpp"
 
 #include "image.hpp"
+#include "renderdevice.hpp"
 #include "../system/log.hpp"
 
 #include <physfs/physfs.h>
@@ -406,7 +407,10 @@ Glyph VectorFont::loadGlyph(uint32_t codePoint, uint32_t charSize, bool bold) co
                     glyph.texWidth, glyph.texHeight
                 );
 
-                if (!found) {
+                if (found) {
+                    glyph.page = mPages[charSize].size() - 1;
+                }
+                else {
                     Log::error(
                         "Failed to add a new character to the font: "
                         "The maximum texture size has been reached"
@@ -419,7 +423,7 @@ Glyph VectorFont::loadGlyph(uint32_t codePoint, uint32_t charSize, bool bold) co
                 }
             }
             else {
-                page = &mPages[charSize].back();
+                page = &mPages[charSize][i];
 
                 bool found = findGlyphRect(
                     page, width + 2 * padding, height + 2 * padding, glyph.texLeft, glyph.texTop,
@@ -427,14 +431,15 @@ Glyph VectorFont::loadGlyph(uint32_t codePoint, uint32_t charSize, bool bold) co
                 );
 
                 if (found) {
-                    glyph.page = mPages[charSize].size() - 1;
+                    glyph.page = i;
                 }
                 else {
                     page = nullptr;
                 }
-
             }
         }
+
+        Log::info("codepoint %u loaded at subpage %u", codePoint, glyph.page);
 
         // Make sure the texture data is poositioned in the center of the allocated texture rect
         glyph.texLeft += padding;
@@ -476,14 +481,17 @@ Glyph VectorFont::loadGlyph(uint32_t codePoint, uint32_t charSize, bool bold) co
             }
         }
 
-        page->texture.setData(&mPixelBuffer[0], glyph.texLeft, glyph.texTop, 0, glyph.texWidth,
-            glyph.texHeight, 1, 0, 0);
+        page->texture.setData(
+            &mPixelBuffer[0], glyph.texLeft, glyph.texTop, 0, glyph.texWidth, glyph.texHeight,
+            1, 0, 0
+        );
     }
 
     // Delete the FT_Glyph
     FT_Done_Glyph(glyphDesc);
 
     // TODO: Force an OpenGL flush
+    RenderDevice::instance().sync();
 
     // Done
     return glyph;
