@@ -64,7 +64,7 @@ public:
     virtual float lineSpacing(uint32_t charSize) const;
     virtual float underlinePosition(uint32_t charSize) const;
     virtual float underlineThickness(uint32_t charSize) const;
-    virtual const Texture& texture(uint32_t charSize) const;
+    virtual const Texture* texture(uint32_t charSize, uint32_t index) const;
 
 private:
     using GlyphTable = std::map<uint32_t, Glyph>;
@@ -90,7 +90,7 @@ private:
 private:
     void cleanup();
     Glyph loadGlyph(uint32_t codePoint, uint32_t charSize, bool bold) const;
-    void findGlyphRect(Page& page, uint32_t width, uint32_t height, uint32_t& coordsL,
+    bool findGlyphRect(Page* page, uint32_t width, uint32_t height, uint32_t& coordsL,
         uint32_t& coordsT, uint32_t& coordsR, uint32_t& coordsB) const;
     bool ensureSize(uint32_t charSize) const;
 
@@ -98,7 +98,7 @@ private:
     class FreetypeHandle;
     class FileWrapper;
     using FreetypePtr = std::shared_ptr<FreetypeHandle>;
-    using PageTable   = std::map<uint32_t, Page>;
+    using PageTable   = std::map<uint32_t, std::vector<Page>>;
     using FilePtr     = std::shared_ptr<FileWrapper>;
 
     Info        mInfo;

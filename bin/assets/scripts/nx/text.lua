@@ -148,11 +148,15 @@ end
 ------------------------------------------------------------
 function Text:_render(camera, state)
     if self._font and self._font._cdata ~= nil then
-        local texture = self._font:texture(self._charSize)
-        local texW, texH = texture:size()
-        texture:bind(0)
-
         Renderer.setBlendMode(state:blendMode())
+
+        self._vertices._cdata = C.nxTextArraybuffer(self._cdata, vertCountPtr)
+        Arraybuffer.setVertexbuffer(self._vertices, 0, 0, 16)
+        C.nxRendererSetVertexLayout(Text._vertexLayout())
+
+        local texture = self._font:texture(self._charSize)
+        texture:bind(0)
+        local texW, texH = texture:size()
 
         local shader = self._shader or Text._defaultShader()
         shader:bind()
@@ -160,11 +164,7 @@ function Text:_render(camera, state)
         shader:setUniform('uColor', state:color(true))
         shader:setUniform('uTexSize', texW, texH)
         shader:setSampler('uTexture', 0)
-
-        self._vertices._cdata = C.nxTextArraybuffer(self._cdata, vertCountPtr)
-        Arraybuffer.setVertexbuffer(self._vertices, 0, 0, 16)
-        C.nxRendererSetVertexLayout(Text._vertexLayout())
-
+    
         C.nxRendererDraw(0, 0, vertCountPtr[0])
     end
 end

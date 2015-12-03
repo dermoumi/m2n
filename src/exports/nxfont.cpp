@@ -83,7 +83,7 @@ NX_EXPORT float nxFontUnderlineThickness(const NxFont* font, uint32_t charSize)
 }
 
 //----------------------------------------------------------
-NX_EXPORT const NxTexture* nxFontTexture(const NxFont* font, uint32_t charSize)
+NX_EXPORT const NxTexture* nxFontTexture(const NxFont* font, uint32_t charSize, uint32_t index)
 {
-    return &font->texture(charSize);
+    return font->texture(charSize, index);
 }

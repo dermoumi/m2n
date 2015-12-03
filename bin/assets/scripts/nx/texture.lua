@@ -255,6 +255,8 @@ end
 
 ------------------------------------------------------------
 function Texture:size()
+    -- if self._cdata == nil then return 0, 0 end
+    
     local sizePtr = ffi.new('uint16_t[3]')
     C.nxTextureSize(self._cdata, sizePtr)
     return sizePtr[0], sizePtr[1], sizePtr[2]

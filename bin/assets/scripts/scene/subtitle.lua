@@ -113,10 +113,10 @@ function SceneSubtitle:load()
     self.rbSprite:setPosition(640, 360)
     self.rbSprite:setOrigin(320, 180)
 
-    self.fontSprite = Sprite:new(GameFont:texture(14))
+    self.fontSprite = Sprite:new(GameFont:texture(40))
 
     self.text = Text:new()
-    self.text:setCharacterSize(14)
+    self.text:setCharacterSize(40)
     self.text:setFont(GameFont)
     self.text:setString("Hello world 真島e ヒロ")
 

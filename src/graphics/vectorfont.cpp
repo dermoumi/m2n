@@ -234,23 +234,25 @@ const VectorFont::Info& VectorFont::info() const
 //----------------------------------------------------------
 const Glyph& VectorFont::glyph(uint32_t codePoint, uint32_t charSize, bool bold) const
 {
-    // Get the page corresponding to the character size
-    auto& glyphs = mPages[charSize].glyphs;
-
     // Build the key by combining the codepoint and the bold flag
     uint32_t key = ((bold ? 1 : 0) << 31) | codePoint;
 
-    // Search the glyph from the cache
-    auto it = glyphs.find(key);
-    if (it != glyphs.end()) {
-        // Found: just return it
-        return it->second;
+    // Cycle through pages
+    for (auto& page : mPages[charSize]) {
+        // Get the page corresponding to the character size
+        auto& glyphs = page.glyphs;
+
+        // Search the glyph from the cache
+        auto it = glyphs.find(key);
+        if (it != glyphs.end()) {
+            // Found: just return it
+            return it->second;
+        }
     }
-    else {
-        // Not found: we have to load it
-        Glyph glyph = loadGlyph(codePoint, charSize, bold);
-        return glyphs.emplace(key, glyph).first->second;
-    }
+
+    // Not found: we have to load it
+    Glyph glyph = loadGlyph(codePoint, charSize, bold);
+    return mPages[charSize][glyph.page].glyphs.emplace(key, glyph).first->second;
 }
 
 //----------------------------------------------------------
@@ -325,9 +327,15 @@ float VectorFont::underlineThickness(uint32_t charSize) const
 }
 
 //----------------------------------------------------------
-const Texture& VectorFont::texture(uint32_t charSize) const
+const Texture* VectorFont::texture(uint32_t charSize, uint32_t index) const
 {
-    return mPages[charSize].texture;
+    if (index >= mPages[charSize].size()) {
+        // Just in case this method is called before a texture is rendered
+        // render 'x' since it's gonna be used/rendered anyway...
+        glyph(L'x', charSize, false);
+    }
+
+    return &mPages[charSize][index].texture;
 }
 
 //----------------------------------------------------------
@@ -341,7 +349,7 @@ void VectorFont::cleanup()
 //----------------------------------------------------------
 Glyph VectorFont::loadGlyph(uint32_t codePoint, uint32_t charSize, bool bold) const
 {
-    // The glyph to reeturn
+    // The glyph to return
     Glyph glyph;
 
     // Shortcut to our glyph
@@ -386,11 +394,47 @@ Glyph VectorFont::loadGlyph(uint32_t codePoint, uint32_t charSize, bool bold) co
         constexpr auto padding = glyphPadding;
 
         // Get the glyphs page corresponding to the charcater size
-        Page& page = mPages[charSize];
+        Page* page = nullptr;
+        for (uint32_t i = 0; !page; ++i) {
+            if (i >= mPages[charSize].size()) {
+                mPages[charSize].emplace_back();
+                page = &mPages[charSize].back();
 
-        // Find a good position for the new glyph into the texture
-        findGlyphRect(page, width + 2 * padding, height + 2 * padding, glyph.texLeft, glyph.texTop,
-            glyph.texWidth, glyph.texHeight);
+                // Find a good position for the new glyph into the texture
+                bool found = findGlyphRect(
+                    page, width + 2 * padding, height + 2 * padding, glyph.texLeft, glyph.texTop,
+                    glyph.texWidth, glyph.texHeight
+                );
+
+                if (!found) {
+                    Log::error(
+                        "Failed to add a new character to the font: "
+                        "The maximum texture size has been reached"
+                    );
+
+                    glyph.texLeft = 0;
+                    glyph.texTop = 0;
+                    glyph.texWidth = 2;
+                    glyph.texHeight = 2;
+                }
+            }
+            else {
+                page = &mPages[charSize].back();
+
+                bool found = findGlyphRect(
+                    page, width + 2 * padding, height + 2 * padding, glyph.texLeft, glyph.texTop,
+                    glyph.texWidth, glyph.texHeight
+                );
+
+                if (found) {
+                    glyph.page = mPages[charSize].size() - 1;
+                }
+                else {
+                    page = nullptr;
+                }
+
+            }
+        }
 
         // Make sure the texture data is poositioned in the center of the allocated texture rect
         glyph.texLeft += padding;
@@ -432,7 +476,7 @@ Glyph VectorFont::loadGlyph(uint32_t codePoint, uint32_t charSize, bool bold) co
             }
         }
 
-        page.texture.setData(&mPixelBuffer[0], glyph.texLeft, glyph.texTop, 0, glyph.texWidth,
+        page->texture.setData(&mPixelBuffer[0], glyph.texLeft, glyph.texTop, 0, glyph.texWidth,
             glyph.texHeight, 1, 0, 0);
     }
 
@@ -446,21 +490,21 @@ Glyph VectorFont::loadGlyph(uint32_t codePoint, uint32_t charSize, bool bold) co
 }
 
 //----------------------------------------------------------
-void VectorFont::findGlyphRect(Page& page, uint32_t width, uint32_t height, uint32_t& coordsX,
+bool VectorFont::findGlyphRect(Page* page, uint32_t width, uint32_t height, uint32_t& coordsX,
     uint32_t& coordsY, uint32_t& coordsW, uint32_t& coordsH) const
 {
     // Find the line that fits well the glyph
     Row* currentRow = nullptr;
-    for (auto& row : page.rows) {
+    for (auto& row : page->rows) {
         float ratio = static_cast<float>(height) / row.height;
 
         // Ignore rows that are either too small or too high
         if (ratio < 0.7f || ratio > 1.f) continue;
 
         // Check if there's enough horizontal space left in the row
-        if (width > page.texture.texWidth() - row.width) continue;
+        if (width > page->texture.texWidth() - row.width) continue;
 
-        // Make sure that the current row passed all the test: we can select it
+        // Make sure that the current row passed all the tests: we can select it
         currentRow = &row;
         break;
     }
@@ -468,43 +512,37 @@ void VectorFont::findGlyphRect(Page& page, uint32_t width, uint32_t height, uint
     if (!currentRow) {
         uint32_t rowHeight = height * 1.1;
         while (
-            page.nextRow + rowHeight >= page.texture.texHeight() || width >= page.texture.texWidth()
+            page->nextRow + rowHeight >= page->texture.texHeight()
+            || width >= page->texture.texWidth()
         ) {
             // Not enough space: resize the texture if possible
-            uint16_t texWidth  = page.texture.texWidth();
-            uint16_t texHeight = page.texture.texHeight();
+            uint16_t texWidth  = page->texture.texWidth();
+            uint16_t texHeight = page->texture.texHeight();
             uint16_t maxSize   = Texture::maxSize();
 
             if (texWidth * 2 <= maxSize && texHeight * 2 <= maxSize) {
                 // Make the texture twice as big
                 uint32_t bufSize = texWidth * texHeight * 16;
                 uint8_t* buffer = new uint8_t[bufSize];
-                page.texture.data(buffer, 0, 0);
+                page->texture.data(buffer, 0, 0);
 
                 Image image;
                 image.create(texWidth * 2, texHeight * 2, 255, 255, 255, 0);
                 image.copy(buffer, 0, 0, texWidth, 0, 0, texWidth, texHeight, false);
 
-                page.texture.create(0, 1, texWidth * 2, texHeight * 2, 1, true, true, false);
-                page.texture.setData(image.getPixelsPtr(), -1, -1, -1, -1, -1, -1, 0, 0);
+                page->texture.create(0, 1, texWidth * 2, texHeight * 2, 1, true, true, false);
+                page->texture.setData(image.getPixelsPtr(), -1, -1, -1, -1, -1, -1, 0, 0);
             }
             else {
-                Log::error(
-                    "Failed to add a new character to the font: "
-                    "The maximum texture size has been reached"
-                );
-
-                coordsX = 0;
-                coordsY = 0;
-                coordsW = 2;
-                coordsH = 2;
+                // Reached max size, try next page
+                return false;
             }
         }
 
         // We can now create the new row
-        page.rows.push_back({page.nextRow, rowHeight});
-        page.nextRow += rowHeight;
-        currentRow = &page.rows.back();
+        page->rows.push_back({page->nextRow, rowHeight});
+        page->nextRow += rowHeight;
+        currentRow = &page->rows.back();
     }
 
     coordsX = currentRow->width;
@@ -513,6 +551,8 @@ void VectorFont::findGlyphRect(Page& page, uint32_t width, uint32_t height, uint
     coordsH = height;
 
     currentRow->width += width;
+
+    return true;
 }
 
 //----------------------------------------------------------

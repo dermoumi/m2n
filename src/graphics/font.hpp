@@ -43,6 +43,8 @@ struct Glyph
     uint32_t texTop    {0};
     uint32_t texWidth  {0};
     uint32_t texHeight {0};
+
+    uint32_t page {0};
 };
 
 //==========================================================
@@ -59,5 +61,5 @@ public:
     virtual float lineSpacing(uint32_t charSize) const = 0;
     virtual float underlinePosition(uint32_t charSize) const = 0;
     virtual float underlineThickness(uint32_t charSize) const = 0;
-    virtual const Texture& texture(uint32_t charSize) const = 0;
+    virtual const Texture* texture(uint32_t charSize, uint32_t index = 0) const = 0;
 };

@@ -41,14 +41,14 @@ ffi.cdef [[
     float nxFontLineSpacing(const NxFont*, uint32_t);
     float nxFontUnderlinePosition(const NxFont*, uint32_t);
     float nxFontUnderlineThickness(const NxFont*, uint32_t);
-    const NxTexture* nxFontTexture(const NxFont*, uint32_t);
+    const NxTexture* nxFontTexture(const NxFont*, uint32_t, uint32_t);
 ]]
 
 ------------------------------------------------------------
 -- Represents a vector font object
 ------------------------------------------------------------
 local class = require 'nx.class'
-local Font = class 'nx.vectorfont'
+local Font = class 'nx.font'
 
 local Texture = require 'nx.texture'
 
@@ -96,8 +96,8 @@ function Font:underlineThickness(charSize)
 end
 
 ------------------------------------------------------------
-function Font:texture(charSize)
-    return Texture._fromCData(C.nxFontTexture(self._cdata, charSize))
+function Font:texture(charSize, index)
+    return Texture._fromCData(C.nxFontTexture(self._cdata, charSize, index or 0))
 end
 
 ------------------------------------------------------------
