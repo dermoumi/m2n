@@ -36,25 +36,33 @@
 #include <SDL2/SDL.h>
 #include <string>
 
+extern "C" void nxWindowClose();
+
+//----------------------------------------------------------
+void SDLRelease()
+{
+    nxWindowClose();
+    SDL_Quit();
+}
+
 //----------------------------------------------------------
 int fatalError(const std::string& message, int retval = 1)
 {
     Log::fatal(message);
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", message.data(), nullptr);
-
+    
     return retval;
 }
 
 //----------------------------------------------------------
 int main(int argc, char* argv[])
 {
-    Filesystem fs;
-
     // Initialize SDL
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER | SDL_INIT_JOYSTICK);
-    atexit(SDL_Quit);
+    atexit(SDLRelease);
 
     // Initialize the filesystem
+    Filesystem fs;
     if (!fs.initialize((argc > 1) ? argv[0] : nullptr)) {
         return fatalError(Filesystem::getErrorMessage());
     }

@@ -84,7 +84,7 @@ bool LuaVM::runCode(const std::string& filename, const std::string& code, int& r
 }
 
 //----------------------------------------------------------
-const std::string& LuaVM::getErrorMessage() const
+std::string LuaVM::getErrorMessage() const
 {
     return mErrorMessage;
 }

@@ -112,4 +112,9 @@ function SceneTitle:onKeyDown(scancode, _, repeated)
 end
 
 ------------------------------------------------------------
+function SceneTitle:back(a, b, c)
+    self:performTransition(self.camera)
+end
+
+------------------------------------------------------------
 return SceneTitle

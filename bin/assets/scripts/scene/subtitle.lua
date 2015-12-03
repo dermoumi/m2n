@@ -133,6 +133,7 @@ function SceneSubtitle:load()
     )
     self.shape:setIndexData(0, 1, 3, 6)
 
+    self.touchTexts = {}
     self._processParent = true
 
     self:performTransition(self.camera)
@@ -163,13 +164,17 @@ function SceneSubtitle:render()
 
     self.camera:draw(self.shape)
 
+    for i, text in pairs(self.touchTexts) do
+        self.camera:draw(text)
+    end
+
     -- Renderer.drawFsQuad(self.rb:texture(), 640, 360)
 end
 
 ------------------------------------------------------------
 function SceneSubtitle:onKeyDown(scancode)
     if scancode == 'f2' then
-        Scene.back('hello from SceneSubtitle')
+        self:callNewScene()
         return false
     elseif scancode == 'f3' then
         self._processParent = not self._processParent
@@ -187,8 +192,53 @@ function SceneSubtitle:onKeyDown(scancode)
 end
 
 ------------------------------------------------------------
+function SceneSubtitle:onTouchDown(finger, x, y)
+    local w, h = self.camera:size()
+    x, y = x * w, y * h
+
+    local text = Text:new()
+    text:setString("Finger: " .. tostring(finger))
+    text:setFont(GameFont)
+    text:setPosition(x, y)
+    text:setColor(0, 0, 0)
+
+    local bX, bY, bW, bH = text:bounds()
+    text:setOrigin(bW / 2, 150)
+
+    self.touchTexts[finger] = text
+
+    if finger == 2 then
+        self:callNewScene()
+    elseif finger == 3 then
+        self:backToScene()
+    end
+
+    return false
+end
+
+------------------------------------------------------------
+function SceneSubtitle:onTouchUp(finger, x, y)
+    self.touchTexts[finger] = nil
+end
+
+------------------------------------------------------------
+function SceneSubtitle:onTouchMotion(finger, x, y)
+    if self.touchTexts[finger] then
+        local w, h = self.camera:size()
+        x, y = x * w, y * h
+        self.touchTexts[finger]:setPosition(x, y)
+    end
+end
+
+------------------------------------------------------------
 function SceneSubtitle:processParent()
     return self._processParent
+end
+
+------------------------------------------------------------
+function SceneSubtitle:back(scene, msg)
+    self:performTransition(self.camera)
+    print(scene, msg)
 end
 
 ------------------------------------------------------------
@@ -201,6 +251,18 @@ function SceneSubtitle:release()
     self.audiobus:stop()
     Cache.release('assets/test.wav')
     Cache.release('assets/pasrien.png')
+end
+
+------------------------------------------------------------
+function SceneSubtitle:callNewScene()
+    Scene.push('scene.subtitle')
+end
+
+------------------------------------------------------------
+function SceneSubtitle:backToScene()
+    self:performTransition(self.camera, function()
+        Scene.back('hello from SceneSubtitle')
+    end)
 end
 
 ------------------------------------------------------------

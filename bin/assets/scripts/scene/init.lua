@@ -73,7 +73,9 @@ function Scene.static.back(...)
     releaseStack[#releaseStack + 1] = scene
 
     sceneStack[#sceneStack] = nil
-    if sceneStack[#sceneStack] then sceneStack[#sceneStack]:back(...) end
+    if sceneStack[#sceneStack] then
+        sceneStack[#sceneStack]:back(scene, ...)
+    end
 end
 
 ------------------------------------------------------------
@@ -282,7 +284,6 @@ end
 ------------------------------------------------------------
 function Scene:onMouseUp(x, y, button)
     -- Nothing to do
-------------------------------------------------------------
 end
 
 ------------------------------------------------------------
