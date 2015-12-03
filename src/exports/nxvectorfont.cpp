@@ -25,65 +25,42 @@
     For more information, please refer to <http://unlicense.org>
 *///============================================================================
 #include "../config.hpp"
-#include "../graphics/font.hpp"
+#include "../graphics/vectorfont.hpp"
 
 //----------------------------------------------------------
 // Declarations
 //----------------------------------------------------------
-using NxFont    = Font;
-using NxTexture = Texture;
+using NxFont = Font;
+struct PHYSFS_File;
 
 //----------------------------------------------------------
 // Exported functions
 //----------------------------------------------------------
-NX_EXPORT void nxFontRelease(NxFont* font)
+NX_EXPORT NxFont* nxVectorFontNew()
 {
-    delete font;
+    return new VectorFont();
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxFontGlyph(const NxFont* font, uint32_t codePoint, uint32_t charSize,
-    bool bold, float* fValues, uint32_t* uValues)
+NX_EXPORT bool nxVectorFontOpenFromFile(NxFont* font, const char* filename)
 {
-    auto& glyph = font->glyph(codePoint, charSize, bold);
-    fValues[0] = glyph.advance;
-    fValues[1] = glyph.left;
-    fValues[2] = glyph.top;
-    fValues[3] = glyph.width;
-    fValues[4] = glyph.height;
-    uValues[0] = glyph.texLeft;
-    uValues[1] = glyph.texTop;
-    uValues[2] = glyph.texWidth;
-    uValues[3] = glyph.texHeight;
+    return static_cast<VectorFont*>(font)->open(filename);
 }
 
 //----------------------------------------------------------
-NX_EXPORT float nxFontKerning(const NxFont* font, uint32_t first, uint32_t second,
-    uint32_t charSize)
+NX_EXPORT bool nxVectorFontOpenFromMemory(NxFont* font, const void* buffer, size_t size)
 {
-    return font->kerning(first, second, charSize);
+    return static_cast<VectorFont*>(font)->open(buffer, size);
 }
 
 //----------------------------------------------------------
-NX_EXPORT float nxFontLineSpacing(const NxFont* font, uint32_t charSize)
+NX_EXPORT bool nxVectorFontOpenFromHandle(NxFont* font, PHYSFS_File* file)
 {
-    return font->lineSpacing(charSize);
+    return static_cast<VectorFont*>(font)->open(file);
 }
 
 //----------------------------------------------------------
-NX_EXPORT float nxFontUnderlinePosition(const NxFont* font, uint32_t charSize)
+NX_EXPORT const char* nxVectorFontFamilyName(const NxFont* font)
 {
-    return font->underlinePosition(charSize);
-}
-
-//----------------------------------------------------------
-NX_EXPORT float nxFontUnderlineThickness(const NxFont* font, uint32_t charSize)
-{
-    return font->underlineThickness(charSize);
-}
-
-//----------------------------------------------------------
-NX_EXPORT const NxTexture* nxFontTexture(const NxFont* font, uint32_t charSize)
-{
-    return &font->texture(charSize);
+    return static_cast<const VectorFont*>(font)->info().family.data();
 }

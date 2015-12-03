@@ -26,71 +26,79 @@
 --]]----------------------------------------------------------------------------
 
 ------------------------------------------------------------
--- Represents a vector font object
-------------------------------------------------------------
-local Font = require 'nx.font'
-local VectorFont = Font:subclass('nx.vectorfont')
-
-------------------------------------------------------------
 -- FFI C Declarations
 ------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
 ffi.cdef [[
-    NxFont* nxVectorFontNew();
-    bool nxVectorFontOpenFromFile(NxFont*, const char*);
-    bool nxVectorFontOpenFromMemory(NxFont*, const void*, size_t);
-    bool nxVectorFontOpenFromHandle(NxFont*, PHYSFS_File*);
-    const char* nxVectorFontFamilyName(const NxFont*);
+    typedef struct NxFont NxFont;
+    typedef struct NxTexture NxTexture;
+
+    void nxFontRelease(NxFont*);
+    void nxFontGlyph(const NxFont*, uint32_t, uint32_t, bool, float*, uint32_t*);
+    float nxFontKerning(const NxFont*, uint32_t, uint32_t, uint32_t);
+    float nxFontLineSpacing(const NxFont*, uint32_t);
+    float nxFontUnderlinePosition(const NxFont*, uint32_t);
+    float nxFontUnderlineThickness(const NxFont*, uint32_t);
+    const NxTexture* nxFontTexture(const NxFont*, uint32_t);
 ]]
 
 ------------------------------------------------------------
-local function isNumber(val)
-    return type(val) == 'number'
-end
+-- Represents a vector font object
+------------------------------------------------------------
+local class = require 'nx.class'
+local Font = class 'nx.vectorfont'
+
+local Texture = require 'nx.texture'
 
 ------------------------------------------------------------
-local function isCArray(a)
-    return type(a) == 'cdata' or type(a) == 'userdata'
-end
-
-------------------------------------------------------------
-function VectorFont.static._fromCData(cdata)
-    local font = VectorFont:allocate()
+function Font.static._fromCData(cdata)
+    local font = Font:allocate()
     font._cdata = ffi.cast('NxFont*', cdata)
     return font
 end
 
 ------------------------------------------------------------
-function VectorFont:initialize()
-    local handle = C.nxVectorFontNew()
-    self._cdata = ffi.gc(handle, C.nxFontRelease)
+function Font:release()
+    if not self._cdata then return end
+    C.nxFontRelease(self._cdata)
 end
 
 ------------------------------------------------------------
-function VectorFont:open(a, b)
-    if isCArray(a) and isNumber(b) then
-        ok = C.nxVectorFontOpenFromMemory(self._cdata, a, b)
-    elseif type(a) == 'string' then
-        ok = C.nxVectorFontOpenFromFile(self._cdata, a)
-    elseif class.Object.isInstanceOf(a, require('nx.inputfile')) then
-        ok = C.nxVectorFontOpenFromHandle(self._cdata, a._cdata)
-    else
-        return false, 'Invalid parameters'
-    end
+function Font:glyph(codePoint, charSize, bold)
+    local fValues = ffi.new('float[5]')
+    local uValues = ffi.new('uint32_t[4]')
+    C.nxFontGlyph(self._cdata, codePoint, charSize, not not bold, fValues, uValues)
 
-    if not ok then
-        return 'Cannot open font'
-    end
-
-    return true
+    return fValues[0], fValues[1], fValues[2], fValues[3], fValues[4], uValues[0], uValues[1],
+        uValues[2], uValues[4]
 end
 
 ------------------------------------------------------------
-function VectorFont:familyName()
-    return ffi.string(C.nxVectorFontFamilyName(self._cdata))
+function Font:kerning(first, second, charSize)
+    return C.nxFontKerning(self._cdata, first, second, charSize)
 end
 
 ------------------------------------------------------------
-return VectorFont
+function Font:lineSpacing(charSize)
+    return C.nxFontLineSpacing(self._cdata, charSize)
+end
+
+------------------------------------------------------------
+function Font:underlinePosition(charSize)
+    return C.nxFontUnderlinePosition(self._cdata, charSize)
+end
+
+------------------------------------------------------------
+function Font:underlineThickness(charSize)
+    return C.nxFontUnderlineThickness(self._data, charSize)
+end
+
+------------------------------------------------------------
+function Font:texture(charSize)
+    return Texture._fromCData(C.nxFontTexture(self._cdata, charSize))
+end
+
+------------------------------------------------------------
+return Font

@@ -149,8 +149,8 @@ end
 function Text:_render(camera, state)
     if self._font and self._font._cdata ~= nil then
         local texture = self._font:texture(self._charSize)
-        texture:bind(0)
         local texW, texH = texture:size()
+        texture:bind(0)
 
         Renderer.setBlendMode(state:blendMode())
 
