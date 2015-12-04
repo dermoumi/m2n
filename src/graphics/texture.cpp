@@ -26,7 +26,6 @@
 *///============================================================================
 #include "texture.hpp"
 #include "renderdevice.hpp"
-#include "../system/log.hpp"
 
 //----------------------------------------------------------
 static uint16_t maximumSize()
@@ -66,26 +65,17 @@ uint8_t Texture::create(uint8_t type, uint8_t format, uint16_t width, uint16_t h
     mHandle = mType = mFormat = mWidth = mHeight = mDepth = mSamplerState = mRbTexture = 0;
 
     // Make sure that the size is valid
-    if (width == 0 || height == 0 || depth == 0) {
-        Log::info("Invalid size");
-        return 1;
-    }
+    if (width == 0 || height == 0 || depth == 0) return 1;
 
     // Check maximum size
-    if (width > maxSize() || height > maxSize() || depth > maxSize()) {
-        Log::info("Size above max");
-        return 2;
-    }
+    if (width > maxSize() || height > maxSize() || depth > maxSize()) return 2;
 
     uint32_t handle = RenderDevice::instance().createTexture(
         static_cast<RenderDevice::TextureType>(type), width, height, depth,
         static_cast<RenderDevice::TextureFormat>(format), hasMips, mipMaps, sRGB
     );
 
-    if (!handle) {
-        Log::info("Cannot create texture");
-        return 3;
-    }
+    if (!handle) return 3;
 
     mHandle       = handle;
     mType         = type;

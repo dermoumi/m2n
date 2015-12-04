@@ -440,8 +440,6 @@ Glyph VectorFont::loadGlyph(uint32_t codePoint, uint32_t charSize, bool bold) co
             }
         }
 
-        // Log::info("codepoint %u loaded at subpage %u", codePoint, glyph.page);
-
         // Make sure the texture data is poositioned in the center of the allocated texture rect
         glyph.texLeft += padding;
         glyph.texTop  += padding;
@@ -548,7 +546,7 @@ bool VectorFont::findGlyphRect(Page* page, uint32_t width, uint32_t height, uint
             image.copy(buffer, 0, 0, texWidth, 0, 0, texWidth, texHeight, false);
 
             // page->texture = Texture();
-            auto ok = page->texture.create(0, 1, texWidth * 2, texHeight * 2, 1, false, false, false);
+            auto ok = page->texture.create(0, 1, texWidth * 2, texHeight * 2, 1, true, true, false);
             if (ok == 0) {
                 page->texture.setData(image.getPixelsPtr(), -1, -1, -1, -1, -1, -1, 0, 0);
             }
@@ -622,7 +620,7 @@ VectorFont::Page::Page()
     }
 
     // Create texture
-    texture.create(0, 1, 128, 128, 1, false, false, false);
+    texture.create(0, 1, 128, 128, 1, true, true, false);
     texture.setData(image.getPixelsPtr(), -1, -1, -1, -1, -1, -1, 0, 0);
 }
 
