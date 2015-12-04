@@ -114,11 +114,10 @@ function SceneSubtitle:load()
     self.rbSprite:setOrigin(320, 180)
 
     self.text = Text:new()
-    self.text:setCharacterSize(3000)
+    self.text:setCharacterSize(16)
     self.text:setFont(GameFont)
     self.text:setString("Hello world 真島e ヒロ")
     self.text:setColor(0, 0, 0, 128)
-    self.text:setScale(.1, .1)
 
     self.shape = Shape:new()
     self.shape:setTexture(self.texture)
@@ -136,6 +135,8 @@ function SceneSubtitle:load()
     self.touchTexts = {}
     self._processParent = true
 
+    self.codePoint = 1
+
     self:performTransition(self.camera)
 end
 
@@ -145,11 +146,16 @@ function SceneSubtitle:update(dt)
 
     local w, h = Window.size()
     local fps = Window.currentFPS()
-    self.text:setString(('FPS: %i\nScreen size: %i %i'):format(fps, w, h))
+    self.text:setString(('FPS: %i'):format(fps))
 
     -- print(GameFont:texture(3000):size())
-    self.fontSprite = Sprite:new(GameFont:texture(3000))
-    self.fontSprite:setScale(.1, .1)
+    -- for i = 0, 100 do
+    --     GameFont:glyph(self.codePoint + i, 120, false)
+    -- end
+    -- self.codePoint = self.codePoint + 100
+
+    -- self.fontSprite = Sprite:new(GameFont:texture(120))
+    -- self.fontSprite:setScale(.25, .25)
 end
 
 ------------------------------------------------------------
@@ -166,7 +172,7 @@ function SceneSubtitle:render()
     self.camera:draw(self.shape)
 
     self.camera:draw(self.text)
-    self.camera:draw(self.fontSprite)
+    -- self.camera:draw(self.fontSprite)
 
     for i, text in pairs(self.touchTexts) do
         self.camera:draw(text)

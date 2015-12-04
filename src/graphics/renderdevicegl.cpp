@@ -426,7 +426,10 @@ uint32_t RenderDeviceGL::createTexture(TextureType type, int width, int height,
     }
 
     glGenTextures(1, &tex.glObj);
-    if (tex.glObj == 0) return 0;
+    if (tex.glObj == 0) {
+        Log::error("Could not generate GPU texture");
+        return 0;
+    }
 
     glActiveTexture(GL_TEXTURE15);
     
@@ -449,7 +452,7 @@ uint32_t RenderDeviceGL::createTexture(TextureType type, int width, int height,
     if (type == TextureType::TexCube) tex.memSize *= 6;
     mTextureMemory += tex.memSize;
 
-    return mTextures.add(tex);
+    return mTextures.add(tex, true);
 }
 
 //----------------------------------------------------------
@@ -535,9 +538,11 @@ void RenderDeviceGL::uploadTextureSubData(uint32_t texObj, int slice, int mipLev
     const auto& tex = mTextures.getRef(texObj);
     auto format     = tex.format;
 
-    if (x + width > static_cast<unsigned int>(tex.width) ||
-        y + height > static_cast<unsigned int>(tex.height)) {
-        Log::info("Attemting to update portion out of texture boundaries");
+    if (
+        x + width > static_cast<unsigned int>(tex.width) ||
+        y + height > static_cast<unsigned int>(tex.height)
+    ) {
+        Log::info("Attempting to update portion out of texture boundaries");
         return;
     }
 
@@ -606,6 +611,7 @@ void RenderDeviceGL::destroyTexture(uint32_t texObj)
 
     glDeleteTextures(1, &tex.glObj);
     mTextureMemory -= tex.memSize;
+
     mTextures.remove(texObj);
 }
 

@@ -143,7 +143,7 @@ bool VectorFont::open(const void* data, size_t size)
 
     FT_Face face;
     if (FT_New_Memory_Face(mFreetype->library, ftData, ftSize, 0, &face) != 0) {
-        Log::error("Faileed to load font from memory: Failed to create the font face");
+        Log::error("Failed to load font from memory: Failed to create the font face");
         return false;
     }
 
@@ -330,7 +330,7 @@ float VectorFont::underlineThickness(uint32_t charSize) const
 //----------------------------------------------------------
 const Texture* VectorFont::texture(uint32_t charSize, uint32_t index) const
 {
-    if (index >= mPages[charSize].size()) {
+    if (mPages[charSize].empty()) {
         // Just in case this method is called before a texture is rendered
         // render 'x' since it's gonna be used/rendered anyway...
         glyph(L'x', charSize, false);
@@ -397,18 +397,33 @@ Glyph VectorFont::loadGlyph(uint32_t codePoint, uint32_t charSize, bool bold) co
         // Get the glyphs page corresponding to the charcater size
         Page* page = nullptr;
         for (uint32_t i = 0; !page; ++i) {
-            if (i >= mPages[charSize].size()) {
-                mPages[charSize].emplace_back();
-                page = &mPages[charSize].back();
+            if (i < mPages[charSize].size()) {
+                page = &mPages[charSize][i];
 
-                // Find a good position for the new glyph into the texture
                 bool found = findGlyphRect(
-                    page, width + 2 * padding, height + 2 * padding, glyph.texLeft, glyph.texTop,
-                    glyph.texWidth, glyph.texHeight
+                    page, width + 2 * padding, height + 2 * padding,
+                    glyph.texLeft, glyph.texTop, glyph.texWidth, glyph.texHeight
                 );
 
                 if (found) {
-                    glyph.page = mPages[charSize].size() - 1;
+                    glyph.page = i;
+                }
+                else {
+                    page = nullptr;
+                }
+            }
+            else {
+                mPages[charSize].emplace_back();
+                page = &mPages[charSize][i];
+
+                // Find a good position for the new glyph into the texture
+                bool found = findGlyphRect(
+                    page, width + 2 * padding, height + 2 * padding,
+                    glyph.texLeft, glyph.texTop, glyph.texWidth, glyph.texHeight
+                );
+
+                if (found) {
+                    glyph.page = i;
                 }
                 else {
                     Log::error(
@@ -420,26 +435,12 @@ Glyph VectorFont::loadGlyph(uint32_t codePoint, uint32_t charSize, bool bold) co
                     glyph.texTop = 0;
                     glyph.texWidth = 2;
                     glyph.texHeight = 2;
-                }
-            }
-            else {
-                page = &mPages[charSize][i];
-
-                bool found = findGlyphRect(
-                    page, width + 2 * padding, height + 2 * padding, glyph.texLeft, glyph.texTop,
-                    glyph.texWidth, glyph.texHeight
-                );
-
-                if (found) {
-                    glyph.page = i;
-                }
-                else {
-                    page = nullptr;
+                    glyph.page = 0;
                 }
             }
         }
 
-        Log::info("codepoint %u loaded at subpage %u", codePoint, glyph.page);
+        // Log::info("codepoint %u loaded at subpage %u", codePoint, glyph.page);
 
         // Make sure the texture data is poositioned in the center of the allocated texture rect
         glyph.texLeft += padding;
@@ -453,38 +454,42 @@ Glyph VectorFont::loadGlyph(uint32_t codePoint, uint32_t charSize, bool bold) co
         glyph.width  =  face->glyph->metrics.width  / static_cast<float>(1 << 6);
         glyph.height =  face->glyph->metrics.height / static_cast<float>(1 << 6);
 
-        // Extract the glyph's pixels from the bitmap
-        mPixelBuffer.resize(width * height * 4, 255);
-        const uint8_t* pixels = bitmap.buffer;
-        if (bitmap.pixel_mode == FT_PIXEL_MODE_MONO) {
-            // Pixels are 1 bit monochrome values
-            for (int y = 0; y < height; ++y) {
-                for (int x = 0; x < width; ++x) {
-                    // The color channels remain white, just fill the alpha channel
-                    size_t index = (x + y * width) * 4 + 3;
-                    mPixelBuffer[index] = ((pixels[x / 8]) & (1 << (7 - (x % 8)))) ? 255 : 0;
+        if (glyph.texWidth > 0 && glyph.texHeight > 0) {
+            // Extract the glyph's pixels from the bitmap
+            mPixelBuffer.resize(width * height * 4, 255);
+            const uint8_t* pixels = bitmap.buffer;
+            if (bitmap.pixel_mode == FT_PIXEL_MODE_MONO) {
+                // Pixels are 1 bit monochrome values
+                for (int y = 0; y < height; ++y) {
+                    for (int x = 0; x < width; ++x) {
+                        // The color channels remain white, just fill the alpha channel
+                        size_t index = (x + y * width) * 4 + 3;
+                        mPixelBuffer[index] = ((pixels[x / 8]) & (1 << (7 - (x % 8)))) ? 255 : 0;
+                    }
+
+                    pixels += bitmap.pitch;
                 }
-
-                pixels += bitmap.pitch;
             }
-        }
-        else {
-            // Pixels are 8 bits gray levels
-            for (int y = 0; y < height; ++y) {
-                for (int x = 0; x < width; ++x) {
-                    // The color channls remain white, just fill the alpha channel
-                    size_t index = (x + y * width) * 4 + 3;
-                    mPixelBuffer[index] = pixels[x];
+            else {
+                // Pixels are 8 bits gray levels
+                for (int y = 0; y < height; ++y) {
+                    for (int x = 0; x < width; ++x) {
+                        // The color channls remain white, just fill the alpha channel
+                        size_t index = (x + y * width) * 4 + 3;
+                        mPixelBuffer[index] = pixels[x];
+                    }
+
+                    pixels += bitmap.pitch;
                 }
-
-                pixels += bitmap.pitch;
             }
-        }
 
-        page->texture.setData(
-            &mPixelBuffer[0], glyph.texLeft, glyph.texTop, 0, glyph.texWidth, glyph.texHeight,
-            1, 0, 0
-        );
+            // Log::info("%u %u %u %u %u %u %u", page->texture.nativeHandle(), page->texture.texWidth(),
+            //     page->texture.texHeight(), glyph.texLeft, glyph.texTop, glyph.texWidth, glyph.texHeight);
+            page->texture.setData(
+                &mPixelBuffer[0], glyph.texLeft, glyph.texTop, 0, glyph.texWidth, glyph.texHeight,
+                1, 0, 0
+            );
+        }
     }
 
     // Delete the FT_Glyph
@@ -526,23 +531,29 @@ bool VectorFont::findGlyphRect(Page* page, uint32_t width, uint32_t height, uint
             // Not enough space: resize the texture if possible
             uint16_t texWidth  = page->texture.texWidth();
             uint16_t texHeight = page->texture.texHeight();
-            uint16_t maxSize   = Texture::maxSize();
+            uint16_t maxSize   = std::min<uint16_t>(4096u, Texture::maxSize());
 
-            if (texWidth * 2 <= maxSize && texHeight * 2 <= maxSize) {
-                // Make the texture twice as big
-                uint32_t bufSize = texWidth * texHeight * 16;
-                uint8_t* buffer = new uint8_t[bufSize];
-                page->texture.data(buffer, 0, 0);
+            if (texWidth * 2 > maxSize || texHeight * 2 > maxSize) {
+                // Reached max size, try next page
+                return false;
+            }
 
-                Image image;
-                image.create(texWidth * 2, texHeight * 2, 255, 255, 255, 0);
-                image.copy(buffer, 0, 0, texWidth, 0, 0, texWidth, texHeight, false);
+            // Make the texture twice as big
+            uint32_t bufSize = texWidth * texHeight * 16;
+            uint8_t* buffer = new uint8_t[bufSize];
+            page->texture.data(buffer, 0, 0);
 
-                page->texture.create(0, 1, texWidth * 2, texHeight * 2, 1, true, true, false);
+            Image image;
+            image.create(texWidth * 2, texHeight * 2, 255, 255, 255, 0);
+            image.copy(buffer, 0, 0, texWidth, 0, 0, texWidth, texHeight, false);
+
+            // page->texture = Texture();
+            auto ok = page->texture.create(0, 1, texWidth * 2, texHeight * 2, 1, false, false, false);
+            if (ok == 0) {
                 page->texture.setData(image.getPixelsPtr(), -1, -1, -1, -1, -1, -1, 0, 0);
             }
             else {
-                // Reached max size, try next page
+                Log::error("Could not create a new font texture.");
                 return false;
             }
         }
@@ -611,6 +622,15 @@ VectorFont::Page::Page()
     }
 
     // Create texture
-    texture.create(0, 1, 128, 128, 1, true, true, false);
+    texture.create(0, 1, 128, 128, 1, false, false, false);
     texture.setData(image.getPixelsPtr(), -1, -1, -1, -1, -1, -1, 0, 0);
+}
+
+//----------------------------------------------------------
+VectorFont::Page::Page(Page&& other)
+{
+    std::swap(glyphs, other.glyphs);
+    std::swap(texture, other.texture);
+    std::swap(rows, other.rows);
+    nextRow = other.nextRow;
 }

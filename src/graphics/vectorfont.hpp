@@ -80,6 +80,7 @@ private:
     struct Page
     {
         Page();
+        Page(Page&& other);
 
         GlyphTable       glyphs;
         Texture          texture;

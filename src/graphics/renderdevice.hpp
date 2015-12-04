@@ -49,7 +49,7 @@ public:
                 memcpy(&mObjects.back(), &obj, sizeof(T));
             }
             else {
-                mObjects.emplace_back(obj);
+                mObjects.push_back(obj);
             }
 
             return static_cast<uint32_t>(mObjects.size());
