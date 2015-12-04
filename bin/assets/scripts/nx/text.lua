@@ -43,7 +43,8 @@ ffi.cdef [[
     void nxTextSetStyle(NxText*, uint8_t);
     void nxTextCharacterPosition(const NxText*, uint32_t, float*);
     void nxTextBounds(const NxText*, float*);
-    const NxArraybuffer* nxTextArraybuffer(const NxText*, uint32_t*);
+    const NxArraybuffer* nxTextArraybuffer(const NxText*, uint32_t*, uint32_t);
+    uint32_t nxTextArraybufferCount(const NxText*);
 ]]
 
 ------------------------------------------------------------
@@ -149,23 +150,28 @@ end
 function Text:_render(camera, state)
     if self._font and self._font._cdata ~= nil then
         Renderer.setBlendMode(state:blendMode())
-
-        self._vertices._cdata = C.nxTextArraybuffer(self._cdata, vertCountPtr)
-        Arraybuffer.setVertexbuffer(self._vertices, 0, 0, 16)
-        C.nxRendererSetVertexLayout(Text._vertexLayout())
-
-        local texture = self._font:texture(self._charSize)
-        texture:bind(0)
-        local texW, texH = texture:size()
-
+    
         local shader = self._shader or Text._defaultShader()
         shader:bind()
         shader:setUniform('uTransMat', state:matrix())
         shader:setUniform('uColor', state:color(true))
-        shader:setUniform('uTexSize', texW, texH)
         shader:setSampler('uTexture', 0)
-    
-        C.nxRendererDraw(0, 0, vertCountPtr[0])
+        
+        local bufferCount = C.nxTextArraybufferCount(self._cdata)
+        for i = 1, bufferCount do
+            self._vertices._cdata = C.nxTextArraybuffer(self._cdata, vertCountPtr, i - 1)
+            if vertCountPtr[0] > 0 then
+                Arraybuffer.setVertexbuffer(self._vertices, 0, 0, 16)
+                C.nxRendererSetVertexLayout(Text._vertexLayout())
+
+                local texture = self._font:texture(self._charSize, i - 1)
+                texture:bind(0)
+                local texW, texH = texture:size()
+                shader:setUniform('uTexSize', texW, texH)
+
+                C.nxRendererDraw(0, 0, vertCountPtr[0])
+            end
+        end
     end
 end
 

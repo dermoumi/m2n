@@ -65,6 +65,7 @@ public:
     virtual float underlinePosition(uint32_t charSize) const;
     virtual float underlineThickness(uint32_t charSize) const;
     virtual const Texture* texture(uint32_t charSize, uint32_t index) const;
+    virtual uint32_t textureCount(uint32_t charSize) const;
 
 private:
     using GlyphTable = std::map<uint32_t, Glyph>;

@@ -524,9 +524,11 @@ void RenderDeviceGLES2::uploadTextureSubData(uint32_t texObj, int slice, int mip
     const auto& tex = mTextures.getRef(texObj);
     auto format     = tex.format;
 
-    if (x + width > static_cast<unsigned int>(tex.width) ||
-        y + height > static_cast<unsigned int>(tex.height)) {
-        Log::info("Attemting to update portion out of texture boundaries");
+    if (
+        x + width > static_cast<unsigned int>(tex.width) ||
+        y + height > static_cast<unsigned int>(tex.height)
+    ) {
+        Log::info("Attempting to update portion out of texture boundaries");
         return;
     }
 

@@ -87,3 +87,9 @@ NX_EXPORT const NxTexture* nxFontTexture(const NxFont* font, uint32_t charSize, 
 {
     return font->texture(charSize, index);
 }
+
+//----------------------------------------------------------
+NX_EXPORT uint32_t nxFontTextureCount(const NxFont* font, uint32_t charSize)
+{
+    return font->textureCount(charSize);
+}

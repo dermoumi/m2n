@@ -195,12 +195,20 @@ void Text::bounds(float& x, float& y, float& w, float& h) const
     h = mBoundsH;
 }
 
+#include "../system/log.hpp"
 //----------------------------------------------------------
-const Arraybuffer* Text::arraybuffer(uint32_t& vertexCount) const
+const Arraybuffer* Text::arraybuffer(uint32_t& vertexCount, uint32_t index) const
 {
     ensureGeometryUpdate();
-    vertexCount = mVertexCount;
-    return mVertices.get();
+    vertexCount = mVertices[index].count;
+    return &mVertices[index].buffer;
+}
+
+//----------------------------------------------------------
+uint32_t Text::arraybufferCount() const
+{
+    ensureGeometryUpdate();
+    return mVertices.size();
 }
 
 //----------------------------------------------------------
@@ -214,7 +222,6 @@ void Text::ensureGeometryUpdate() const
 
     // Reset variables
     mBoundsX = mBoundsY = mBoundsW = mBoundsH = 0;
-    mVertexCount = 0;
 
     // No font or no string: nothing to draw
     if (!mFont || mString.empty()) {
@@ -222,7 +229,8 @@ void Text::ensureGeometryUpdate() const
     }
 
     // Temporary buffer
-    std::vector<float> buffer;
+    using BufType = std::vector<float>;
+    std::vector<BufType> buffers(1);
 
     // Compute values related to the text style
     bool bold                = (mStyle & Bold) != 0;
@@ -273,7 +281,7 @@ void Text::ensureGeometryUpdate() const
                 0.f, bottom, 1.f, 1.f,
                 x,   bottom, 1.f, 1.f
             };
-            buffer.insert(buffer.end(), std::begin(vertices), std::end(vertices));
+            buffers[0].insert(buffers[0].end(), std::begin(vertices), std::end(vertices));
         }
 
         // If we're using strike through style and there's a new line, draw a line accross
@@ -290,7 +298,7 @@ void Text::ensureGeometryUpdate() const
                 0.f, bottom, 1.f, 1.f,
                 x,   bottom, 1.f, 1.f
             };
-            buffer.insert(buffer.end(), std::begin(vertices), std::end(vertices));
+            buffers[0].insert(buffers[0].end(), std::begin(vertices), std::end(vertices));
         }
 
         // Handle special characters
@@ -321,21 +329,31 @@ void Text::ensureGeometryUpdate() const
         float right  = glyph.left + glyph.width + 0.25f;
         float bottom = glyph.top + glyph.height + 0.25f;
 
-        float u1 = glyph.texLeft - 0.25f;
-        float v1 = glyph.texTop - 0.25f;
-        float u2 = glyph.texLeft + glyph.texWidth + 0.25f;
-        float v2 = glyph.texTop + glyph.texHeight + 0.25f;
+        if (glyph.texWidth != 0 && glyph.texHeight != 0) {
+            float u1 = glyph.texLeft - 0.25f;
+            float v1 = glyph.texTop - 0.25f;
+            float u2 = glyph.texLeft + glyph.texWidth + 0.25f;
+            float v2 = glyph.texTop + glyph.texHeight + 0.25f;
 
-        // Add a quad for the current character
-        float vertices[24] {
-            x + right - italic * top,    y + top,    u2, v1,
-            x + left  - italic * top,    y + top,    u1, v1,
-            x + left  - italic * bottom, y + bottom, u1, v2,
-            x + right - italic * top,    y + top,    u2, v1,
-            x + left  - italic * bottom, y + bottom, u1, v2,
-            x + right - italic * bottom, y + bottom, u2, v2
-        };
-        buffer.insert(buffer.end(), std::begin(vertices), std::end(vertices));
+            // Add a quad for the current character
+            float vertices[24] {
+                x + right - italic * top,    y + top,    u2, v1,
+                x + left  - italic * top,    y + top,    u1, v1,
+                x + left  - italic * bottom, y + bottom, u1, v2,
+                x + right - italic * top,    y + top,    u2, v1,
+                x + left  - italic * bottom, y + bottom, u1, v2,
+                x + right - italic * bottom, y + bottom, u2, v2
+            };
+
+            // Make sure there exists a corresponding buffer
+            if (glyph.page >= buffers.size()) {
+                buffers.resize(glyph.page + 1);
+            }
+
+            // Append vertices to the corresponding buffer
+            auto& buffer = buffers[glyph.page];
+            buffer.insert(buffer.end(), std::begin(vertices), std::end(vertices));
+        }
 
         // Update the current bounds
         minX = std::min(minX, x + left - italic * bottom);
@@ -360,7 +378,7 @@ void Text::ensureGeometryUpdate() const
             0.f, bottom, 1.f, 1.f,
             x,   bottom, 1.f, 1.f
         };
-        buffer.insert(buffer.end(), std::begin(vertices), std::end(vertices));
+        buffers[0].insert(buffers[0].end(), std::begin(vertices), std::end(vertices));
     }
 
     // If we're using the strike through style, add the last line across all characters
@@ -376,7 +394,7 @@ void Text::ensureGeometryUpdate() const
             0.f, bottom, 1.f, 1.f,
             x,   bottom, 1.f, 1.f
         };
-        buffer.insert(buffer.end(), std::begin(vertices), std::end(vertices));
+        buffers[0].insert(buffers[0].end(), std::begin(vertices), std::end(vertices));
     }
 
     mBoundsX = minX;
@@ -384,14 +402,16 @@ void Text::ensureGeometryUpdate() const
     mBoundsW = maxX - minX;
     mBoundsH = maxY - minY;
 
-    auto vertexCount = buffer.size() / 4;
-    if (!mVertices) mVertices = ArraybufferPtr(new Arraybuffer());
+    mVertices.resize(buffers.size());
+    for (uint32_t i = 0; i < mVertices.size(); ++i) {
+        auto vertexCount = buffers[i].size() / 4u;
 
-    if (mVertexCount != vertexCount) {
-        mVertices->createVertex(buffer.size() * sizeof(float), buffer.data());
-        mVertexCount = vertexCount;
-    }
-    else {
-        mVertices->setData(0, buffer.size() * sizeof(float), buffer.data());
+        if (mVertices[i].count != vertexCount) {
+            mVertices[i].buffer.createVertex(buffers[i].size() * sizeof(float), buffers[i].data());
+            mVertices[i].count = vertexCount;
+        }
+        else if (vertexCount != 0) {
+            mVertices[i].buffer.setData(0, buffers[i].size() * sizeof(float), buffers[i].data());
+        }
     }
 }

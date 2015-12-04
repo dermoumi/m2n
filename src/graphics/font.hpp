@@ -62,4 +62,5 @@ public:
     virtual float underlinePosition(uint32_t charSize) const = 0;
     virtual float underlineThickness(uint32_t charSize) const = 0;
     virtual const Texture* texture(uint32_t charSize, uint32_t index = 0) const = 0;
+    virtual uint32_t textureCount(uint32_t charSize) const = 0;
 };

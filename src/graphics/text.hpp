@@ -31,7 +31,6 @@
 #include "arraybuffer.hpp"
 #include <string>
 #include <vector>
-#include <memory>
 
 //----------------------------------------------------------
 class Text
@@ -64,19 +63,23 @@ public:
     void characterPosition(size_t index, float& x, float& y) const;
     void bounds(float& x, float& y, float& w, float& h) const;
 
-    const Arraybuffer* arraybuffer(uint32_t& vertexCount) const;
+    const Arraybuffer* arraybuffer(uint32_t& vertexCount, uint32_t index) const;
+    uint32_t arraybufferCount() const;
 
 private:
     void ensureGeometryUpdate() const;
 
-    using ArraybufferPtr = std::unique_ptr<Arraybuffer>;
+    struct VertexList
+    {
+        Arraybuffer buffer;
+        uint32_t count {0u};
+    };
 
     std::u32string mString;
     const Font*    mFont {nullptr};
     uint32_t       mCharSize {30u};
     uint8_t        mStyle {Regular};
-    mutable ArraybufferPtr mVertices;
-    mutable uint32_t mVertexCount {0u};
+    mutable std::vector<VertexList> mVertices;
     mutable float mBoundsX {0.f}, mBoundsY {0.f}, mBoundsW {0.f}, mBoundsH {0.f};
     mutable bool mNeedsUpdate {false};
 };

@@ -340,6 +340,12 @@ const Texture* VectorFont::texture(uint32_t charSize, uint32_t index) const
 }
 
 //----------------------------------------------------------
+uint32_t VectorFont::textureCount(uint32_t charSize) const
+{
+    return mPages[charSize].size();
+}
+
+//----------------------------------------------------------
 void VectorFont::cleanup()
 {
     mFreetype = nullptr;
@@ -624,7 +630,7 @@ VectorFont::Page::Page()
     texture.setData(image.getPixelsPtr(), -1, -1, -1, -1, -1, -1, 0, 0);
 }
 
-//----------------------------------------------------------
+//--------------------------------------------------------
 VectorFont::Page::Page(Page&& other)
 {
     std::swap(glyphs, other.glyphs);

@@ -83,7 +83,14 @@ NX_EXPORT void nxTextBounds(const Text* text, float* boundsPtr)
 }
 
 //----------------------------------------------------------
-NX_EXPORT const NxArraybuffer* nxTextArraybuffer(const Text* text, uint32_t* vertexCount)
+NX_EXPORT const NxArraybuffer* nxTextArraybuffer(const Text* text, uint32_t* vertexCount,
+    uint32_t index)
 {
-    return text->arraybuffer(*vertexCount);
+    return text->arraybuffer(*vertexCount, index);
+}
+
+//----------------------------------------------------------
+NX_EXPORT uint32_t nxTextArraybufferCount(const Text* text)
+{
+    return text->arraybufferCount();
 }
