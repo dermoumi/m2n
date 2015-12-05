@@ -205,10 +205,12 @@ const Arraybuffer* Text::arraybuffer(uint32_t& vertexCount, uint32_t index) cons
 }
 
 //----------------------------------------------------------
-uint32_t Text::arraybufferCount() const
+uint32_t* Text::arraybufferIDs(uint32_t* count) const
 {
     ensureGeometryUpdate();
-    return mVertices.size();
+
+    *count = mBufferIDs.size();
+    return mBufferIDs.data();
 }
 
 //----------------------------------------------------------
@@ -230,7 +232,7 @@ void Text::ensureGeometryUpdate() const
 
     // Temporary buffer
     using BufType = std::vector<float>;
-    std::vector<BufType> buffers(1);
+    std::map<uint32_t, BufType> buffers;
 
     // Compute values related to the text style
     bool bold                = (mStyle & Bold) != 0;
@@ -345,11 +347,6 @@ void Text::ensureGeometryUpdate() const
                 x + right - italic * bottom, y + bottom, u2, v2
             };
 
-            // Make sure there exists a corresponding buffer
-            if (glyph.page >= buffers.size()) {
-                buffers.resize(glyph.page + 1);
-            }
-
             // Append vertices to the corresponding buffer
             auto& buffer = buffers[glyph.page];
             buffer.insert(buffer.end(), std::begin(vertices), std::end(vertices));
@@ -402,16 +399,16 @@ void Text::ensureGeometryUpdate() const
     mBoundsW = maxX - minX;
     mBoundsH = maxY - minY;
 
-    mVertices.resize(buffers.size());
-    for (uint32_t i = 0; i < mVertices.size(); ++i) {
-        auto vertexCount = buffers[i].size() / 4u;
+    mVertices.clear();
+    mBufferIDs.clear();
+    for (auto& it : buffers) {
+        if (it.second.empty()) continue;
 
-        if (mVertices[i].count != vertexCount) {
-            mVertices[i].buffer.createVertex(buffers[i].size() * sizeof(float), buffers[i].data());
-            mVertices[i].count = vertexCount;
-        }
-        else if (vertexCount != 0) {
-            mVertices[i].buffer.setData(0, buffers[i].size() * sizeof(float), buffers[i].data());
-        }
+        mBufferIDs.push_back(it.first);
+
+        mVertices[it.first].count = it.second.size() / 4u;
+        mVertices[it.first].buffer.createVertex(
+            it.second.size() * sizeof(float), it.second.data()
+        );
     }
 }

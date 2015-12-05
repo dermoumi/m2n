@@ -90,7 +90,7 @@ NX_EXPORT const NxArraybuffer* nxTextArraybuffer(const Text* text, uint32_t* ver
 }
 
 //----------------------------------------------------------
-NX_EXPORT uint32_t nxTextArraybufferCount(const Text* text)
+NX_EXPORT uint32_t* nxTextArraybufferIDs(const Text* text, uint32_t* count)
 {
-    return text->arraybufferCount();
+    return text->arraybufferIDs(count);
 }

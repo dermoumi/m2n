@@ -44,7 +44,7 @@ ffi.cdef [[
     void nxTextCharacterPosition(const NxText*, uint32_t, float*);
     void nxTextBounds(const NxText*, float*);
     const NxArraybuffer* nxTextArraybuffer(const NxText*, uint32_t*, uint32_t);
-    uint32_t nxTextArraybufferCount(const NxText*);
+    uint32_t* nxTextArraybufferIDs(const NxText*, uint32_t*);
 ]]
 
 ------------------------------------------------------------
@@ -55,6 +55,7 @@ local Renderer = require 'nx.renderer'
 local Arraybuffer = require'nx.arraybuffer'
 local Texture = require 'nx.texture'
 
+local bufCountPtr = ffi.new('uint32_t[1]')
 local vertCountPtr = ffi.new('uint32_t[1]')
 
 ------------------------------------------------------------
@@ -157,20 +158,21 @@ function Text:_render(camera, state)
         shader:setUniform('uColor', state:color(true))
         shader:setSampler('uTexture', 0)
         
-        local bufferCount = C.nxTextArraybufferCount(self._cdata)
-        for i = 1, bufferCount do
-            self._vertices._cdata = C.nxTextArraybuffer(self._cdata, vertCountPtr, i - 1)
-            if vertCountPtr[0] > 0 then
-                Arraybuffer.setVertexbuffer(self._vertices, 0, 0, 16)
-                C.nxRendererSetVertexLayout(Text._vertexLayout())
+        local bufferIDs = C.nxTextArraybufferIDs(self._cdata, bufCountPtr)
+        for i = 0, bufCountPtr[0] - 1 do
+            local bufferID = bufferIDs[i];
 
-                local texture = self._font:texture(self._charSize, i - 1)
-                texture:bind(0)
-                local texW, texH = texture:size()
-                shader:setUniform('uTexSize', texW, texH)
+            self._vertices._cdata = C.nxTextArraybuffer(self._cdata, vertCountPtr, bufferID)
 
-                C.nxRendererDraw(0, 0, vertCountPtr[0])
-            end
+            Arraybuffer.setVertexbuffer(self._vertices, 0, 0, 16)
+            C.nxRendererSetVertexLayout(Text._vertexLayout())
+
+            local texture = self._font:texture(self._charSize, bufferID)
+            texture:bind(0)
+            local texW, texH = texture:size()
+            shader:setUniform('uTexSize', texW, texH)
+
+            C.nxRendererDraw(0, 0, vertCountPtr[0])
         end
     end
 end
