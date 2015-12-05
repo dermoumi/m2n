@@ -127,8 +127,6 @@ Loader.registerFunc('nx.vectorfont', function(obj, id)
     return obj:open(id)
 end)
 
-Loader.load('nx.vectorfont', 'assets/mplus-1c-regular.ttf')
-
 ------------------------------------------------------------
 -- Startup scene
 ------------------------------------------------------------

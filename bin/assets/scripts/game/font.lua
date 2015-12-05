@@ -26,4 +26,22 @@
  --]]----------------------------------------------------------------------------
 
 ------------------------------------------------------------
-return require('game.cache').get('assets/mplus-1c-regular.ttf')
+local stack = require('nx.fontstack'):new()
+
+local Loader = require('game.loader')
+
+local fonts = {
+    'assets/fonts/01-Asap-Regular.otf',
+    'assets/fonts/02-mplus-1c-regular.ttf'
+}
+
+for i, v in ipairs(fonts) do
+    local font, err = Loader.load('nx.vectorfont', v)
+    if not font then
+        print(err)
+    else
+        stack:addFont(font)
+    end
+end
+
+return stack

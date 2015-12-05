@@ -145,7 +145,7 @@ function SceneSubtitle:update(dt)
 
     local w, h = Window.size()
     local fps = Window.currentFPS()
-    self.text:setString(('FPS: %i\nHello world 真島 ヒロ'):format(fps))
+    self.text:setString(('FPS: %i\nHéllô wörld 真島 ヒロ'):format(fps))
 end
 
 ------------------------------------------------------------

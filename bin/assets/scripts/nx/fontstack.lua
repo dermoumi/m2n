@@ -26,10 +26,10 @@
 --]]----------------------------------------------------------------------------
 
 ------------------------------------------------------------
--- Represents a vector font object
+-- Represents a font stack
 ------------------------------------------------------------
 local Font = require 'nx.font'
-local VectorFont = Font:subclass('nx.vectorfont')
+local FontStack = Font:subclass('nx.fontstack')
 
 ------------------------------------------------------------
 -- FFI C Declarations
@@ -38,59 +38,40 @@ local ffi = require 'ffi'
 local C = ffi.C
 
 ffi.cdef [[
-    NxFont* nxVectorFontNew();
-    bool nxVectorFontOpenFromFile(NxFont*, const char*);
-    bool nxVectorFontOpenFromMemory(NxFont*, const void*, size_t);
-    bool nxVectorFontOpenFromHandle(NxFont*, PHYSFS_File*);
-    const char* nxVectorFontFamilyName(const NxFont*);
+    typedef struct NxFont NxFont;
+
+    NxFont* nxFontStackNew();
+    void nxFontStackAddFont(NxFont*, const NxFont*, bool);
+    void nxFontStackAddStack(NxFont*, const NxFont*, bool);
 ]]
 
 ------------------------------------------------------------
-local function isNumber(val)
-    return type(val) == 'number'
+function FontStack.static._fromCData(cdata)
+    local stack = FontStack:allocate()
+    stack._cdata = ffi.cast('NxFont*', cdata)
+    stack._fonts = {}
+    return stack
 end
 
 ------------------------------------------------------------
-local function isCArray(a)
-    return type(a) == 'cdata' or type(a) == 'userdata'
-end
-
-------------------------------------------------------------
-function VectorFont.static._fromCData(cdata)
-    local font = VectorFont:allocate()
-    font._cdata = ffi.cast('NxFont*', cdata)
-    return font
-end
-
-------------------------------------------------------------
-function VectorFont:initialize()
-    local handle = C.nxVectorFontNew()
+function FontStack:initialize()
+    local handle = C.nxFontStackNew()
     self._cdata = ffi.gc(handle, C.nxFontRelease)
+    self._fonts = {}
 end
 
 ------------------------------------------------------------
-function VectorFont:open(a, b)
-    if isCArray(a) and isNumber(b) then
-        ok = C.nxVectorFontOpenFromMemory(self._cdata, a, b)
-    elseif type(a) == 'string' then
-        ok = C.nxVectorFontOpenFromFile(self._cdata, a)
-    elseif class.Object.isInstanceOf(a, require('nx.inputfile')) then
-        ok = C.nxVectorFontOpenFromHandle(self._cdata, a._cdata)
+function FontStack:addFont(font, prepend)
+    if font:isInstanceOf(FontStack) then
+        for i, v in ipairs(font._fonts) do
+            self._fonts[#self._fonts + 1] = v
+        end
+        C.nxFontStackAddStack(self._cdata, font._cdata, not not prepend)
     else
-        return false, 'Invalid parameters'
+        self._fonts[#self._fonts] = font
+        C.nxFontStackAddFont(self._cdata, font._cdata, not not prepend)
     end
-
-    if not ok then
-        return false, 'Cannot open font'
-    end
-
-    return true
 end
 
 ------------------------------------------------------------
-function VectorFont:familyName()
-    return ffi.string(C.nxVectorFontFamilyName(self._cdata))
-end
-
-------------------------------------------------------------
-return VectorFont
+return FontStack

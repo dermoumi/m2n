@@ -253,6 +253,10 @@ const Glyph& VectorFont::glyph(uint32_t codePoint, uint32_t charSize, bool bold)
 
     // Not found: we have to load it
     Glyph glyph = loadGlyph(codePoint, charSize, bold);
+    if (mPages[charSize].empty()) {
+        glyph.page = 0;
+        loadGlyph(L'x', charSize, bold);
+    }
     return mPages[charSize][glyph.page].glyphs.emplace(key, glyph).first->second;
 }
 
@@ -340,12 +344,6 @@ const Texture* VectorFont::texture(uint32_t charSize, uint32_t index) const
 }
 
 //----------------------------------------------------------
-uint32_t VectorFont::textureCount(uint32_t charSize) const
-{
-    return mPages[charSize].size();
-}
-
-//----------------------------------------------------------
 void VectorFont::cleanup()
 {
     mFreetype = nullptr;
@@ -366,8 +364,12 @@ Glyph VectorFont::loadGlyph(uint32_t codePoint, uint32_t charSize, bool bold) co
     // Set the character size
     if (!ensureSize(charSize)) return glyph;
 
+    // Make sure the character exists
+    auto glyphIndex = FT_Get_Char_Index(face, codePoint);
+    if (glyphIndex == 0) return glyph;
+
     // Load the glyph corresponding to the code point
-    if (FT_Load_Char(face, codePoint, FT_LOAD_TARGET_NORMAL | FT_LOAD_FORCE_AUTOHINT) != 0) {
+    if (FT_Load_Glyph(face, glyphIndex, FT_LOAD_TARGET_NORMAL | FT_LOAD_FORCE_AUTOHINT) != 0) {
         return glyph;
     }
 
@@ -458,6 +460,8 @@ Glyph VectorFont::loadGlyph(uint32_t codePoint, uint32_t charSize, bool bold) co
         glyph.width  =  face->glyph->metrics.width  / static_cast<float>(1 << 6);
         glyph.height =  face->glyph->metrics.height / static_cast<float>(1 << 6);
 
+        glyph.valid = true;
+
         if (glyph.texWidth > 0 && glyph.texHeight > 0) {
             // Extract the glyph's pixels from the bitmap
             mPixelBuffer.resize(width * height * 4, 255);
@@ -487,8 +491,6 @@ Glyph VectorFont::loadGlyph(uint32_t codePoint, uint32_t charSize, bool bold) co
                 }
             }
 
-            // Log::info("%u %u %u %u %u %u %u", page->texture.nativeHandle(), page->texture.texWidth(),
-            //     page->texture.texHeight(), glyph.texLeft, glyph.texTop, glyph.texWidth, glyph.texHeight);
             page->texture.setData(
                 &mPixelBuffer[0], glyph.texLeft, glyph.texTop, 0, glyph.texWidth, glyph.texHeight,
                 1, 0, 0

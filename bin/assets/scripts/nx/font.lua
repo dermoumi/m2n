@@ -42,7 +42,6 @@ ffi.cdef [[
     float nxFontUnderlinePosition(const NxFont*, uint32_t);
     float nxFontUnderlineThickness(const NxFont*, uint32_t);
     const NxTexture* nxFontTexture(const NxFont*, uint32_t, uint32_t);
-    uint32_t nxFontTextureCount(const NxFont*, uint32_t);
 ]]
 
 ------------------------------------------------------------

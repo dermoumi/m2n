@@ -25,65 +25,29 @@
     For more information, please refer to <http://unlicense.org>
 *///============================================================================
 #include "../config.hpp"
-#include "../graphics/font.hpp"
+#include "../graphics/fontstack.hpp"
 
 //----------------------------------------------------------
 // Declarations
 //----------------------------------------------------------
-using NxFont    = Font;
-using NxTexture = Texture;
+using NxFont      = Font;
 
 //----------------------------------------------------------
 // Exported functions
 //----------------------------------------------------------
-NX_EXPORT void nxFontRelease(NxFont* font)
+NX_EXPORT NxFont* nxFontStackNew()
 {
-    delete font;
+    return new FontStack();
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxFontGlyph(const NxFont* font, uint32_t codePoint, uint32_t charSize,
-    bool bold, float* fValues, uint32_t* uValues)
+NX_EXPORT void nxFontStackAddFont(NxFont* stack, const NxFont* font, bool prepend)
 {
-    auto& glyph = font->glyph(codePoint, charSize, bold);
-    fValues[0] = glyph.advance;
-    fValues[1] = glyph.left;
-    fValues[2] = glyph.top;
-    fValues[3] = glyph.width;
-    fValues[4] = glyph.height;
-    uValues[0] = glyph.texLeft;
-    uValues[1] = glyph.texTop;
-    uValues[2] = glyph.texWidth;
-    uValues[3] = glyph.texHeight;
+    static_cast<FontStack*>(stack)->addFont(*font, prepend);
 }
 
 //----------------------------------------------------------
-NX_EXPORT float nxFontKerning(const NxFont* font, uint32_t first, uint32_t second,
-    uint32_t charSize)
+NX_EXPORT void nxFontStackAddStack(NxFont* stack, const NxFont* other, bool prepend)
 {
-    return font->kerning(first, second, charSize);
-}
-
-//----------------------------------------------------------
-NX_EXPORT float nxFontLineSpacing(const NxFont* font, uint32_t charSize)
-{
-    return font->lineSpacing(charSize);
-}
-
-//----------------------------------------------------------
-NX_EXPORT float nxFontUnderlinePosition(const NxFont* font, uint32_t charSize)
-{
-    return font->underlinePosition(charSize);
-}
-
-//----------------------------------------------------------
-NX_EXPORT float nxFontUnderlineThickness(const NxFont* font, uint32_t charSize)
-{
-    return font->underlineThickness(charSize);
-}
-
-//----------------------------------------------------------
-NX_EXPORT const NxTexture* nxFontTexture(const NxFont* font, uint32_t charSize, uint32_t index)
-{
-    return font->texture(charSize, index);
+    static_cast<FontStack*>(stack)->addFont(*static_cast<const FontStack*>(other), prepend);
 }

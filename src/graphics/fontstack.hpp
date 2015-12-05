@@ -28,83 +28,31 @@
 #include "../config.hpp"
 #include "font.hpp"
 
-#include <string>
-#include <memory>
-#include <vector>
 #include <map>
+#include <vector>
 
 //==========================================================
-// Declarations
+// A font stack
 //==========================================================
-struct PHYSFS_File;
-
-//==========================================================
-// Represents a vector font
-//==========================================================
-class VectorFont : public Font
+class FontStack : public Font
 {
 public:
-    struct Info
-    {
-        std::string family;
-    };
+    FontStack() = default;
+    virtual ~FontStack() = default;
 
-public:
-    VectorFont() = default;
-    virtual ~VectorFont();
-
-    bool open(const std::string& filename);
-    bool open(const void* data, size_t size);
-    bool open(PHYSFS_File* file);
-
-    const Info& info() const;
+    void addFont(const Font& font, bool prepend = false);
+    void addFont(const FontStack& stack, bool prepend = false);
 
     virtual const Glyph& glyph(uint32_t codePoint, uint32_t charSize, bool bold) const;
     virtual float kerning(uint32_t first, uint32_t second, uint32_t charSize) const;
     virtual float lineSpacing(uint32_t charSize) const;
     virtual float underlinePosition(uint32_t charSize) const;
     virtual float underlineThickness(uint32_t charSize) const;
-    virtual const Texture* texture(uint32_t charSize, uint32_t index) const; 
+    virtual const Texture* texture(uint32_t charSize, uint32_t index) const;
 
 private:
     using GlyphTable = std::map<uint32_t, Glyph>;
-    struct Row
-    {
-        Row(uint32_t top, uint32_t height);
-
-        uint32_t top {0u};
-        uint32_t width {0u};
-        uint32_t height {0u};
-    };
-
-    struct Page
-    {
-        Page();
-        Page(Page&& other);
-
-        GlyphTable       glyphs;
-        Texture          texture;
-        uint32_t         nextRow {3u};
-        std::vector<Row> rows;
-    };
-
-private:
-    void cleanup();
-    Glyph loadGlyph(uint32_t codePoint, uint32_t charSize, bool bold) const;
-    bool findGlyphRect(Page* page, uint32_t width, uint32_t height, uint32_t& coordsL,
-        uint32_t& coordsT, uint32_t& coordsR, uint32_t& coordsB) const;
-    bool ensureSize(uint32_t charSize) const;
-
-private:
-    class FreetypeHandle;
-    class FileWrapper;
-    using FreetypePtr = std::shared_ptr<FreetypeHandle>;
-    using PageTable   = std::map<uint32_t, std::vector<Page>>;
-    using FilePtr     = std::shared_ptr<FileWrapper>;
-
-    Info        mInfo;
-    FreetypePtr mFreetype;
-    FilePtr     mFile; // Used by open(const std::string&);
-    mutable PageTable            mPages;
-    mutable std::vector<uint8_t> mPixelBuffer;
+    
+    std::vector<const Font*> mFonts;
+    mutable std::map<uint32_t, GlyphTable> mGlyphs;
 };
