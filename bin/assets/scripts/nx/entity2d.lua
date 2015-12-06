@@ -107,6 +107,7 @@ function Entity2D:setPosition(x, y)
     self._posX, self._posY = x, y
 
     self._matrix = nil
+    return self
 end
 
 ------------------------------------------------------------
@@ -114,6 +115,7 @@ function Entity2D:setScale(x, y)
     self._scaleX, self._scaleY = x, y
 
     self._matrix = nil
+    return self
 end
 
 ------------------------------------------------------------
@@ -121,6 +123,7 @@ function Entity2D:setRotation(rad)
     self._rotation = rad % (math.pi * 2)
 
     self._matrix = nil
+    return self
 end
 
 ------------------------------------------------------------
@@ -128,6 +131,7 @@ function Entity2D:setOrigin(x, y)
     self._originX, self._originY = x, y
 
     self._matrix = nil
+    return self
 end
 
 ------------------------------------------------------------
@@ -136,6 +140,8 @@ function Entity2D:setColor(r, g, b, a)
     self._colG = g or 255
     self._colB = b or 255
     self._colA = a or 255
+
+    return self
 end
 
 ------------------------------------------------------------

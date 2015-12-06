@@ -28,9 +28,8 @@
 ------------------------------------------------------------
 -- Represents a 2D sprite in a 2D space
 ------------------------------------------------------------
-local class = require 'nx.class'
 local Entity2D = require 'nx.entity2d'
-local Sprite = class('nx.sprite', Entity2D)
+local Sprite = Entity2D:subclass('nx.sprite')
 
 local Arraybuffer = require 'nx.arraybuffer'
 local Renderer = require 'nx.renderer'
@@ -68,7 +67,7 @@ end
 ------------------------------------------------------------
 function Sprite:setTexture(texture, keepSubrect)
     if texture:texType() ~= '2d' then -- only accept 2D textures
-        return
+        return self
     end
 
     self._texture = texture
@@ -79,6 +78,8 @@ function Sprite:setTexture(texture, keepSubrect)
         local w, h = texture:size()
         self:setSubrect(0, 0, w, h)
     end
+
+    return self
 end
 
 ------------------------------------------------------------
@@ -91,6 +92,7 @@ function Sprite:setSubrect(subX, subY, subW, subH, normalized)
     self._normalized = normalized
 
     self._updateBuffer = true
+    return self
 end
 
 ------------------------------------------------------------

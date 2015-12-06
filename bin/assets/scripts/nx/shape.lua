@@ -85,17 +85,14 @@ end
 ------------------------------------------------------------
 function Shape:setTexture(texture)
     self._texture = texture
-end
 
-------------------------------------------------------------
-function Shape:texture()
-    return self._texture
+    return self
 end
 
 ------------------------------------------------------------
 function Shape:setVertexData(primitive, hasColor, a, b, ...)
     if b then a = {a, b, ...} end
-    if type(a) ~= 'table' then return end
+    if type(a) ~= 'table' then return self end
 
     self._primitive = toPrimitive[primitive] or 0
     self._hasColor = hasColor
@@ -119,17 +116,26 @@ function Shape:setVertexData(primitive, hasColor, a, b, ...)
     end
 
     self._vertexBuffer = Arraybuffer.vertexbuffer(ffi.sizeof(buffer), buffer)
+
+    return self
 end
 
 ------------------------------------------------------------
 function Shape:setIndexData(a, b, ...)
     if b then a = {a, b, ...} end
-    if type(a) ~= 'table' then return end
+    if type(a) ~= 'table' then return self end
 
     local buffer = ffi.new('uint16_t[?]', #a, a)
 
     self._indexCount = #a
     self._indexBuffer = Arraybuffer.indexbuffer(ffi.sizeof(buffer), buffer)
+
+    return self
+end
+
+------------------------------------------------------------
+function Shape:texture()
+    return self._texture
 end
 
 ------------------------------------------------------------

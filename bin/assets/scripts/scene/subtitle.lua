@@ -106,30 +106,30 @@ function SceneSubtitle:load()
     self.rb:texture():setRepeating('wrap', 'wrap')
 
     self.sprite = Sprite:new(self.texture)
-    self.sprite:setPosition(640, 360)
-    self.sprite:setOrigin(256, 256)
+        :setPosition(640, 360)
+        :setOrigin(256, 256)
 
     self.rbSprite = Sprite:new(self.rb:texture(), 0, 0, 640, 360)
-    self.rbSprite:setPosition(640, 360)
-    self.rbSprite:setOrigin(320, 180)
+        :setPosition(640, 360)
+        :setOrigin(320, 180)
 
     self.text = Text:new()
-    self.text:setCharacterSize(30)
-    self.text:setFont(GameFont)
-    self.text:setColor(0, 0, 0, 128)
+        :setCharacterSize(30)
+        :setFont(GameFont)
+        :setColor(0, 0, 0, 128)
 
     self.shape = Shape:new()
-    self.shape:setTexture(self.texture)
-    self.shape:setVertexData('trianglestrip', true,
-        200, 200, 255, 0, 0, 255, 0, 0,
-        100, 300, 0, 255, 0, 255, 0, 1,
-        300, 300, 0, 0, 255, 255, 1, 0,
-        300, 300, 0, 0, 255, 255, 1, 0,
-        100, 300, 0, 255, 0, 255, 0, 1,
-        300, 300, 0, 0, 255, 255, 1, 0,
-        200, 400, 255, 255, 255, 255, 1, 1
-    )
-    self.shape:setIndexData(0, 1, 3, 6)
+        :setTexture(self.texture)
+        :setIndexData(0, 1, 3, 6)
+        :setVertexData('trianglestrip', true,
+            200, 200, 255, 0, 0, 255, 0, 0,
+            100, 300, 0, 255, 0, 255, 0, 1,
+            300, 300, 0, 0, 255, 255, 1, 0,
+            300, 300, 0, 0, 255, 255, 1, 0,
+            100, 300, 0, 255, 0, 255, 0, 1,
+            300, 300, 0, 0, 255, 255, 1, 0,
+            200, 400, 255, 255, 255, 255, 1, 1
+        )
 
     self.touchTexts = {}
     self._processParent = true

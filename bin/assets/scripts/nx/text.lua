@@ -90,27 +90,35 @@ end
 
 ------------------------------------------------------------
 function Text:setString(str)
-    if self._string == str then return end
+    if self._string == str then return self end
     self._string = str
     C.nxTextSetString(self._cdata, str)
+
+    return self
 end
 
 ------------------------------------------------------------
 function Text:setFont(font)
     self._font = font
     C.nxTextSetFont(self._cdata, font._cdata)
+
+    return self
 end
 
 ------------------------------------------------------------
 function Text:setCharacterSize(size)
     self._charSize = size
     C.nxTextSetCharacterSize(self._cdata, size)
+
+    return self
 end
 
 ------------------------------------------------------------
 function Text:setStyle(style)
     self._style = style
     C.nxTextSetStyle(self._cdata, style)
+
+    return self
 end
 
 ------------------------------------------------------------
