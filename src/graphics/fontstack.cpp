@@ -61,61 +61,69 @@ const Glyph& FontStack::glyph(uint32_t codePoint, uint32_t charSize, bool bold) 
         return it->second;
     }
 
+    // Not found, cycle through fonts to find one that has the glyph
     Glyph glyph;
     for (uint32_t i = 0; i < mFonts.size(); ++i) {
         glyph = mFonts[i]->glyph(codePoint, charSize, bold);
+
+        // Incorporate the glyph's font index into the page
         glyph.page |= i << 16;
+
+        // If the glyph we found is valid, stop looking
         if (glyph.valid) break;
     }
 
+    // Cache the glyph internally for later use
     return mGlyphs[charSize].emplace(key, glyph).first->second;
 }
 
 //----------------------------------------------------------
 float FontStack::kerning(uint32_t first, uint32_t second, uint32_t charSize) const
 {
-    float kerning = 0.0;
-
-    for (auto* font : mFonts) {
-        // Make sure this font has both characters
-        if (
-            font->glyph(first, charSize, false).valid &&
-            font->glyph(second, charSize, false).valid
-        ) {
-            kerning = font->kerning(first, second, charSize);
-            break;
-        }
+    // Make sure that both glyphs belong to the same font
+    auto firstFontIndex  = (glyph(first, charSize, false).page >> 16) & 0xFFFFu;
+    auto secondFontIndex = (glyph(second, charSize, false).page >> 16) & 0xFFFFu;
+    if (firstFontIndex == secondFontIndex) {
+        return mFonts[firstFontIndex]->kerning(first, second, charSize);
     }
 
-    return kerning;
+    // Not found, assume kerning of 0
+    return 0.f;
 }
 
 //----------------------------------------------------------
 float FontStack::lineSpacing(uint32_t charSize) const
 {
+    // Make sure there's at least one font
     if (mFonts.empty()) return 0;
+    
     return mFonts[0]->lineSpacing(charSize);
 }
 
 //----------------------------------------------------------
 float FontStack::underlinePosition(uint32_t charSize) const
 {
+    // Make sure there's at least one font
     if (mFonts.empty()) return 0;
+    
     return mFonts[0]->underlinePosition(charSize);
 }
 
 //----------------------------------------------------------
 float FontStack::underlineThickness(uint32_t charSize) const
 {
+    // Make sure there's at least one font
     if (mFonts.empty()) return 0;
+
     return mFonts[0]->underlineThickness(charSize);
 }
 
 //----------------------------------------------------------
 const Texture* FontStack::texture(uint32_t charSize, uint32_t index) const
 {
-    uint32_t fontIndex = (index >> 16) & 0xFFFF;
-    uint32_t texIndex = index & 0xFFFF;
+    // Deduce font and texture indices
+    uint16_t fontIndex = (index >> 16) & 0xFFFF;
+    uint16_t texIndex  =  index        & 0xFFFF;
 
     return mFonts[fontIndex]->texture(charSize, texIndex);
 }

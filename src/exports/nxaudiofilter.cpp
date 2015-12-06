@@ -58,8 +58,9 @@ NX_EXPORT NxAudioFilter* nxAudioFilterBiquadResonantCreate()
 NX_EXPORT void NxAUdioFilterBiquadResonantSetParams(NxAudioFilter* filter, int type,
     float samplerate, float frequency, float resonance)
 {
-    static_cast<SoLoud::BiquadResonantFilter*>(filter)->setParams(type, samplerate, frequency,
-        resonance);
+    static_cast<SoLoud::BiquadResonantFilter*>(filter)->setParams(
+        type, samplerate, frequency, resonance
+    );
 }
 
 //----------------------------------------------------------

@@ -45,31 +45,25 @@ static unsigned long read(FT_Stream rec, unsigned long offset, unsigned char* bu
     unsigned long count)
 {
     auto file = static_cast<PHYSFS_File*>(rec->descriptor.pointer);
+
     if (PHYSFS_seek(file, offset)) {
-        if (count > 0u) {
-            auto status = PHYSFS_readBytes(file, buffer, count);
-            if (status > 0u) {
-                return static_cast<unsigned long>(status);
-            }
-            else {
-                return 0u;
-            }
-        }
-        else {
-            return 0u;
-        }
+        if (count == 0) return 0u;
+        
+        auto status = PHYSFS_readBytes(file, buffer, count);
+
+        // If succeeded, return status as the number of bytes read
+        if (status > 0u) return static_cast<unsigned long>(status);
     }
-    else {
-        return count > 0u ? 0u : 1u;
-    }
+    
+    // "This function might be called to perform a seek or skip operation with a ‘count’ of 0.
+    // "A non-zero return value then indicates an error.
+    return count == 0u ? 1u : 0u;
 }
 
 static void close(FT_Stream)
 {
     // Nothing to do
 }
-
-constexpr uint32_t glyphPadding = 1u;
 
 //----------------------------------------------------------
 class VectorFont::FileWrapper
@@ -254,8 +248,16 @@ const Glyph& VectorFont::glyph(uint32_t codePoint, uint32_t charSize, bool bold)
     // Not found: we have to load it
     Glyph glyph = loadGlyph(codePoint, charSize, bold);
     if (mPages[charSize].empty()) {
+        // If there's still no page after loading the glyph,
+        // then that glyph is invalid, so we must load a valid glyph (x?)
+        // And make the glyph point to it
         glyph.page = 0;
         loadGlyph(L'x', charSize, bold);
+
+        // Also fuck fonts with no 'x' glyph
+        if (mPages[charSize].empty()) {
+            Log::fatal("Cannot load font glyph for the 'x' character. Please change your font.");
+        }
     }
     return mPages[charSize][glyph.page].glyphs.emplace(key, glyph).first->second;
 }
@@ -263,7 +265,7 @@ const Glyph& VectorFont::glyph(uint32_t codePoint, uint32_t charSize, bool bold)
 //----------------------------------------------------------
 float VectorFont::kerning(uint32_t first, uint32_t second, uint32_t charSize) const
 {
-    // Special case wher first or second is 0 (null character)
+    // Special case where first or second character is 0 (NUL character)
     if (first == 0 || second == 0) return 0.f;
 
     auto face = mFreetype ? mFreetype->face : nullptr;
@@ -305,7 +307,7 @@ float VectorFont::underlinePosition(uint32_t charSize) const
     FT_Face face = mFreetype ? mFreetype->face : nullptr;
 
     if (face && ensureSize(charSize)) {
-        // Return a fixed position of the font is a bitmap font
+        // Return a fixed position if the font is a bitmap font
         if (!FT_IS_SCALABLE(face)) return charSize / 10.f;
 
         auto mulFix = FT_MulFix(face->underline_position, face->size->metrics.y_scale);
@@ -338,6 +340,11 @@ const Texture* VectorFont::texture(uint32_t charSize, uint32_t index) const
         // Just in case this method is called before a texture is rendered
         // render 'x' since it's gonna be used/rendered anyway...
         glyph(L'x', charSize, false);
+
+        // Also fuck fonts with no 'x' glyph
+        if (mPages[charSize].empty()) {
+            Log::fatal("Cannot load font glyph for the 'x' character. Please change your font.");
+        }
     }
 
     return &mPages[charSize][index].texture;
@@ -400,7 +407,7 @@ Glyph VectorFont::loadGlyph(uint32_t codePoint, uint32_t charSize, bool bold) co
     int height = bitmap.rows;
 
     if (width > 0 && height > 0) {
-        constexpr auto padding = glyphPadding;
+        constexpr auto padding = 1u;
 
         // Get the glyphs page corresponding to the charcater size
         Page* page = nullptr;

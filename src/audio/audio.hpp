@@ -33,8 +33,10 @@
 struct PHYSFS_File;
 namespace Audio
 {
+    // Returns a unique instance of SoLoud
     SoLoud::Soloud& instance();
 
+    // PhysFS wrapper to SoLoud's File class
     class File : public SoLoud::File
     {
     public:

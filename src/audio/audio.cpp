@@ -28,11 +28,10 @@
 
 #include <physfs/physfs.h>
 
-static SoLoud::Soloud soloud;
-
 //----------------------------------------------------------
 SoLoud::Soloud& Audio::instance()
 {
+    static SoLoud::Soloud soloud;
     return soloud;
 }
 
