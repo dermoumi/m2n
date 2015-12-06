@@ -89,8 +89,8 @@ function SceneTitle:render()
 end
 
 ------------------------------------------------------------
-function SceneTitle:onKeyDown(scancode, _, repeated)
-    if scancode == 'f1' then
+function SceneTitle:onKeyDown(scancode, keyCode, repeated)
+    if scancode == 'f2' then
         Scene.push('scene.subtitle')
     elseif scancode == 'f10' then
         require('nx.window').create('m2n-', 1280, 720, {})

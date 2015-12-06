@@ -31,9 +31,16 @@
 local class = require 'nx.class'
 local Worker = class 'Worker'
 
-local Loader = require 'game.loader'
 local Thread = require 'nx.thread'
 local ffi = require 'ffi'
+
+------------------------------------------------------------
+local loaderFunc = {}
+
+------------------------------------------------------------
+function Worker.static.registerFunc(objType, func)
+    loaderFunc[objType] = func
+end
 
 ------------------------------------------------------------
 function Worker:initialize()
@@ -45,15 +52,15 @@ end
 function Worker:addFile(objType, id)
     local Cache = require('game.cache')
 
-    local obj = Cache.get(id, true)
+    local obj = Cache.get(id)
     if obj then return end
 
-    local loaderFunc = Loader._func(objType)
+    local loaderFunc = loaderFunc[objType] or function() return false end
     obj = require(objType):new()
 
-    Thread:new(function(loader, obj, filename, loadedCount)
+    Thread:new(function(loaderFunc, obj, filename, loadedCount)
         loadedCount = require('ffi').cast('uint32_t*', loadedCount)
-        if not loader(obj, filename) then
+        if not loaderFunc(obj, filename) then
             loadedCount[1] = loadedCount[1] + 1
         else
             loadedCount[0] = loadedCount[0] + 1

@@ -28,17 +28,21 @@
 ------------------------------------------------------------
 local stack = require('nx.fontstack'):new()
 
-local Loader = require('game.loader')
-
 local fonts = {
     'assets/fonts/01-Asap-Regular.otf',
     'assets/fonts/02-mplus-1c-regular.ttf'
 }
 
 for i, v in ipairs(fonts) do
-    local font, err = Loader.load('nx.vectorfont', v)
+    local font, err = require('game.cache').get(v, function()
+        local fontObj = require('nx.vectorfont'):new()
+        local ok, err = fontObj:open(v)
+        if not ok then return nil, err end
+        return fontObj
+    end, true)
+
     if not font then
-        print(err)
+        require('nx.log').error(err)
     else
         stack:addFont(font)
     end

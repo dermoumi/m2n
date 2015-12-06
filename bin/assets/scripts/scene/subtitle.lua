@@ -47,7 +47,6 @@ local Text = require 'nx.text'
 local Shape = require 'nx.shape'
 local SoundSource = require 'nx.soundsource'
 local MusicSource = require 'nx.musicsource'
-local Cache = require 'game.cache'
 local ffi = require 'ffi'
 local C = ffi.C
 
@@ -82,7 +81,7 @@ function SceneSubtitle:load()
     --self.audiobus:setFilter(self.echoFilter)
     self.audiobus:play()
 
-    self.soundSource = Cache.get('assets/test.wav')
+    self.soundSource = self:cache('assets/test.wav')
     self.soundSource:setLooping(true)
     self.voiceGroup:add(self.soundSource:playThrough(self.audiobus, -1, 0, true))
 
@@ -93,7 +92,7 @@ function SceneSubtitle:load()
 
     -- Create texture
     self.texture = Texture2D:new()
-    self.texture:load(Cache.get('assets/pasrien.png'))
+    self.texture:load(self:cache('assets/pasrien.png'))
     self.texture:setFilter('nearest')
     self.texture:setAnisotropyLevel(8)
     self.texture:setRepeating('clamp', 'wrap')
@@ -174,20 +173,20 @@ end
 
 ------------------------------------------------------------
 function SceneSubtitle:onKeyDown(scancode)
-    if scancode == 'f2' then
+    if scancode == 'f1' then
+        self:backToScene()
+        return false
+    elseif scancode == 'f2' then
         self:callNewScene()
         return false
     elseif scancode == 'f3' then
         self._processParent = not self._processParent
     elseif scancode == 'space' then
         Thread:new(function(texture)
-            print('a')
             require('nx.window').ensureContext()
-            print('b')
             local img = require('nx.image').create(1024, 1024, 255, 128, 0, 255)
             img:copy(texture:data(), 0, 0, 1024, 0, 256, 1024, 512, true)
             img:save('helloworld.png')
-            print('c')
         end, self.rb:texture()):detach()
     end
 end
@@ -250,8 +249,6 @@ function SceneSubtitle:release()
     self.rbSprite:release()
 
     self.audiobus:stop()
-    Cache.release('assets/test.wav')
-    Cache.release('assets/pasrien.png')
 end
 
 ------------------------------------------------------------

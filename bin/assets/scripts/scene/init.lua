@@ -31,6 +31,9 @@
 local class = require 'nx.class'
 local Scene = class 'nx.scene'
 
+------------------------------------------------------------
+local Cache = require 'game.cache'
+
 -- Local variables -----------------------------------------
 local sceneStack = {}
 local releaseStack = {}
@@ -73,6 +76,7 @@ function Scene.static.back(...)
     releaseStack[#releaseStack + 1] = scene
 
     sceneStack[#sceneStack] = nil
+
     if sceneStack[#sceneStack] then
         sceneStack[#sceneStack]:back(scene, ...)
     end
@@ -81,8 +85,9 @@ end
 ------------------------------------------------------------
 function Scene.static.clean()
     for i, scene in ipairs(releaseStack) do
-        scene:release()
+        scene:_release()
     end
+
     releaseStack = {}
 end
 
@@ -106,6 +111,8 @@ function Scene:_render()
     if self:renderParent() and self.parent then self.parent:_render() end
 
     self:render()
+
+    -- Render transition if there's any
     if self._transitionTime then
         local camera = self._transitionCamera
         local time = self._transitionTime
@@ -114,6 +121,19 @@ function Scene:_render()
 
         self:renderTransition(camera, time, duration, fadeIn)
     end
+end
+
+------------------------------------------------------------
+function Scene:_release()
+    -- Release all cached elements
+    if self.__cache then
+        for i, v in pairs(self.__cache) do
+            Cache.release(i)
+        end
+    end
+
+    -- Call the scene's release method
+    self:release()
 end
 
 ------------------------------------------------------------
@@ -188,7 +208,27 @@ end
 
 ------------------------------------------------------------
 function Scene:transitionDuration()
-    return .2
+    return 0.2
+end
+
+------------------------------------------------------------
+function Scene:cache(id, loaderFunc)
+    -- Make local cache table if there isn't any
+    self.__cache = self.__cache or {}
+
+    -- Attempt to load it from the scene's local cache
+    local obj = self.__cache[id]
+    if obj then return obj end
+
+    -- Not found, attempt to load it from game cache
+    obj, err = Cache.get(id, loaderFunc, true)
+    if obj then
+        self.__cache[id] = obj
+        return obj
+    end
+
+    -- Not found in game cache, return error
+    return nil, err
 end
 
 ------------------------------------------------------------
