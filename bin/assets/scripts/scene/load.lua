@@ -71,10 +71,10 @@ function SceneLoad:load()
     self.lastPercent = 0
 
     self.text = require('nx.text'):new()
-    self.text:setFont(require('game.font'))
-    self.text:setCharacterSize(20)
-    self.text:setString(self.message:format(0))
-    self.text:setColor(self.messageColR, self.messageColG, self.messageColB, self.messageColA)
+        :setFont(require('game.font'))
+        :setCharacterSize(20)
+        :setString(self.message:format(0))
+        :setColor(self.messageColR, self.messageColG, self.messageColB, self.messageColA)
 
     self.camera = require('nx.camera2d'):new()
 
@@ -98,9 +98,10 @@ function SceneLoad:update(dt)
 
     local w, h = self.camera:size()
     self.text:setPosition(30, h - 50)
-    self.text:setColor(
-        self.messageColR, self.messageColG, self.messageColB, self.messageColA * self.fadePercent
-    )
+        :setColor(
+            self.messageColR, self.messageColG, self.messageColB,
+            self.messageColA * self.fadePercent
+        )
 end
 
 ------------------------------------------------------------

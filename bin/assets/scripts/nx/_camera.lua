@@ -44,6 +44,16 @@ function Camera:setViewport(left, top, width, height)
     self._vpY = top
     self._vpW = width
     self._vpH = height
+
+    return self
+end
+
+------------------------------------------------------------
+function Camera:setRenderbuffer(rb)
+    self._rb = rb
+    self._updated = false
+
+    return self
 end
 
 ------------------------------------------------------------
@@ -55,12 +65,6 @@ function Camera:viewport()
     else
         return 0, 0, Window:size()
     end
-end
-
-------------------------------------------------------------
-function Camera:setRenderbuffer(rb)
-    self._rb = rb
-    self._updated = false
 end
 
 ------------------------------------------------------------
@@ -87,6 +91,8 @@ function Camera:clear(r, g, b, a, depth, col0, col1, col2, col3, clearDepth)
     C.nxRendererClear(
         r or 0, g or 0, b or 0, a or 255, depth or 1.0, col0, col1, col2, col3, clearDepth
     )
+
+    return self
 end
 
 ------------------------------------------------------------
@@ -101,6 +107,8 @@ function Camera:apply()
 
         self._updated = true
     end
+
+    return self
 end
 
 ------------------------------------------------------------

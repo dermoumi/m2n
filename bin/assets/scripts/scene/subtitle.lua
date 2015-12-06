@@ -150,19 +150,20 @@ end
 
 ------------------------------------------------------------
 function SceneSubtitle:render()
-    self.camera:setRenderbuffer(self.rb)
-    self.camera:setViewport(0, 0, 640, 360)
-    self.camera:clear(255, 255, 255, 128)
-    self.camera:draw(self.sprite)
+    self.camera
+        :setRenderbuffer(self.rb)
+        :setViewport(0, 0, 640, 360)
+        :clear(255, 255, 255, 128)
+        :draw(self.sprite)
     
-    self.camera:setRenderbuffer(nil)
-    self.camera:setViewport(nil)
-    self.camera:draw(self.rbSprite)
+        :setRenderbuffer(nil)
+        :setViewport(nil)
+        :draw(self.rbSprite)
 
-    self.camera:draw(self.shape)
+        :draw(self.shape)
 
-    self.camera:draw(self.text)
-    -- self.camera:draw(self.fontSprite)
+        :draw(self.text)
+        -- :draw(self.fontSprite)
 
     for i, text in pairs(self.touchTexts) do
         self.camera:draw(text)

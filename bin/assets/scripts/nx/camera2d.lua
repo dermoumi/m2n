@@ -68,6 +68,8 @@ function Camera2D:setCenter(x, y)
 
     self._matrix = nil
     self._invMatrix = nil
+
+    return self
 end
 
 ------------------------------------------------------------
@@ -79,6 +81,8 @@ function Camera2D:setSize(width, height)
 
     self._matrix = nil
     self._invMatrix = nil
+
+    return self
 end
 
 ------------------------------------------------------------
@@ -89,6 +93,8 @@ function Camera2D:setRotation(rad)
 
     self._matrix = nil
     self._invMatrix = nil
+
+    return self
 end
 
 ------------------------------------------------------------
@@ -109,6 +115,8 @@ function Camera2D:reset(x, y, width, height)
 
     self._matrix = nil
     self._invMatrix = nil
+
+    return self
 end
 
 ------------------------------------------------------------
@@ -180,18 +188,24 @@ function Camera2D:draw(drawable, state)
     end
 
     drawable:_draw(self, state:clone())
+
+    return self
 end
 
 ------------------------------------------------------------
 function Camera2D:drawFsQuad(texture, width, height)
     self:apply()
     require('nx.renderer').drawFsQuad(texture, width, height)
+
+    return self
 end
 
 ------------------------------------------------------------
 function Camera2D:fillFsQuad(r, g, b, a, blendMode)
     self:apply()
     require('nx.renderer').fillFsQuad(r, g, b, a, blendMode)
+
+    return self
 end
 
 ------------------------------------------------------------
