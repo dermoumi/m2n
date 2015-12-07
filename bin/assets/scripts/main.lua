@@ -112,19 +112,13 @@ Window.setFramerateLimit(
 ------------------------------------------------------------
 -- Setup loader
 ------------------------------------------------------------
-local Worker = require('game.worker')
-
-Worker.registerFunc('nx.soundsource', function(obj, id)
+require('game.worker')
+.registerFunc('nx.soundsource', function(obj, id)
     obj:open(id)
     return true
 end)
-
-Worker.registerFunc('nx.image', function(obj, id)
+.registerFunc('nx.image', function(obj, id)
     return obj:load(id)
-end)
-
-Worker.registerFunc('nx.vectorfont', function(obj, id)
-    return obj:open(id)
 end)
 
 ------------------------------------------------------------

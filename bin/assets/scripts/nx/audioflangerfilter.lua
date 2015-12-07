@@ -41,6 +41,8 @@ end
 ------------------------------------------------------------
 function AudioFlangerFilter:setParams(delay, freq)
     C.nxAudioFilterFlangerSetParams(self._cdata, delay, freq)
+
+    return self
 end
 
 ------------------------------------------------------------

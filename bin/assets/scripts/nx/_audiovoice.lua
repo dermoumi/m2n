@@ -110,98 +110,136 @@ end
 ------------------------------------------------------------
 function AudioVoice:seek(pos)
     C.nxAudioVoiceSeek(self:_handle(), pos)
+
+    return self
 end
 
 ------------------------------------------------------------
 function AudioVoice:pause(paused)
     C.nxAudioVoiceSetPaused(self:_handle(), paused)
+
+    return self
 end
 
 ------------------------------------------------------------
 function AudioVoice:stop()
     C.nxAudioVoiceStop(self:_handle())
+
+    return self
 end
 
 ------------------------------------------------------------
 function AudioVoice:protect(protected)
     C.nxAudioVoiceSetProtected(self:_handle(), protected)
+
+    return self
 end
 
 ------------------------------------------------------------
 function AudioVoice:setLooping(enabled)
     C.nxAudioVoiceSetLooping(self:_handle(), enabled)
+
+    return self
 end
 
 ------------------------------------------------------------
 function AudioVoice:setInaudibleBehavior(tick, kill)
     C.nxAudioVoiceSetInaudibleBehavior(self:_handle(), tick, kill)
+
+    return self
 end
 
 ------------------------------------------------------------
 function AudioVoice:setPlaySpeed(factor)
     C.nxAudioVoiceSetRelativePlaySpeed(self:_handle(), factor)
+
+    return self
 end
 
 ------------------------------------------------------------
 function AudioVoice:setSamplerate(samplerate)
     C.nxAudioVoiceSetSamplerate(self:_handle(), samplerate)
+
+    return self
 end
 
 ------------------------------------------------------------
 function AudioVoice:setPan(pan)
     C.nxAudioVoiceSetPan(self:_handle(), pan)
+
+    return self
 end
 
 ------------------------------------------------------------
 function AudioVoice:setAbsolutePan(l, r, lb, rb, c, s)
     C.nxAudioVoiceSetAbsolutePan(self:_handle(), l, r, lb or 0, rb or 0, c or 0, s or 0)
+
+    return self
 end
 
 ------------------------------------------------------------
 function AudioVoice:setVolume(vol)
     C.nxAudioVoiceSetVolume(self:_handle(), vol)
+
+    return self
 end
 
 ------------------------------------------------------------
 function AudioVoice:setDelaySamples(samples)
     C.nxAudioVoiceSetDelaySamples(self:_handle(), samples)
+
+    return self
 end
 
 ------------------------------------------------------------
 function AudioVoice:set3dParameters(x, y, z, velX, velY, velZ)
     C.nxAudioVoiceSet3dSourceParameters(self:_handle(), x, y, z, velX or 0, velY or 0, velZ or 0)
+
+    return self
 end
 
 ------------------------------------------------------------
 function AudioVoice:set3dPosition(x, y, z)
     C.nxAudioVoiceSet3dSourcePosition(self:_handle(), x, y, z)
+
+    return self
 end
 
 ------------------------------------------------------------
 function AudioVoice:set3dVelocity(x, y, z)
     C.nxAudioVoiceSet3dSourceVelocity(self:_handle(), x, y, z)
+
+    return self
 end
 
 ------------------------------------------------------------
 function AudioVoice:set3dMinMaxDistance(min, max)
     C.nxAudioVoiceSet3dSourceMinMaxDistance(self:_handle(), min, max)
+
+    return self
 end
 
 ------------------------------------------------------------
 function AudioVoice:set3dAttenuation(model, rolloffFactor)
     model = require('nx._audiosource')._toAttenuationModel[model] or 0
     C.nxAudioVoiceSet3dSourceAttenuation(self:_handle(), model, rolloffFactor)
+
+    return self
 end
 
 ------------------------------------------------------------
 function AudioVoice:set3dDopplerFactor(factor)
     C.nxAudioVoiceSet3dSourceDopplerFactor(self:_handle(), factor)
+
+    return self
 end
 
 ------------------------------------------------------------
 function AudioVoice:setFilterParameter(id, attribute, value)
     attribute = toFilterAttribute[attribute] or -1
     C.nxAudioVoiceSetFilterParameter(self:_handle(), id, attribute, value)
+
+    return self
 end
 
 ------------------------------------------------------------
@@ -273,32 +311,44 @@ end
 ------------------------------------------------------------
 function AudioVoice:fadeVolume(to, time)
     C.nxAudioVoiceFadeVolume(self:_handle(), to, time)
+
+    return self
 end
 
 ------------------------------------------------------------
 function AudioVoice:fadePan(to, time)
     C.nxAudioVoiceFadePan(self:_handle(), to, time)
+
+    return self
 end
 
 ------------------------------------------------------------
 function AudioVoice:fadePlaySpeed(to, time)
     C.nxAudioVoiceFadeRelativePlaySpeed(self:_handle(), to, time)
+
+    return self
 end
 
 ------------------------------------------------------------
 function AudioVoice:fadeFilterParameter(id, attribute, to, time)
     attribute = toFilterAttribute[attribute] or -1
     C.nxAudioVoiceFadeFilterParameter(self:_handle(), id, attribute, to, time)
+
+    return self
 end
 
 ------------------------------------------------------------
 function AudioVoice:schedulePause(time)
     C.nxAudioVoiceSchedulePause(self:_handle(), time)
+
+    return self
 end
 
 ------------------------------------------------------------
 function AudioVoice:scheduleStop(time)
     C.nxAudioVoiceScheduleStop(self:_handle(), stop)
+
+    return self
 end
 
 ------------------------------------------------------------

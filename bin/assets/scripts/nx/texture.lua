@@ -162,6 +162,7 @@ end
 function Texture.static.bind(texture, slot)
     if texture then texture = texture._cdata end
     C.nxTextureBind(texture, slot)
+    return Texture
 end
 
 ------------------------------------------------------------
@@ -231,12 +232,15 @@ function Texture:setData(data, a, b, c, d, e, f, g, h)
     mipLevel = mipLevel or 0
 
     C.nxTextureSetData(self._cdata, data, x, y, z, width, height, depth, slice, mipLevel)
+    return self
 end
 
 ------------------------------------------------------------
 function Texture:bind(slot)
     if not self._cdata then return end
     C.nxTextureBind(self._cdata, slot or 0)
+
+    return self
 end
 
 ------------------------------------------------------------
@@ -268,6 +272,7 @@ function Texture:setFilter(filter)
     if not filter then return end
 
     C.nxTextureSetFilter(self._cdata, filter)
+    return self
 end
 
 ------------------------------------------------------------
@@ -276,6 +281,7 @@ function Texture:setAnisotropyLevel(level)
     if not aniso then return end
 
     C.nxTextureSetAnisotropyLevel(self._cdata, aniso)
+    return self
 end
 
 ------------------------------------------------------------
@@ -285,11 +291,15 @@ function Texture:setRepeating(x, y, z)
     if x then C.nxTextureSetRepeatingX(self._cdata, x) end
     if y then C.nxTextureSetRepeatingY(self._cdata, y) end
     if z then C.nxTextureSetRepeatingZ(self._cdata, z) end
+
+    return self
 end
 
 ------------------------------------------------------------
 function Texture:setLessOrEqual(lessOrEqual)
     C.nxTextureSetLessOrEqual(self._cdata, not not lessOrEqual)
+
+    return self
 end
 
 ------------------------------------------------------------

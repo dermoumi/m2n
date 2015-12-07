@@ -162,58 +162,80 @@ end
 ------------------------------------------------------------
 function AudioSource:setVolume(volume)
     C.nxAudioSetVolume(self._cdata, volume)
+
+    return self
 end
 
 ------------------------------------------------------------
 function AudioSource:setLooping(looping)
     C.nxAudioSetLooping(self._cdata, looping)
+
+    return self
 end
 
 ------------------------------------------------------------
 function AudioSource:setSingleInstance(singleInstance)
     C.nxAudioSetSingleInstance(self._cdata, singleInstance)
+
+    return self
 end
 
 ------------------------------------------------------------
 function AudioSource:stop()
     C.nxAudioSourceStop(self._cdata)
+
+    return self
 end
 
 ------------------------------------------------------------
 function AudioSource:setInaudibleBehavior(ticks, kill)
     C.nxAudioSetInaudibleBehavior(self._cdata, ticks, kill)
+
+    return self
 end
 
 ------------------------------------------------------------
 function AudioSource:set3dMinMaxDistance(min, max)
     C.nxAudioSet3dMinMaxDistance(self._cdata, min, max)
+
+    return self
 end
 
 ------------------------------------------------------------
 function AudioSource:set3dAttenuation(model, rolloffFactor)
     model = toAttenuationModel[model] or 0
     C.nxAudioSet3dAttenuation(self._cdata, model, rolloffFactor)
+
+    return self
 end
 
 ------------------------------------------------------------
 function AudioSource:set3dDopplerFactor(factor)
     C.nxAudioSet3dDopplerFactor(self._cdata, factor)
+
+    return self
 end
 
 ------------------------------------------------------------
 function AudioSource:set3dListenerRelative(enable)
     C.nxAudioSet3dListenerRelative(self._cdata, enable)
+
+    return self
 end
 
 ------------------------------------------------------------
 function AudioSource:set3dDistanceDelay(enabled)
     C.nxAudioSet3dDistanceDelay(self._cdata, enabled)
+
+    return self
 end
 
 ------------------------------------------------------------
 function AudioSource:setFilter(filter, id)
     if filter then filter = filter._cdata end
     C.nxAudioSourceSetFilter(self._cdata, filter, id or 0)
+
+    return self
 end
 
 ------------------------------------------------------------

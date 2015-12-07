@@ -41,6 +41,8 @@ end
 ------------------------------------------------------------
 function AudioLofiFilter:setParams(samplerate, bitdepth)
     C.nxAudioFilterLofiSetParams(self._cdata, samplerate, bitdepth)
+
+    return self
 end
 
 ------------------------------------------------------------

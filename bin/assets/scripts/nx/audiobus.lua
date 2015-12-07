@@ -48,11 +48,15 @@ end
 ------------------------------------------------------------
 function AudioBus:setChannels(channelCount)
     C.nxAudioBusSetChannels(self._cdata, channelCount)
+
+    return self
 end
 
 ------------------------------------------------------------
 function AudioBus:enableVisualization(enable)
     C.nxAudioBusEnableVisualization(self._cdata, enable)
+
+    return self
 end
 
 ------------------------------------------------------------

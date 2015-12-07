@@ -41,6 +41,8 @@ end
 ------------------------------------------------------------
 function AudioEchoFilter:setParams(delay, decay, filter)
     C.nxAudioFilterEchoSetParams(self._cdata, delay, decay or 0.7, filter or 0)
+
+    return self
 end
 
 ------------------------------------------------------------

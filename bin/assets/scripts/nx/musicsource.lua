@@ -64,6 +64,8 @@ function MusicSource:open(a, b)
     else
         C.nxAudioMusicOpenFile(self._cdata, a)
     end
+
+    return self
 end
 
 ------------------------------------------------------------

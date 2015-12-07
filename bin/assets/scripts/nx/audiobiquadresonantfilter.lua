@@ -52,6 +52,7 @@ function AudioBiquadResonantFilter:setParams(filterType, samplerate, frequency, 
     C.nxAudioFilterBiquadResonantSetParams(
         self._cdata, filterType, samplerate, frequency, resonance
     )
+    return self
 end
 
 ------------------------------------------------------------

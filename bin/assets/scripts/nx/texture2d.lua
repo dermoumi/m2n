@@ -82,6 +82,7 @@ function Texture2D:setData(data, a, b, c, d, e)
     end
 
     Texture.setData(self, data, x, y, width, height, 1, mipLevel)
+    return self
 end
 
 ------------------------------------------------------------

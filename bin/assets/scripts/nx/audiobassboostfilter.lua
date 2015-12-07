@@ -41,6 +41,8 @@ end
 ------------------------------------------------------------
 function AudioBassboostFilter:setParams(boost)
     C.nxAudioFilterBassboostSetParams(self._cdata, boost)
+
+    return self
 end
 
 ------------------------------------------------------------

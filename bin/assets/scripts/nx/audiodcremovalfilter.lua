@@ -41,6 +41,8 @@ end
 ------------------------------------------------------------
 function AudioDCRemovalFilter:setParams(length)
     C.nxAudioFilterDcRemovalSetParams(self._cdata, length or 1)
+
+    return self
 end
 
 ------------------------------------------------------------

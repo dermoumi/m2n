@@ -40,6 +40,7 @@ local loaderFunc = {}
 ------------------------------------------------------------
 function Worker.static.registerFunc(objType, func)
     loaderFunc[objType] = func
+    return Worker
 end
 
 ------------------------------------------------------------

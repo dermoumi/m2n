@@ -73,16 +73,16 @@ function SceneSubtitle:load()
     self.camera = Camera2D:new()
 
     self.echoFilter = require('nx.audioechofilter'):new()
-    self.echoFilter:setParams(.5, .5)
+        :setParams(.5, .5)
 
     self.voiceGroup = require('nx.audiovoicegroup'):new()
 
     self.audiobus = require('nx.audiobus'):new()
-    --self.audiobus:setFilter(self.echoFilter)
+        :setFilter(self.echoFilter)
     self.audiobus:play()
 
     self.soundSource = self:cache('assets/test.wav')
-    self.soundSource:setLooping(true)
+        :setLooping(true)
     self.voiceGroup:add(self.soundSource:playThrough(self.audiobus, -1, 0, true))
 
     self.musicSource:setVolume(.1)
@@ -94,8 +94,8 @@ function SceneSubtitle:load()
     self.texture = Texture2D:new()
     self.texture:load(self:cache('assets/pasrien.png'))
     self.texture:setFilter('nearest')
-    self.texture:setAnisotropyLevel(8)
-    self.texture:setRepeating('clamp', 'wrap')
+        :setAnisotropyLevel(8)
+        :setRepeating('clamp', 'wrap')
 
     -- Create renderbuffer
     self.rb = Renderbuffer:new()
@@ -197,10 +197,10 @@ function SceneSubtitle:onTouchDown(finger, x, y)
     x, y = x * w, y * h
 
     local text = Text:new()
-    text:setString("Finger: " .. tostring(finger))
-    text:setFont(GameFont)
-    text:setPosition(x, y)
-    text:setColor(0, 0, 0)
+        :setString("Finger: " .. tostring(finger))
+        :setFont(GameFont)
+        :setPosition(x, y)
+        :setColor(0, 0, 0)
 
     local bX, bY, bW, bH = text:bounds()
     text:setOrigin(bW / 2, 150)

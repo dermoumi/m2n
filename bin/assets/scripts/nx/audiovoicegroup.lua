@@ -72,6 +72,8 @@ end
 ------------------------------------------------------------
 function VoiceGroup:add(voice)
     C.nxAudioVoiceAddToGroup(self._cdata, voice:_handle())
+
+    return self
 end
 
 ------------------------------------------------------------
