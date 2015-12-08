@@ -317,11 +317,9 @@ function Texture:repeating()
     local repeatingPtr = ffi.new('uint32_t[3]')
     C.nxTextureRepeating(self._cdata, repeatingPtr)
 
-    local x = fromXRepeating[repeatingPtr[0]] or 'clamp'
-    local y = fromYRepeating[repeatingPtr[1]] or 'clamp'
-    local z = fromZRepeating[repeatingPtr[2]] or 'clamp'
-
-    return x, y, z
+    return fromXRepeating[repeatingPtr[0]] or 'clamp',
+        fromYRepeating[repeatingPtr[1]] or 'clamp',
+        fromZRepeating[repeatingPtr[2]] or 'clamp'
 end
 
 ------------------------------------------------------------
