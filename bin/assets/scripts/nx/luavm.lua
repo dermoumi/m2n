@@ -299,12 +299,7 @@ function LuaVM:push(...)
         -- If has a :_cdata() function, then it's a wrapper class
         -- and we should push the handle instead
         if typename == 'table' and val._cdata and type(val._cdata) == 'cdata' then
-            if val == self then
-                C.lua_settop(self._cdata, top)
-                return nil, 'Cannot push a LuaVM into itself'
-            else
-                typename = 'nxobj'
-            end
+            typename = 'nxobj'
         elseif typename == 'table' and val.class and val.class.name then
             typename = 'nxclass'
         end
