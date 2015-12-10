@@ -84,6 +84,25 @@ local function typeof(s, i)
     return ffi.string(C.lua_typename(s, C.lua_type(s, i)))
 end
 
+-- Returns a CPointer to the given data, no-op if already a pointer
+local function toCPointer(cdata)
+    -- Extract C-Type
+    local ct = string.match(tostring(ffi.typeof(cdata)), 'ctype<(.+)>')
+    if not ct then return nil end
+
+    -- Check whether it's already a pointer
+    if string.match(ct, '.+%*$') then
+        -- type* pointer, no-op
+        return cdata, ct, false
+    elseif string.match(ct, '.+%]$') then
+        -- type[n], make it into a generic type* pointer
+        return cdata, string.match(ct, '(.+)%[') .. '*', false
+    end
+
+    -- Convert to pointer
+    return ffi.new(ct .. '[1]', {cdata}), ct .. '   *', true
+end
+
 -- Pushes the table t into the lua_State s
 local function tablePusher(s, t)
     C.lua_createtable(s, #t, 0)
@@ -122,18 +141,6 @@ local function funcPusher(s, f)
     C.lua_settop(s, -2)
 end
 
--- Pushes the nxLib object into the lua_State s
-local function nxObjPusher(s, o)
-    C.lua_getfield(s, -10002, 'NX_LibObject')
-    C.lua_pushlightuserdata(s, o._cdata)
-    C.lua_pushstring(s, tostring(o.class.name))
-
-    if C.lua_pcall(s, 2, 1, 0) ~= 0 then
-        error('LuaVM nxLib Object pusher: ' .. ffi.string(C.lua_tolstring(s, -1, nil)))
-        C.lua_settop(s, -2)
-    end
-end
-
 -- Pushes the object into the lua_State s
 local function nxClassPusher(s, o)
     local table = {}
@@ -144,6 +151,13 @@ local function nxClassPusher(s, o)
         end
     end
 
+    C.lua_getfield(s, -10002, 'NX_ClassLoader')
+    C.lua_pushstring(s, tostring(o.class.name))
+    if C.lua_pcall(s, 1, 0, 0) ~= 0 then
+        error('LuaVM nxLib Class Object pusher: ' .. ffi.string(C.lua_tolstring(s, -1, nil)))
+        C.lua_settop(s, -1)
+    end
+
     C.lua_getfield(s, -10002, 'NX_ClassObject')
     tablePusher(s, table)
     C.lua_pushstring(s, tostring(o.class.name))
@@ -151,6 +165,24 @@ local function nxClassPusher(s, o)
     if C.lua_pcall(s, 2, 1, 0) ~= 0 then
         error('LuaVM nxLib Class Object pusher: ' .. ffi.string(C.lua_tolstring(s, -1, nil)))
         C.lua_settop(s, -2)
+    end
+end
+
+-- Pushes c data into the lua_State s
+local function cdataPusher(s, o)
+    local ptr, type, dereference = toCPointer(o)
+    if not ptr then
+        error('LuaVM CData pusher: Invalid ctype')
+    end
+
+    C.lua_getfield(s, -10002, 'NX_CData')
+    C.lua_pushlightuserdata(s, ptr)
+    C.lua_pushstring(s, type)
+    C.lua_pushboolean(s, dereference)
+
+    if C.lua_pcall(s, 3, 1, 0) ~= 0 then
+        error('LuaVM CData pusher: ' .. ffi.string(C.lua_tolstring(s, -1, nil)))
+        C.lua_settop(s, -3)
     end
 end
 
@@ -215,13 +247,12 @@ end
 -- Wrappers for pushing values by type
 pushers = {
     ['nil']      = function(s, v) C.lua_pushnil(s) end,
-    ['cdata']    = C.lua_pushlightuserdata,
+    ['cdata']    = cdataPusher,
     ['table']    = tablePusher,
     ['number']   = C.lua_pushnumber,
     ['string']   = C.lua_pushstring,
     ['boolean']  = C.lua_pushboolean,
     ['function'] = funcPusher,
-    ['nxobj']    = nxObjPusher,
     ['nxclass']  = nxClassPusher
 }
 
@@ -296,11 +327,7 @@ function LuaVM:push(...)
         local val = args[i]
         local typename = type(val)
 
-        -- If has a :_cdata() function, then it's a wrapper class
-        -- and we should push the handle instead
-        if typename == 'table' and val._cdata and type(val._cdata) == 'cdata' then
-            typename = 'nxobj'
-        elseif typename == 'table' and val.class and val.class.name then
+        if typename == 'table' and val.class and val.class.name then
             typename = 'nxclass'
         end
 

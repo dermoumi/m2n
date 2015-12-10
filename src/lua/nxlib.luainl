@@ -83,11 +83,8 @@ end
 
 table.insert(package.loaders, 2, load)
 
-function NX_LibObject(cdata, classname)
-    local classObj = require(classname)
-    if not classObj then return nil end
-
-    return classObj._fromCData(cdata)
+function NX_ClassLoader(classname)
+    require(classname)
 end
 
 function NX_ClassObject(obj, classname)
@@ -98,6 +95,12 @@ function NX_ClassObject(obj, classname)
     end
 
     return classObj
+end
+
+function NX_CData(ptr, type, dereference)
+    ptr = ffi.cast(type, ptr)
+    if dereference then return ptr[0] end
+    return ptr
 end
 
 -- Remove potentially dangerous functions
