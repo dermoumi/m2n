@@ -90,6 +90,16 @@ function NX_LibObject(cdata, classname)
     return classObj._fromCData(cdata)
 end
 
+function NX_ClassObject(obj, classname)
+    local classObj = require(classname):allocate()
+    
+    for i, v in pairs(obj) do
+        classObj[i] = v
+    end
+
+    return classObj
+end
+
 -- Remove potentially dangerous functions
 os.remove = nil
 os.rename = nil

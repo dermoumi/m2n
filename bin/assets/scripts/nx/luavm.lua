@@ -134,6 +134,26 @@ local function nxObjPusher(s, o)
     end
 end
 
+-- Pushes the object into the lua_State s
+local function nxClassPusher(s, o)
+    local table = {}
+
+    for i, v in pairs(o) do
+        if i ~= 'class' then
+            table[i] = v
+        end
+    end
+
+    C.lua_getfield(s, -10002, 'NX_ClassObject')
+    tablePusher(s, table)
+    C.lua_pushstring(s, tostring(o.class.name))
+
+    if C.lua_pcall(s, 2, 1, 0) ~= 0 then
+        error('LuaVM nxLib Class Object pusher: ' .. ffi.string(C.lua_tolstring(s, -1, nil)))
+        C.lua_settop(s, -2)
+    end
+end
+
 -- Retrieves the table at index i from the lua_State s
 local function tableRetriever(s, i)
     -- If index is relative the end of the stack, make it absolute
@@ -201,7 +221,8 @@ pushers = {
     ['string']   = C.lua_pushstring,
     ['boolean']  = C.lua_pushboolean,
     ['function'] = funcPusher,
-    ['nxobj']    = nxObjPusher
+    ['nxobj']    = nxObjPusher,
+    ['nxclass']  = nxClassPusher
 }
 
 -- Wrappers for retrieving values by type
@@ -284,6 +305,8 @@ function LuaVM:push(...)
             else
                 typename = 'nxobj'
             end
+        elseif typename == 'table' and val.class and val.class.name then
+            typename = 'nxclass'
         end
 
         local pushFunc = pushers[typename]
