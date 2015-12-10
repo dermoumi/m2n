@@ -25,6 +25,14 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
+local vm = require('nx.luavm'):new()
+vm:call(function()
+    print('hello')
+end)
+
+return 0
+
+--[[
 local Nx       = require 'nx'
 local Log      = require 'nx.log'
 local Window   = require 'nx.window'
@@ -173,3 +181,5 @@ require('nx.audio').release()
 -- The end?
 ------------------------------------------------------------
 return 0
+
+]]

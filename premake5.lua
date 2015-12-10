@@ -102,10 +102,10 @@ project 'physfs'
 project 'soloud'
     targetname        'soloud'
     kind              'StaticLib'
+    language          'C++'
     flags             { 'NoPCH' }
     exceptionhandling 'Off'
-    rtti              'Off'
-    language          'C++'
+    -- rtti           'Off'
 
     includedirs {
         'extlibs/include/soloud'

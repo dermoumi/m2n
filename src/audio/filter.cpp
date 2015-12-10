@@ -28,6 +28,18 @@
 
 namespace Audio
 {
+    //----------------------------------------------------------
+    Filter::Filter()
+    {
+        // TODO
+    }
+
+    //----------------------------------------------------------
+    SoLoud::FilterInstance* Filter::createInstance()
+    {
+        return new FilterInstance(this);
+    }
+
     //------------------------------------------------------
     FilterInstance::FilterInstance(Filter* parent)
     {
@@ -45,17 +57,5 @@ namespace Audio
         unsigned int)
     {
         // TODO
-    }
-
-    //----------------------------------------------------------
-    Filter::Filter()
-    {
-        // TODO
-    }
-
-    //----------------------------------------------------------
-    SoLoud::FilterInstance* Filter::createInstance()
-    {
-        return new FilterInstance(this);
     }
 }

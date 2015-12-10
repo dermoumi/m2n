@@ -33,7 +33,7 @@
 namespace Audio
 {
     //------------------------------------------------------
-    class Filter : public SoLoud::Filter
+    class NX_HIDDEN Filter : public SoLoud::Filter
     {
     public:
         Filter();
@@ -46,7 +46,7 @@ namespace Audio
     };
 
     //------------------------------------------------------
-    class FilterInstance : public SoLoud::FilterInstance
+    class NX_HIDDEN FilterInstance : public SoLoud::FilterInstance
     {
     public:
         FilterInstance(Filter* parent);
