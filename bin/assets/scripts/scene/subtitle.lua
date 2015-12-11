@@ -115,7 +115,7 @@ function SceneSubtitle:load()
     self.text = Text:new()
         :setCharacterSize(30)
         :setFont(GameFont)
-        :setColor(0, 0, 0, 128)
+        :setColor(0, 0, 0)
 
     self.shape = Shape:new()
         :setTexture(self.texture)
@@ -144,7 +144,7 @@ function SceneSubtitle:update(dt)
 
     local w, h = Window.size()
     local fps = Window.currentFPS()
-    self.text:setString(('FPS: %i\nHéllô wörld 真島 ヒロ'):format(fps))
+    self.text:setString(('FPS: %i\nHéllô wörld "真島 ヒロ" "ِﺱْﻣَّﺸﻟﺍ ﺎﺒﺣﺮﻣ"'):format(fps))
 end
 
 ------------------------------------------------------------

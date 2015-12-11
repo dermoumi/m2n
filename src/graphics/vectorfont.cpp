@@ -248,16 +248,10 @@ const Glyph& VectorFont::glyph(uint32_t codePoint, uint32_t charSize, bool bold)
     // Not found: we have to load it
     Glyph glyph = loadGlyph(codePoint, charSize, bold);
     if (mPages[charSize].empty()) {
-        // If there's still no page after loading the glyph,
-        // then that glyph is invalid, so we must load a valid glyph (x?)
-        // And make the glyph point to it
-        glyph.page = 0;
-        loadGlyph(L'x', charSize, bold);
-
-        // Also fuck fonts with no 'x' glyph
-        if (mPages[charSize].empty()) {
-            Log::fatal("Cannot load font glyph for the 'x' character. Please change your font.");
-        }
+        static Glyph invalid;
+        invalid = glyph;
+        invalid.page = 0;
+        return invalid;
     }
     return mPages[charSize][glyph.page].glyphs.emplace(key, glyph).first->second;
 }
@@ -336,17 +330,6 @@ float VectorFont::underlineThickness(uint32_t charSize) const
 //----------------------------------------------------------
 const Texture* VectorFont::texture(uint32_t charSize, uint32_t index) const
 {
-    if (mPages[charSize].empty()) {
-        // Just in case this method is called before a texture is rendered
-        // render 'x' since it's gonna be used/rendered anyway...
-        glyph(L'x', charSize, false);
-
-        // Also fuck fonts with no 'x' glyph
-        if (mPages[charSize].empty()) {
-            Log::fatal("Cannot load font glyph for the 'x' character. Please change your font.");
-        }
-    }
-
     return &mPages[charSize][index].texture;
 }
 

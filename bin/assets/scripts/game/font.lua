@@ -30,7 +30,8 @@ local stack = require('nx.fontstack'):new()
 
 local fonts = {
     'assets/fonts/01-Asap-Regular.otf',
-    'assets/fonts/02-mplus-1c-regular.ttf'
+    'assets/fonts/02-mplus-1c-regular.ttf',
+    'assets/fonts/03-koodak.ttf'
 }
 
 for i, v in ipairs(fonts) do
