@@ -61,11 +61,6 @@ function AudioFilter.static._fromCData(cdata)
 end
 
 ------------------------------------------------------------
-function AudioFilter:initialize()
-    -- TODO: Implement custom filters
-end
-
-------------------------------------------------------------
 function AudioFilter:release()
     if self._cdata == nil then return end
     C.nxAudioFilterRelease(ffi.gc(self._cdata, nil))
