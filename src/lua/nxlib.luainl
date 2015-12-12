@@ -84,11 +84,18 @@ end
 table.insert(package.loaders, 2, load)
 
 function NX_ClassLoader(classname)
-    require(classname)
+    if not require(classname) then
+        error('Unable to load module ' .. classname)
+    end
 end
 
 function NX_ClassObject(obj, classname)
-    local classObj = require(classname):allocate()
+    local class = require(classname)
+    if not class then
+        error('Unable to load module ' .. classname)
+    end
+
+    local classObj = class:allocate()
     
     for i, v in pairs(obj) do
         classObj[i] = v
