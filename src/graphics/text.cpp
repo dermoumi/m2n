@@ -70,6 +70,15 @@ void Text::setStyle(uint8_t style)
 }
 
 //----------------------------------------------------------
+void Text::setRightToLeft(bool rtl)
+{
+    if (mRightToLeft == rtl) return;
+
+    mRightToLeft = rtl;
+    mNeedsUpdate = true;
+}
+
+//----------------------------------------------------------
 const std::u32string& Text::string() const
 {
     return mString;
@@ -91,6 +100,12 @@ uint32_t Text::characterSize() const
 uint8_t Text::style() const
 {
     return mStyle;
+}
+
+//----------------------------------------------------------
+bool Text::rightToLeft() const
+{
+    return mRightToLeft;
 }
 
 //----------------------------------------------------------
@@ -141,7 +156,6 @@ void Text::bounds(float& x, float& y, float& w, float& h) const
     h = mBoundsH;
 }
 
-#include "../system/log.hpp"
 //----------------------------------------------------------
 const Arraybuffer* Text::arraybuffer(uint32_t& vertexCount, uint32_t index) const
 {
@@ -202,6 +216,8 @@ void Text::ensureGeometryUpdate() const
     float x      = 0.f;
     float y      = static_cast<float>(mCharSize);
 
+    float xFactor = mRightToLeft ? -1.f : 1.f;
+
     // Create create two triangles for each character
     float minX = static_cast<float>(mCharSize);
     float minY = static_cast<float>(mCharSize);
@@ -213,7 +229,12 @@ void Text::ensureGeometryUpdate() const
         uint32_t currChar = static_cast<uint32_t>(mString[i]);
 
         // Apply the kerning offset
-        x += static_cast<float>(mFont->kerning(prevChar, currChar, mCharSize));
+        if (mRightToLeft) {
+            x += static_cast<float>(mFont->kerning(currChar, prevChar, mCharSize));
+        }
+        else {
+            x += static_cast<float>(mFont->kerning(prevChar, currChar, mCharSize));
+        }
         prevChar = currChar;
 
         // If we're using the underlined style and there's a new line, draw a line
@@ -283,14 +304,24 @@ void Text::ensureGeometryUpdate() const
             float u2 = glyph.texLeft + glyph.texWidth + 0.25f;
             float v2 = glyph.texTop + glyph.texHeight + 0.25f;
 
+            float x1 = x + left;
+            float x2 = x + right;
+            float y1 = y + top;
+            float y2 = y + bottom;
+
+            if (mRightToLeft) {
+                x1 = x * xFactor - right + left;
+                x2 = x * xFactor;
+            }
+
             // Add a quad for the current character
             float vertices[24] {
-                x + right - italic * top,    y + top,    u2, v1,
-                x + left  - italic * top,    y + top,    u1, v1,
-                x + left  - italic * bottom, y + bottom, u1, v2,
-                x + right - italic * top,    y + top,    u2, v1,
-                x + left  - italic * bottom, y + bottom, u1, v2,
-                x + right - italic * bottom, y + bottom, u2, v2
+                x2 - italic * top,     y1,    u2, v1,
+                x1  - italic * top,    y1,    u1, v1,
+                x1  - italic * bottom, y2, u1, v2,
+                x2 - italic * top,     y1,    u2, v1,
+                x1  - italic * bottom, y2, u1, v2,
+                x2 - italic * bottom,  y2, u2, v2
             };
 
             // Append vertices to the corresponding buffer

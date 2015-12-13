@@ -116,7 +116,12 @@ function SceneSubtitle:load()
         :setCharacterSize(30)
         :setFont(GameFont)
         :setColor(0, 0, 0)
+        :setRightToLeft(true)
 
+    local arabic = require('utils.arabic')
+    local unicode = require('nx.unicode')
+    self.text:setString(arabic(unicode.utf8To32('الشمس Avenue الشمس\n)تَشْكِيل( الإيقاع الأمان الشمس )عمودية(')))
+        :setPosition(640, 0)
     self.shape = Shape:new()
         :setTexture(self.texture)
         :setIndexData(0, 1, 3, 6)
@@ -144,7 +149,6 @@ function SceneSubtitle:update(dt)
 
     local w, h = Window.size()
     local fps = Window.currentFPS()
-    self.text:setString(('FPS: %i\nHéllô wörld "真島 ヒロ" "ِﺱْﻣَّﺸﻟﺍ ﺎﺒﺣﺮﻣ"'):format(fps))
 end
 
 ------------------------------------------------------------

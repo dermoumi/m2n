@@ -42,6 +42,7 @@ ffi.cdef [[
     void nxTextSetFont(NxText*, const void*);
     void nxTextSetCharacterSize(NxText*, uint32_t);
     void nxTextSetStyle(NxText*, uint8_t);
+    void nxTextSetRightToLeft(NxText*, bool);
     void nxTextCharacterPosition(const NxText*, uint32_t, float*);
     void nxTextBounds(const NxText*, float*);
     const NxArraybuffer* nxTextArraybuffer(const NxText*, uint32_t*, uint32_t);
@@ -136,6 +137,14 @@ function Text:setStyle(style)
 end
 
 ------------------------------------------------------------
+function Text:setRightToLeft(rtl)
+    self._rtl = rtl
+    C.nxTextSetRightToLeft(self._cdata, rtl)
+
+    return self
+end
+
+------------------------------------------------------------
 function Text:string(u32)
     if not self._string and not self._u32string then return '' end
 
@@ -165,6 +174,11 @@ end
 ------------------------------------------------------------
 function Text:style()
     return self._style
+end
+
+------------------------------------------------------------
+function Text:rightToLeft()
+    return self._rtl
 end
 
 ------------------------------------------------------------

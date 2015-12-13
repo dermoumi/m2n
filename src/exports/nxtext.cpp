@@ -53,7 +53,7 @@ NX_EXPORT void nxTextSetString(NxText* text, const char* str)
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxTextSetU32StrinG(NxText* text, const uint32_t* str)
+NX_EXPORT void nxTextSetU32String(NxText* text, const uint32_t* str)
 {
     text->setString(reinterpret_cast<const char32_t*>(str));
 }
@@ -74,6 +74,12 @@ NX_EXPORT void nxTextSetCharacterSize(NxText* text, uint32_t charSize)
 NX_EXPORT void nxTextSetStyle(NxText* text, uint8_t style)
 {
     text->setStyle(style);
+}
+
+//----------------------------------------------------------
+NX_EXPORT void nxTextSetRightToLeft(NxText* text, bool rtl)
+{
+    text->setRightToLeft(rtl);
 }
 
 //----------------------------------------------------------
