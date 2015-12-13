@@ -24,142 +24,37 @@
 
     For more information, please refer to <http://unlicense.org>
 *///============================================================================
-#include "text.hpp"
-#include "../system/unicode.hpp"
+#include "rtltext.hpp"
 
 #include <cmath>
+#include <set>
 
 //----------------------------------------------------------
-void Text::setString(const std::string& str)
+static bool isHarakat(uint32_t haraka)
 {
-    setString(Unicode::utf8To32(str));
+    static std::set<uint32_t> harakat {
+        0x0600, 0x0601, 0x0602, 0x0603, 0x0606, 0x0607, 0x0608, 0x0609,
+        0x060A, 0x060B, 0x060D, 0x060E, 0x0610, 0x0611, 0x0612, 0x0613,
+        0x0614, 0x0615, 0x0616, 0x0617, 0x0618, 0x0619, 0x061A, 0x061B,
+        0x061E, 0x061F, 0x0621, 0x063B, 0x063C, 0x063D, 0x063E, 0x063F,
+        0x0640, 0x064B, 0x064C, 0x064D, 0x064E, 0x064F, 0x0650, 0x0651,
+        0x0652, 0x0653, 0x0654, 0x0655, 0x0656, 0x0657, 0x0658, 0x0659,
+        0x065A, 0x065B, 0x065C, 0x065D, 0x065E, 0x0660, 0x066A, 0x066B,
+        0x066C, 0x066F, 0x0670, 0x0672, 0x06D4, 0x06D5, 0x06D6, 0x06D7,
+        0x06D8, 0x06D9, 0x06DA, 0x06DB, 0x06DC, 0x06DF, 0x06E0, 0x06E1,
+        0x06E2, 0x06E3, 0x06E4, 0x06E5, 0x06E6, 0x06E7, 0x06E8, 0x06E9,
+        0x06EA, 0x06EB, 0x06EC, 0x06ED, 0x06EE, 0x06EF, 0x06D6, 0x06D7,
+        0x06D8, 0x06D9, 0x06DA, 0x06DB, 0x06DC, 0x06DD, 0x06DE, 0x06DF,
+        0x06F0, 0x06FD, 0xFE70, 0xFE71, 0xFE72, 0xFE73, 0xFE74, 0xFE75,
+        0xFE76, 0xFE77, 0xFE78, 0xFE79, 0xFE7A, 0xFE7B, 0xFE7C, 0xFE7D,
+        0xFE7E, 0xFE7F, 0xFC5E, 0xFC5F, 0xFC60, 0xFC61, 0xFC62, 0xFC63
+    };
+
+    return harakat.find(haraka) != harakat.end();
 }
 
 //----------------------------------------------------------
-void Text::setString(const std::u32string& str)
-{
-    mString = str;
-    mNeedsUpdate = true;
-}
-
-//----------------------------------------------------------
-void Text::setFont(const Font& font)
-{
-    if (mFont == &font) return;
-
-    mFont = &font;
-    mNeedsUpdate = true;
-}
-
-//----------------------------------------------------------
-void Text::setCharacterSize(uint32_t charSize)
-{
-    if (mCharSize == charSize) return;
-
-    mCharSize = charSize;
-    mNeedsUpdate = true;
-}
-
-//----------------------------------------------------------
-void Text::setStyle(uint8_t style)
-{
-    if (mStyle == style) return;
-
-    mStyle = style;
-    mNeedsUpdate = true;
-}
-
-//----------------------------------------------------------
-const std::u32string& Text::string() const
-{
-    return mString;
-}
-
-//----------------------------------------------------------
-const Font* Text::font() const
-{
-    return mFont;
-}
-
-//----------------------------------------------------------
-uint32_t Text::characterSize() const
-{
-    return mCharSize;
-}
-
-//----------------------------------------------------------
-uint8_t Text::style() const
-{
-    return mStyle;
-}
-
-//----------------------------------------------------------
-void Text::characterPosition(size_t index, float& x, float& y) const
-{
-    // Initialize the positions to 0
-    x = y = 0.f;
-
-    // Make sure that we have a valid font
-    if (!mFont) return;
-
-    // Adjust the index if it's out of range
-    if (index > mString.size()) index = mString.size();
-
-    // Precompute stuff
-    bool bold = (mStyle & Bold) != 0;
-    float hspace = static_cast<float>(mFont->glyph(U' ', mCharSize, bold).advance);
-    float vspace = static_cast<float>(mFont->lineSpacing(mCharSize));
-
-    // Compute the position
-    uint32_t prevChar {0u};
-    for (size_t i = 0; i < index; ++i) {
-        uint32_t currChar = mString[i];
-
-        // Apply the kerning offset
-        x += static_cast<float>(mFont->kerning(prevChar, currChar, mCharSize));
-        prevChar = currChar;
-
-        // Handle special characters
-        switch (currChar) {
-            case U' ':  x += hspace;        continue;
-            case U'\t': x += hspace * 4;    continue;
-            case U'\n': x = 0; y += vspace; continue;
-        }
-
-        // For regular characters, add the advance offset of the glyph
-        x += static_cast<float>(mFont->glyph(currChar, mCharSize, bold).advance);
-    }
-}
-
-//----------------------------------------------------------
-void Text::bounds(float& x, float& y, float& w, float& h) const
-{
-    ensureGeometryUpdate();
-    x = mBoundsX;
-    y = mBoundsY;
-    w = mBoundsW;
-    h = mBoundsH;
-}
-
-//----------------------------------------------------------
-const Arraybuffer* Text::arraybuffer(uint32_t& vertexCount, uint32_t index) const
-{
-    ensureGeometryUpdate();
-    vertexCount = mVertices[index].count;
-    return &mVertices[index].buffer;
-}
-
-//----------------------------------------------------------
-uint32_t* Text::arraybufferIDs(uint32_t* count) const
-{
-    ensureGeometryUpdate();
-
-    *count = mBufferIDs.size();
-    return mBufferIDs.data();
-}
-
-//----------------------------------------------------------
-void Text::ensureGeometryUpdate() const
+void RtlText::ensureGeometryUpdate() const
 {
     // If geometry is already up-to-date, do nothing
     if (!mNeedsUpdate) return;
@@ -208,12 +103,14 @@ void Text::ensureGeometryUpdate() const
     float maxY = 0.f;
     uint32_t currChar = 0u, prevChar;
 
+    float lastExtraSpace = 0.f;
+
     for (size_t i = 0u; i < mString.size(); ++i) {
         prevChar = currChar;
         currChar = static_cast<uint32_t>(mString[i]);
 
         // Apply the kerning offset
-        x += static_cast<float>(mFont->kerning(prevChar, currChar, mCharSize));
+        x += static_cast<float>(mFont->kerning(currChar, prevChar, mCharSize));
 
         // If we're using the underlined style and there's a new line, draw a line
         if (underlined && (currChar == U'\n')) {
@@ -221,12 +118,12 @@ void Text::ensureGeometryUpdate() const
             float bottom = top + std::floor(underlineThickness + 0.5f);
 
             float vertices[24] {
-                x,   top,    1.f, 1.f,
-                0.f, top,    1.f, 1.f,
-                0.f, bottom, 1.f, 1.f,
-                x,   top,    1.f, 1.f,
-                0.f, bottom, 1.f, 1.f,
-                x,   bottom, 1.f, 1.f
+                0.f,                top,    1.f, 1.f,
+                lastExtraSpace - x, top,    1.f, 1.f,
+                lastExtraSpace - x, bottom, 1.f, 1.f,
+                0.f,                top,    1.f, 1.f,
+                lastExtraSpace - x, bottom, 1.f, 1.f,
+                0.f,                bottom, 1.f, 1.f
             };
             buffers[0].insert(buffers[0].end(), std::begin(vertices), std::end(vertices));
         }
@@ -238,12 +135,12 @@ void Text::ensureGeometryUpdate() const
             float bottom = top + std::floor(underlineThickness + 0.5f);
 
             float vertices[24] {
-                x,   top,    1.f, 1.f,
-                0.f, top,    1.f, 1.f,
-                0.f, bottom, 1.f, 1.f,
-                x,   top,    1.f, 1.f,
-                0.f, bottom, 1.f, 1.f,
-                x,   bottom, 1.f, 1.f
+                0.f, top,           1.f, 1.f,
+                lastExtraSpace - x, top,    1.f, 1.f,
+                lastExtraSpace - x, bottom, 1.f, 1.f,
+                0.f,                top,    1.f, 1.f,
+                lastExtraSpace - x, bottom, 1.f, 1.f,
+                0.f,                bottom, 1.f, 1.f
             };
             buffers[0].insert(buffers[0].end(), std::begin(vertices), std::end(vertices));
         }
@@ -251,7 +148,7 @@ void Text::ensureGeometryUpdate() const
         // Handle special characters
         if (currChar == U' ' || currChar == U'\t' || currChar == U'\n') {
             // Update the current bounds (min coodinates)
-            minX = std::min(minX, x);
+            minX = std::min(minX, -x);
             minY = std::min(minY, y);
 
             switch (currChar) {
@@ -261,7 +158,7 @@ void Text::ensureGeometryUpdate() const
             }
 
             // Update the current bounds (max coordinates)
-            maxX = std::max(maxX, x);
+            maxX = std::max(maxX, -x);
             maxY = std::max(maxY, y);
 
             // next glyph, no need to create a quad for whitespace
@@ -276,16 +173,40 @@ void Text::ensureGeometryUpdate() const
         float right  = glyph.left + glyph.width + 0.25f;
         float bottom = glyph.top + glyph.height + 0.25f;
 
-        float x1 = x + left;
-        float x2 = x + right;
+        x += glyph.advance;
+
+        float x1 = -x + left;
+        float x2 = -x + right;
         float y1 = y + top;
         float y2 = y + bottom;
+
+        lastExtraSpace = glyph.advance - right;
 
         if (glyph.texWidth != 0 && glyph.texHeight != 0) {
             float u1 = glyph.texLeft - 0.25f;
             float v1 = glyph.texTop - 0.25f;
             float u2 = glyph.texLeft + glyph.texWidth + 0.25f;
             float v2 = glyph.texTop + glyph.texHeight + 0.25f;
+
+            if (prevChar && isHarakat(currChar)) {
+                x -= glyph.advance;
+
+                const auto& prevGlyph = mFont->glyph(prevChar, mCharSize, bold);
+                auto xOffset = (prevGlyph.advance + glyph.width) / 2.f;
+                x1 += xOffset;
+                x2 += xOffset;
+
+                if (glyph.top >= 0) {
+                    auto offset = y + prevGlyph.height + prevGlyph.top + mCharSize / 20;
+                    y1 = offset;
+                    y2 = offset + glyph.height;
+                }
+                else {
+                    auto offset = y + prevGlyph.top - glyph.height - mCharSize / 20;
+                    y1 = offset;
+                    y2 = offset + glyph.height;
+                }
+            }
 
             // Add a quad for the current character
             float vertices[24] {
@@ -307,9 +228,6 @@ void Text::ensureGeometryUpdate() const
         maxX = std::max(maxX, x2 - italic * top);
         minY = std::min(minY, y1);
         maxY = std::max(maxY, y2);
-
-        // Advance to the next character
-        x += glyph.advance;
     }
 
     // If we're using the underlined style, add the last line
@@ -318,12 +236,12 @@ void Text::ensureGeometryUpdate() const
         float bottom = top + std::floor(underlineThickness + 0.5f);
 
         float vertices[24] {
-            x,   top,    1.f, 1.f,
-            0.f, top,    1.f, 1.f,
-            0.f, bottom, 1.f, 1.f,
-            x,   top,    1.f, 1.f,
-            0.f, bottom, 1.f, 1.f,
-            x,   bottom, 1.f, 1.f
+            0.f,                top,    1.f, 1.f,
+            lastExtraSpace - x, top,    1.f, 1.f,
+            lastExtraSpace - x, bottom, 1.f, 1.f,
+            0.f,                top,    1.f, 1.f,
+            lastExtraSpace - x, bottom, 1.f, 1.f,
+            0.f,                bottom, 1.f, 1.f
         };
         buffers[0].insert(buffers[0].end(), std::begin(vertices), std::end(vertices));
     }
@@ -334,12 +252,12 @@ void Text::ensureGeometryUpdate() const
         float bottom = top + std::floor(underlineThickness + 0.5f);
 
         float vertices[24] {
-            x,   top,    1.f, 1.f,
-            0.f, top,    1.f, 1.f,
-            0.f, bottom, 1.f, 1.f,
-            x,   top,    1.f, 1.f,
-            0.f, bottom, 1.f, 1.f,
-            x,   bottom, 1.f, 1.f
+            0.f,                top,    1.f, 1.f,
+            lastExtraSpace - x, top,    1.f, 1.f,
+            lastExtraSpace - x, bottom, 1.f, 1.f,
+            0.f,                top,    1.f, 1.f,
+            lastExtraSpace - x, bottom, 1.f, 1.f,
+            0.f,                bottom, 1.f, 1.f
         };
         buffers[0].insert(buffers[0].end(), std::begin(vertices), std::end(vertices));
     }

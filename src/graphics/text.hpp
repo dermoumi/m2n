@@ -48,20 +48,19 @@ public:
 
 public:
     Text() = default;
+    virtual ~Text() = default;
 
     void setString(const std::string& str);
     void setString(const std::u32string& str);
     void setFont(const Font& font);
     void setCharacterSize(uint32_t charSize);
     void setStyle(uint8_t style);
-    void setRightToLeft(bool rtl);
 
     const std::u32string& string() const;
     const std::string& utf8String() const;
     const Font* font() const;
     uint32_t characterSize() const;
     uint8_t style() const;
-    bool rightToLeft() const;
 
     void characterPosition(size_t index, float& x, float& y) const;
     void bounds(float& x, float& y, float& w, float& h) const;
@@ -69,8 +68,8 @@ public:
     const Arraybuffer* arraybuffer(uint32_t& vertexCount, uint32_t index) const;
     uint32_t* arraybufferIDs(uint32_t* count) const;
 
-private:
-    void ensureGeometryUpdate() const;
+protected:
+    virtual void ensureGeometryUpdate() const;
 
     struct VertexList
     {
@@ -82,7 +81,6 @@ private:
     const Font*    mFont {nullptr};
     uint32_t       mCharSize {30u};
     uint8_t        mStyle {Regular};
-    bool           mRightToLeft {false};
     mutable std::map<uint32_t, VertexList> mVertices;
     mutable std::vector<uint32_t> mBufferIDs;
     mutable float mBoundsX {0.f}, mBoundsY {0.f}, mBoundsW {0.f}, mBoundsH {0.f};

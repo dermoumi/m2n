@@ -181,7 +181,7 @@ function Renderer.init()
         uniform vec4 uColor;
         varying vec2 vTexCoords;
         void main() {
-            gl_FragColor = texture2D(uTexture, vTexCoords / uTexSize) * uColor;
+            gl_FragColor = texture2D(uTexture, vTexCoords / uTexSize) * uColor + vec4(0, 0, 0, 0.1);
         }
     ]])
     --

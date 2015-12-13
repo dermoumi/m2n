@@ -112,18 +112,18 @@ function SceneSubtitle:load()
         :setPosition(640, 360)
         :setOrigin(320, 180)
 
-    self.text = Text:new()
+    self.text = require('nx.rtltext'):new()
         :setCharacterSize(30)
         :setFont(GameFont)
         :setColor(0, 0, 0)
-        :setRightToLeft(true)
         :setStyle('underlined', 'strikethrough')
 
     local arabic = require('utils.arabic')
     local unicode = require('nx.unicode')
 
-    self.text:setString(arabic(unicode.utf8To32('الشمس Avenue BRAVO الشمس\n)صِفْ خَلْقَ خَوْدٍ كَمِثْلِ الشَّمْسِ إِذْ بَزَغَتْ(')))
+    self.text:setString(arabic(unicode.utf8To32('الشمس Avenue BRAVO الشمس\n)صِفْ خَلْقَ خَوْدٍ كَمِثْلِ الشَّمْسِ إِذْ \nبَزَغَتْ(')))
         :setPosition(640, 0)
+        -- :setString('Hello world!\nWRYYYY!!')
 
     local x, y, w, h = self.text:bounds()
     print(x, y, w, h)

@@ -26,6 +26,7 @@
 *///============================================================================
 #include "../config.hpp"
 #include "../graphics/text.hpp"
+#include "../graphics/rtltext.hpp"
 
 //----------------------------------------------------------
 // Declarations
@@ -37,7 +38,13 @@ using NxArraybuffer = Arraybuffer;
 //----------------------------------------------------------
 NX_EXPORT NxText* nxTextNew()
 {
-    return new NxText();
+    return new Text();
+}
+
+//----------------------------------------------------------
+NX_EXPORT NxText* nxRtlTextNew()
+{
+    return new RtlText();
 }
 
 //----------------------------------------------------------
@@ -74,12 +81,6 @@ NX_EXPORT void nxTextSetCharacterSize(NxText* text, uint32_t charSize)
 NX_EXPORT void nxTextSetStyle(NxText* text, uint8_t style)
 {
     text->setStyle(style);
-}
-
-//----------------------------------------------------------
-NX_EXPORT void nxTextSetRightToLeft(NxText* text, bool rtl)
-{
-    text->setRightToLeft(rtl);
 }
 
 //----------------------------------------------------------

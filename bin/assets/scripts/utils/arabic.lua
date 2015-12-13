@@ -466,7 +466,7 @@ local function reshapeWords(words, nospaces)
         for j, c in ipairs(word) do
             sentence[#sentence+1] = c
         end
-        if i ~= #words and not nospaces then
+        if i < #words and words[i+1][1] and not nospaces then
             sentence[#sentence+1] = 0x20
         end
     end
