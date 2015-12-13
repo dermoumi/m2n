@@ -83,6 +83,7 @@ float FontStack::kerning(uint32_t first, uint32_t second, uint32_t charSize) con
     // Make sure that both glyphs belong to the same font
     auto firstFontIndex  = (glyph(first, charSize, false).page >> 16) & 0xFFFFu;
     auto secondFontIndex = (glyph(second, charSize, false).page >> 16) & 0xFFFFu;
+    
     if (firstFontIndex == secondFontIndex) {
         return mFonts[firstFontIndex]->kerning(first, second, charSize);
     }

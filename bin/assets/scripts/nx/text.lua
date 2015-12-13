@@ -60,6 +60,14 @@ local Texture = require 'nx.texture'
 local bufCountPtr = ffi.new('uint32_t[1]')
 local vertCountPtr = ffi.new('uint32_t[1]')
 
+local toStyle = {
+    regular       = 0,
+    bold          = 1,
+    italic        = 2,
+    underlined    = 4,
+    strikethrough = 8
+}
+
 ------------------------------------------------------------
 function Text.static._defaultShader()
     return Renderer.defaultShader(1)
@@ -129,9 +137,21 @@ function Text:setCharacterSize(size)
 end
 
 ------------------------------------------------------------
-function Text:setStyle(style)
-    self._style = style
-    C.nxTextSetStyle(self._cdata, style)
+function Text:setStyle(style1, style2, ...)
+    self._style = {style1, style2, ...}
+
+    local styleCompound = 0
+
+    if not style2 then
+        styleCompound = toStyle[style1]
+    else
+        local bit = require 'bit'
+        for i, style in ipairs(self._style) do
+            styleCompound = bit.bor(styleCompound, toStyle[style] or 0)
+        end
+    end
+
+    C.nxTextSetStyle(self._cdata, styleCompound)
 
     return self
 end
@@ -173,7 +193,7 @@ end
 
 ------------------------------------------------------------
 function Text:style()
-    return self._style
+    return unpack(self._style)
 end
 
 ------------------------------------------------------------

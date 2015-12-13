@@ -117,23 +117,26 @@ function SceneSubtitle:load()
         :setFont(GameFont)
         :setColor(0, 0, 0)
         :setRightToLeft(true)
+        :setStyle('underlined', 'strikethrough')
 
     local arabic = require('utils.arabic')
     local unicode = require('nx.unicode')
+
     self.text:setString(arabic(unicode.utf8To32('الشمس Avenue BRAVO الشمس\n)صِفْ خَلْقَ خَوْدٍ كَمِثْلِ الشَّمْسِ إِذْ بَزَغَتْ(')))
         :setPosition(640, 0)
+
+    local x, y, w, h = self.text:bounds()
+    print(x, y, w, h)
+
     self.shape = Shape:new()
         :setTexture(self.texture)
-        :setIndexData(0, 1, 3, 6)
         :setVertexData('trianglestrip', true,
-            200, 200, 255, 0, 0, 255, 0, 0,
-            100, 300, 0, 255, 0, 255, 0, 1,
-            300, 300, 0, 0, 255, 255, 1, 0,
-            300, 300, 0, 0, 255, 255, 1, 0,
-            100, 300, 0, 255, 0, 255, 0, 1,
-            300, 300, 0, 0, 255, 255, 1, 0,
-            200, 400, 255, 255, 255, 255, 1, 1
+            640 + x,   y,   255, 255, 255, 255, 0, 0,
+            640 + x,   y+h, 255, 255, 255, 255, 0, 1,
+            640 + x+w, y,   255, 255, 255, 255, 1, 0,
+            640 + x+w, y+h, 255, 255, 255, 255, 1, 1
         )
+        :setColor(255, 255, 255, 60)
 
     self.touchTexts = {}
     self._processParent = true

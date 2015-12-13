@@ -199,7 +199,6 @@ uint32_t* Text::arraybufferIDs(uint32_t* count) const
 }
 
 //----------------------------------------------------------
-#include "../system/log.hpp"
 void Text::ensureGeometryUpdate() const
 {
     // If geometry is already up-to-date, do nothing
@@ -245,7 +244,7 @@ void Text::ensureGeometryUpdate() const
     float xFactor = mRightToLeft ? -1.f : 1.f;
 
     // Create create two triangles for each character
-    float minX = static_cast<float>(mCharSize);
+    float minX = 0.f;
     float minY = static_cast<float>(mCharSize);
     float maxX = 0.f;
     float maxY = 0.f;
@@ -268,13 +267,16 @@ void Text::ensureGeometryUpdate() const
             float top = std::floor(y + underlineOffset - (underlineThickness / 2) + 0.5f);
             float bottom = top + std::floor(underlineThickness + 0.5f);
 
+            float x1 = mRightToLeft ? 0.f : x;
+            float x2 = mRightToLeft ? -x : 0.f;
+
             float vertices[24] {
-                x,   top,    1.f, 1.f,
-                0.f, top,    1.f, 1.f,
-                0.f, bottom, 1.f, 1.f,
-                x,   top,    1.f, 1.f,
-                0.f, bottom, 1.f, 1.f,
-                x,   bottom, 1.f, 1.f
+                x1, top,    1.f, 1.f,
+                x2, top,    1.f, 1.f,
+                x2, bottom, 1.f, 1.f,
+                x1, top,    1.f, 1.f,
+                x2, bottom, 1.f, 1.f,
+                x1, bottom, 1.f, 1.f
             };
             buffers[0].insert(buffers[0].end(), std::begin(vertices), std::end(vertices));
         }
@@ -285,13 +287,16 @@ void Text::ensureGeometryUpdate() const
             float top = std::floor(y + strikeThroughOffset - (underlineThickness / 2) + 0.5f);
             float bottom = top + std::floor(underlineThickness + 0.5f);
 
+            float x1 = mRightToLeft ? 0.f : x;
+            float x2 = mRightToLeft ? -x : 0.f;
+
             float vertices[24] {
-                x,   top,    1.f, 1.f,
-                0.f, top,    1.f, 1.f,
-                0.f, bottom, 1.f, 1.f,
-                x,   top,    1.f, 1.f,
-                0.f, bottom, 1.f, 1.f,
-                x,   bottom, 1.f, 1.f
+                x1, top,    1.f, 1.f,
+                x2, top,    1.f, 1.f,
+                x2, bottom, 1.f, 1.f,
+                x1, top,    1.f, 1.f,
+                x2, bottom, 1.f, 1.f,
+                x1, bottom, 1.f, 1.f
             };
             buffers[0].insert(buffers[0].end(), std::begin(vertices), std::end(vertices));
         }
@@ -309,7 +314,12 @@ void Text::ensureGeometryUpdate() const
             }
 
             // Update the current bounds (max coordinates)
-            maxX = std::max(maxX, x);
+            if (mRightToLeft) {
+                minX = std::max(minX, -x);
+            }
+            else {
+                maxX = std::max(maxX, x);
+            }
             maxY = std::max(maxY, y);
 
             // next glyph, no need to create a quad for whitespace
@@ -324,16 +334,16 @@ void Text::ensureGeometryUpdate() const
         float right  = glyph.left + glyph.width + 0.25f;
         float bottom = glyph.top + glyph.height + 0.25f;
 
+        float x1 = x + left;
+        float x2 = x + right;
+        float y1 = y + top;
+        float y2 = y + bottom;
+
         if (glyph.texWidth != 0 && glyph.texHeight != 0) {
             float u1 = glyph.texLeft - 0.25f;
             float v1 = glyph.texTop - 0.25f;
             float u2 = glyph.texLeft + glyph.texWidth + 0.25f;
             float v2 = glyph.texTop + glyph.texHeight + 0.25f;
-
-            float x1 = x + left;
-            float x2 = x + right;
-            float y1 = y + top;
-            float y2 = y + bottom;
 
             if (mRightToLeft) {
                 x += glyph.advance;
@@ -378,10 +388,16 @@ void Text::ensureGeometryUpdate() const
         }
 
         // Update the current bounds
-        minX = std::min(minX, x + left - italic * bottom);
-        maxX = std::max(maxX, x + right - italic * top);
-        minY = std::min(minY, y + top);
-        maxY = std::max(maxY, y + bottom);
+        if (mRightToLeft) {
+            minX = std::min(minX, x1 - italic * bottom);
+            maxX = std::max(maxX, x2 - italic * top);
+        }
+        else {
+            minX = std::min(minX, x1 - italic * bottom);
+            maxX = std::max(maxX, x2 - italic * top);
+        }
+        minY = std::min(minY, y1);
+        maxY = std::max(maxY, y2);
 
         // Advance to the next character
         if (!mRightToLeft) x += glyph.advance;
@@ -392,13 +408,16 @@ void Text::ensureGeometryUpdate() const
         float top = std::floor(y + underlineOffset - (underlineThickness / 2) + 0.5f);
         float bottom = top + std::floor(underlineThickness + 0.5f);
 
+        float x1 = mRightToLeft ? 0.f : maxX;
+        float x2 = mRightToLeft ? minX : 0.f;
+
         float vertices[24] {
-            x,   top,    1.f, 1.f,
-            0.f, top,    1.f, 1.f,
-            0.f, bottom, 1.f, 1.f,
-            x,   top,    1.f, 1.f,
-            0.f, bottom, 1.f, 1.f,
-            x,   bottom, 1.f, 1.f
+            x1, top,    1.f, 1.f,
+            x2, top,    1.f, 1.f,
+            x2, bottom, 1.f, 1.f,
+            x1, top,    1.f, 1.f,
+            x2, bottom, 1.f, 1.f,
+            x1, bottom, 1.f, 1.f
         };
         buffers[0].insert(buffers[0].end(), std::begin(vertices), std::end(vertices));
     }
@@ -408,13 +427,16 @@ void Text::ensureGeometryUpdate() const
         float top = std::floor(y + strikeThroughOffset - (underlineThickness / 2) + 0.5f);
         float bottom = top + std::floor(underlineThickness + 0.5f);
 
+        float x1 = mRightToLeft ? 0.f : maxX;
+        float x2 = mRightToLeft ? minX : 0.f;
+
         float vertices[24] {
-            x,   top,    1.f, 1.f,
-            0.f, top,    1.f, 1.f,
-            0.f, bottom, 1.f, 1.f,
-            x,   top,    1.f, 1.f,
-            0.f, bottom, 1.f, 1.f,
-            x,   bottom, 1.f, 1.f
+            x1, top,    1.f, 1.f,
+            x2, top,    1.f, 1.f,
+            x2, bottom, 1.f, 1.f,
+            x1, top,    1.f, 1.f,
+            x2, bottom, 1.f, 1.f,
+            x1, bottom, 1.f, 1.f
         };
         buffers[0].insert(buffers[0].end(), std::begin(vertices), std::end(vertices));
     }
