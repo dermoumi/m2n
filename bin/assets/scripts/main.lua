@@ -25,6 +25,17 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
+local Unicode = require 'nx.unicode'
+
+local utf8Str = 'Héllô wörld "真島 ヒロ" "ِﺱْﻣَّﺸﻟﺍ ﺎﺒﺣﺮﻣ'
+print(utf8Str)
+local utf32Str = Unicode.utf8To32(utf8Str)
+for i, v in ipairs(utf32Str) do
+    print(v)
+end
+local newUtf8Str = Unicode.utf32To8(utf32Str)
+print(newUtf8Str)
+
 local Nx       = require 'nx'
 local Log      = require 'nx.log'
 local Window   = require 'nx.window'

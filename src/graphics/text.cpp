@@ -25,68 +25,14 @@
     For more information, please refer to <http://unlicense.org>
 *///============================================================================
 #include "text.hpp"
+#include "../system/unicode.hpp"
 
 #include <cmath>
 
 //----------------------------------------------------------
-static const char* decodeUtf8(const char* begin, const char* end, uint32_t& output, uint32_t rep)
-{
-    static const int trailing[64] {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 4, 5
-    };
-
-    static const uint32_t offsets[6] {
-        0x00000000, 0x00003080, 0x000E2080, 0x03C82080, 0xFA082080, 0x82082080
-    };
-
-    // decode the character
-    int trailingBytes = trailing[static_cast<uint8_t>(*begin) / 4];
-
-    if (begin + trailingBytes < end) {
-        output = 0;
-        switch(trailingBytes) {
-            case 5: output += static_cast<uint8_t>(*begin++); output <<= 6;
-            case 4: output += static_cast<uint8_t>(*begin++); output <<= 6;
-            case 3: output += static_cast<uint8_t>(*begin++); output <<= 6;
-            case 2: output += static_cast<uint8_t>(*begin++); output <<= 6;
-            case 1: output += static_cast<uint8_t>(*begin++); output <<= 6;
-            case 0: output += static_cast<uint8_t>(*begin++);
-        }
-        output -= offsets[trailingBytes];
-    }
-    else {
-        // Incomplete character
-        begin = end;
-        output = rep;
-    }
-
-    return begin;
-}
-
-//----------------------------------------------------------
-static std::u32string utf8ToUtf32(const std::string& str)
-{
-    std::u32string output;
-    const char* begin = &str[0];
-    const char* end = &str[0] + str.size();
-
-    while (begin < end)
-    {
-        uint32_t codepoint;
-        begin = decodeUtf8(begin, end, codepoint, U'?');
-        output += codepoint;
-    }
-
-    return output;
-}
-
-//----------------------------------------------------------
 void Text::setString(const std::string& str)
 {
-    setString(utf8ToUtf32(str));
+    setString(Unicode::utf8To32(str));
 }
 
 //----------------------------------------------------------
