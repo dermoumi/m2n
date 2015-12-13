@@ -38,6 +38,7 @@ ffi.cdef [[
     NxText* nxTextNew();
     void nxTextRelease(NxText*);
     void nxTextSetString(NxText*, const char*);
+    void nxTextSetU32String(NxText*, const uint32_t*);
     void nxTextSetFont(NxText*, const void*);
     void nxTextSetCharacterSize(NxText*, uint32_t);
     void nxTextSetStyle(NxText*, uint8_t);
@@ -90,9 +91,22 @@ end
 
 ------------------------------------------------------------
 function Text:setString(str)
-    if self._string == str then return self end
-    self._string = str
-    C.nxTextSetString(self._cdata, str)
+    if type(str) == 'string' then
+        if self._string == str then return self end
+        self._string = str
+        self._u32string = nil
+        C.nxTextSetString(self._cdata, str)
+    else
+        -- Make sure it ends with a 0
+        if str[#str] ~= 0 then str[#str+1] = 0 end
+
+        if self._u32string == str then return self end
+        self._u32string = str
+        self._string = nil
+
+        local strPtr = ffi.new('uint32_t[?]', #str, str)
+        C.nxTextSetU32String(self._cdata, strPtr)
+    end
 
     return self
 end
@@ -122,8 +136,20 @@ function Text:setStyle(style)
 end
 
 ------------------------------------------------------------
-function Text:string()
-    return self._string
+function Text:string(u32)
+    if not self._string and not self._u32string then return '' end
+
+    if u32 then
+        if not self._u32string then
+            self._u32string = require('nx.unicode').utf8To32(self._str)
+        end
+        return self._u32string
+    else
+        if not self._string then
+            self._string = require('nx.unicode').utf32To8(self._str)
+        end
+        return self._string
+    end
 end
 
 ------------------------------------------------------------

@@ -53,6 +53,12 @@ NX_EXPORT void nxTextSetString(NxText* text, const char* str)
 }
 
 //----------------------------------------------------------
+NX_EXPORT void nxTextSetU32StrinG(NxText* text, const uint32_t* str)
+{
+    text->setString(reinterpret_cast<const char32_t*>(str));
+}
+
+//----------------------------------------------------------
 NX_EXPORT void nxTextSetFont(NxText* text, const NxFont* font)
 {
     text->setFont(*font);

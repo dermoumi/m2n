@@ -25,16 +25,34 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-local Unicode = require 'nx.unicode'
+-- do
+--     local Unicode = require 'nx.unicode'
+--     local Arabic = require 'utils.arabic'
 
-local utf8Str = 'Héllô wörld "真島 ヒロ" "ِﺱْﻣَّﺸﻟﺍ ﺎﺒﺣﺮﻣ'
-print(utf8Str)
-local utf32Str = Unicode.utf8To32(utf8Str)
-for i, v in ipairs(utf32Str) do
-    print(v)
-end
-local newUtf8Str = Unicode.utf32To8(utf32Str)
-print(newUtf8Str)
+--     local utf8Str = 'الشAlphaمس\nالشمس (الشمس) الإيقاع الأمان الشمس )عمودية('
+--     print(utf8Str)
+--     local utf32Str = Unicode.utf8To32(utf8Str)
+--     utf32Str = Arabic(utf32Str)
+--     -- utf32Str[#utf32Str+1] = 0x0622
+--     -- utf32Str[#utf32Str+1] = 0xFEF6
+--     -- utf32Str[#utf32Str+1] = 0xFEF5
+--     -- utf32Str[#utf32Str+1] = 0x0623
+--     -- utf32Str[#utf32Str+1] = 0xFEF8
+--     -- utf32Str[#utf32Str+1] = 0xFEF7
+--     -- utf32Str[#utf32Str+1] = 0x0627
+--     -- utf32Str[#utf32Str+1] = 0xFEFC
+--     -- utf32Str[#utf32Str+1] = 0xFEFB
+--     -- utf32Str[#utf32Str+1] = 0x0625
+--     -- utf32Str[#utf32Str+1] = 0xFEFA
+--     -- utf32Str[#utf32Str+1] = 0xFEF9
+--     -- for i, v in ipairs(utf32Str) do
+--     --     print(i, tostring(v, 16))
+--     -- end
+--     local newUtf8Str = Unicode.utf32To8(utf32Str)
+--     print(newUtf8Str)
+
+--     return 0
+-- end
 
 local Nx       = require 'nx'
 local Log      = require 'nx.log'
