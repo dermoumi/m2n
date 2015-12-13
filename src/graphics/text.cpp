@@ -350,23 +350,14 @@ void Text::ensureGeometryUpdate() const
                     x2 += xOffset;
 
                     if (glyph.top >= 0) {
-                        auto offset = y + prevGlyph.height + prevGlyph.top;
+                        auto offset = y + prevGlyph.height + prevGlyph.top + mCharSize / 20;
                         y1 = offset;
                         y2 = offset + glyph.height;
                     }
                     else {
-                        auto offset = y + prevGlyph.top - glyph.height;
+                        auto offset = y + prevGlyph.top - glyph.height - mCharSize / 20;
                         y1 = offset;
                         y2 = offset + glyph.height;
-                    }
-
-                    if (currChar == 0x0651 && isHarakat(prevChar)) {
-                        y1 += prevGlyph.height;
-                        y2 += prevGlyph.height;
-                    }
-                    else if (prevChar == 0x651) {
-                        y1 -= prevGlyph.height;
-                        y2 -= prevGlyph.height;
                     }
                 }
             }

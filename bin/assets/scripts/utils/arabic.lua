@@ -26,6 +26,15 @@ local LamAlefGlyphs = {
     { 0x0625, 0xFEFA, 0xFEF9 }
 }
 
+local ShaddaHarakatGlyphs = {
+    [ 0x064C ] = 0xFC5E, -- Dammatan + Shadda
+    [ 0x064D ] = 0xFC5F, -- Kasratan + Shadda
+    [ 0x064E ] = 0xFC60, -- Fatha + Shadda
+    [ 0x065F ] = 0xFC61, -- Damma + Shadda
+    [ 0x0650 ] = 0xFC62, -- Kasra + Shadda
+    [ 0x0670 ] = 0xFC63, -- Superscript Alef + Shadda
+}
+
 local Harakat = {
     [ 0x0600 ] = true, [ 0x0601 ] = true, [ 0x0602 ] = true, [ 0x0603 ] = true,
     [ 0x0606 ] = true, [ 0x0607 ] = true, [ 0x0608 ] = true, [ 0x0609 ] = true,
@@ -189,6 +198,30 @@ local function getLamAlef(candidateAlef, candidateLam, isEndOfWord)
     return reshapedAlefLam
 end
 
+local function replaceShadda(unshapedWord)
+    local word = {}
+    local skipNext = false
+
+    for i, c in ipairs(unshapedWord) do
+        if skipNext then
+            skipNext = false
+        elseif c == 0x651 then
+            if ShaddaHarakatGlyphs[unshapedWord[i-1]] then
+                word[#word] = ShaddaHarakatGlyphs[unshapedWord[i-1]]
+            elseif ShaddaHarakatGlyphs[unshapedWord[i+1]] then
+                word[#word+1] = ShaddaHarakatGlyphs[unshapedWord[i+1]]
+                skipNext = true
+            else
+                word[#word+1] = c
+            end
+        else
+            word[#word+1] = c
+        end
+    end
+
+    return word
+end
+
 local function replaceLamAlef(unshapedWord)
     -- Copy letters
     local letters = {}
@@ -308,6 +341,7 @@ end
 
 local function getReshapedWord(word)
     word = replaceLamAlef(word)
+    word = replaceShadda(word)
 
     local decomposed, result = decomposeWord(word), {}
     if decomposed.letters[1] then
