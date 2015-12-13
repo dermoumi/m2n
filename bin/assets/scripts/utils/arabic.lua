@@ -380,28 +380,50 @@ local function getWordsFromMixedWord(word)
     return words
 end
 
-local function reshapeSentence(sentence)
-    if not sentence[1] then return {} end
-    
-    local words = getWords(sentence)
-    
+local function reverseWord(word)
+    local reversed = {}
+    for i = #word, 1, -1 do
+        reversed[#reversed+1] = word[i]
+    end
+    return reversed
+end
+
+local function reshapeWords(words, nospaces)
+    local nonArabicPositions = {}
+
     for i, word in ipairs(words) do
         if hasArabicLetters(word) then
+            -- Reverse word ordering, mixed words don't have to reverse order
+            if #nonArabicPositions > 0 and not nospaces then
+                for i = 1, #nonArabicPositions / 2 do
+                    local pos = nonArabicPositions[i]
+                    local oppositePos = nonArabicPositions[#nonArabicPositions-i+1]
+                    local temp = words[pos]
+                    words[pos] = words[oppositePos]
+                    words[oppositePos] = temp
+                end
+                nonArabicPositions = {}
+            end
+
             if isArabicWord(word) then
                 words[i] = getReshapedWord(word)
             else
-                local mixedWords = getWordsFromMixedWord(word)
-                for j, subWord in ipairs(mixedWords) do
-                    mixedWords[j] = getReshapedWord(subWord)
-                end
-
-                words[i] = {}
-                for j, subWord in ipairs(mixedWords) do
-                    for k, c in ipairs(subWord) do
-                        words[i][#(words[i])+1] = c
-                    end
-                end
+                words[i] = reshapeWords(getWordsFromMixedWord(word), true)
             end
+        else
+            words[i] = reverseWord(word)
+            nonArabicPositions[#nonArabicPositions+1] = i
+        end
+    end
+
+    if #nonArabicPositions > 0 and not nospaces then
+        for i = 1, #nonArabicPositions / 2 do
+            local pos = nonArabicPositions[i]
+            local oppositePos = nonArabicPositions[#nonArabicPositions-i+1]
+
+            local temp = words[pos]
+            words[pos] = words[oppositePos]
+            words[oppositePos] = temp
         end
     end
 
@@ -410,12 +432,18 @@ local function reshapeSentence(sentence)
         for j, c in ipairs(word) do
             sentence[#sentence+1] = c
         end
-        if i ~= #words then
+        if i ~= #words and not nospaces then
             sentence[#sentence+1] = 0x20
         end
     end
 
     return sentence
+end
+
+local function reshapeSentence(sentence)
+    if not sentence[1] then return {} end
+    
+    return reshapeWords(getWords(sentence))
 end
 
 local function reshape(str)

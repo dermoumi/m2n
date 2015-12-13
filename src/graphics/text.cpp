@@ -199,6 +199,7 @@ uint32_t* Text::arraybufferIDs(uint32_t* count) const
 }
 
 //----------------------------------------------------------
+#include "../system/log.hpp"
 void Text::ensureGeometryUpdate() const
 {
     // If geometry is already up-to-date, do nothing
@@ -248,10 +249,11 @@ void Text::ensureGeometryUpdate() const
     float minY = static_cast<float>(mCharSize);
     float maxX = 0.f;
     float maxY = 0.f;
-    uint32_t prevChar = 0u;
+    uint32_t currChar = 0u, prevChar;
 
     for (size_t i = 0u; i < mString.size(); ++i) {
-        uint32_t currChar = static_cast<uint32_t>(mString[i]);
+        prevChar = currChar;
+        currChar = static_cast<uint32_t>(mString[i]);
 
         // Apply the kerning offset
         if (mRightToLeft) {
@@ -334,15 +336,18 @@ void Text::ensureGeometryUpdate() const
             float y2 = y + bottom;
 
             if (mRightToLeft) {
-                x1 = x * xFactor - right + left;
-                x2 = x * xFactor;
+                x += glyph.advance;
+
+                x1 = x * xFactor + left;
+                x2 = x * xFactor + right;
+
                 if (prevChar && isHarakat(currChar)) {
+                    x -= glyph.advance;
+
                     const auto& prevGlyph = mFont->glyph(prevChar, mCharSize, bold);
                     auto xOffset = (prevGlyph.advance + glyph.width) / 2.f;
                     x1 += xOffset;
                     x2 += xOffset;
-
-                    x -= glyph.advance;
 
                     if (glyph.top >= 0) {
                         auto offset = y + prevGlyph.height + prevGlyph.top;
@@ -388,9 +393,7 @@ void Text::ensureGeometryUpdate() const
         maxY = std::max(maxY, y + bottom);
 
         // Advance to the next character
-        x += glyph.advance;
-
-        prevChar = currChar;
+        if (!mRightToLeft) x += glyph.advance;
     }
 
     // If we're using the underlined style, add the last line
