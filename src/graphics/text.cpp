@@ -231,9 +231,9 @@ void Text::ensureGeometryUpdate() const
     // We use the center point of the lowercase 'x' glyph as thee reference
     // We reuse teh underline thickness as the thickness of the strike through as well
     auto& xGlyph = mFont->glyph(U'x', mCharSize, bold);
-    float xBoundsX {xGlyph.left}, xBoundsH {xGlyph.height};
+    float xBoundsY {xGlyph.top}, xBoundsH {xGlyph.height};
 
-    float strikeThroughOffset = xBoundsX + xBoundsH / 2.f;
+    float strikeThroughOffset = xBoundsY + xBoundsH / 2.f;
 
     // Precompute the variables needed by the algorithm
     float hspace = static_cast<float>(mFont->glyph(U' ', mCharSize, bold).advance);
