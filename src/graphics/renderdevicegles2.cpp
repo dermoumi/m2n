@@ -213,7 +213,7 @@ bool RenderDeviceGLES2::commitStates(uint32_t filter)
 
         // Bind textures and set sampler state
         if (mask & Textures) {
-            for (uint32_t i = 0; i < mMaxTextureUnits; ++i) {
+            for (int i = 0; i < mMaxTextureUnits; ++i) {
                 glActiveTexture(GL_TEXTURE0 + i);
                 auto& texSlot = mTexSlots[i];
 
@@ -789,8 +789,20 @@ void RenderDeviceGLES2::beginRendering()
 {
     // Get the currently bound frame buffer object. 
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &mDefaultFBO);
+    
+    mCurVertexLayout = 1;                     mNewVertexLayout = 0;
+    mCurIndexBuffer = 1;                      mNewIndexBuffer = 0;
+    mCurRasterState.hash = 0xFFFFFFFFu;       mNewRasterState.hash = 0u;
+    mCurBlendState.hash = 0xFFFFFFFFu;        mNewBlendState.hash = 0u;
+    mCurDepthStencilState.hash = 0xFFFFFFFFu; mCurDepthStencilState.hash = 0u;
 
-    resetStates();
+    setColorWriteMask(true);
+    mVertexBufUpdated = true;
+    commitStates();
+
+    // Bind buffers
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, mDefaultFBO);
 }
 
 //----------------------------------------------------------
@@ -1060,9 +1072,10 @@ uint32_t RenderDeviceGLES2::getRenderBufferTexture(uint32_t rbObj, uint32_t bufI
 {
     auto& rb = mRenderBuffers.getRef(rbObj);
 
-    if (bufIndex < mMaxColBuffers) return rb.colTexs[bufIndex];
-    else if (bufIndex == 32)       return rb.depthTex;
-    else return 0;
+    if (bufIndex < static_cast<uint32_t>(mMaxColBuffers)) return rb.colTexs[bufIndex];
+    if (bufIndex == 32) return rb.depthTex;
+    
+    return 0;
 }
 
 //----------------------------------------------------------

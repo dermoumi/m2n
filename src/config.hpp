@@ -78,9 +78,10 @@
     #define NX_IMPORT __declspec(dllimport)
     #define NX_HIDDEN
     
-    // Turn off annoying C4251 warning on Visual C++ compilers
+    // Turn off annoying C4251 and C4996 warnings on Visual C++ compilers
     #ifdef _MSC_VER
         #pragma warning(disable: 4251)
+        #pragma warning(disable: 4996)
     #endif
 
 #elif defined(NX_SYSTEM_ANDROID)

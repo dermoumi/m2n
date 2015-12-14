@@ -15,7 +15,7 @@ LOCAL_SRC_FILES := $(subst ${LOCAL_PATH}/,, \
     $(wildcard ${SRC_PATH}/*.cpp) \
     $(wildcard ${SRC_PATH}/*/*.cpp))
 
-LOCAL_CFLAGS := -std=c++11 -DNX_OPENGL_ES -DGL_GLEXT_PROTOTYPES
+LOCAL_CFLAGS := -std=c++11 -Wall -DNX_OPENGL_ES -DGL_GLEXT_PROTOTYPES
 LOCAL_LDFLAGS := ${LOCAL_LDFLAGS} -export-dynamic
 LOCAL_STATIC_LIBRARIES := SDL2_static SoLoud freetype2-static PhysFS libluajit
 LOCAL_LDLIBS := -ldl -llog -lGLESv2

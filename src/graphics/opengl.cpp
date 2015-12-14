@@ -209,7 +209,6 @@ PFNGLGETQUERYOBJECTUI64VPROC glGetQueryObjectui64v = 0x0;
 //----------------------------------------------------------
 // Local
 //----------------------------------------------------------
-#pragma warning(disable : 4996)
 namespace
 {
     NX_HIDDEN bool isExtensionSupported(const std::string& extName)
