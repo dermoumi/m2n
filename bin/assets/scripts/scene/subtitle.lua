@@ -119,11 +119,10 @@ function SceneSubtitle:load()
         :setStyle('underlined', 'italic')
 
     local arabic = require('utils.arabic')
-    local unicode = require('nx.unicode')
 
-    local utf32str = arabic(unicode.utf8To32('الشمس Avenue BRAVO الشمس\n)صِفْ خَلْقَ خَوْدٍ كَمِثْلِ الشَّمْسِ إِذْ \nبَزَغَتْ('))
+    local str = arabic('الشمس Avenue BRAVO الشمس\n)صِفْ خَلْقَ خَوْدٍ كَمِثْلِ الشَّمْسِ إِذْ \nبَزَغَتْ(')
 
-    self.text:setString(utf32str)
+    self.text:setString(str)
         :setPosition(640, 0)
         -- :setString('Hello world!\nWRYYYY!!')
 

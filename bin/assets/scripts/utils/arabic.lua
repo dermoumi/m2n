@@ -480,7 +480,11 @@ local function reshapeSentence(sentence)
     return reshapeWords(getWords(sentence))
 end
 
-local function reshape(str)
+local function reshape(str, utf8)
+    if type(str) == 'string' then
+        str = require('nx.unicode').utf8To32(str)
+    end
+
     if not str[1] then return {} end
 
     local lines = {{}}
@@ -513,7 +517,7 @@ local function reshape(str)
         end
     end
 
-    return str
+    return utf8 and require('nx.unicode').utf32To8(str) or str
 end
 
 return reshape
