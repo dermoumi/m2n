@@ -116,7 +116,7 @@ function SceneSubtitle:load()
         :setCharacterSize(30)
         :setFont(GameFont)
         :setColor(0, 0, 0)
-        :setStyle('underlined', 'strikethrough')
+        :setStyle('underlined', 'italic')
 
     local arabic = require('utils.arabic')
     local unicode = require('nx.unicode')
@@ -127,10 +127,7 @@ function SceneSubtitle:load()
         :setPosition(640, 0)
         -- :setString('Hello world!\nWRYYYY!!')
 
-    print('"' .. unicode.utf32To8(utf32str) .. '"')
-
     local x, y, w, h = self.text:bounds()
-    print(x, y, w, h)
 
     self.shape = Shape:new()
         :setTexture(self.texture)

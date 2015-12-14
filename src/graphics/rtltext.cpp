@@ -78,7 +78,7 @@ void RtlText::ensureGeometryUpdate() const
     bool bold                = (mStyle & Bold) != 0;
     bool underlined          = (mStyle & Underlined) != 0;
     bool strikeThrough       = (mStyle & StrikeThrough) != 0;
-    float italic             = (mStyle & Italic) ? 0.208f : 0.f; // 12 degrees
+    float italic             = (mStyle & Italic) ? -0.104f : 0.f; // 6 degrees
     float underlineOffset    = mFont->underlinePosition(mCharSize);
     float underlineThickness = mFont->underlineThickness(mCharSize);
 
