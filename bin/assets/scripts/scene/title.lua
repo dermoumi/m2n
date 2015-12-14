@@ -74,18 +74,30 @@ function SceneTitle:load()
         Log.info(i .. ': ' .. tostring(v))
     end
 
-    self.camera = require('nx.camera2d')
+    self.camera = require('nx.camera2d'):new()
 
-    Scene.push('scene.subtitle')
+    -- Scene.push('scene.subtitle')
+
+    self.text = require('nx.text'):new()
+        :setFont(require('game.font'))
+        :setCharacterSize(14)
+        :setColor(255, 255, 255)
+        :setPosition(10, 10)
+        :setString('Current FPS: ')
+
+    self:performTransition(self.camera)
+end
+
+------------------------------------------------------------
+function SceneTitle:update(dt)
+    self.text:setString('Current FPS: ' .. require('nx.window').currentFPS())
 end
 
 ------------------------------------------------------------
 function SceneTitle:render()
-    if Mouse.isButtonDown('left') then
-        self.camera:clear(128, 255, 0)
-    else
-        self.camera:clear(255, 128, 0)
-    end
+    self.camera:clear(0, 0, 0)
+
+    self.camera:draw(self.text)
 end
 
 ------------------------------------------------------------

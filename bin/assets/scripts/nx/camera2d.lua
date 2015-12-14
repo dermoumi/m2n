@@ -180,14 +180,8 @@ end
 function Camera2D:draw(drawable, state)
     self:apply()
 
-    state = state or require('nx.entity2d').State:new()
-    if state:matrix() then
-        state:matrix():combine(self:matrix())
-    else
-        state._transMatrix = self:matrix()
-    end
-
-    drawable:_draw(self, state:clone())
+    state = state and state:clone() or require('nx.entity2d').State:new()
+    drawable:_draw(self, state)
 
     return self
 end

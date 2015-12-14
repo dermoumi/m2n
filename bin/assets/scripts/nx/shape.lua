@@ -148,6 +148,7 @@ function Shape:_render(camera, state)
 
         local shader = self._shader or Shape._defaultShader(self._hasColor)
         shader:bind()
+        shader:setUniform('uProjMat', camera:matrix())
         shader:setUniform('uTransMat', state:matrix())
         shader:setUniform('uColor', state:color(true))
         shader:setUniform('uTexSize', 1, 1)

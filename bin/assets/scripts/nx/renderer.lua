@@ -94,6 +94,7 @@ local Renderer = {}
 ------------------------------------------------------------
 local vertexLayouts = {}
 local defaultShaders = {}
+local identityMatrix = require('nx.matrix'):new()
 local defaultTexture, vbFsQuad, caps
 
 local toFillMode = {
@@ -170,10 +171,11 @@ function Renderer.init()
         attribute vec2 aPosition;
         attribute vec2 aTexCoords;
         uniform mat4 uTransMat;
+        uniform mat4 uProjMat;
         varying vec2 vTexCoords;
         void main() {
             vTexCoords  = aTexCoords;
-            gl_Position = uTransMat * vec4(aPosition, 0.0, 1.0);
+            gl_Position = uProjMat * uTransMat * vec4(aPosition, 0.0, 1.0);
         }
     ]], [[
         uniform sampler2D uTexture;
@@ -190,12 +192,13 @@ function Renderer.init()
         attribute vec4 aColor;
         attribute vec2 aTexCoords;
         uniform mat4 uTransMat;
+        uniform mat4 uProjMat;
         varying vec2 vTexCoords;
         varying vec4 vColor;
         void main() {
             vTexCoords  = aTexCoords;
             vColor      = aColor;
-            gl_Position = uTransMat * vec4(aPosition, 0.0, 1.0);
+            gl_Position = uProjMat * uTransMat * vec4(aPosition, 0.0, 1.0);
         }
     ]], [[
         uniform sampler2D uTexture;
@@ -299,7 +302,8 @@ function Renderer.drawFsQuad(texture, width, height)
 
     local shader = defaultShaders[1]
     shader:bind()
-    shader:setUniform('uTransMat', require('nx.matrix'):new())
+    shader:setUniform('uProjMat', identityMatrix)
+    shader:setUniform('uTransMat', identityMatrix)
     shader:setUniform('uColor', 1, 1, 1, 1)
     shader:setUniform('uTexSize', width, height)
     shader:setSampler('uTexture', 0)
@@ -319,7 +323,8 @@ function Renderer.fillFsQuad(r, g, b, a, blendMode)
 
     local shader = defaultShaders[1]
     shader:bind()
-    shader:setUniform('uTransMat', require('nx.matrix'):new())
+    shader:setUniform('uProjMat', identityMatrix)
+    shader:setUniform('uTransMat', identityMatrix)
     shader:setUniform('uColor', (r or 0)/255, (g or 0)/255, (b or 0)/255, (a or 255)/255)
     shader:setUniform('uTexSize', 1, 1)
     shader:setSampler('uTexture', 0)

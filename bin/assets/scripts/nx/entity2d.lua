@@ -47,7 +47,7 @@ local toFactor = {
 
 ------------------------------------------------------------
 function State:initialize(transMatrix, r, g, b, a, blendSrc, blendDst)
-    self._transMatrix = transMatrix
+    self._transMatrix = transMatrix or Matrix:new()
     self._colR = r or 255
     self._colG = g or 255
     self._colB = b or 255
@@ -63,6 +63,11 @@ function State:clone()
         self._corR, self._colG, self._colB, self._colA,
         self._blendSrc, self._blendDst
     )
+end
+
+------------------------------------------------------------
+function State:combineMatrix(mat)
+    self._transMatrix:combine(mat)
 end
 
 ------------------------------------------------------------
@@ -197,7 +202,7 @@ end
 
 ------------------------------------------------------------
 function Entity2D:_draw(camera, state)
-    state:matrix():combine(self:matrix())
+    state:combineMatrix(self:matrix())
     state:combineColor(self:color())
 
     self:_render(camera, state)

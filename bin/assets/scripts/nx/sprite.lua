@@ -169,6 +169,7 @@ function Sprite:_render(camera, state)
 
         local shader = self._shader or Sprite._defaultShader()
         shader:bind()
+        shader:setUniform('uProjMat', camera:matrix())
         shader:setUniform('uTransMat', state:matrix())
         shader:setUniform('uColor', state:color(true))
         shader:setUniform('uTexSize', texW, texH)

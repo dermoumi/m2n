@@ -208,6 +208,7 @@ function Text:_render(camera, state)
     
         local shader = self._shader or Text._defaultShader()
         shader:bind()
+        shader:setUniform('uProjMat', camera:matrix())
         shader:setUniform('uTransMat', state:matrix())
         shader:setUniform('uColor', state:color(true))
         shader:setSampler('uTexture', 0)

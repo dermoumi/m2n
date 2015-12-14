@@ -25,35 +25,6 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
--- do
---     local Unicode = require 'nx.unicode'
---     local Arabic = require 'utils.arabic'
-
---     local utf8Str = 'الشAlphaمس\nالشمس (الشمس) الإيقاع الأمان الشمس )عمودية('
---     print(utf8Str)
---     local utf32Str = Unicode.utf8To32(utf8Str)
---     utf32Str = Arabic(utf32Str)
---     -- utf32Str[#utf32Str+1] = 0x0622
---     -- utf32Str[#utf32Str+1] = 0xFEF6
---     -- utf32Str[#utf32Str+1] = 0xFEF5
---     -- utf32Str[#utf32Str+1] = 0x0623
---     -- utf32Str[#utf32Str+1] = 0xFEF8
---     -- utf32Str[#utf32Str+1] = 0xFEF7
---     -- utf32Str[#utf32Str+1] = 0x0627
---     -- utf32Str[#utf32Str+1] = 0xFEFC
---     -- utf32Str[#utf32Str+1] = 0xFEFB
---     -- utf32Str[#utf32Str+1] = 0x0625
---     -- utf32Str[#utf32Str+1] = 0xFEFA
---     -- utf32Str[#utf32Str+1] = 0xFEF9
---     -- for i, v in ipairs(utf32Str) do
---     --     print(i, tostring(v, 16))
---     -- end
---     local newUtf8Str = Unicode.utf32To8(utf32Str)
---     print(newUtf8Str)
-
---     return 0
--- end
-
 local Nx       = require 'nx'
 local Log      = require 'nx.log'
 local Window   = require 'nx.window'
@@ -114,7 +85,7 @@ end
 ------------------------------------------------------------
 
 -- Create window
-local ok, err = Window.create("m2n", 1280, 720, graphicsFlags)
+local ok, err = Window.create("m2n", 800, 600, graphicsFlags or {vsync = false})
 if not ok then
     Log.error('Cannot initialize window: ' + err)
     return 1
@@ -135,7 +106,7 @@ Window.setIcon('assets/icon.png')
 local totalTime = 0
 local fixedFrameTime = 1/30
 Window.setFramerateLimit(
-    Nx.platform('android', 'ios') and 1/30 or 1/60
+    -- Nx.platform('android', 'ios') and 1/30 or 1/60
 )
 
 ------------------------------------------------------------
@@ -188,6 +159,8 @@ while true do
     Renderer.finish()
 
     Window.display()
+
+    Nx.sleep(.001)
 
     -- Clean the scene stack
     Scene.clean()

@@ -819,7 +819,22 @@ void RenderDeviceGL::beginRendering()
     // Get the currently bound frame buffer object. 
     glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &mDefaultFBO);
 
-    resetStates();
+    mCurVertexLayout = 1;                     mNewVertexLayout = 0;
+    mCurIndexBuffer = 1;                      mNewIndexBuffer = 0;
+    mCurRasterState.hash = 0xFFFFFFFFu;       mNewRasterState.hash = 0u;
+    mCurBlendState.hash = 0xFFFFFFFFu;        mNewBlendState.hash = 0u;
+    mCurDepthStencilState.hash = 0xFFFFFFFFu; mCurDepthStencilState.hash = 0u;
+
+    // for (uint32_t i = 0; i < 16; ++i) setTexture(i, 0, 0);
+
+    setColorWriteMask(true);
+    // mPendingMask = 0xFFFFFFFFu;
+    mVertexBufUpdated = true;
+    commitStates();
+
+    // Bind buffers
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, mDefaultFBO);
 }
 
 //----------------------------------------------------------
