@@ -1,6 +1,0 @@
-R"==(--" -- All the little things I do for syntax highlighting :')
-
--- Start the actual code
-return require 'main'
-
---")=="

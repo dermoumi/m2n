@@ -140,11 +140,7 @@ int main(int argc, char* argv[])
             return fatalError(lua.getErrorMessage());
         }
 
-        std::string bootCode (
-            #include "lua/boot.luainl"
-        );
-
-        if (!lua.runCode("boot.lua", bootCode, retval)) {
+        if (!lua.runCode("boot.lua", "return require 'main'", retval)) {
             return fatalError(lua.getErrorMessage());
         }
     }
