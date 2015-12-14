@@ -44,7 +44,7 @@ ffi.cdef [[
     void nxTextSetStyle(NxText*, uint8_t);
     void nxTextCharacterPosition(const NxText*, uint32_t, float*);
     void nxTextBounds(const NxText*, float*);
-    const NxArraybuffer* nxTextArraybuffer(const NxText*, uint32_t*, uint32_t);
+    uint32_t nxTextArraybuffer(const NxText*, uint32_t*, uint32_t);
     uint32_t* nxTextArraybufferIDs(const NxText*, uint32_t*);
 ]]
 
@@ -87,7 +87,7 @@ function Text:initialize()
     self._string = ''
     self._charSize = 30
     self._style = 0
-    self._vertices = require('nx.arraybuffer')._fromCData(nil)
+    self._vertices = require('nx.arraybuffer'):new()
 end
 
 ------------------------------------------------------------
@@ -217,7 +217,7 @@ function Text:_render(camera, state)
         for i = 0, bufCountPtr[0] - 1 do
             local bufferID = bufferIDs[i];
 
-            self._vertices._cdata = C.nxTextArraybuffer(self._cdata, vertCountPtr, bufferID)
+            self._vertices._cdata.id = C.nxTextArraybuffer(self._cdata, vertCountPtr, bufferID)
 
             Arraybuffer.setVertexbuffer(self._vertices, 0, 0, 16)
             C.nxRendererSetVertexLayout(Text._vertexLayout())

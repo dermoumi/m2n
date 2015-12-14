@@ -33,14 +33,12 @@ local C = ffi.C
 
 ffi.cdef [[
     typedef struct {
-        char     semanticName[32];
+        char    semanticName[32];
         uint8_t vbSlot;
         uint8_t size;
         uint8_t offset;
         uint8_t format;
     } NxVertexLayoutAttrib;
-
-    typedef void* NxArrayBuffer;
 
     bool nxRendererInit();
     void nxRendererBegin();
@@ -51,15 +49,15 @@ ffi.cdef [[
     void nxRendererDraw(uint8_t, uint32_t, uint32_t);
     void nxRendererDrawIndexed(uint8_t, uint32_t, uint32_t);
     uint32_t nxRendererRegisterVertexLayout(uint8_t, const NxVertexLayoutAttrib*);
-    NxArrayBuffer* nxRendererCreateVertexBuffer(uint32_t, const void*);
-    NxArrayBuffer* nxRendererCreateIndexBuffer(uint32_t, const void*);
-    void nxRendererDestroyBuffer(NxArrayBuffer*);
-    bool nxRendererUpdateBufferData(NxArrayBuffer*, uint32_t, uint32_t, const void*);
+    uint32_t nxRendererCreateVertexBuffer(uint32_t, const void*);
+    uint32_t nxRendererCreateIndexBuffer(uint32_t, const void*);
+    void nxRendererDestroyBuffer(uint32_t);
+    bool nxRendererUpdateBufferData(uint32_t, uint32_t, uint32_t, const void*);
     uint32_t nxRendererGetBufferMemory();
     void nxRendererSetViewport(int, int, int, int);
     void nxRendererSetScissorRect(int, int, int, int);
-    void nxRendererSetIndexBuffer(NxArrayBuffer*, uint8_t);
-    void nxRendererSetVertexBuffer(uint8_t, NxArrayBuffer*, uint32_t, uint32_t);
+    void nxRendererSetIndexBuffer(uint32_t, uint8_t);
+    void nxRendererSetVertexBuffer(uint8_t, uint32_t, uint32_t, uint32_t);
     void nxRendererSetVertexLayout(uint8_t);
     void nxRendererSetTexture(uint8_t, uint32_t, uint16_t);
     void nxRendererSetColorWriteMask(bool);

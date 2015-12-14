@@ -33,7 +33,6 @@
 //----------------------------------------------------------
 using NxText = Text;
 using NxFont = Font;
-using NxArraybuffer = Arraybuffer;
 
 //----------------------------------------------------------
 NX_EXPORT NxText* nxTextNew()
@@ -96,8 +95,7 @@ NX_EXPORT void nxTextBounds(const Text* text, float* boundsPtr)
 }
 
 //----------------------------------------------------------
-NX_EXPORT const NxArraybuffer* nxTextArraybuffer(const Text* text, uint32_t* vertexCount,
-    uint32_t index)
+NX_EXPORT uint32_t nxTextArraybuffer(const Text* text, uint32_t* vertexCount, uint32_t index)
 {
     return text->arraybuffer(*vertexCount, index);
 }

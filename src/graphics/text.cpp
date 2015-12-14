@@ -25,6 +25,7 @@
     For more information, please refer to <http://unlicense.org>
 *///============================================================================
 #include "text.hpp"
+#include "renderdevice.hpp"
 #include "../system/unicode.hpp"
 
 #include <cmath>
@@ -142,11 +143,11 @@ void Text::bounds(float& x, float& y, float& w, float& h) const
 }
 
 //----------------------------------------------------------
-const Arraybuffer* Text::arraybuffer(uint32_t& vertexCount, uint32_t index) const
+uint32_t Text::arraybuffer(uint32_t& vertexCount, uint32_t index) const
 {
     ensureGeometryUpdate();
     vertexCount = mVertices[index].count;
-    return &mVertices[index].buffer;
+    return mVertices[index].buffer;
 }
 
 //----------------------------------------------------------
@@ -357,7 +358,7 @@ void Text::ensureGeometryUpdate() const
         mBufferIDs.push_back(it.first);
 
         mVertices[it.first].count = it.second.size() / 4u;
-        mVertices[it.first].buffer.createVertex(
+        mVertices[it.first].buffer = RenderDevice::instance().createVertexBuffer(
             it.second.size() * sizeof(float), it.second.data()
         );
     }

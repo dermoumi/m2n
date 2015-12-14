@@ -28,7 +28,6 @@
 #include "../config.hpp"
 
 #include "font.hpp"
-#include "arraybuffer.hpp"
 #include <string>
 #include <vector>
 #include <map>
@@ -65,7 +64,7 @@ public:
     void characterPosition(size_t index, float& x, float& y) const;
     void bounds(float& x, float& y, float& w, float& h) const;
 
-    const Arraybuffer* arraybuffer(uint32_t& vertexCount, uint32_t index) const;
+    uint32_t arraybuffer(uint32_t& vertexCount, uint32_t index) const;
     uint32_t* arraybufferIDs(uint32_t* count) const;
 
 protected:
@@ -73,7 +72,7 @@ protected:
 
     struct VertexList
     {
-        Arraybuffer buffer;
+        uint32_t buffer {0u};
         uint32_t count {0u};
     };
 

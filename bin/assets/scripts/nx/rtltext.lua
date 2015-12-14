@@ -49,7 +49,7 @@ function RtlText:initialize()
     self._string = ''
     self._charSize = 30
     self._style = 0
-    self._vertices = require('nx.arraybuffer')._fromCData(nil)
+    self._vertices = require('nx.arraybuffer'):new()
 end
 
 ------------------------------------------------------------

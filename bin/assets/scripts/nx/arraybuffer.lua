@@ -32,16 +32,9 @@ local ffi = require 'ffi'
 local C = ffi.C
 
 ffi.cdef [[
-    typedef struct NxArraybuffer NxArraybuffer;
-
-    NxArraybuffer* nxArraybufferNew();
-    void nxArraybufferRelease(NxArraybuffer*);
-    bool nxArraybufferCreateVertex(NxArraybuffer*, uint32_t, const void*);
-    bool nxArraybufferCreateIndex(NxArraybuffer*, uint32_t, const void*);
-    bool nxArraybufferSetData(NxArraybuffer*, uint32_t, uint32_t, const void*);
-    uint32_t nxArraybufferUsedMemory();
-    void nxArraybufferSetVertexbuffer(const NxArraybuffer*, uint8_t, uint32_t, uint32_t);
-    void nxArraybufferSetIndexbuffer(const NxArraybuffer*, uint8_t);
+    typedef struct {
+        uint32_t id;
+    } NxArrayBuffer;
 ]]
 
 ------------------------------------------------------------
@@ -50,11 +43,11 @@ ffi.cdef [[
 local class = require 'nx.class'
 local Arraybuffer = class 'nx.arraybuffer'
 
+local Renderer = require 'nx.renderer'
+
 ------------------------------------------------------------
-function Arraybuffer.static._fromCData(cdata)
-    local buffer = Arraybuffer:allocate()
-    buffer._cdata = ffi.cast('NxArraybuffer*', cdata)
-    return buffer
+local function destroyBuffer(cdata)
+    C.nxRendererDestroyBuffer(cdata.id)
 end
 
 ------------------------------------------------------------
@@ -79,61 +72,52 @@ end
 
 ------------------------------------------------------------
 function Arraybuffer.static.usedMemory()
-    return C.nxArraybufferUsedMemory()
+    return C.nxRendererGetBufferMemory()
 end
 
 ------------------------------------------------------------
 function Arraybuffer.static.setVertexbuffer(buffer, slot, offset, stride)
-    if buffer then buffer = buffer._cdata end
-
-    C.nxArraybufferSetVertexbuffer(buffer, slot, offset, stride)
+    buffer = buffer and buffer._cdata.id or 0
+    C.nxRendererSetVertexBuffer(slot, buffer, offset, stride)
 end
 
 ------------------------------------------------------------
 function Arraybuffer.static.setIndexbuffer(buffer, format)
-    if buffer then buffer = buffer._cdata end
+    buffer = buffer and buffer._cdata.id or 0
     if format ~= 16 and format ~= 32 then format = 16 end
 
-    C.nxArraybufferSetIndexbuffer(buffer, format / 16 - 1)
+    C.nxRendererSetIndexBuffer(buffer, format / 16 - 1)
 end
 
 ------------------------------------------------------------
 function Arraybuffer:initialize()
-    local handle = C.nxArraybufferNew();
-    self._cdata = ffi.gc(handle, C.nxArraybufferRelease)
+    self._cdata = ffi.new('NxArrayBuffer', {0})
 end
 
 ------------------------------------------------------------
 function Arraybuffer:release()
-    if self._cdata == nil then return end
-    C.nxArraybufferRelease(ffi.gc(self._cdata, nil))
+    C.nxRendererDestroyBuffer(ffi.gc(self._cdata, destroyBuffer).id)
 end
 
 ------------------------------------------------------------
 function Arraybuffer:createVertexbuffer(size, data)
-    if not C.nxArraybufferCreateVertex(self._cdata, size, data) then
-        return false, 'Unable to create vertex buffer'
-    end
+    self._cdata = ffi.new('NxArrayBuffer', {C.nxRendererCreateVertexBuffer(size, data)})
+    ffi.gc(self._cdata, destroyBuffer)
 
-    return true
+    return self._cdata.id ~= 0
 end
 
 ------------------------------------------------------------
 function Arraybuffer:createIndexbuffer(size, data)
-    if not C.nxArraybufferCreateIndex(self._cdata, size, data) then
-        return false, 'Unable to create index buffer'
-    end
+    self._cdata = ffi.new('NxArrayBuffer', {C.nxRendererCreateIndexBuffer(size, data)})
+    ffi.gc(self._cdata, destroyBuffer)
 
-    return true
+    return self._cdata.id ~= 0
 end
 
 ------------------------------------------------------------
 function Arraybuffer:setData(offset, size, data)
-    if not C.nxArraybufferSetData(self._cdata, offset, size, data) then
-        return false, 'Unable to set array buffer data'
-    end
-
-    return true
+    return C.nxRendererUpdateBufferData(self._cdata.id, offset, size, data)
 end
 
 ------------------------------------------------------------

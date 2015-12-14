@@ -25,6 +25,7 @@
     For more information, please refer to <http://unlicense.org>
 *///============================================================================
 #include "rtltext.hpp"
+#include "renderdevice.hpp"
 
 #include <cmath>
 #include <set>
@@ -275,8 +276,8 @@ void RtlText::ensureGeometryUpdate() const
         mBufferIDs.push_back(it.first);
 
         mVertices[it.first].count = it.second.size() / 4u;
-        mVertices[it.first].buffer.createVertex(
+        mVertices[it.first].buffer = RenderDevice::instance().createVertexBuffer(
             it.second.size() * sizeof(float), it.second.data()
         );
-    }
+    }   
 }
