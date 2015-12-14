@@ -55,7 +55,10 @@ end
 
 ------------------------------------------------------------
 function Scene.static.push(scene, ...)
-    if type(scene) == 'string' then scene = require(scene):new(...) end
+    if type(scene) == 'string' then
+        scene = require(scene):new(...)
+    end
+    
     scene.parent = sceneStack[#sceneStack]
 
     local needsPreload, settings = scene:needsPreload()

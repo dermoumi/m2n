@@ -67,6 +67,7 @@ end
 function SceneLoad:load()
     self.worker = require('game.worker'):new()
     self.nextScene:preload(self.worker)
+    self.worker:start()
 
     self.lastPercent = 0
 

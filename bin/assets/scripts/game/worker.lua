@@ -45,6 +45,7 @@ end
 
 ------------------------------------------------------------
 function Worker:initialize()
+    self._tasks = {}
     self._totalCount = 0
     self._loadedCount = ffi.new('uint32_t[2]')
 end
@@ -59,14 +60,17 @@ function Worker:addFile(objType, id)
     local loaderFunc = loaderFunc[objType] or function() return false end
     obj = require(objType):new()
 
-    Thread:new(function(loaderFunc, obj, filename, loadedCount)
-        loadedCount = require('ffi').cast('uint32_t*', loadedCount)
-        if not loaderFunc(obj, filename) then
-            loadedCount[1] = loadedCount[1] + 1
-        else
-            loadedCount[0] = loadedCount[0] + 1
-        end
-    end, loaderFunc, obj, id, self._loadedCount):detach()
+    self._tasks[#self._tasks+1] = {
+        function(loaderFunc, obj, filename, loadedCount)
+            loadedCount = require('ffi').cast('uint32_t*', loadedCount)
+            if not loaderFunc(obj, filename) then
+                loadedCount[1] = loadedCount[1] + 1
+            else
+                loadedCount[0] = loadedCount[0] + 1
+            end
+        end,
+        loaderFunc, obj, id, self._loadedCount
+    }
 
     self._totalCount = self._totalCount + 1
     Cache.add(id, obj)
@@ -74,16 +78,26 @@ end
 
 ------------------------------------------------------------
 function Worker:addTask(taskFunc, ...)
-    Thread:new(function(loadedCount, func, ...)
-        loadedCount = require('ffi').cast('uint32_t*', loadedCount)
-        if not func(...) then
-            loadedCount[1] = loadedCount[1] + 1
-        else
-            loadedCount[0] = loadedCount[0] + 1
-        end
-    end, self._loadedCount, taskFunc, ...):detach()
+    self._tasks[#self._tasks+1] = {
+        function(loadedCount, func, ...)
+            loadedCount = require('ffi').cast('uint32_t*', loadedCount)
+            if not func(...) then
+                loadedCount[1] = loadedCount[1] + 1
+            else
+                loadedCount[0] = loadedCount[0] + 1
+            end
+        end,
+        self._loadedCount, taskFunc, ...
+    }
 
     self._totalCount = self._totalCount + 1
+end
+
+------------------------------------------------------------
+function Worker:start()
+    for i, task in ipairs(self._tasks) do
+        Thread:new(unpack(task, 1, table.maxn(task))):detach()
+    end
 end
 
 ------------------------------------------------------------
