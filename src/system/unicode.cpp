@@ -26,22 +26,121 @@
 *///============================================================================
 #include "unicode.hpp"
 
-#include <locale>
-#include <codecvt>
+template <typename In>
+static In decodeUtf8(In begin, In end, uint32_t& output, uint32_t rep)
+{
+    static const int trailing[256] {
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+        3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5
+    };
+
+    static const uint32_t offsets[6] {
+        0x00000000, 0x00003080, 0x000E2080, 0x03C82080, 0xFA082080, 0x82082080
+    };
+
+    // decode the character
+    int trailingBytes = trailing[static_cast<uint8_t>(*begin)];
+
+    if (begin + trailingBytes < end) {
+        output = 0;
+        switch(trailingBytes) {
+            case 5: output += static_cast<uint8_t>(*begin++); output <<= 6;
+            case 4: output += static_cast<uint8_t>(*begin++); output <<= 6;
+            case 3: output += static_cast<uint8_t>(*begin++); output <<= 6;
+            case 2: output += static_cast<uint8_t>(*begin++); output <<= 6;
+            case 1: output += static_cast<uint8_t>(*begin++); output <<= 6;
+            case 0: output += static_cast<uint8_t>(*begin++);
+        }
+        output -= offsets[trailingBytes];
+    }
+    else {
+        // Incomplete character
+        begin = end;
+        output = rep;
+    }
+
+    return begin;
+}
+
+template <typename Out>
+static Out encodeUtf8(uint32_t input, Out output)
+{
+    // Some useful precomputed data
+    static const uint8_t firstBytes[7] { 0x00, 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC };
+
+    if (input <= 0x0010FFFF && (input < 0xD800 || input > 0xDBFF)) {
+        // Valid character
+
+        // Get the number of bytes to write
+        std::size_t bytesToWrite = 1;
+        if      (input <  0x80)       bytesToWrite = 1;
+        else if (input <  0x800)      bytesToWrite = 2;
+        else if (input <  0x10000)    bytesToWrite = 3;
+        else if (input <= 0x0010FFFF) bytesToWrite = 4;
+
+        // Extract the bytes to write
+        uint8_t bytes[4];
+        switch (bytesToWrite)
+        {
+            case 4: bytes[3] = static_cast<uint8_t>((input | 0x80) & 0xBF); input >>= 6;
+            case 3: bytes[2] = static_cast<uint8_t>((input | 0x80) & 0xBF); input >>= 6;
+            case 2: bytes[1] = static_cast<uint8_t>((input | 0x80) & 0xBF); input >>= 6;
+            case 1: bytes[0] = static_cast<uint8_t> (input | firstBytes[bytesToWrite]);
+        }
+
+        // Add them to the output
+        output = std::copy(bytes, bytes + bytesToWrite, output);
+    }
+
+    return output;
+}
 
 namespace Unicode
 {
     std::u32string utf8To32(const std::string& str)
     {
-        static std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> conv;
+        std::u32string output;
+        output.reserve(str.length());
 
-        return conv.from_bytes(str);
+        auto begin = str.begin();
+        auto end = str.end();
+
+        while (begin < end) {
+            uint32_t codepoint;
+            begin = decodeUtf8(begin, end, codepoint, U'?');
+            output += codepoint;
+        }
+
+        return output;
     }
 
     std::string utf32To8(const std::u32string& str)
     {
-        static std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> conv;
+        std::string output;
+        output.reserve(str.length());
 
-        return conv.to_bytes(str);
+        auto begin = str.begin();
+        auto end   = str.end();
+        auto out   = std::back_inserter(output);
+
+        while (begin < end) {
+            out = encodeUtf8(*begin++, out);
+        }
+
+        return output;
     }
 }

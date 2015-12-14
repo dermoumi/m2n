@@ -121,9 +121,13 @@ function SceneSubtitle:load()
     local arabic = require('utils.arabic')
     local unicode = require('nx.unicode')
 
-    self.text:setString(arabic(unicode.utf8To32('الشمس Avenue BRAVO الشمس\n)صِفْ خَلْقَ خَوْدٍ كَمِثْلِ الشَّمْسِ إِذْ \nبَزَغَتْ(')))
+    local utf32str = arabic(unicode.utf8To32('الشمس Avenue BRAVO الشمس\n)صِفْ خَلْقَ خَوْدٍ كَمِثْلِ الشَّمْسِ إِذْ \nبَزَغَتْ('))
+
+    self.text:setString(utf32str)
         :setPosition(640, 0)
         -- :setString('Hello world!\nWRYYYY!!')
+
+    print('"' .. unicode.utf32To8(utf32str) .. '"')
 
     local x, y, w, h = self.text:bounds()
     print(x, y, w, h)
