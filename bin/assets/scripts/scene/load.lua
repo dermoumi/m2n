@@ -30,25 +30,18 @@ local Scene = require 'scene'
 local SceneLoad = Scene:subclass('scene.load')
 
 ------------------------------------------------------------
-function SceneLoad:initialize(a, b, ...)
-    local settings
+function SceneLoad:initialize(worker, params, scene)
+    self.nextScene = scene
+    self.worker    = worker
 
-    if type(a) == 'string' then
-        settings = {}
-        self.nextScene = require(a):new(b, ...)
-    elseif type(a) == 'table' and a.isSubclassOf then
-        settings = {}
-        self.nextScene = a
-    else
-        settings = a or {}
-        self.nextScene = type(b) == 'string' and require(b):new(...) or b
-    end
+    -- Set background color
+    self.colR = params.r or 0
+    self.colG = params.g or 0
+    self.colB = params.b or 0
+    self.colA = params.a or 255
 
-    self.colR = settings.r or 0
-    self.colG = settings.g or 0
-    self.colB = settings.b or 0
-    self.colA = settings.a or 255
-
+    -- Calculate lighting value of the given color, and decide whether the text should be
+    -- light or dark
     local r, g, b, a = self.colR, self.colG, self.colB, self.colA
     if (math.max(r, g, b) + math.min(r, g, b)) < 408 then
         r, g, b, a = 255, 255, 255, 255
@@ -56,20 +49,17 @@ function SceneLoad:initialize(a, b, ...)
         r, g, b, a = 0, 0, 0, 255
     end
 
-    self.messageColR = settings.messageColR or r
-    self.messageColG = settings.messageColG or g
-    self.messageColB = settings.messageColB or b
-    self.messageColA = settings.messageColA or a
-    self.message = settings.message or 'LOADING %i%%'
+    -- Set the color
+    self.messageColR = params.messageColR or r
+    self.messageColG = params.messageColG or g
+    self.messageColB = params.messageColB or b
+    self.messageColA = params.messageColA or a
+    self.message = params.message or 'LOADING %i%%'
 end
 
 ------------------------------------------------------------
 function SceneLoad:load()
-    self.worker = require('game.worker'):new()
-    self.nextScene:preload(self.worker)
     self.worker:start()
-
-    self.lastPercent = 0
 
     self.text = require('nx.text'):new()
         :setFont(require('game.font'))
@@ -81,7 +71,7 @@ function SceneLoad:load()
 
     if self:check() then return end
 
-    self.parentLoading = self.parent and self.parent._isLoading
+    self.parentLoading = self.parent and self.parent:isLoading()
 
     self:performTransition(self.camera)
 end
@@ -135,25 +125,22 @@ end
 function SceneLoad:check()
     local loaded, failed, total = self.worker:progress()
 
+    local percent = total ~= 0 and math.floor(100 * (loaded + failed) / total + 0.5) or 1
+    self.text:setString(self.message:format(percent))
+
     if loaded + failed == total then
         local function callback()
-            self.nextScene._preloaded = true
             Scene.back()
             Scene.push(self.nextScene)
         end
 
-        if self._isLoading then
+        if self:isLoading() then
             callback()
-            return true
         else
             self:performTransition(self.camera, callback)
         end
-    end
 
-    local percent = total ~= 0 and math.floor(100 * (loaded + failed) / total + 0.5) or 1
-    if self.lastPercent ~= percent then
-        self.text:setString(self.message:format(percent))
-        self.lastPercent = percent
+        return true
     end
 end
 

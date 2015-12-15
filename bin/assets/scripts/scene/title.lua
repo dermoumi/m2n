@@ -39,27 +39,21 @@ local Renderer = require 'nx.renderer'
 local Log = require 'nx.log'
 
 ------------------------------------------------------------
-function SceneTitle:initialize(settings)
-    settings = settings or {}
-    self.firstRun = settings.firstRun
-end
+function SceneTitle:initialize(firstRun)
+    if firstRun then
+        self:setPreloadParams({
+            message = 'INITIALIZING %i%%'
+        })
 
-------------------------------------------------------------
-function SceneTitle:needsPreload()
-    return true, self.firstRun and {message = 'INITIALIZING %i%%'} or {}
-end
+        self:worker():addTask(function()
+            if not require('nx.audio').init() then
+                require('nx.log').error('Could not initialize sound system')
+                return false
+            end
 
-------------------------------------------------------------
-function SceneTitle:preload(worker)
-    -- Initializing Audio is slow so we're doing it in a worker
-    worker:addTask(function()
-        if not require('nx.audio').init() then
-            require('nx.log').error('Could not initialize sound system')
-            return false
-        end
-
-        return true
-    end)
+            return true
+        end)
+    end
 end
 
 ------------------------------------------------------------

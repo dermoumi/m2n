@@ -121,4 +121,9 @@ function Arraybuffer:setData(offset, size, data)
 end
 
 ------------------------------------------------------------
+function Arraybuffer:nativeHandle()
+    return self._cdata.id
+end
+
+------------------------------------------------------------
 return Arraybuffer

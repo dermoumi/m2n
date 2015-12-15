@@ -57,20 +57,17 @@ end
 function Scene.static.push(scene, ...)
     if type(scene) == 'string' then
         scene = require(scene):new(...)
+
+        -- Check if this scene's worker contains any item that need preloading
+        if scene.__worker and scene.__worker:taskCount() > 0 then
+            -- Start preloading
+            return Scene.push('scene.load', scene.__worker, scene.__preloadParams or {}, scene)
+        end
     end
     
-    scene.parent = sceneStack[#sceneStack]
-
-    local needsPreload, settings = scene:needsPreload()
-    if needsPreload and not scene._preloaded then
-        Scene.push('scene.load', settings, scene)
-    else
-        sceneStack[#sceneStack + 1] = scene
-
-        scene._isLoading = true
-        scene:load()
-        scene._isLoading = false
-    end
+    local parent = Scene.currentScene()
+    sceneStack[#sceneStack+1] = scene
+    scene:_load(parent)
 end
 
 ------------------------------------------------------------
@@ -92,6 +89,15 @@ function Scene.static.clean()
     end
 
     releaseStack = {}
+end
+
+------------------------------------------------------------
+function Scene:_load(parent)
+    self.parent = parent
+
+    self.__isLoading = true
+    self:load()
+    self.__isLoading = false
 end
 
 ------------------------------------------------------------
@@ -154,8 +160,19 @@ function Scene:_onEvent(e, a, b, c, d)
 end
 
 ------------------------------------------------------------
-function Scene:needsPreload()
-    return false
+function Scene:worker()
+    if not self.__worker then self.__worker = require('game.worker'):new() end
+    return self.__worker
+end
+
+------------------------------------------------------------
+function Scene:setPreloadParams(table)
+    self.__preloadParams = table
+end
+
+------------------------------------------------------------
+function Scene:isLoading()
+    return self.__isLoading
 end
 
 ------------------------------------------------------------
@@ -232,11 +249,6 @@ function Scene:cache(id, loaderFunc)
 
     -- Not found in game cache, return error
     return nil, err
-end
-
-------------------------------------------------------------
-function Scene:preload(worker)
-    -- Nothing to do
 end
 
 ------------------------------------------------------------

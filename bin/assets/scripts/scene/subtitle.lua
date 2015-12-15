@@ -53,12 +53,9 @@ local C = ffi.C
 local GameFont = require 'game.font'
 
 ------------------------------------------------------------
-function SceneSubtitle:needsPreload()
-    return true
-end
+function SceneSubtitle:initialize()
+    local worker = self:worker()
 
-------------------------------------------------------------
-function SceneSubtitle:preload(worker)
     worker:addFile('nx.soundsource', 'assets/test.wav')
     worker:addFile('nx.image', 'assets/pasrien.png')
 

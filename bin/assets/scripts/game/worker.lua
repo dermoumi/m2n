@@ -38,6 +38,26 @@ local ffi = require 'ffi'
 local loaderFunc = {}
 
 ------------------------------------------------------------
+local function genericTaskFunc(loadedCount, func, ...)
+    loadedCount = require('ffi').cast('uint32_t*', loadedCount)
+    if not func(...) then
+        loadedCount[1] = loadedCount[1] + 1
+    else
+        loadedCount[0] = loadedCount[0] + 1
+    end
+end
+
+------------------------------------------------------------
+local function genericLoadingFunc(loaderFunc, obj, filename, loadedCount)
+    loadedCount = require('ffi').cast('uint32_t*', loadedCount)
+    if not loaderFunc(obj, filename) then
+        loadedCount[1] = loadedCount[1] + 1
+    else
+        loadedCount[0] = loadedCount[0] + 1
+    end
+end
+
+------------------------------------------------------------
 function Worker.static.registerFunc(objType, func)
     loaderFunc[objType] = func
     return Worker
@@ -46,7 +66,7 @@ end
 ------------------------------------------------------------
 function Worker:initialize()
     self._tasks = {}
-    self._totalCount = 0
+    self._taskCount = 0
     self._loadedCount = ffi.new('uint32_t[2]')
 end
 
@@ -54,55 +74,60 @@ end
 function Worker:addFile(objType, id)
     local Cache = require('game.cache')
 
+    -- Check if already loaded in the cache
     local obj = Cache.get(id)
     if obj then return end
 
+    -- Not loaded. Check if loader function is valid
     local loaderFunc = loaderFunc[objType] or function() return false end
     obj = require(objType):new()
 
-    self._tasks[#self._tasks+1] = {
-        function(loaderFunc, obj, filename, loadedCount)
-            loadedCount = require('ffi').cast('uint32_t*', loadedCount)
-            if not loaderFunc(obj, filename) then
-                loadedCount[1] = loadedCount[1] + 1
-            else
-                loadedCount[0] = loadedCount[0] + 1
-            end
-        end,
-        loaderFunc, obj, id, self._loadedCount
-    }
+    -- Valid, push a new task to load it
+    self:checkCount()
+    self._taskCount = self._taskCount + 1
 
-    self._totalCount = self._totalCount + 1
+    self._tasks[#self._tasks+1] = {genericLoadingFunc, loaderFunc, obj, id, self._loadedCount}
+
     Cache.add(id, obj)
 end
 
 ------------------------------------------------------------
 function Worker:addTask(taskFunc, ...)
-    self._tasks[#self._tasks+1] = {
-        function(loadedCount, func, ...)
-            loadedCount = require('ffi').cast('uint32_t*', loadedCount)
-            if not func(...) then
-                loadedCount[1] = loadedCount[1] + 1
-            else
-                loadedCount[0] = loadedCount[0] + 1
-            end
-        end,
-        self._loadedCount, taskFunc, ...
-    }
-
-    self._totalCount = self._totalCount + 1
+    self:checkCount()
+    self._taskCount = self._taskCount + 1
+    
+    self._tasks[#self._tasks+1] = {genericTaskFunc, self._loadedCount, taskFunc, ...}
 end
 
 ------------------------------------------------------------
 function Worker:start()
+    -- Make a thread for each task, and detach it...
     for i, task in ipairs(self._tasks) do
         Thread:new(unpack(task, 1, table.maxn(task))):detach()
     end
+
+    -- Clear tasks
+    self._tasks = {}
+    self._shouldReset = true
 end
 
 ------------------------------------------------------------
 function Worker:progress()
-    return tonumber(self._loadedCount[0]), tonumber(self._loadedCount[1]), self._totalCount
+    return tonumber(self._loadedCount[0]), tonumber(self._loadedCount[1]), self._taskCount
+end
+
+------------------------------------------------------------
+function Worker:taskCount()
+    return self._taskCount
+end
+
+------------------------------------------------------------
+function Worker:checkCount()
+    if self._shouldReset then
+        self._loadedCount[0] = 0
+        self._loadedCount[1] = 0
+        self._taskCount = 0
+    end
 end
 
 ------------------------------------------------------------
