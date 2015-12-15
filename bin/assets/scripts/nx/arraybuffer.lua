@@ -96,7 +96,7 @@ end
 
 ------------------------------------------------------------
 function Arraybuffer:release()
-    C.nxRendererDestroyBuffer(ffi.gc(self._cdata, destroyBuffer).id)
+    C.nxRendererDestroyBuffer(ffi.gc(self._cdata, nil).id)
 end
 
 ------------------------------------------------------------
