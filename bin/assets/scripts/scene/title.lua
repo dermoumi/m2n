@@ -81,15 +81,6 @@ function SceneTitle:load()
         :setPosition(10, 10)
         :setString('Current FPS: ')
 
-    self.camera3d = require('nx.camera3d'):new(70, 16/9, -1, 1)
-
-    self.texture = require('nx.texture2d'):new()
-    self.texture:load(self:cache('assets/pasrien.png'))
-
-    self.sprite = require('nx.sprite'):new(self.texture)
-        :setScale(1/512, 1/512)
-        :setPosition(-1/2, -1/2)
-
     self:performTransition(self.camera)
 end
 
@@ -100,11 +91,7 @@ end
 
 ------------------------------------------------------------
 function SceneTitle:render()
-    require('nx.renderer').setCullMode('none')
-
     self.camera:clear(255, 128, 0)
-
-    self.camera3d:draw(self.sprite)
 
     self.camera:draw(self.text)
 end
@@ -112,7 +99,9 @@ end
 ------------------------------------------------------------
 function SceneTitle:onKeyDown(scancode, keyCode, repeated)
     if scancode == 'f2' then
-        Scene.push('scene.subtitle')
+        self:performTransition(self.camera, function()
+            Scene.push('scene.test.3d')
+        end)
     elseif scancode == 'f10' then
         require('nx.window').create('m2n-', 1280, 720, {})
     elseif scancode == 'f11' then
@@ -129,10 +118,6 @@ function SceneTitle:onKeyDown(scancode, keyCode, repeated)
         self:performTransition(self.camera, function()
             Scene.goTo('scene.title')
         end)
-    elseif scancode == 'down' then
-        self.camera3d:translate(0, 0, -.1)
-    elseif scancode == 'up' then
-        self.camera3d:translate(0, 0, .1)
     end
 end
 

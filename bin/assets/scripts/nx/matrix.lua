@@ -66,11 +66,9 @@ end
 
 ------------------------------------------------------------
 function Matrix.static.fromRotation(x, y, z)
-    local mat = Matrix.fromXRotation(x)
-    mat:combine(Matrix.fromYRotation(y))
-    mat:combine(Matrix.fromZRotation(z))
-
-    return mat
+    return Matrix.fromXRotation(x)
+        :combine(Matrix.fromYRotation(y))
+        :combine(Matrix.fromZRotation(z))
 end
 
 ------------------------------------------------------------
@@ -138,12 +136,13 @@ function Matrix.static.fromPerspective(fov, aspect, near, far)
     local m = mat._cdata
 
     local f  = 1 / math.tan(fov / 2)
+    local nf = near - far
 
     m[0] = f / aspect
     m[5] = f
-    m[10] = (far + near) / (near - far)
+    m[10] = (far + near) / nf
     m[11] = -1
-    m[14] = (2 * far * near) / (near - far)
+    m[14] = (2 * far * near) / nf
     m[15] = 0
 
     return mat
@@ -154,12 +153,12 @@ function Matrix.static.fromOrtho(left, right, bottom, top, near, far)
     local mat = Matrix:new()
     local m   = mat._cdata
 
-    m[0]  =  2 / (right - left)
-    m[5]  =  2 / (top - bottom)
-    m[10] = -2 / (far - near)
-    m[12] = -(right + left)   / (right - left)
-    m[13] = -(top   + bottom) / (top   - bottom)
-    m[14] = -(far   + near)   / (far   - near)
+    m[0]  = 2 / (right - left)
+    m[5]  = 2 / (top - bottom)
+    m[10] = 2 / (near - far)
+    m[12] = (right + left)   / (left   - right)
+    m[13] = (top   + bottom) / (bottom - top)
+    m[14] = (far   + near)   / (near   - far)
 
     return mat
 end
