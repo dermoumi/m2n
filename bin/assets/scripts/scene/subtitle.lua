@@ -61,7 +61,7 @@ function SceneSubtitle:initialize()
 
     self.musicSource = MusicSource:new()
     worker:addTask(function(music)
-        music:open('assets/askepticshypothesis.ogg')
+        music:open('assets/undersodiumbulb.ogg')
     end, self.musicSource)
 end
 
@@ -80,10 +80,12 @@ function SceneSubtitle:load()
 
     self.soundSource = self:cache('assets/test.wav')
         :setLooping(true)
-    self.voiceGroup:add(self.soundSource:playThrough(self.audiobus, -1, 0, true))
+    -- self.voiceGroup:add(self.soundSource:playThrough(self.audiobus, -1, 0, true))
 
     self.musicSource:setVolume(.1)
-    self.voiceGroup:add(self.musicSource:playThrough(self.audiobus, -1, 0, true))
+    self.voiceGroup:add(
+        self.musicSource:playThrough(self.audiobus, -1, 0, true)
+    )
 
     self.voiceGroup:pause(false)
 
@@ -126,7 +128,7 @@ function SceneSubtitle:load()
     local x, y, w, h = self.text:bounds()
 
     self.shape = Shape:new()
-        :setTexture(self.texture)
+        -- :setTexture(self.texture)
         :setVertexData('trianglestrip', true,
             640 + x,   y,   255, 255, 255, 255, 0, 0,
             640 + x,   y+h, 255, 255, 255, 255, 0, 1,

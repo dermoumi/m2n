@@ -116,7 +116,7 @@ function Matrix.static.fromZRotation(rad)
 end
 
 ------------------------------------------------------------
-function Matrix.static.fromPerspective(left, right, bottom, top, near, far)
+function Matrix.static.fromFrustum(left, right, bottom, top, near, far)
     local mat = Matrix:new()
     local m   = mat._cdata
 
@@ -127,6 +127,23 @@ function Matrix.static.fromPerspective(left, right, bottom, top, near, far)
     m[10] = -(far + near) / (far - near)
     m[11] = -1
     m[14] = -2 * far * near / (far - near)
+    m[15] = 0
+
+    return mat
+end
+
+------------------------------------------------------------
+function Matrix.static.fromPerspective(fov, aspect, near, far)
+    local mat = Matrix:new()
+    local m = mat._cdata
+
+    local f  = 1 / math.tan(fov / 2)
+
+    m[0] = f / aspect
+    m[5] = f
+    m[10] = (far + near) / (near - far)
+    m[11] = -1
+    m[14] = (2 * far * near) / (near - far)
     m[15] = 0
 
     return mat
@@ -205,6 +222,8 @@ function Matrix:combine(mat)
     m1[13] = b0*a01 + b1*a11 + b2*a21 + b3*a31
     m1[14] = b0*a02 + b1*a12 + b2*a22 + b3*a32
     m1[15] = b0*a03 + b1*a13 + b2*a23 + b3*a33
+
+    return self
 end
 
 ------------------------------------------------------------
