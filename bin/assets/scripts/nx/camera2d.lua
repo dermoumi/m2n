@@ -34,37 +34,14 @@ local Camera2D = Camera:subclass('nx.camera2d')
 local Matrix = require 'nx.matrix'
 
 ------------------------------------------------------------
--- FFI declarations
-------------------------------------------------------------
-local ffi = require 'ffi'
-ffi.cdef [[
-    typedef struct {
-        float centerX, centerY;
-        float width, height;
-        float rotation;
-        float vpX, vpY, vpW, vpH;
-    } NxCamera2D;
-]]
-
-------------------------------------------------------------
-function Camera2D.static._fromCData(cdata)
-    local camera = Camera2D:allocate()
-    camera._cdata = ffi.cast('NxCamera*', cdata)
-    return camera
-end
-
-------------------------------------------------------------
 function Camera2D:initialize(x, y, width, height)
-    self._cdata = ffi.new('NxCamera2D')
     self:reset(x, y, width, height)
 end
 
 ------------------------------------------------------------
 function Camera2D:setCenter(x, y)
-    local c = self._cdata
-
-    c.centerX = x
-    c.centerY = y
+    self._centerX = x
+    self._centerY = y
 
     self._matrix = nil
     self._invMatrix = nil
@@ -74,10 +51,8 @@ end
 
 ------------------------------------------------------------
 function Camera2D:setSize(width, height)
-    local c = self._cdata
-
-    c.width = width
-    c.height = height
+    self._width = width
+    self._height = height
 
     self._matrix = nil
     self._invMatrix = nil
@@ -87,9 +62,8 @@ end
 
 ------------------------------------------------------------
 function Camera2D:setRotation(rad)
-    local c = self._cdata
-
-    c.rotation = rad % (math.pi * 2)
+    self._rotation = rad % (math.pi * 2)
+    if self._rotation < 0 then self._rotation = self._rotation + math.pi * 2 end
 
     self._matrix = nil
     self._invMatrix = nil
@@ -99,7 +73,6 @@ end
 
 ------------------------------------------------------------
 function Camera2D:reset(x, y, width, height)
-    local c = self._cdata
     local winWidth, winHeight = require('nx.window'):size()
 
     x = x or 0
@@ -107,11 +80,11 @@ function Camera2D:reset(x, y, width, height)
     width  = width  or winWidth
     height = height or winHeight
 
-    c.centerX  = x + width / 2
-    c.centerY  = y + height / 2
-    c.width    = width
-    c.height   = height
-    c.rotation = 0
+    self._centerX  = x + width / 2
+    self._centerY  = y + height / 2
+    self._width    = width
+    self._height   = height
+    self._rotation = 0
 
     self._matrix = nil
     self._invMatrix = nil
@@ -121,20 +94,17 @@ end
 
 ------------------------------------------------------------
 function Camera2D:center()
-    local c = self._cdata
-    return c.centerX, c.centerY
+    return self._centerX, self._centerY
 end
 
 ------------------------------------------------------------
 function Camera2D:size()
-    local c = self._cdata
-    return c.width, c.height
+    return self._width, self._height
 end
 
 ------------------------------------------------------------
 function Camera2D:rotation()
-    local c = self._cdata
-    return c.rotation
+    return self._rotation
 end
 
 ------------------------------------------------------------
@@ -146,22 +116,20 @@ end
 ------------------------------------------------------------
 function Camera2D:matrix()
     if not self._matrix then
-        local c = self._cdata
-
-        local cos = math.cos(c.rotation)
-        local sin = math.sin(c.rotation)
-        local tx  = c.centerX - c.centerX * cos - c.centerY * sin
-        local ty  = c.centerY + c.centerX * sin - c.centerY * cos
+        local cos = math.cos(self._rotation)
+        local sin = math.sin(self._rotation)
+        local tx  = self._centerX - self._centerX * cos - self._centerY * sin
+        local ty  = self._centerY + self._centerX * sin - self._centerY * cos
 
         -- Projection components
-        local x =  2 / c.width
-        local y = -2 / c.height
+        local x =  2 / self._width
+        local y = -2 / self._height
 
         -- Rebuild the projection matrix
         self._matrix = Matrix:new()
         local m = self._matrix._cdata
-        m[0], m[4], m[12] =  x * cos, x * sin, x * tx - x * c.centerX
-        m[1], m[5], m[13] = -y * sin, y * cos, y * ty - y * c.centerY
+        m[0], m[4], m[12] =  x * cos, x * sin, x * tx - x * self._centerX
+        m[1], m[5], m[13] = -y * sin, y * cos, y * ty - y * self._centerY
     end
 
     return self._matrix

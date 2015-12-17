@@ -138,11 +138,11 @@ function Matrix.static.fromPerspective(fov, aspect, near, far)
     local f  = 1 / math.tan(fov / 2)
     local nf = near - far
 
-    m[0] = f / aspect
-    m[5] = f
-    m[10] = (far + near) / nf
+    m[0] = f
+    m[5] = aspect * f
+    m[10] = far / nf
     m[11] = -1
-    m[14] = (2 * far * near) / nf
+    m[14] = far * near / nf
     m[15] = 0
 
     return mat
