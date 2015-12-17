@@ -61,97 +61,54 @@ local class = require 'nx.class'
 local Image = class 'nx.image'
 
 ------------------------------------------------------------
-local function isNumber(val)
-    return type(val) == 'number'
-end
-
-------------------------------------------------------------
-local function isNilOrNumber(val)
-    return (val == nil) or (type(val) == 'number')
-end
-
-------------------------------------------------------------
 local function isCArray(a)
     return type(a) == 'cdata' or type(a) == 'userdata'
 end
 
 ------------------------------------------------------------
-function Image.static._fromCData(cdata)
-    local image = Image:allocate()
-    image._cdata = ffi.cast('NxImage*', cdata)
-    return image
-end
-
-------------------------------------------------------------
-function Image.static.create(width, height, r, g, b, a)
-    local image = Image:new()
-
-    local ok, err = image:create(width, height, r, g, b, a)
-    if not ok then
-        return nil, err
-    end
-
-    return image
-end
-
-------------------------------------------------------------
-function Image.static.load(a, b)
-    local image = Image:new()
-
-    local ok, err = image:load(a, b)
-    if not ok then
-        return nil, err
-    end
-
-    return image
-end
-
-------------------------------------------------------------
-function Image:initialize()
+function Image:initialize(a, b, c, d, e, f)
     local handle = C.nxImageNew()
     self._cdata  = ffi.gc(handle, C.nxImageRelease)
+
+    if type(a) == 'number' then
+        self:create(a, b, c, d, e, f)
+    elseif a then
+        self:load(a, b)
+    end
 end
 
 ------------------------------------------------------------
 function Image:create(width, height, r, g, b, a)
-    if not isNumber(width) or not isNumber(height) then
-        return false, 'Invalid dimensions'
-    end
-
-    if isNilOrNumber(r) and isNilOrNumber(g) and isNilOrNumber(b) and isNilOrNumber(a) then
-        C.nxImageCreateFill(self._cdata, width, height, r or 0, g or 0, b or 0, a or 255);
-    elseif type(r) == 'table' then
+    if type(r) == 'table' then
         C.nxImageCreateFromData(self._cdata, width, height, ffi.new('const uint8_t[?]', #r, r))
     elseif isCArray(r) then
         C.nxImageCreateFromData(self._cdata, width, height, ffi.cast('const uint8_t*', r))
     else
-        return false, 'Invalid parameters'
+        C.nxImageCreateFill(self._cdata, width, height, r or 255, g or 255, b or 255, a or 255)
     end
 
-    return true
+    return self
 end
 
 ------------------------------------------------------------
 function Image:load(a, b)
-    if isCArray(a) and isNumber(b) then
-        -- Load from memory
+    local ok = false
+
+    if isCArray(a) and type(b) == 'number' then -- Load from memory
         ok = C.nxImageOpenFromMemory(self._cdata, a, b)
-    elseif type(a) == 'string' then
-        -- Load from file
+    elseif type(a) == 'string' then -- Load from file
         ok = C.nxImageOpenFromFile(self._cdata, a)
-    elseif class.Object.isInstanceOf(a, require('nx.inputfile')) then
-        -- Load from handle
+    elseif a and a.class and a.class.name == 'nx.inputfile' then -- Load from handle
         ok = C.nxImageOpenFromHandle(self._data, a._cdata, false)
-    else
-        return false, 'Invalid parameters'
     end
 
     -- Appropriate error message for each case
     if not ok then
-        return false, 'Cannot load image'
+        print(self, self.create, 'um')
+        self:create(2, 2, 255, 0, 255)
     end
 
-    return true
+    return self
 end
 
 ------------------------------------------------------------
@@ -164,12 +121,10 @@ end
 function Image:release()
     if self._cdata == nil then return end
     C.nxImageRelease(ffi.gc(self._cdata, nil))
-    self._cdata = nil
 end
 
 ------------------------------------------------------------
 function Image:size()
-    if self._cdata == nil then return -1, -1 end
     local sizePtr = ffi.new('unsigned int[2]')
     C.nxImageGetSize(self._cdata, sizePtr)
     return tonumber(sizePtr[0]), tonumber(sizePtr[1])
@@ -177,14 +132,13 @@ end
 
 ------------------------------------------------------------
 function Image:setColorMask(r, g, b, a, alpha)
-    if self._cdata == nil then return end
     C.nxImageColorMask(self._cdata, r or 0, g or 0, b or 0, a or 255, alpha or 0)
+
+    return self
 end
 
 ------------------------------------------------------------
 function Image:copy(source, a, b, c, d, e, f, g, h)
-    if self._cdata == nil then return end
-
     if class.Object.isInstanceOf(source, Image) then
         C.nxImageCopy(self._cdata, source._cdata.img, a or 0, b or 0, c or 0, d or 0,
             e or 0, f or 0, not not g)
@@ -192,38 +146,40 @@ function Image:copy(source, a, b, c, d, e, f, g, h)
         C.nxImageCopyPixels(self._cdata, source, a or 0, b or 0, c or 0, d or 0, e or 0, f or 0,
             g or 0, not not h)
     end
+
+    return self
 end
 
 ------------------------------------------------------------
 function Image:setPixel(x, y, r, g, b, a)
-    if self._cdata == nil then return end
     C.nxImageSetPixel(self._cdata, x, y, r, g, b, a)
+
+    return self
 end
 
 ------------------------------------------------------------
 function Image:pixel(x, y)
-    if self._cdata == nil then return 0, 0, 0, 0 end
     local colorPtr = ffi.new('uint8_t[4]')
     C.nxImageGetPixel(self._cdata, x, y, colorPtr)
-    return tonumber(colorPtr[0]), tonumber(colorPtr[1]), tonumber(colorPtr[2]),
+
+    return tonumber(colorPtr[0]),
+        tonumber(colorPtr[1]),
+        tonumber(colorPtr[2]),
         tonumber(colorPtr[3])
 end
 
 ------------------------------------------------------------
 function Image:data()
-    if self._cdata == nil then return nil end
     return C.nxImageGetPixelsPtr(self._cdata)
 end
 
 ------------------------------------------------------------
 function Image:flipHorizontally()
-    if self._cdata == nil then return end
     C.nxImageFlipHorizontally(self._cdata)
 end
 
 ------------------------------------------------------------
 function Image:flipVertically()
-    if self._cdata then return end
     C.nxImageFlipVertically(self._cdata)
 end
 

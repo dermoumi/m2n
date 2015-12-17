@@ -86,18 +86,12 @@ end
 
 -- Create window
 local ok, err = Window.create("m2n", 1280, 720, graphicsFlags or {vsync = false})
-if not ok then
-    Log.error('Cannot initialize window: ' + err)
-    return 1
-end
+if not ok then error('Cannot initialize window: ' + err) end
 
 -- Initialize renderer
-ok = Renderer.init()
-if not ok then
-    Log.error('Cannot initialize renderer.')
-    return 1
-end
+if not Renderer.init() then error('Cannot initialize renderer.') end
 
+-- Set window icon
 Window.setIcon('assets/icon.png')
 
 ------------------------------------------------------------
@@ -118,7 +112,8 @@ require('game.worker')
     return true
 end)
 .registerFunc('nx.image', function(obj, id)
-    return obj:load(id)
+    obj:load(id)
+    return true
 end)
 
 ------------------------------------------------------------

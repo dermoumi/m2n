@@ -385,10 +385,7 @@ end
 
 ------------------------------------------------------------
 function Window.setIcon(icon)
-    if type(icon) == 'string' then
-        icon = Image.load(icon)
-        if not icon then return false, 'Unable to load icon' end
-    end
+    if type(icon) == 'string' then icon = Image:new(icon) end
 
     local w, h = icon:size()
     C.nxWindowSetIcon(w, h, icon:data())
