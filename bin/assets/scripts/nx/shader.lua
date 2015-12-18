@@ -81,34 +81,38 @@ end
 
 ------------------------------------------------------------
 function Shader:load(vertexShader, fragmentShader)
-    local file = InputFile:new()
-        :onError(function() end)
-        :open(vertexShader)
+    if type(vertexShader) == 'string' then
+        -- Try to open vertex shader file
+        local file = InputFile:new()
+            :onError(function() end)
+            :open(vertexShader)
 
-    if file:isOpen() then
-        vertexShader = file:read()
-        file:release()
-    elseif type(vertexShader) ~= 'string' then
+        if file:isOpen() then
+            vertexShader = file:read()
+            file:release()
+        end
+    else
         -- Fall back to default vertex shader
         vertexShader = C.nxShaderDefaultVSCode()
     end
 
-    file = InputFile:new()
-        :onError(function() end)
-        :open(fragmentShader)
+    if type(fragmentShader) == 'string' then
+        -- Try to open fragment shader file
+        file = InputFile:new()
+            :onError(function() end)
+            :open(fragmentShader)
 
-    if file:isOpen() then
-        fragmentShader = file:read()
-        file = nil
-    elseif type(fragmentShader) ~= 'string' then
+        if file:isOpen() then
+            fragmentShader = file:read()
+            file = nil
+        end
+    else
         -- Fall back to default fragment shader
         fragmentShader = C.nxShaderDefaultFSCode()
     end
 
     if not C.nxShaderLoad(self._cdata, vertexShader, fragmentShader) then
         Log.warning('Cannot load shader: ' .. ffi.string(C.nxShaderLog()))
-
-        -- Load default shader
         self._cdata = nil
     end
 

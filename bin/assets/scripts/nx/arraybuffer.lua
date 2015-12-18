@@ -25,49 +25,28 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
--- ffi C declarations
+local Renderer = require 'nx.renderer'
+local class    = require 'nx.class'
+
+local Arraybuffer = class 'nx.arraybuffer'
+
 ------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
-ffi.cdef [[
-    typedef struct {
-        uint32_t id;
-    } NxArrayBuffer;
-]]
-
-------------------------------------------------------------
--- A class to handle VRAM buffers creation and managment
-------------------------------------------------------------
-local class = require 'nx.class'
-local Arraybuffer = class 'nx.arraybuffer'
-
-local Renderer = require 'nx.renderer'
-
 ------------------------------------------------------------
 local function destroyBuffer(cdata)
-    C.nxRendererDestroyBuffer(cdata.id)
+    C.nxRendererDestroyBuffer(cdata[0])
 end
 
 ------------------------------------------------------------
 function Arraybuffer.static.vertexbuffer(size, data)
-    local buffer = Arraybuffer:new()
-
-    ok, err = buffer:createVertexbuffer(size, data)
-    if not ok then return nil, err end
-
-    return buffer
+    return Arraybuffer:new():createVertexbuffer(size, data)
 end
 
 ------------------------------------------------------------
 function Arraybuffer.static.indexbuffer(size, data)
-    local buffer = Arraybuffer:new()
-
-    ok, err = buffer:createIndexbuffer(size, data)
-    if not ok then return nil, err end
-
-    return buffer
+    return Arraybuffer:new():createIndexbuffer(size, data)
 end
 
 ------------------------------------------------------------
@@ -77,52 +56,68 @@ end
 
 ------------------------------------------------------------
 function Arraybuffer.static.setVertexbuffer(buffer, slot, offset, stride)
-    buffer = buffer and buffer._cdata.id or 0
+    buffer = buffer and buffer._cdata[0] or 0
     C.nxRendererSetVertexBuffer(slot, buffer, offset, stride)
+
+    return Arraybuffer
 end
 
 ------------------------------------------------------------
 function Arraybuffer.static.setIndexbuffer(buffer, format)
-    buffer = buffer and buffer._cdata.id or 0
+    buffer = buffer and buffer._cdata[0] or 0
     if format ~= 16 and format ~= 32 then format = 16 end
 
     C.nxRendererSetIndexBuffer(buffer, format / 16 - 1)
+
+    return Arraybuffer
 end
 
 ------------------------------------------------------------
 function Arraybuffer:initialize()
-    self._cdata = ffi.new('NxArrayBuffer', {0})
+    self._cdata = ffi.new('uint32_t[1]', {0})
 end
 
 ------------------------------------------------------------
 function Arraybuffer:release()
-    C.nxRendererDestroyBuffer(ffi.gc(self._cdata, nil).id)
+    destroyBuffer(ffi.gc(self._cdata, nil))
 end
 
 ------------------------------------------------------------
 function Arraybuffer:createVertexbuffer(size, data)
-    self._cdata = ffi.new('NxArrayBuffer', {C.nxRendererCreateVertexBuffer(size, data)})
+    self._cdata = ffi.new('uint32_t[1]', {C.nxRendererCreateVertexBuffer(size, data)})
     ffi.gc(self._cdata, destroyBuffer)
 
-    return self._cdata.id ~= 0
+    if self._cdata[0] == 0 then
+        Log.warning('Failed to create vertex buffer')
+    end
+
+    return self
 end
 
 ------------------------------------------------------------
 function Arraybuffer:createIndexbuffer(size, data)
-    self._cdata = ffi.new('NxArrayBuffer', {C.nxRendererCreateIndexBuffer(size, data)})
+    self._cdata = ffi.new('uint32_t[1]', {C.nxRendererCreateIndexBuffer(size, data)})
     ffi.gc(self._cdata, destroyBuffer)
 
-    return self._cdata.id ~= 0
+    if self._cdata[0] == 0 then
+        Log.warning('Failed to create index buffer')
+    end
+
+    return self
 end
 
 ------------------------------------------------------------
 function Arraybuffer:setData(offset, size, data)
-    return C.nxRendererUpdateBufferData(self._cdata.id, offset, size, data)
+    if not C.nxRendererUpdateBufferData(self._cdata[0], offset, size, data) then
+        Log.warning('Failed to set buffer data')
+    end
+
+    return self
 end
 
 ------------------------------------------------------------
 function Arraybuffer:nativeHandle()
-    return self._cdata.id
+    return self._cdata[0]
 end
 
 ------------------------------------------------------------

@@ -217,7 +217,7 @@ function Text:_render(camera, state)
         for i = 0, bufCountPtr[0] - 1 do
             local bufferID = bufferIDs[i];
 
-            self._vertices._cdata.id = C.nxTextArraybuffer(self._cdata, vertCountPtr, bufferID)
+            self._vertices._cdata[0] = C.nxTextArraybuffer(self._cdata, vertCountPtr, bufferID)
 
             Arraybuffer.setVertexbuffer(self._vertices, 0, 0, 16)
             C.nxRendererSetVertexLayout(Text._vertexLayout())
