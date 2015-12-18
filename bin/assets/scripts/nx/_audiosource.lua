@@ -36,12 +36,11 @@ ffi.cdef [[
     typedef struct NxAudioFilter NxAudioFilter;
 
     void nxAudioSourceRelease(NxAudioSource*);
-    uint32_t nxAudioPlay(NxAudioSource*, float, float, bool, uint32_t);
-    uint32_t nxAudioPlayClocked(NxAudioSource*, double, float, float, uint32_t);
-    uint32_t nxAudioPlay3d(NxAudioSource*, float, float, float, float, float, float, float, bool,
-        uint32_t);
+    uint32_t nxAudioPlay(NxAudioSource*, float, float, bool);
+    uint32_t nxAudioPlayClocked(NxAudioSource*, double, float, float);
+    uint32_t nxAudioPlay3d(NxAudioSource*, float, float, float, float, float, float, float, bool);
     uint32_t nxAudioPlay3dClocked(NxAudioSource*, double, float, float, float, float, float, float,
-        float, uint32_t);
+        float);
     void nxAudioSetVolume(NxAudioSource*, float);
     void nxAudioSetLooping(NxAudioSource*, bool);
     void nxAudioSetSingleInstance(NxAudioSource*, bool);
@@ -90,7 +89,7 @@ end
 
 ------------------------------------------------------------
 function AudioSource:play(volume, pan, paused)
-    local handle = C.nxAudioPlay(self._cdata, volume or -1, pan or 0, not not paused, 0)
+    local handle = C.nxAudioPlay(self._cdata, volume or -1, pan or 0, not not paused)
 
     return AudioVoice:new(handle)
 end
@@ -98,7 +97,7 @@ end
 ------------------------------------------------------------
 function AudioSource:playClocked(interval, volume, pan)
     local handle = C.nxAudioPlayClocked(
-        self._cdata, interval, volume or -1, pan or 0, not not paused, 0
+        self._cdata, interval, volume or -1, pan or 0, not not paused
     )
 
     return AudioVoice:new(handle)
@@ -107,7 +106,7 @@ end
 ------------------------------------------------------------
 function AudioSource:play3d(x, y, z, velX, velY, velZ, volume, paused)
     local handle = C.nxAudioPlay3d(
-        self._cdata, x, y, z, velX or 1, velY or 1, velZ or 1, volume or -1, not not paused, 0
+        self._cdata, x, y, z, velX or 1, velY or 1, velZ or 1, volume or -1, not not paused
     )
 
     return AudioVoice:new(handle)
@@ -116,7 +115,7 @@ end
 ------------------------------------------------------------
 function AudioSource:play3dClocked(interval, x, y, z, velX, velY, velZ, volume)
     local handle = C.nxAudioPlay3dClocked(
-        self._cdata, interval, x, y, z, velX or 0, velY or 0, velZ or 0, volume or -1, 0
+        self._cdata, interval, x, y, z, velX or 0, velY or 0, velZ or 0, volume or -1
     )
 
     return AudioVoice:new(handle)
@@ -203,8 +202,7 @@ end
 
 ------------------------------------------------------------
 function AudioSource:set3dAttenuation(model, rolloffFactor)
-    model = toAttenuationModel[model] or 0
-    C.nxAudioSet3dAttenuation(self._cdata, model, rolloffFactor)
+    C.nxAudioSet3dAttenuation(self._cdata, toAttenuationModel[model] or 0, rolloffFactor)
 
     return self
 end

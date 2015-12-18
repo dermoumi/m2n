@@ -88,11 +88,6 @@ local toFilterAttribute = {
 }
 
 ------------------------------------------------------------
-function AudioVoice.static._fromCData(data)
-    return AudioVoice:new(data)
-end
-
-------------------------------------------------------------
 function AudioVoice:initialize(handle)
     self._cdata = handle
 end
