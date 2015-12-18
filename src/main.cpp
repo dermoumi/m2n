@@ -132,11 +132,7 @@ int main(int argc, char* argv[])
     {
         LuaVM lua;
 
-        std::string nxLibCode (
-            #include "lua/nxlib.luainl"
-        );
-
-        if (!lua.initialize() || !lua.runCode("nxlib.lua", nxLibCode, retval)) {
+        if (!lua.initialize() || !lua.loadNxLibs()) {
             return fatalError(lua.getErrorMessage());
         }
 

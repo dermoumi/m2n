@@ -84,9 +84,35 @@ bool LuaVM::runCode(const std::string& filename, const std::string& code, int& r
 }
 
 //----------------------------------------------------------
+bool LuaVM::loadNxLibs()
+{
+    return loadNxLibs(mState);
+}
+
+//----------------------------------------------------------
 std::string LuaVM::getErrorMessage() const
 {
     return mErrorMessage;
+}
+
+//----------------------------------------------------------
+bool LuaVM::loadNxLibs(lua_State* state)
+{
+    // Make sure we have a valid Lua state
+    if (!state) return false;
+
+    // Load data into a string?
+    static std::string code(
+        #include "../lua/nxlib.luainl"
+    );
+
+    // Load up the code into the Lua state
+    if (luaL_loadbuffer(state, code.data(), code.size(), "nxlib.lua") != 0) return false;
+
+    // Try to run the code
+    if (lua_pcall(state, 0, 1, 0) != 0) return false;
+
+    return true;
 }
 
 //==============================================================================

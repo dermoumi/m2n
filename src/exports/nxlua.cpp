@@ -25,6 +25,7 @@
     For more information, please refer to <http://unlicense.org>
 *///============================================================================
 #include "../config.hpp"
+#include "../system/luavm.hpp"
 
 #include <luajit/lua.hpp>
 #include <string>
@@ -34,21 +35,7 @@
 //----------------------------------------------------------
 NX_EXPORT bool nxLuaLoadNxLibs(lua_State* state)
 {
-    // Load data into a string?
-    std::string code(
-        #include "../lua/nxlib.luainl"
-    );
-
-    // Make sure we have a valid Lua state
-    if (!state) return false;
-
-    // Load up the code into the Lua state
-    if (luaL_loadbuffer(state, code.data(), code.size(), "nxlib.lua") != 0) return false;
-
-    // Try to run the code
-    if (lua_pcall(state, 0, 1, 0) != 0) return false;
-
-    return true;
+    return LuaVM::loadNxLibs(state);
 }
 
 //----------------------------------------------------------

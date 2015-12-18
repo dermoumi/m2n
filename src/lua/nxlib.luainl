@@ -47,8 +47,6 @@ end
 
 -- Load a lua file
 function loadfile(filename)
-    if not filename then return nil, 'Empty filename' end
-
     local buffer = readFile(filename)
     if not buffer then return nil, 'Cannot load file: ' .. filename end
 
