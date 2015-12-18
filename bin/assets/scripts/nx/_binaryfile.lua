@@ -61,6 +61,8 @@ end
 ------------------------------------------------------------
 function BinaryFile:onError(callback)
     self._errorCallback = callback
+
+    return self
 end
 
 ------------------------------------------------------------
