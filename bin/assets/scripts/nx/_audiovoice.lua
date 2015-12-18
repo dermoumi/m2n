@@ -216,8 +216,9 @@ end
 
 ------------------------------------------------------------
 function AudioVoice:set3dAttenuation(model, rolloffFactor)
-    model = require('nx._audiosource')._toAttenuationModel[model] or 0
-    C.nxAudioVoiceSet3dSourceAttenuation(self:_handle(), model, rolloffFactor)
+    C.nxAudioVoiceSet3dSourceAttenuation(
+        self:_handle(), require('nx._audiosource')._toAttenuationModel[model] or 0, rolloffFactor
+    )
 
     return self
 end
@@ -231,8 +232,7 @@ end
 
 ------------------------------------------------------------
 function AudioVoice:setFilterParameter(id, attribute, value)
-    attribute = toFilterAttribute[attribute] or -1
-    C.nxAudioVoiceSetFilterParameter(self:_handle(), id, attribute, value)
+    C.nxAudioVoiceSetFilterParameter(self:_handle(), id, toFilterAttribute[attribute] or -1, value)
 
     return self
 end
@@ -299,8 +299,7 @@ end
 
 ------------------------------------------------------------
 function AudioVoice:filterParameter(id, attribute)
-    attribute = toFilterAttribute[attribute] or -1
-    return C.nxAudioVoiceFilterParamter(self:_handle(), id, attribute)
+    return C.nxAudioVoiceFilterParamter(self:_handle(), id, toFilterAttribute[attribute] or -1)
 end
 
 ------------------------------------------------------------
@@ -326,8 +325,9 @@ end
 
 ------------------------------------------------------------
 function AudioVoice:fadeFilterParameter(id, attribute, to, time)
-    attribute = toFilterAttribute[attribute] or -1
-    C.nxAudioVoiceFadeFilterParameter(self:_handle(), id, attribute, to, time)
+    C.nxAudioVoiceFadeFilterParameter(
+        self:_handle(), id, toFilterAttribute[attribute] or -1, to, time
+    )
 
     return self
 end
