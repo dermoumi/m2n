@@ -104,9 +104,9 @@ function Shader:load(vertexShader, fragmentShader)
         file = InputFile:new(vertexShader)
     end
 
-    if file then
+    if file:isOpen() then
         vertexShader = file:read()
-        if not dontClose then file:close() end
+        if not dontClose then file:release() end
         file = nil
     elseif type(vertexShader) ~= 'string' then
         -- Fall back to default vertex shader
@@ -121,9 +121,9 @@ function Shader:load(vertexShader, fragmentShader)
         file = InputFile:new(fragmentShader)
     end
 
-    if file then
+    if file:isOpen() then
         fragmentShader = file:read()
-        if not dontClose then file:close() end
+        if not dontClose then file:release() end
         file = nil
     elseif type(fragmentShader) ~= 'string' then
         -- Fall back to default fragment shader

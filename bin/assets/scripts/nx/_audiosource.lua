@@ -25,8 +25,11 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
--- FFI C Declarations
+local class       = require 'nx.class'
+local AudioVoice  = require 'nx._audiovoice'
+
+local AudioSource = class 'nx._audiosource'
+
 ------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
@@ -65,12 +68,6 @@ ffi.cdef [[
     const float* nxAudioBusCalcFFT(NxAudioSource*);
     const float* nxAudioBusCurrentWaveData(NxAudioSource*);
 ]]
-
-------------------------------------------------------------
-local class = require 'nx.class'
-local AudioSource = class 'nx._audiosource'
-
-local AudioVoice = require 'nx._audiovoice'
 
 ------------------------------------------------------------
 local toAttenuationModel = {
