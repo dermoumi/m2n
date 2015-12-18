@@ -28,12 +28,14 @@
 ------------------------------------------------------------
 -- A base class for camera objects
 ------------------------------------------------------------
-local class = require 'nx.class'
-local Camera = class 'nx._camera'
+local class  = require 'nx.class'
 
-local Window   = require 'nx.window'
-local Renderer = require 'nx.renderer'
+local Window       = require 'nx.window'
+local Renderer     = require 'nx.renderer'
 local Renderbuffer = require 'nx.renderbuffer'
+local Matrix       = require 'nx.matrix'
+
+local Camera = class 'nx._camera'
 
 local ffi = require 'ffi'
 local C   = ffi.C
@@ -74,22 +76,20 @@ end
 
 ------------------------------------------------------------
 function Camera:matrix()
-    return require('nx.matrix'):new()
+    return Matrix:new()
 end
 
 ------------------------------------------------------------
 function Camera:clear(r, g, b, a, depth, col0, col1, col2, col3, clearDepth)
     self:apply()
 
-    -- Make sure of values
-    if col0 == nil then col0 = true end
-    if col1 == nil then col1 = true end
-    if col2 == nil then col2 = true end
-    if col3 == nil then col3 = true end
+    -- Make sure the values are valid
+    if r == nil then r, g, b = 0, 0, 0 end
+    if col0 == nil then col0, col1, col2, col3 = true, true, true, true end
     if clearDepth == nil then clearDepth = true end
 
     C.nxRendererClear(
-        r or 0, g or 0, b or 0, a or 255, depth or 1.0, col0, col1, col2, col3, clearDepth
+        r, g, b, a or 255, depth or 1.0, col0, col1, col2, col3, clearDepth
     )
 
     return self
@@ -98,11 +98,9 @@ end
 ------------------------------------------------------------
 function Camera:apply()
     -- Setup viewport
-    -- Needs to be always re-set since the window's size could change at anytime
     C.nxRendererSetViewport(self:viewport())
 
     if not self._updated then
-        -- Setup renderbuffer
         Renderbuffer.bind(self._rb)
 
         self._updated = true

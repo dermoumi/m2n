@@ -25,18 +25,12 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
--- A Title scene, probably the first scene the user sees
-------------------------------------------------------------
 local class = require 'nx.class'
 local Scene = require 'scene'
 local SceneTitle = class('scene.title', Scene)
 
-------------------------------------------------------------
-local Mouse = require 'nx.mouse'
-local Keyboard = require 'nx.keyboard'
 local Renderer = require 'nx.renderer'
-local Log = require 'nx.log'
+local Log      = require 'nx.log'
 
 ------------------------------------------------------------
 function SceneTitle:initialize(firstRun)
@@ -54,18 +48,13 @@ function SceneTitle:initialize(firstRun)
             return true
         end)
     end
-
-    self:worker():addFile('nx.image', 'assets/pasrien.png')
 end
 
 ------------------------------------------------------------
 function SceneTitle:load()
-    local caps = require('nx.renderer').getCapabilities()
+    local caps = Renderer.getCapabilities()
 
-    local Log = require('nx.log')
-    Log.info('================================')
     Log.info('GPU Capabilities:')
-    Log.info('--------------------------------')
     for i, v in pairs(caps) do
         Log.info(i .. ': ' .. tostring(v))
     end

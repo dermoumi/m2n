@@ -25,14 +25,10 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
--- A base class for the different scenes in the game
-------------------------------------------------------------
 local class = require 'nx.class'
-local Scene = class 'nx.scene'
-
-------------------------------------------------------------
 local Cache = require 'game.cache'
+
+local Scene = class 'nx.scene'
 
 -- Local variables -----------------------------------------
 local sceneStack = {}
@@ -61,13 +57,12 @@ function Scene.static.push(scene, ...)
         -- Check if this scene's worker contains any item that need preloading
         if scene.__worker and scene.__worker:taskCount() > 0 then
             -- Start preloading
-            return Scene.push('scene.load', scene.__worker, scene.__preloadParams or {}, scene)
+            return Scene.push('scene.load', scene)
         end
     end
-    
-    local parent = Scene.currentScene()
+
     sceneStack[#sceneStack+1] = scene
-    scene:_load(parent)
+    scene:_load()
 end
 
 ------------------------------------------------------------
@@ -92,8 +87,8 @@ function Scene.static.clean()
 end
 
 ------------------------------------------------------------
-function Scene:_load(parent)
-    self.parent = parent
+function Scene:_load()
+    self.parent = sceneStack[#sceneStack-1]
 
     self.__isLoading = true
     self:load()
@@ -122,14 +117,7 @@ function Scene:_render()
     self:render()
 
     -- Render transition if there's any
-    if self._transitionTime then
-        local camera = self._transitionCamera
-        local time = self._transitionTime
-        local duration = self:transitionDuration()
-        local fadeIn = self._transitionFadingIn
-
-        self:renderTransition(camera, time, duration, fadeIn)
-    end
+    if self._transitionTime then self:renderTransition() end
 end
 
 ------------------------------------------------------------
@@ -176,25 +164,12 @@ function Scene:isLoading()
 end
 
 ------------------------------------------------------------
-function Scene:updateTransition(dt)
-    local duration = self:transitionDuration(self._transitionFadingIn)
-
-    if self._transitionTime >= duration then
-        self._transitionTime = nil
-    else
-        self._transitionTime = math.min(duration, self._transitionTime + dt)
-        if self._transitionTime >= duration and self._transitionCallback then
-            self._transitionCallback()
-        end
-    end
-end
-
-------------------------------------------------------------
 function Scene:performTransition(camera, arg)
     if self._transitionTime then return end
 
-    local currentScene = Scene.currentScene()
-    if self == currentScene then
+    if self ~= Scene.currentScene() then
+        Scene.currentScene():performTransition(camera, arg)
+    else
         self._transitionTime = 0
         self._transitionCamera = camera
 
@@ -206,19 +181,33 @@ function Scene:performTransition(camera, arg)
             self._transitionFadingIn = false
             self._transitionCallback = nil
         end
-    else
-        currentScene:performTransition(camera, arg)
     end
 end
 
 ------------------------------------------------------------
-function Scene:renderTransition(camera, time, duration, fadingIn)
+function Scene:updateTransition(dt)
+    local duration = self:transitionDuration(self._transitionFadingIn)
+
+    if self._transitionTime >= duration then
+        if self._transitionCallback then
+            self._transitionCallback()
+            self._transitionCallback = nil
+        else
+            self._transitionTime = nil
+        end
+    else
+        self._transitionTime = math.min(duration, self._transitionTime + dt)
+    end
+end
+
+------------------------------------------------------------
+function Scene:renderTransition()
     local r, g, b, a = self:transitionColor()
 
-    a = a * (time / duration)
-    if not fadingIn then a = 255 - a end
+    a = a * (self._transitionTime / self:transitionDuration())
+    if not self._transitionFadingIn then a = 255 - a end
 
-    camera:fillFsQuad(r, g, b, a)
+    self._transitionCamera:fillFsQuad(r, g, b, a)
 end
 
 ------------------------------------------------------------
@@ -228,7 +217,7 @@ end
 
 ------------------------------------------------------------
 function Scene:transitionDuration()
-    return 0.2
+    return .2
 end
 
 ------------------------------------------------------------
