@@ -28,7 +28,8 @@
 ------------------------------------------------------------
 -- Represents a vector font object
 ------------------------------------------------------------
-local Font = require 'nx.font'
+local Config     = require 'nx.config'
+local Font       = require 'nx.font'
 local VectorFont = Font:subclass('nx.vectorfont')
 
 ------------------------------------------------------------
@@ -46,45 +47,31 @@ ffi.cdef [[
 ]]
 
 ------------------------------------------------------------
-local function isNumber(val)
-    return type(val) == 'number'
-end
-
-------------------------------------------------------------
-local function isCArray(a)
-    return type(a) == 'cdata' or type(a) == 'userdata'
-end
-
-------------------------------------------------------------
-function VectorFont.static._fromCData(cdata)
-    local font = VectorFont:allocate()
-    font._cdata = ffi.cast('NxFont*', cdata)
-    return font
-end
-
-------------------------------------------------------------
-function VectorFont:initialize()
+function VectorFont:initialize(a, b)
     local handle = C.nxVectorFontNew()
     self._cdata = ffi.gc(handle, C.nxFontRelease)
+
+    -- If given an argument, pass it to :open()
+    if a then self:open(a, b) end
 end
 
 ------------------------------------------------------------
 function VectorFont:open(a, b)
-    if isCArray(a) and isNumber(b) then
+    local ok
+
+    if type(b) == 'number' then
         ok = C.nxVectorFontOpenFromMemory(self._cdata, a, b)
     elseif type(a) == 'string' then
         ok = C.nxVectorFontOpenFromFile(self._cdata, a)
-    elseif class.Object.isInstanceOf(a, require('nx.inputfile')) then
-        ok = C.nxVectorFontOpenFromHandle(self._cdata, a._cdata)
     else
-        return false, 'Invalid parameters'
+        ok = C.nxVectorFontOpenFromHandle(self._cdata, a._cdata)
     end
 
     if not ok then
-        return false, 'Cannot open font'
+        C.nxVectorFontOpenFromFile(self._cdata, Config.defaultVectorFont)
     end
 
-    return true
+    return self
 end
 
 ------------------------------------------------------------
