@@ -25,24 +25,17 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
+local Image   = require 'nx.image'
 local Texture = require 'nx.texture'
-local Texture2D = Texture:subclass('nx.texture2d')
 
-------------------------------------------------------------
-function Texture2D.static._fromCData(cdata)
-    local texture = Texture2D:allocate()
-    texture._cdata = require('ffi').cast('NxTexture*', cdata)
-    return texture
-end
+local Texture2D = Texture:subclass('nx.texture2d')
 
 ------------------------------------------------------------
 function Texture2D:initialize(width, height, hasMips, mipMap)
     Texture.initialize(self)
 
     if width and height then
-        ok, err = self:create(width, height, hasMips, mipMap)
-        if not ok then return nil, err end
+        self:create(width, height, hasMips, mipMap)
     end
 end
 
@@ -54,22 +47,21 @@ end
 ------------------------------------------------------------
 function Texture2D:load(image, hasMips, mipMap)
     local localImage = false
+
     if type(image) == 'string' then
-        image, err = require('nx.image').load(image)
+        image = Image:new(image)
         if not image then return false, err end
         localImage = true
     end
 
     local width, height = image:size()
 
-    ok, err = self:create(width, height, hasMips, mipMap)
-    if not ok then return false, err end
-
-    self:setData(image:data())
+    self:create(width, height, hasMips, mipMap)
+        :setData(image:data())
 
     if localImage then image:release() end
 
-    return true
+    return self
 end
 
 ------------------------------------------------------------
@@ -81,8 +73,7 @@ function Texture2D:setData(data, a, b, c, d, e)
         x, y, width, height, mipLevel = a, b, c, d, e
     end
 
-    Texture.setData(self, data, x, y, width, height, 1, mipLevel)
-    return self
+    return Texture.setData(self, data, x, y, width, height, 1, mipLevel)
 end
 
 ------------------------------------------------------------

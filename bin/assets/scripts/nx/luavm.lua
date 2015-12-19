@@ -25,8 +25,11 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
--- ffi C declarations
+local Log   = require 'nx.log'
+local class = require 'nx.class'
+
+local LuaVM = class 'nx.luavm'
+
 ------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
@@ -68,12 +71,6 @@ ffi.cdef [[
     const char* lua_typename(lua_State*, int);
     int lua_type(lua_State*, int);
 ]]
-
-------------------------------------------------------------
--- A class to create and manage a standalone Lua VM
-------------------------------------------------------------
-local class = require 'nx.class'
-local LuaVM = class 'nx.luavm'
 
 -- Helpers -------------------------------------------------
 local pushers = {}
@@ -151,6 +148,7 @@ local function nxClassPusher(s, o)
         end
     end
 
+    -- Preload the class before pushing to make sure cdata attributes are defined with ffi
     C.lua_getfield(s, -10002, 'NX_ClassLoader')
     C.lua_pushstring(s, tostring(o.class.name))
     if C.lua_pcall(s, 1, 0, 0) ~= 0 then
@@ -269,35 +267,31 @@ retrievers = {
 }
 
 ------------------------------------------------------------
-function LuaVM.static._fromCData(data)
-    local vm = LuaVM:allocate()
-    vm._cdata = ffi.cast('lua_State*', data)
-    return vm
-end
-
-------------------------------------------------------------
 function LuaVM:initialize()
     local handle = C.luaL_newstate()
     if handle == nil then
-        return nil, 'Cannot create new Lua VM'
-    end
-
-    C.luaL_openlibs(handle)
-
-    if C.nxLuaLoadNxLibs(handle) then
-        self._cdata = ffi.gc(handle, C.lua_close)
+        Log.warning('Cannot create new Lua VM')
     else
-        C.lua_close(handle)
-    end
+        C.luaL_openlibs(handle)
 
-    -- Empty the stack
-    self:setTop(0)
+        if C.nxLuaLoadNxLibs(handle) then
+            self._cdata = ffi.gc(handle, C.lua_close)
+        else
+            Log.warning('Unable to load NxLibs into new Lua VM')
+            C.lua_close(handle)
+        end
+
+        -- Empty the stack
+        self:setTop(0)
+    end
 end
 
 ------------------------------------------------------------
 function LuaVM:release()
     if self._cdata == nil then return end
+
     C.lua_close(ffi.gc(self._cdata, nil))
+    self._cdata = nil
 end
 
 ------------------------------------------------------------
@@ -307,16 +301,24 @@ end
 
 ------------------------------------------------------------
 function LuaVM:getTop()
+    if self._cdata == nil then return 0 end
+
     return C.lua_gettop(self._cdata)
 end
 
 ------------------------------------------------------------
 function LuaVM:setTop(index)
-    C.lua_settop(self._cdata, index)
+    if self._cdata ~= nil then
+        C.lua_settop(self._cdata, index)
+    end
+
+    return self
 end
 
 -- Pushes values into the stack ----------------------------
 function LuaVM:push(...)
+    if self._cdata == nil then return 0 end
+
     local args = {...}
     local argc = table.maxn(args)
 
@@ -333,9 +335,8 @@ function LuaVM:push(...)
 
         local pushFunc = pushers[typename]
         if not pushFunc then
-            C.lua_settop(self._cdata, top)
-            return nil, 'Cannot push value to LuaVM: type ' .. typename .. 
-                'is not supported. Aborting'
+            error('Cannot push value to LuaVM: type ' .. typename .. 
+                'is not supported. Aborting')
         end
 
         pushFunc(self._cdata, val)
@@ -346,6 +347,8 @@ end
 
 -- popped values are returned if returnValues is true ------
 function LuaVM:pop(count, returnValues)
+    if self._cdata == nil then return end
+
     if count == 0 then return end
     count = count or 1 -- if count == nil
 
@@ -379,19 +382,17 @@ end
 --  Returns the err if a problem occurs at calling
 --  Returned values are pushed to the stack, and their count is returned
 function LuaVM:call(func, ...)
+    if self._cdata == nil then return 0 end
+
     local top = C.lua_gettop(self._cdata)
 
     local argc, err = self:push(func, ...)
-    if not argc then return nil, err end
+    if not argc then return 0, err end
 
     local args = {func, ...}
-    local retCount = 0
 
     local ok = C.lua_pcall(self._cdata, argc - 1, -1, 0)
-    if ok ~= 0 then
-        local err = self:pop(1, true)
-        return nil, err
-    end
+    if ok ~= 0 then return 0, self:pop(1, true) end
 
     return C.lua_gettop(self._cdata) - top
 end

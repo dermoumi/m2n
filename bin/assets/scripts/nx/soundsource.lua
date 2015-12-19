@@ -25,14 +25,10 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
--- Represents an in-memory sound file
-------------------------------------------------------------
 local AudioSource = require 'nx._audiosource'
+
 local SoundSource = AudioSource:subclass('nx.soundsource')
 
-------------------------------------------------------------
--- FFI C Declarations
 ------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
@@ -43,13 +39,6 @@ ffi.cdef [[
     void nxAudioSoundOpenMemory(NxAudioSource*, uint8_t*, size_t);
     double nxAudioSoundLength(NxAudioSource*);
 ]]
-
-------------------------------------------------------------
-function SoundSource.static._fromCData(cdata)
-    local soundSource = SoundSource:allocate()
-    soundSource._cdata = ffi.cast('NxAudioSource*', cdata)
-    return soundSource
-end
 
 ------------------------------------------------------------
 function SoundSource:initialize()

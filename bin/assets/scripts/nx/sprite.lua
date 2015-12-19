@@ -25,14 +25,13 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
--- Represents a 2D sprite in a 2D space
-------------------------------------------------------------
-local Entity2D = require 'nx.entity2d'
+local Arraybuffer = require 'nx.arraybuffer'
+local Renderer    = require 'nx.renderer'
+local Entity2D    = require 'nx.entity2d'
+
 local Sprite = Entity2D:subclass('nx.sprite')
 
-local Arraybuffer = require 'nx.arraybuffer'
-local Renderer = require 'nx.renderer'
+------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
@@ -50,33 +49,39 @@ end
 function Sprite:initialize(texture, subX, subY, subW, subH, normalized)
     Entity2D.initialize(self)
 
-    if not subX then
-        self:setTexture(texture)
-    else
-        self:setTexture(texture, true)
-        self:setSubrect(subX, subY, subW, subH, normalized)
+    if texture then
+        if not subX then
+            self:setTexture(texture)
+        else
+            self:setTexture(texture, true)
+                :setSubrect(subX, subY, subW, subH, normalized)
+        end
     end
 end
 
 ------------------------------------------------------------
 function Sprite:release()
-    if not self._vertexbuffer then return end
-    self._vertexbuffer:release()
+    if self._vertexbuffer then
+        self._vertexbuffer:release()
+        self._vertexbuffer = nil
+    end
+
+    self._bufferUpdated = nil
+    self._texture = nil
+    self._subX, self._subY, self._subW, self._subH = 0, 0, 0, 0
 end
 
 ------------------------------------------------------------
 function Sprite:setTexture(texture, keepSubrect)
-    if texture:texType() ~= '2d' then -- only accept 2D textures
-        return self
-    end
+    if texture:texType() == '2d' then -- only accept 2D textures
+        self._texture = texture
 
-    self._texture = texture
-
-    if keepSubrect then
-        self._updateBuffer = true
-    else
-        local w, h = texture:size()
-        self:setSubrect(0, 0, w, h)
+        if keepSubrect then
+            self._bufferUpdated = false
+        else
+            local w, h = texture:size()
+            self:setSubrect(0, 0, w, h)
+        end
     end
 
     return self
@@ -91,7 +96,7 @@ function Sprite:setSubrect(subX, subY, subW, subH, normalized)
 
     self._normalized = normalized
 
-    self._updateBuffer = true
+    self._bufferUpdated = false
     return self
 end
 
@@ -119,9 +124,10 @@ end
 ------------------------------------------------------------
 function Sprite:_render(camera, state)
     if not self._texture then return end
+
     local texW, texH = self._texture:size()
 
-    if self._updateBuffer then
+    if not self._bufferUpdated then
         local w, h, subL, subT, subR, subB
 
         subL = self._subX
@@ -157,7 +163,7 @@ function Sprite:_render(camera, state)
             self._vertexbuffer:setData(0, ffi.sizeof(buffer), buffer)
         end
 
-        self._updateBuffer = false
+        self._bufferUpdated = true
     end
 
     if self._vertexbuffer then

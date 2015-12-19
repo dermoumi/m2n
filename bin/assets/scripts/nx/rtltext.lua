@@ -25,31 +25,32 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
+local Entity2D    = require 'nx.entity2d'
+local ArrayBuffer = require 'nx.arraybuffer'
+local Text        = require 'nx.text'
+
+local RtlText = Text:subclass('nx.rtltext')
+
+------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
 ffi.cdef [[
-    typedef struct NxText NxText;
-
     NxText* nxRtlTextNew();
 ]]
 
 ------------------------------------------------------------
-local Entity2D = require 'nx.entity2d'
-local Text = require 'nx.text'
-local RtlText = Text:subclass('nx.rtltext')
-
-------------------------------------------------------------
-function RtlText:initialize()
+function RtlText:initialize(str, font, charSize)
     Entity2D.initialize(self)
 
-    local handle = C.nxRtlTextNew()
-    self._cdata = ffi.gc(handle, C.nxTextRelease)
+    self._cdata = ffi.gc(C.nxRtlTextNew(), C.nxTextRelease)
 
-    self._string = ''
-    self._charSize = 30
+    self:setString(str or '')
+        :setFont(font)
+        :setCharacterSize(charSize or 30)
+        
     self._style = 0
-    self._vertices = require('nx.arraybuffer'):new()
+    self._vertices = ArrayBuffer:new()
 end
 
 ------------------------------------------------------------

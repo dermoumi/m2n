@@ -25,8 +25,10 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
--- ffi C declarations
+local class = require 'nx.class'
+
+local Mutex = class 'nx.mutex'
+
 ------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
@@ -36,25 +38,10 @@ ffi.cdef [[
 
     NxMutex* nxMutexCreate();
     void nxMutexRelease(NxMutex*);
-    void nxMutexLock(NxMutex*);
     bool nxMutexTryLock(NxMutex*);
+    void nxMutexLock(NxMutex*);
     void nxMutexUnlock(NxMutex*);
 ]]
-
-------------------------------------------------------------
--- A class to create and manage a mutex
---  Must be passed onto each of the threads using it
---  from the main thread.
-------------------------------------------------------------
-local class = require 'nx.class'
-local Mutex = class 'nx.mutex'
-
-------------------------------------------------------------
-function Mutex.static._fromCData(data)
-    local mutex = Mutex:allocate()
-    mutex._cdata = ffi.cast('NxMutex*', data)
-    return mutex
-end
 
 ------------------------------------------------------------
 function Mutex:initialize()
@@ -62,18 +49,26 @@ function Mutex:initialize()
 end
 
 ------------------------------------------------------------
-function Mutex:lock()
-    C.nxMutexLock(self._cdata)
-end
-
-------------------------------------------------------------
 function Mutex:tryLock()
+    if self._cdata == nil then return end
+
     return C.nxMutexTryLock(self._cdata)
 end
 
 ------------------------------------------------------------
+function Mutex:lock()
+    if self._cdata == nil then return self end
+
+    C.nxMutexLock(self._cdata)
+    return self
+end
+
+------------------------------------------------------------
 function Mutex:unlock()
+    if self._cdata == nil then return self end
+
     C.nxMutexUnlock(self._cdata)
+    return self
 end
 
 ------------------------------------------------------------

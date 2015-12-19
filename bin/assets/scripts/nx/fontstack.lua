@@ -25,14 +25,10 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
--- Represents a font stack
-------------------------------------------------------------
 local Font = require 'nx.font'
+
 local FontStack = Font:subclass('nx.fontstack')
 
-------------------------------------------------------------
--- FFI C Declarations
 ------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
@@ -46,14 +42,6 @@ ffi.cdef [[
 ]]
 
 ------------------------------------------------------------
-function FontStack.static._fromCData(cdata)
-    local stack = FontStack:allocate()
-    stack._cdata = ffi.cast('NxFont*', cdata)
-    stack._fonts = {}
-    return stack
-end
-
-------------------------------------------------------------
 function FontStack:initialize()
     local handle = C.nxFontStackNew()
     self._cdata = ffi.gc(handle, C.nxFontRelease)
@@ -62,15 +50,21 @@ end
 
 ------------------------------------------------------------
 function FontStack:addFont(font, prepend)
-    if font:isInstanceOf(FontStack) then
-        for i, v in ipairs(font._fonts) do
-            self._fonts[#self._fonts + 1] = v
+    if self._cdata ~= nil then
+        if font:isInstanceOf(FontStack) then
+            -- A font stack, append its child fonts instead
+            for i, v in ipairs(font._fonts) do
+                self._fonts[#self._fonts + 1] = v
+            end
+            C.nxFontStackAddStack(self._cdata, font._cdata, not not prepend)
+        else
+            -- A single font
+            self._fonts[#self._fonts] = font
+            C.nxFontStackAddFont(self._cdata, font._cdata, not not prepend)
         end
-        C.nxFontStackAddStack(self._cdata, font._cdata, not not prepend)
-    else
-        self._fonts[#self._fonts] = font
-        C.nxFontStackAddFont(self._cdata, font._cdata, not not prepend)
     end
+
+    return self
 end
 
 ------------------------------------------------------------

@@ -85,11 +85,10 @@ end
 ------------------------------------------------------------
 
 -- Create window
-local ok, err = Window.create("m2n", 1280, 720, graphicsFlags or {vsync = false})
-if not ok then error('Cannot initialize window: ' + err) end
+Window.create("m2n", 1280, 720, graphicsFlags or {vsync = false})
 
 -- Initialize renderer
-if not Renderer.init() then error('Cannot initialize renderer.') end
+Renderer.init()
 
 -- Set window icon
 Window.setIcon('assets/icon.png')

@@ -25,8 +25,8 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
--- ffi C declarations
+local Nx = {}
+
 ------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
@@ -37,20 +37,20 @@ ffi.cdef [[
     const char* nxSysGetPlatform();
 ]]
 
-------------------------------------------------------------
--- A set of functions to interact with general system
--- functionality
-------------------------------------------------------------
-local Nx = {}
-
 -- Constants -----------------------------------------------
 local platform = ffi.string(C.nxSysGetPlatform()):lower()
 
 ------------------------------------------------------------
-Nx.sleep = C.nxSysSleep
+function Nx.sleep(t)
+    C.nxSysSleep(t)
+
+    return Nx
+end
 
 ------------------------------------------------------------
-Nx.getSystemTime = C.nxSysGetTime
+function Nx.getSystemTime()
+    return C.nxSysGetTime()
+end
 
 ------------------------------------------------------------
 function Nx.platform(a, b, ...)

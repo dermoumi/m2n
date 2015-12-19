@@ -77,6 +77,7 @@ end
 function Shader:release()
     if self._cdata == nil then return end
     C.nxShaderRelease(ffi.gc(self._cdata, nil))
+    self._cdata = nil
 end
 
 ------------------------------------------------------------
@@ -166,19 +167,19 @@ end
 
 ------------------------------------------------------------
 function Shader:setSampler(name, sampler)
-    if self._cdata == nil then return self end
+    if self._cdata ~= nil then
+        -- Check local uniforms
+        local uniform = self._samplers[name]
+        if not uniform then
+            uniform = C.nxShaderSamplerLocation(self._cdata, name)
+            self._samplers[name] = uniform
+        end
 
-    -- Check local uniforms
-    local uniform = self._samplers[name]
-    if not uniform then
-        uniform = C.nxShaderSamplerLocation(self._cdata, name)
-        self._samplers[name] = uniform
-    end
-
-    if uniform < 0 then
-        Log.warning('Sampler "' .. name .. '"does not exist')
-    else
-        C.nxShaderSetSampler(self._cdata, uniform, sampler)
+        if uniform < 0 then
+            Log.warning('Sampler "' .. name .. '"does not exist')
+        else
+            C.nxShaderSetSampler(self._cdata, uniform, sampler)
+        end
     end
 
     return self

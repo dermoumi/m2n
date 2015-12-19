@@ -25,11 +25,7 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
--- A base class for camera objects
-------------------------------------------------------------
-local class  = require 'nx.class'
-
+local class        = require 'nx.class'
 local Window       = require 'nx.window'
 local Renderer     = require 'nx.renderer'
 local Renderbuffer = require 'nx.renderbuffer'
@@ -37,6 +33,7 @@ local Matrix       = require 'nx.matrix'
 
 local Camera = class 'nx._camera'
 
+------------------------------------------------------------
 local ffi = require 'ffi'
 local C   = ffi.C
 

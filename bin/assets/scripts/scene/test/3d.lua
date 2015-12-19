@@ -39,7 +39,7 @@ function SceneTest3D:load()
     self.camera = require('nx.camera3d'):new(70, 16/9, -1, 1)
 
     self.texture = require('nx.texture2d'):new()
-    self.texture:load(self:cache('assets/pasrien.png'))
+        :load(self:cache('assets/pasrien.png'))
 
     self.sprite = require('nx.sprite'):new(self.texture)
         :setScale(1/512, 1/512)

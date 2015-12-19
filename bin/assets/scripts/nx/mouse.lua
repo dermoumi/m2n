@@ -25,8 +25,8 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
--- ffi C declarations
+local Mouse = {}
+
 ------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
@@ -43,11 +43,6 @@ ffi.cdef [[
     bool nxMouseSetGrab(bool);
     bool nxMouseIsGrabbed();
 ]]
-
-------------------------------------------------------------
--- A set of functions to get the state of the mouse
-------------------------------------------------------------
-local Mouse = {}
 
 -- Constants -----------------------------------------------
 local cursors = {
@@ -95,19 +90,19 @@ end
 ------------------------------------------------------------
 function Mouse.setCursor(cursor, originX, originY)
     if type(cursor) == 'string' then
-        if cursor == 'image' then
-            return
-        end
-
-        for i = -1, #cursors do
-            if cursors[i] == cursor then
-                C.nxMouseSetSystemCursor(i)
-                return
+        if cursor ~= 'image' then
+            for i = -1, #cursors do
+                if cursors[i] == cursor then
+                    C.nxMouseSetSystemCursor(i)
+                    break
+                end
             end
         end
     else
         -- TODO: Set an image as cursor
     end
+
+    return Mouse
 end
 
 ------------------------------------------------------------
@@ -118,12 +113,15 @@ end
 ------------------------------------------------------------
 function Mouse.setPosition(x, y)
     C.nxMouseSetPosition(x, y, false)
+
+    return Mouse
 end
 
 ------------------------------------------------------------
 function Mouse.getPosition()
     local posPtr = ffi.new('int[2]')
     C.nxMouseGetPosition(posPtr, false)
+
     return tonumber(posPtr[0]), tonumber(posPtr[1])
 end
 
@@ -144,12 +142,14 @@ end
 
 ------------------------------------------------------------
 function Mouse.grab(grabbed)
+    Log.warning('Grabbing mouse is not implemented yet')
     -- return C.nxMouseSetGrab(grabbed)
-    return false
+    return Mouse
 end
 
 ------------------------------------------------------------
 function Mouse.isGrabbed()
+    Log.warning('Grabbing mouse is not implemented yet')
     -- return C.nxMouseIsGrabbed()
     return false
 end

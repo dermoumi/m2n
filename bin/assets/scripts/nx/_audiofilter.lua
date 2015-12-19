@@ -25,8 +25,10 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
--- FFI C Declarations
+local class = require 'nx.class'
+
+local AudioFilter = class 'nx._audiofilter'
+
 ------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
@@ -50,20 +52,10 @@ ffi.cdef [[
 ]]
 
 ------------------------------------------------------------
-local class = require 'nx.class'
-local AudioFilter = class 'nx.audiofilter'
-
-------------------------------------------------------------
-function AudioFilter.static._fromCData(cdata)
-    local filter = AUdioFilter:allocate()
-    filter._cdata = ffi.cast('NxAudioFilter*', cdata)
-    return filter
-end
-
-------------------------------------------------------------
 function AudioFilter:release()
     if self._cdata == nil then return end
     C.nxAudioFilterRelease(ffi.gc(self._cdata, nil))
+    self._cdata = nil
 end
 
 ------------------------------------------------------------

@@ -311,7 +311,7 @@ function Scene:onKeyDown(scancode, keysym, repeated)
 end
 
 ------------------------------------------------------------
-function Scene:onKeyUp(scancode, keysym, repeated)
+function Scene:onKeyUp(scancode, keysym)
     -- Nothing to do
 end
 

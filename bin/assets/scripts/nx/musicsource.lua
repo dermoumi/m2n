@@ -25,14 +25,10 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
--- Represents an streamable sound file
-------------------------------------------------------------
 local AudioSource = require 'nx._audiosource'
+
 local MusicSource = AudioSource:subclass('nx.musicsource')
 
-------------------------------------------------------------
--- FFI C Declarations
 ------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
@@ -45,16 +41,8 @@ ffi.cdef [[
 ]]
 
 ------------------------------------------------------------
-function MusicSource.static._fromCData(cdata)
-    local musicSource = MusicSource:allocate()
-    musicSource._cdata = ffi.cast('NxAudioSource*', cdata)
-    return musicSource
-end
-
-------------------------------------------------------------
 function MusicSource:initialize()
-    local handle = C.nxAudioMusicCreate()
-    self._cdata = ffi.gc(handle, C.nxAudioSourceRelease)
+    self._cdata = ffi.gc(C.nxAudioMusicCreate(), C.nxAudioSourceRelease)
 end
 
 ------------------------------------------------------------
@@ -70,6 +58,8 @@ end
 
 ------------------------------------------------------------
 function MusicSource:length()
+    if self._cdata == nil then return 0 end
+
     return C.nxAudioMusicLength(self._cdata)
 end
 

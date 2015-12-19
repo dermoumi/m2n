@@ -25,7 +25,8 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-local class      = require 'nx.class'
+local class = require 'nx.class'
+
 local AudioVoice = class 'nx._audiovoice'
 
 ------------------------------------------------------------

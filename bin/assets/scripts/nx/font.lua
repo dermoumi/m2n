@@ -25,8 +25,11 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
--- FFI C Declarations
+local Texture = require 'nx.texture'
+local class   = require 'nx.class'
+
+local Font = class 'nx.font'
+
 ------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
@@ -36,7 +39,7 @@ ffi.cdef [[
     typedef struct NxTexture NxTexture;
 
     void nxFontRelease(NxFont*);
-    void nxFontGlyph(const NxFont*, uint32_t, uint32_t, bool, float*, uint32_t*);
+    void nxFontGlyph(const NxFont*, uint32_t, uint32_t, bool, double*);
     float nxFontKerning(const NxFont*, uint32_t, uint32_t, uint32_t);
     float nxFontLineSpacing(const NxFont*, uint32_t);
     float nxFontUnderlinePosition(const NxFont*, uint32_t);
@@ -45,59 +48,56 @@ ffi.cdef [[
 ]]
 
 ------------------------------------------------------------
--- Represents a vector font object
-------------------------------------------------------------
-local class = require 'nx.class'
-local Font = class 'nx.font'
-
-local Texture = require 'nx.texture'
-
-------------------------------------------------------------
-function Font.static._fromCData(cdata)
-    local font = Font:allocate()
-    font._cdata = ffi.cast('NxFont*', cdata)
-    return font
-end
-
-------------------------------------------------------------
 function Font:release()
     if not self._cdata then return end
     C.nxFontRelease(self._cdata)
+    self._cdata = nil
 end
 
 ------------------------------------------------------------
 function Font:glyph(codePoint, charSize, bold)
-    local fValues = ffi.new('float[5]')
-    local uValues = ffi.new('uint32_t[4]')
-    C.nxFontGlyph(self._cdata, codePoint, charSize, not not bold, fValues, uValues)
+    if self._cdata == nil then return 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, false end
 
-    return fValues[0], fValues[1], fValues[2], fValues[3], fValues[4], uValues[0], uValues[1],
-        uValues[2], uValues[4]
+    local values = ffi.new('double[11]')
+    C.nxFontGlyph(self._cdata, codePoint, charSize, not not bold, values)
+
+    return values[0], -- advance
+        values[1], values[2], values[3], values[4], -- glyph left, top, width, height
+        values[5], values[6], values[7], values[8], -- texCoords left, top, width, height
+        values[9], values[10] ~= 0 -- page, isValid
 end
 
 ------------------------------------------------------------
 function Font:kerning(first, second, charSize)
+    if self._cdata == nil then return 0 end
     return C.nxFontKerning(self._cdata, first, second, charSize)
 end
 
 ------------------------------------------------------------
 function Font:lineSpacing(charSize)
+    if self._cdata == nil then return 0 end
     return C.nxFontLineSpacing(self._cdata, charSize)
 end
 
 ------------------------------------------------------------
 function Font:underlinePosition(charSize)
+    if self._cdata == nil then return 0 end
     return C.nxFontUnderlinePosition(self._cdata, charSize)
 end
 
 ------------------------------------------------------------
 function Font:underlineThickness(charSize)
+    if self._cdata == nil then return 0 end
     return C.nxFontUnderlineThickness(self._data, charSize)
 end
 
 ------------------------------------------------------------
 function Font:texture(charSize, index)
-    return Texture._fromCData(C.nxFontTexture(self._cdata, charSize, index or 0))
+    if self._cdata == nil then return Texture:new() end
+
+    local texture = Texture:allocate()
+    texture._cdata = C.nxFontTexture(self._cdata, charSize, index or 0)
+    return texture
 end
 
 ------------------------------------------------------------

@@ -25,19 +25,13 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
 local AudioSource = require 'nx._audiosource'
+
 local AudioBus = AudioSource:subclass('nx.audiobus')
 
+------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
-
-------------------------------------------------------------
-function AudioBus.static._fromCData(cdata)
-    local bus = AudioBus:allocate()
-    bus._cdata = ffi.cast('NxAudioSource*', cdata)
-    return bus
-end
 
 ------------------------------------------------------------
 function AudioBus:initialize()
@@ -47,25 +41,33 @@ end
 
 ------------------------------------------------------------
 function AudioBus:setChannels(channelCount)
-    C.nxAudioBusSetChannels(self._cdata, channelCount)
+    if self._cdata ~= nil then
+        C.nxAudioBusSetChannels(self._cdata, channelCount)
+    end
 
     return self
 end
 
 ------------------------------------------------------------
 function AudioBus:enableVisualization(enable)
-    C.nxAudioBusEnableVisualization(self._cdata, enable)
+    if self._cdata ~= nil then
+        C.nxAudioBusEnableVisualization(self._cdata, enable)
+    end
 
     return self
 end
 
 ------------------------------------------------------------
 function AudioBus:calcFFTData()
+    if self._cdata == nil then return nil end
+
     return C.nxAudioBusCalcFFT(self._cdata)
 end
 
 ------------------------------------------------------------
 function AudioBus:currentWaveData()
+    if self._cdata == nil then return nil end
+
     return C.nxAudioBusCurrentWaveData(self._cdata)
 end
 

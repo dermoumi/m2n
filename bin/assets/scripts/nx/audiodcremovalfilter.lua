@@ -25,10 +25,11 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
-local AudioFilter = require 'nx.audiofilter'
+local AudioFilter = require 'nx._audiofilter'
+
 local AudioDCRemovalFilter = AudioFilter:subclass('nx.audiodcremovalfilter')
 
+------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
@@ -40,7 +41,9 @@ end
 
 ------------------------------------------------------------
 function AudioDCRemovalFilter:setParams(length)
-    C.nxAudioFilterDcRemovalSetParams(self._cdata, length or 1)
+    if self._cdata ~= nil then
+        C.nxAudioFilterDcRemovalSetParams(self._cdata, length or 1)
+    end
 
     return self
 end

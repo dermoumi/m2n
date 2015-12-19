@@ -26,7 +26,8 @@
 --]]----------------------------------------------------------------------------
 
 local BinaryFile = require 'nx._binaryfile'
-local InputFile  = BinaryFile:subclass('nx.inputfile')
+
+local InputFile = BinaryFile:subclass('nx.inputfile')
 
 ------------------------------------------------------------
 local ffi = require 'ffi'

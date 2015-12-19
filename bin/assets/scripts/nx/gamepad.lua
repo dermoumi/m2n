@@ -25,8 +25,12 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
--- ffi C declarations
+local Log        = require 'nx.log'
+local InputFile  = require 'nx.inputfile'
+local OutputFile = require 'nx.outputfile'
+
+local Gamepad = {}
+
 ------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
@@ -43,14 +47,6 @@ ffi.cdef [[
     bool nxGamepadAddMappings(const char*);
     const char* nxGamepadGetMappings();
 ]]
-
-------------------------------------------------------------
--- A set of functions to interact with Controller devices
-------------------------------------------------------------
-local Gamepad = {}
-
-local InputFile = require 'nx.inputfile'
-local OutputFile = require 'nx.outputfile'
 
 -- Constants -----------------------------------------------
 local axes = {
@@ -158,7 +154,6 @@ local mappingHat = {
     leftdown  = 12
 }
 
--- Local variables -----------------------------------------
 local gamepads = {}
 
 ------------------------------------------------------------
@@ -181,53 +176,42 @@ end
 
 ------------------------------------------------------------
 function Gamepad.loadMappings(mappings)
-    -- Make sure the arguments are valid
-    if type(mappings) == 'string' or mappings == '' then
-        return false, 'Invalid arguments'
+    -- Attempt to load from file
+    local file = InputFile:new()
+        :onError(function() end)
+        :open(mappings)
+
+    if file:isOpen() then
+        mappings = file:read(file:size())
+        file:release()
     end
 
-    -- Attempt to load from file if said file exists
-    local mappingsStr = ''
-    local file, err = InputFile:new(mappings)
-    if file then
-        mappingsStr = file:read(file:size())
-        file:close()
-    else
-        mappingsStr = mappings
+    if not C.nxGamepadAddMappings(mappings) then
+        Log.warning('Unable to load gamepad mappings')
     end
 
-    return C.nxGamepadAddMappings(mappingsStr)
+    return self
 end
 
 ------------------------------------------------------------
 function Gamepad.saveMappings(filename)
-    -- Retrieve mappings string
-    local mappings = ffi.string(C.nxGamepadGetMappings())
-
     -- Attempt to save to file if filename is valid
-    if type(filename) == 'string' and filename ~= '' then
-        local file, err = OutputFile:new(filename)
-        if file then
-            file:write(mappings)
-            file:close()
-        end
-    end
+    OutputFile:new()
+        :onError(function()
+            Log.warning('Unable to save gamepad mappings to file "' .. filename .. '"')
+        end)
+        :open(filename)
+        :write(ffi.string(C.nxGamepadGetMappings()))
+        :release()
 
-    -- Return retrieved mappings
-    return mappings
+    return self
 end
 
 ------------------------------------------------------------
 function Gamepad.setMapping(guid, mappings)
     -- Get the GUID if we're given the joystick ID
     if type(guid) == 'number' then
-        local Joystick = require 'nx.joystick'
-        guid = Joystick.getGUID(id)
-    end
-
-    -- Check arguments
-    if type(guid) ~= 'string' or guid == '' then
-        return false, 'Invalid arguments'
+        guid = require('nx.joystick').getGUID(guid)
     end
 
     -- Build up the mappings string if 'mappings' is an array
@@ -261,28 +245,34 @@ function Gamepad.setMapping(guid, mappings)
                 end
             end
         end
-    else
-        -- Invalid argument
-        return false, 'Invalid arguments'
     end
 
-    return C.nxGamepadAddMapping(mappingsStr)
+    if not C.nxGamepadAddMapping(mappingsStr) then
+        Log.warinng('Unble to set mappings for gamepad "' .. guid .. '"')
+    end
+
+    return self
 end
 
 ------------------------------------------------------------
 function Gamepad.getMapping(guid, raw)
     -- Get the GUID if we're given the joystick ID
     if type(guid) == 'number' then
-        local Joystick = require 'nx.joystick'
-        guid = Joystick.getGUID(id)
-        if guid == '' then return {}, 'Invalid Joystick ID' end
+        guid = require('nx.joystick').getGUID(guid)
+        if guid == '' then
+            Log.warning('Invalid Joystick ID')
+            return {}
+        end
     end
 
     local mapping = C.nxGamepadGetMapping(guid)
-    if mapping == nil then return {}, 'No mapping available' end
+    if mapping == nil then
+        Log.warning('No mapping available for joystick "' .. guid .. '"')
+        return {}
+    end
     mapping = ffi.string(mapping)
 
-    -- Return it as is if requested raw
+    -- Return it as is, if requested raw
     if raw then return mapping end
 
     -- Parse it into a lua table

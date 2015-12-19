@@ -25,8 +25,8 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
--- ffi C declarations
+local Renderer = {}
+
 ------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
@@ -83,11 +83,6 @@ ffi.cdef [[
     void nxRendererSync();
     void nxRendererGetCapabilities(uint32_t*, bool*);
 ]]
-
-------------------------------------------------------------
--- A set of functions about on-screen rendering
-------------------------------------------------------------
-local Renderer = {}
 
 ------------------------------------------------------------
 local vertexLayouts = {}
@@ -149,7 +144,7 @@ local fromDepthFunc = {
 
 ------------------------------------------------------------
 function Renderer.init()
-    if not C.nxRendererInit() then return false end
+    if not C.nxRendererInit() then return error('Unable to initialize renderer') end
 
     -- Initialize vertex layouts
     vertexLayouts[1] = C.nxRendererRegisterVertexLayout(2, ffi.new('NxVertexLayoutAttrib[2]', {
@@ -219,20 +214,22 @@ function Renderer.init()
 
     -- Create the default, empty texture
     defaultTexture = require('nx.texture'):new()
-    defaultTexture:create('2d', 1, 1, 1, 0, 0)
-    defaultTexture:setData(ffi.new('uint8_t[4]', {255, 255, 255, 255}), 0, 0)
-
-    return true
+        :create('2d', 1, 1, 1, 0, 0)
+        :setData(ffi.new('uint8_t[4]', {255, 255, 255, 255}), 0, 0)
 end
 
 ------------------------------------------------------------
 function Renderer.begin()
     C.nxRendererBegin()
+
+    return Renderer
 end
 
 ------------------------------------------------------------
 function Renderer.finish()
     C.nxRendererFinish()
+
+    return Renderer
 end
 
 ------------------------------------------------------------
@@ -311,6 +308,8 @@ function Renderer.drawFsQuad(texture, width, height)
     C.nxRendererSetVertexLayout(vertexLayouts[1])
 
     C.nxRendererDraw(0, 0, 3)
+
+    return Renderer
 end
 
 ------------------------------------------------------------
@@ -332,11 +331,15 @@ function Renderer.fillFsQuad(r, g, b, a, blendMode)
     C.nxRendererSetVertexLayout(vertexLayouts[1])
 
     C.nxRendererDraw(0, 0, 3)
+
+    return Renderer
 end
 
 ------------------------------------------------------------
 function Renderer.enableColorWriteMask(enabled)
     C.nxRendererSetColorWriteMask(enabled)
+
+    return Renderer
 end
 
 ------------------------------------------------------------
@@ -347,6 +350,8 @@ end
 ------------------------------------------------------------
 function Renderer.setFillMode(mode)
     C.nxRendererSetFillMode(toFillMode[mode])
+
+    return Renderer
 end
 
 ------------------------------------------------------------
@@ -357,6 +362,8 @@ end
 ------------------------------------------------------------
 function Renderer.setCullMode(mode)
     C.nxRendererSetCullMode(toCullMode[mode])
+
+    return Renderer
 end
 
 ------------------------------------------------------------
@@ -367,6 +374,8 @@ end
 ------------------------------------------------------------
 function Renderer.enableScissorTest(enabled)
     C.nxRendererSetScissorTest(enabled)
+
+    return Renderer
 end
 
 ------------------------------------------------------------
@@ -377,6 +386,8 @@ end
 ------------------------------------------------------------
 function Renderer.enableMultisampling(enabled)
     C.nxRendererSetMultisampling(enabled)
+
+    return Renderer
 end
 
 ------------------------------------------------------------
@@ -387,6 +398,8 @@ end
 ------------------------------------------------------------
 function Renderer.enableAlphaToCoverage(enabled)
     C.nxRendererSetAlphaToCoverage(enabled)
+
+    return Renderer
 end
 
 ------------------------------------------------------------
@@ -407,6 +420,8 @@ function Renderer.setBlendMode(srcFactor, dstFactor)
     else
         C.nxRendererSetBlendMode(true, toBlendFactor[srcFactor], toBlendFactor[dstFactor])
     end
+
+    return Renderer
 end
 
 ------------------------------------------------------------
@@ -422,6 +437,8 @@ end
 ------------------------------------------------------------
 function Renderer.enabledDepthMask(enabled)
     C.nxRendererSetDepthMask(enabled)
+
+    return Renderer
 end
 
 ------------------------------------------------------------
@@ -432,6 +449,8 @@ end
 ------------------------------------------------------------
 function Renderer.enabledDepthTest(enabled)
     C.nxRendererSetDepthTest(enabled)
+
+    return Renderer
 end
 
 ------------------------------------------------------------
@@ -442,6 +461,8 @@ end
 ------------------------------------------------------------
 function Renderer.setDepthFunc(func)
     C.nxRendererSetDepthFunc(toDepthFunc[func])
+
+    return Renderer
 end
 
 ------------------------------------------------------------
@@ -452,6 +473,8 @@ end
 ------------------------------------------------------------
 function Renderer.sync()
     C.nxRendererSync()
+
+    return Renderer
 end
 
 ------------------------------------------------------------

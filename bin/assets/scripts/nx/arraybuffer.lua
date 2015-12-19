@@ -25,6 +25,7 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
+local Log      = require 'nx.log'
 local Renderer = require 'nx.renderer'
 local class    = require 'nx.class'
 
@@ -80,6 +81,7 @@ end
 ------------------------------------------------------------
 function Arraybuffer:release()
     destroyBuffer(ffi.gc(self._cdata, nil))
+    self._cdata = nil
 end
 
 ------------------------------------------------------------
@@ -113,11 +115,6 @@ function Arraybuffer:setData(offset, size, data)
     end
 
     return self
-end
-
-------------------------------------------------------------
-function Arraybuffer:nativeHandle()
-    return self._cdata[0]
 end
 
 ------------------------------------------------------------

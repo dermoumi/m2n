@@ -25,8 +25,8 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
--- ffi C declarations
+local Log = {}
+
 ------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
@@ -39,11 +39,6 @@ ffi.cdef [[
     void nxLogError(const char* message);
     void nxLogFatal(const char* message);
 ]]
-
-------------------------------------------------------------
--- A set of functions used for logging
-------------------------------------------------------------
-local Log = {}
 
 ------------------------------------------------------------
 function Log.verbose(message)

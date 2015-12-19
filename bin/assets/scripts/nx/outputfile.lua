@@ -26,6 +26,7 @@
 --]]----------------------------------------------------------------------------
 
 local BinaryFile = require 'nx._binaryfile'
+
 local OutputFile = BinaryFile:subclass('nx.outputfile')
 
 ------------------------------------------------------------

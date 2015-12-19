@@ -27,5 +27,8 @@
 
 return {
     -- Make sure the file is available at all times
-    defaultVectorFont = 'assets/fonts/01-Asap-Regular.otf'
+    defaultVectorFont = 'assets/fonts/01-Asap-Regular.otf',
+
+    -- Default multisampling for new render buffer
+    multisamplingLevel = 0
 }

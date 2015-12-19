@@ -25,15 +25,11 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
--- Represents a vector font object
-------------------------------------------------------------
-local Config     = require 'nx.config'
-local Font       = require 'nx.font'
+local Config = require 'nx.config'
+local Font   = require 'nx.font'
+
 local VectorFont = Font:subclass('nx.vectorfont')
 
-------------------------------------------------------------
--- FFI C Declarations
 ------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
@@ -76,6 +72,8 @@ end
 
 ------------------------------------------------------------
 function VectorFont:familyName()
+    if self._cdata == nil then return '' end
+
     return ffi.string(C.nxVectorFontFamilyName(self._cdata))
 end
 

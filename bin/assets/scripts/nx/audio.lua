@@ -25,8 +25,8 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
--- FFI C Declarations
+local Audio = {}
+
 ------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
@@ -62,9 +62,6 @@ ffi.cdef [[
 ]]
 
 ------------------------------------------------------------
-local Audio = {}
-
-------------------------------------------------------------
 function Audio.init()
     return C.nxAudioInit()
 end
@@ -77,42 +74,58 @@ end
 ------------------------------------------------------------
 function Audio.stopAll()
     C.nxAudioStopAll()
+
+    return Audio
 end
 
 ------------------------------------------------------------
 function Audio.pauseAll(pause)
     C.nxAudioPauseAll(pause)
+
+    return Audio
 end
 
 ------------------------------------------------------------
 function Audio.setGlobalVolume(volume)
     C.nxAudioSetGlobalVolume(volume)
+
+    return Audio
 end
 
 ------------------------------------------------------------
 function Audio.setGlobalFilter(filter, id)
     if filter then filter = filter._cdata end
     C.nxAudioSetGlobalFilter(filter, id or 0)
+
+    return Audio
 end
 
 ------------------------------------------------------------
 function Audio.setMaxActiveVoiceCount(count)
     C.nxAudioSetMaxActiveVoiceCount(count)
+
+    return Audio
 end
 
 ------------------------------------------------------------
 function Audio.enableVisualization(enabled)
     C.nxAudioEnableVisualization(enabled)
+
+    return Audio
 end
 
 ------------------------------------------------------------
 function Audio.update3d()
     C.nxAudioUpdate3dAudio()
+
+    return Audio
 end
 
 ------------------------------------------------------------
 function Audio.setSoundSpeed(speed)
     C.nxAudioSet3dSoundSpeed(speed)
+
+    return Audio
 end
 
 ------------------------------------------------------------
@@ -121,26 +134,36 @@ function Audio.setListenerParameters(
 )
     C.nxAudioSet3dListenerParameters(posX, posY, posZ, atX, atY, atZ, upX, upY, upZ, velX or 0,
         velY or 0, velZ or 0)
+
+    return Audio
 end
 
 ------------------------------------------------------------
 function Audio.setListenerPosition(x, y, z)
     C.nxAudioSet3dListenerPosition(x, y, z)
+
+    return Audio
 end
 
 ------------------------------------------------------------
 function Audio.setListenerAt(x, y, z)
     C.nxAudioSet3dListenerAt(x, y, z)
+
+    return Audio
 end
 
 ------------------------------------------------------------
 function Audio.setListenerUp(x, y, z)
     C.nxAudioSet3dListenerUp(x, y, z)
+
+    return Audio
 end
 
 ------------------------------------------------------------
 function Audio.setListenerVelocity(x, y, z)
     C.nxAudioSet3dListenerVelocity(x, y, z)
+
+    return Audio
 end
 
 ------------------------------------------------------------

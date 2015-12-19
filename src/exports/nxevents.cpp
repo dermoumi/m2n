@@ -135,14 +135,13 @@ static NxEventType nextEvent(NxEvent* e, int (*func)(SDL_Event*))
         e->t = strArg.data();
         return NX_TextEdit;
     case SDL_KEYDOWN:
-        e->a = event.key.repeat;
-        e->b = event.key.keysym.scancode;
-        e->c = event.key.keysym.sym;
+        e->a = event.key.keysym.scancode;
+        e->b = event.key.keysym.sym;
+        e->c = event.key.repeat;
         return NX_KeyDown;
     case SDL_KEYUP:
-        e->a = event.key.repeat;
-        e->b = event.key.keysym.scancode;
-        e->c = event.key.keysym.sym;
+        e->a = event.key.keysym.scancode;
+        e->b = event.key.keysym.sym;
         return NX_KeyUp;
     case SDL_MOUSEMOTION:
         if (event.motion.which == SDL_TOUCH_MOUSEID) return NX_Other;
