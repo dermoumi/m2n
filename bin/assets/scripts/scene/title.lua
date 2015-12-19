@@ -46,28 +46,24 @@ function SceneTitle:initialize(firstRun)
 
             return true
         end)
+
+        local caps = Renderer.getCapabilities()
+
+        Log.info('GPU Capabilities:')
+        for i, v in pairs(caps) do
+            Log.info('%s: %s', i, v)
+        end        
     end
 end
 
 ------------------------------------------------------------
 function SceneTitle:load()
-    local caps = Renderer.getCapabilities()
-
-    Log.info('GPU Capabilities:')
-    for i, v in pairs(caps) do
-        Log.info('%s: %s', i, v)
-    end
-
-    self.camera = require('nx.camera2d'):new()
-
-    self.text = require('nx.text'):new()
-        :setFont(require('game.font'))
-        :setCharacterSize(14)
+    self.text = require('nx.text')
+        :new('Current FPS:', require 'game.font', 14)
         :setColor(255, 255, 255)
         :setPosition(10, 10)
-        :setString('Current FPS: ')
 
-    self:performTransition(self.camera)
+    return true
 end
 
 ------------------------------------------------------------
@@ -77,17 +73,15 @@ end
 
 ------------------------------------------------------------
 function SceneTitle:render()
-    self.camera:clear(255, 128, 0)
+    self:view():clear(255, 128, 0)
 
-    self.camera:draw(self.text)
+    self:view():draw(self.text)
 end
 
 ------------------------------------------------------------
 function SceneTitle:onKeyDown(scancode, keyCode, repeated)
     if scancode == 'f2' then
-        self:performTransition(self.camera, function()
-            Scene.push('scene.test.3d')
-        end)
+        self:performTransition(Scene.push, 'scene.test.3d')
     elseif scancode == 'f10' then
         require('nx.window').create('m2n-', 1280, 720, {})
     elseif scancode == 'f11' then
@@ -101,15 +95,8 @@ function SceneTitle:onKeyDown(scancode, keyCode, repeated)
             print('Lua usage: ' .. tostring(collectgarbage('count') * 1024))
         end
     elseif scancode == 'a' then
-        self:performTransition(self.camera, function()
-            Scene.goTo('scene.title')
-        end)
+        self:performTransition(Scene.goTo, 'scene.title')
     end
-end
-
-------------------------------------------------------------
-function SceneTitle:back(a, b, c)
-    self:performTransition(self.camera)
 end
 
 ------------------------------------------------------------

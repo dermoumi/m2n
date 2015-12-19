@@ -25,8 +25,10 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-local class = require 'nx.class'
-local Cache = require 'game.cache'
+local Cache    = require 'game.cache'
+local Worker   = require 'game.worker'
+local Camera2D = require 'nx.camera2d'
+local class    = require 'nx.class'
 
 local Scene = class 'nx.scene'
 
@@ -91,15 +93,21 @@ function Scene:_load()
     self.parent = sceneStack[#sceneStack-1]
 
     self.__isLoading = true
-    self:load()
+    if self:load() then self:performTransition() end
     self.__isLoading = false
 end
 
 ------------------------------------------------------------
 function Scene:_update(dt)
-    if self:updateParent() and self.parent then self.parent:_update(dt) end
+    if self.parent then
+        if self:updateParent() then
+            self.parent:_update(dt)
+        else
+            self.parent._transitionTime = nil
+        end
+    end
 
-    if self._transitionTime then self:updateTransition(dt) end
+    self:updateTransition(dt)
     self:update(dt)
 end
 
@@ -117,7 +125,7 @@ function Scene:_render()
     self:render()
 
     -- Render transition if there's any
-    if self._transitionTime then self:renderTransition() end
+    self:renderTransition()
 end
 
 ------------------------------------------------------------
@@ -149,7 +157,7 @@ end
 
 ------------------------------------------------------------
 function Scene:worker()
-    if not self.__worker then self.__worker = require('game.worker'):new() end
+    if not self.__worker then self.__worker = Worker:new() end
     return self.__worker
 end
 
@@ -164,19 +172,18 @@ function Scene:isLoading()
 end
 
 ------------------------------------------------------------
-function Scene:performTransition(camera, arg)
+function Scene:performTransition(arg1, arg2)
     if self._transitionTime then return end
 
     if self ~= Scene.currentScene() then
-        Scene.currentScene():performTransition(camera, arg)
+        Scene.currentScene():performTransition(arg1, arg2)
     else
         self._transitionTime = 0
-        self._transitionCamera = camera
 
-        if type(arg) == 'function' then
+        if type(arg1) == 'function' then
             -- Has a callback, assume it's a fade out transition
             self._transitionFadingIn = true
-            self._transitionCallback = arg
+            self._transitionCallback = arg2 and function() arg1(arg2) end or arg1
         else
             self._transitionFadingIn = false
             self._transitionCallback = nil
@@ -186,6 +193,8 @@ end
 
 ------------------------------------------------------------
 function Scene:updateTransition(dt)
+    if not self._transitionTime then return end
+
     local duration = self:transitionDuration(self._transitionFadingIn)
 
     if self._transitionTime >= duration then
@@ -202,12 +211,14 @@ end
 
 ------------------------------------------------------------
 function Scene:renderTransition()
+    if not self._transitionTime then return end
+
     local r, g, b, a = self:transitionColor()
 
     a = a * (self._transitionTime / self:transitionDuration())
     if not self._transitionFadingIn then a = 255 - a end
 
-    self._transitionCamera:fillFsQuad(r, g, b, a)
+    self:view():fillFsQuad(r, g, b, a)
 end
 
 ------------------------------------------------------------
@@ -241,6 +252,15 @@ function Scene:cache(id, loaderFunc)
 end
 
 ------------------------------------------------------------
+function Scene:view()
+    if not self._view then
+        self._view = Camera2D:new()
+    end
+
+    return self._view
+end
+
+------------------------------------------------------------
 function Scene:load()
     -- Nothing to do
 end
@@ -261,8 +281,10 @@ function Scene:render()
 end
 
 ------------------------------------------------------------
-function Scene:back(...)
-    -- Nothing to do
+function Scene:back(scene, ...)
+    if scene._transitionTime ~= nil then
+        self:performTransition()
+    end
 end
 
 ------------------------------------------------------------
@@ -287,7 +309,7 @@ end
 
 ------------------------------------------------------------
 function Scene:onResize(w, h)
-    -- Nothing to do
+    self:view():reset(0, 0, w, h)
 end
 
 ------------------------------------------------------------
@@ -417,7 +439,7 @@ end
 
 ------------------------------------------------------------
 function Scene:processParent()
-    return true
+    return false
 end
 
 ------------------------------------------------------------

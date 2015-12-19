@@ -26,6 +26,7 @@
 --]]----------------------------------------------------------------------------
 
 local Scene = require 'scene'
+
 local SceneTest3D = Scene:subclass('scene.test.3d')
 
 ------------------------------------------------------------
@@ -35,7 +36,6 @@ end
 
 ------------------------------------------------------------
 function SceneTest3D:load()
-    self.view   = require('nx.camera2d'):new()
     self.camera = require('nx.camera3d'):new(70, 16/9, -1, 1)
 
     self.texture = require('nx.texture2d'):new()
@@ -45,7 +45,7 @@ function SceneTest3D:load()
         :setScale(1/512, 1/512)
         :setPosition(-1/2, -1/2)
 
-    self:performTransition(self.view)
+    return true
 end
 
 ------------------------------------------------------------
@@ -63,13 +63,8 @@ function SceneTest3D:onKeyDown(scancode, keyCode, repeated)
     elseif scancode == 'up' then
         self.camera:translate(0, 0, .1)
     elseif scancode == 'f1' then
-        self:performTransition(self.view, Scene.back)
+        Scene.back()
     end
-end
-
-------------------------------------------------------------
-function SceneTest3D:back()
-    self:performTransition(self.view)
 end
 
 ------------------------------------------------------------

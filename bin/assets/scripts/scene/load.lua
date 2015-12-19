@@ -25,8 +25,9 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
+local Text  = require 'nx.text'
 local Scene = require 'scene'
+
 local SceneLoad = Scene:subclass('scene.load')
 
 ------------------------------------------------------------
@@ -62,10 +63,8 @@ end
 ------------------------------------------------------------
 function SceneLoad:load()
     self.worker:start()
-    
-    self.camera = require('nx.camera2d'):new()
 
-    self.text = require('nx.text'):new()
+    self.text = Text:new()
         :setFont(require('game.font'))
         :setCharacterSize(20)
         :setString(self.message:format(0))
@@ -75,7 +74,7 @@ function SceneLoad:load()
 
     self.notOpaque = self.parent and not self.parent:isLoading() and not self.parent._transitionTime
 
-    self:performTransition(self.camera)
+    return true
 end
 
 ------------------------------------------------------------
@@ -89,7 +88,7 @@ function SceneLoad:update(dt)
         self.fadePercent = self._transitionTime / self:transitionDuration()
     end
 
-    local w, h = self.camera:size()
+    local w, h = self:view():size()
     self.text:setPosition(30, h - 50)
         :setColor(
             self.messageColR, self.messageColG, self.messageColB,
@@ -101,12 +100,12 @@ end
 function SceneLoad:render()
     -- Draw overlay quad only if there's a scene *currently* rendering behind
     if self.notOpaque then
-        self.camera:fillFsQuad(self.colR, self.colG, self.colB, self.colA * self.fadePercent)
+        self:view():fillFsQuad(self.colR, self.colG, self.colB, self.colA * self.fadePercent)
     else    
-        self.camera:clear(self.colR, self.colG, self.colB)
+        self:view():clear(self.colR, self.colG, self.colB)
     end
 
-    self.camera:draw(self.text)
+    self:view():draw(self.text)
 end
 
 ------------------------------------------------------------
@@ -137,16 +136,11 @@ function SceneLoad:check()
         if self:isLoading() then
             callback()
         else
-            self:performTransition(self.camera, callback)
+            self:performTransition(callback)
         end
 
         return true
     end
-end
-
-------------------------------------------------------------
-function SceneLoad:onResize(w, h)
-    self.camera:reset(0, 0, w, h)
 end
 
 ------------------------------------------------------------
@@ -157,11 +151,6 @@ end
 ------------------------------------------------------------
 function SceneLoad:renderParent()
     return true
-end
-
-------------------------------------------------------------
-function SceneLoad:processParent()
-    return false
 end
 
 ------------------------------------------------------------
