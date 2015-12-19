@@ -25,8 +25,10 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
--- ffi C declarations
+local BinaryFile = require 'nx._binaryfile'
+
+local OutputFile = BinaryFile:subclass('nx.outputfile')
+
 ------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
@@ -55,112 +57,134 @@ ffi.cdef[[
 ]]
 
 ------------------------------------------------------------
--- A class to write onto files
-------------------------------------------------------------
-local class = require 'nx.class'
-local BinaryFile = require 'nx._binaryfile'
-local OutputFile = class('nx.outputfile', BinaryFile)
-
-------------------------------------------------------------
-function OutputFile.static._fromCData(data)
-    local file = OutputFile:new()
-    file._cdata = ffi.cast('PHYSFS_File*', data)
-    return file
-end
-
-------------------------------------------------------------
 function OutputFile:initialize(filename)
-    return BinaryFile.initialize(self, filename)
+    BinaryFile.initialize(self, filename)
 end
 
 ------------------------------------------------------------
 function OutputFile:open(filename)
     -- If already open, close it
-    if self:isOpen() then
-        self:close()
-    end
-
-    -- Make sure the arguments are valid
-    if type(filename) ~= 'string' or filename == '' then
-        return false, 'Invalid arguments'
-    end
+    if self:isOpen() then self:close() end
 
     local handle = C.nxFsOpenWrite(filename)
-    if handle ~= nil then
-        self._cdata = ffi.gc(handle, C.nxFsClose)
-        return true
-    else
-        return false, ffi.string(C.nxFsGetError())
-    end
+    if handle == nil then return self:_throwError(self) end
+
+    self._cdata = ffi.gc(handle, C.nxFsClose)
+    return self
 end
 
 ------------------------------------------------------------
 function OutputFile:write(buffer, size)
-    -- If no size supplied, assume size of buffer string
-    if not size then
-        size = #buffer
+    if self._cdata ~= nil then
+        -- If no size supplied, assume size of buffer string
+        if not size then size = #buffer end
+
+        local bytesWrittenPtr = ffi.new('size_t[1]')
+
+        local ok = C.nxFsWrite(self._cdata, buffer, size, bytesWrittenPtr)
+        if not ok then self:_throwError() end
     end
 
-    local bytesWrittenPtr = ffi.new('size_t[1]')
-
-    local ok = C.nxFsWrite(self._cdata, buffer, size, bytesWrittenPtr)
-    if not ok then return false, ffi.string(C.nxFsGetError()) end
-
-    return true
+    return self
 end
 
 ------------------------------------------------------------
 function OutputFile:writeS8(val)
-    if C.nxFsWriteS8(self._cdata, val) then return true end
-    return false, ffi.string(C.nxFsGetError())
+    if self._cdata ~= nil and not C.nxFsWriteS8(self._cdata, val) then
+        self:_throwError()
+    end
+
+    return self
 end
 
 ------------------------------------------------------------
 function OutputFile:writeS16(val)
-    if C.nxFsWriteS16(self._cdata, val) then return true end
-    return false, ffi.string(C.nxFsGetError())
+    if self._cdata ~= nil and not C.nxFsWriteS16(self._cdata, val) then
+        self:_throwError()
+    end
+
+    return self
 end
 
 ------------------------------------------------------------
 function OutputFile:writeS32(val)
-    if C.nxFsWriteS32(self._cdata, val) then return true end
-    return false, ffi.string(C.nxFsGetError())
+    if self._cdata ~= nil and not C.nxFsWriteS32(self._cdata, val) then
+        self:_throwError()
+    end
+
+    return self
+end
+
+------------------------------------------------------------
+function OutputFile:writeS64(val)
+    if self._cdata ~= nil and not C.nxFsWriteS64(self._cdata, val) then
+        self:_throwError()
+    end
+
+    return self
 end
 
 ------------------------------------------------------------
 function OutputFile:writeU8(val)
-    if C.nxFsWriteU8(self._cdata, val) then return true end
-    return false, ffi.string(C.nxFsGetError())
+    if self._cdata ~= nil and not C.nxFsWriteU8(self._cdata, val) then
+        self:_throwError()
+    end
+
+    return self
 end
 
 ------------------------------------------------------------
 function OutputFile:writeU16(val)
-    if C.nxFsWriteU16(self._cdata, val) then return true end
-    return false, ffi.string(C.nxFsGetError())
+    if self._cdata ~= nil and not C.nxFsWriteU16(self._cdata, val) then
+        self:_throwError()
+    end
+
+    return self
 end
 
 ------------------------------------------------------------
 function OutputFile:writeU32(val)
-    if C.nxFsWriteU32(self._cdata, val) then return true end
-    return false, ffi.string(C.nxFsGetError())
+    if self._cdata ~= nil and not C.nxFsWriteU32(self._cdata, val) then
+        self:_throwError()
+    end
+
+    return self
+end
+
+------------------------------------------------------------
+function OutputFile:writeU64(val)
+    if self._cdata ~= nil and not C.nxFsWriteU64(self._cdata, val) then
+        self:_throwError()
+    end
+
+    return self
 end
 
 ------------------------------------------------------------
 function OutputFile:writeFloat(val)
-    if C.nxFsWriteFloat(self._cdata, val) then return true end
-    return false, ffi.string(C.nxFsGetError())
+    if self._cdata ~= nil and not C.nxFsWriteFloat(self._cdata, val) then
+        self:_throwError()
+    end
+
+    return self
 end
 
 ------------------------------------------------------------
 function OutputFile:writeDouble(val)
-    if C.nxFsWriteDouble(self._cdata, val) then return true end
-    return false, ffi.string(C.nxFsGetError())
+    if self._cdata ~= nil and not C.nxFsWriteDouble(self._cdata, val) then
+        self:_throwError()
+    end
+
+    return self
 end
 
 ------------------------------------------------------------
 function OutputFile:writeString(str)
-    if C.nxFsWriteString(self._cdata, str) then return true end
-    return false, ffi.string(C.nxFsGetError())
+    if self._cdata ~= nil and not C.nxFsWriteString(self._cdata, str) then
+        self:_throwError()
+    end
+
+    return self
 end
 
 ------------------------------------------------------------

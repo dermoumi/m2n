@@ -25,10 +25,11 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
-local AudioFilter = require 'nx.audiofilter'
+local AudioFilter = require 'nx._audiofilter'
+
 local AudioLofiFilter = AudioFilter:subclass('nx.audiolofifilter')
 
+------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
@@ -40,7 +41,9 @@ end
 
 ------------------------------------------------------------
 function AudioLofiFilter:setParams(samplerate, bitdepth)
-    C.nxAudioFilterLofiSetParams(self._cdata, samplerate, bitdepth)
+    if self._cdata ~= nil then
+        C.nxAudioFilterLofiSetParams(self._cdata, samplerate, bitdepth)
+    end
 
     return self
 end

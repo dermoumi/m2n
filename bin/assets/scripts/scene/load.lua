@@ -30,9 +30,11 @@ local Scene = require 'scene'
 local SceneLoad = Scene:subclass('scene.load')
 
 ------------------------------------------------------------
-function SceneLoad:initialize(worker, params, scene)
+function SceneLoad:initialize(scene)
     self.nextScene = scene
-    self.worker    = worker
+    self.worker    = scene.__worker
+
+    local params = scene.__preloadParams or {}
 
     -- Set background color
     self.colR = params.r or 0
@@ -60,6 +62,8 @@ end
 ------------------------------------------------------------
 function SceneLoad:load()
     self.worker:start()
+    
+    self.camera = require('nx.camera2d'):new()
 
     self.text = require('nx.text'):new()
         :setFont(require('game.font'))
@@ -67,11 +71,9 @@ function SceneLoad:load()
         :setString(self.message:format(0))
         :setColor(self.messageColR, self.messageColG, self.messageColB, self.messageColA)
 
-    self.camera = require('nx.camera2d'):new()
-
     if self:check() then return end
 
-    self.parentLoading = self.parent and self.parent:isLoading()
+    self.notOpaque = self.parent and not self.parent:isLoading() and not self.parent._transitionTime
 
     self:performTransition(self.camera)
 end
@@ -97,12 +99,10 @@ end
 
 ------------------------------------------------------------
 function SceneLoad:render()
-    local fadePercent = 1
-
     -- Draw overlay quad only if there's a scene *currently* rendering behind
-    if self.parent and not self.parentLoading then
+    if self.notOpaque then
         self.camera:fillFsQuad(self.colR, self.colG, self.colB, self.colA * self.fadePercent)
-    else
+    else    
         self.camera:clear(self.colR, self.colG, self.colB)
     end
 
@@ -110,9 +110,9 @@ function SceneLoad:render()
 end
 
 ------------------------------------------------------------
-function SceneLoad:renderTransition(camera, time, duration, fadingIn)
+function SceneLoad:renderTransition()
     if not self.parent or self._transitionFadingIn then
-        Scene.renderTransition(self, camera, time, duration, fadingIn)
+        Scene.renderTransition(self)
     end
 end
 

@@ -25,8 +25,11 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
--- ffi C declarations
+local Nx    = require 'nx'
+local Image = require 'nx.image'
+
+local Window = {}
+
 ------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
@@ -61,8 +64,6 @@ ffi.cdef [[
 ]]
 
 ------------------------------------------------------------
--- Constants
-------------------------------------------------------------
 local MsgBoxType = {
     ['error']   = 16,
     ['warning'] = 32,
@@ -89,13 +90,6 @@ for i, v in pairs(PosType) do
 end
 
 ------------------------------------------------------------
--- A set of functions to manage the main window
-------------------------------------------------------------
-local Window = {}
-
-local Nx = require 'nx'
-local Image = require 'nx.image'
-
 local windowWidth, windowHeight
 local drawableWidth, drawableHeight
 local hasFocus, hasMouseFocus
@@ -108,6 +102,7 @@ local originalFramerateLimit, framerateLimit = 0, 0
 local function drawableSize()
     local sizePtr = ffi.new('int[2]')
     C.nxWindowGetDrawableSize(sizePtr)
+
     return tonumber(sizePtr[0]), tonumber(sizePtr[1])
 end
 
@@ -166,8 +161,7 @@ function Window.create(title, width, height, flags)
     )
 
     if window == nil then
-        require 'nx' -- For the GetSDLError() C declaration
-        return nil, ffi.string(C.nxSysGetSDLError())
+        error('Unable to create window: ' .. ffi.string(C.nxSysGetSDLError()))
     end
 
     windowWidth, windowHeight     = width, height
@@ -182,8 +176,6 @@ function Window.create(title, width, height, flags)
     -- local mX, mY = Mouse.getPosition()
     -- print(mX, mY, width, height)
     -- hasMouseFocus = mX >= 0 and mY >= 0 and mX < width and mY < height
-
-    return true
 end
 
 ------------------------------------------------------------
@@ -221,6 +213,8 @@ end
 function Window.setFramerateLimit(limit)
     framerateLimit = limit or 0
     originalFramerateLimit = framerateLimit
+
+    return Window
 end
 
 ------------------------------------------------------------
@@ -293,11 +287,15 @@ end
 ------------------------------------------------------------
 function Window.setPosition(x, y)
     C.nxWindowSetPosition(x, y)
+
+    return Window
 end
 
 ------------------------------------------------------------
 function Window.setTitle(title)
     C.nxWindowSetTitle(title)
+
+    return Window
 end
 
 ------------------------------------------------------------
@@ -309,6 +307,7 @@ end
 function Window.desktopSize(display)
     local sizePtr = ffi.new('int[2]')
     if not C.nxWindowGetDesktopSize(display or 1, sizePtr) then return end
+
     return tonumber(sizePtr[0]), tonumber(sizePtr[1])
 end
 
@@ -366,11 +365,16 @@ end
 ------------------------------------------------------------
 function Window.minimize()
     C.nxWindowMinimize()
+
+    return Window
 end
 
 ------------------------------------------------------------
 function Window.showMessageBox(title, message, type, attach)
+    -- TODO: Implement other types of message box
     C.nxWindowSimpleMessageBox(title, message, MsgBoxType[type] or MsgBoxType.error, not not attach)
+
+    return Window
 end
 
 ------------------------------------------------------------
@@ -401,18 +405,18 @@ function Window.getIcon()
 end
 
 ------------------------------------------------------------
-function Window._resize(w, h)
+function Window.__resize(w, h)
     windowWidth,   windowHeight   = w, h
     drawableWidth, drawableHeight = drawableSize()
 end
 
 ------------------------------------------------------------
-function Window._focus(focus)
+function Window.__focus(focus)
     hasFocus = focus
 end
 
 ------------------------------------------------------------
-function Window._mouseFocus(focus)
+function Window.__mouseFocus(focus)
     hasMouseFocus = focus
 end
 

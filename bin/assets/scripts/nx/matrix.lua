@@ -25,20 +25,10 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
--- A Matrix class
-------------------------------------------------------------
+local ffi   = require 'ffi'
 local class = require 'nx.class'
+
 local Matrix = class 'nx.matrix'
-
-local ffi = require 'ffi'
-
-------------------------------------------------------------
-function Matrix.static._fromCData(data)
-    local m  = Matrix:allocate()
-    m._cdata = ffi.cast('float*', data)
-    return m
-end
 
 ------------------------------------------------------------
 function Matrix.static.fromTranslation(x, y, z)

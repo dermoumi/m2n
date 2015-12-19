@@ -25,8 +25,13 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
--- ffi C declarations
+local InputFile = require 'nx.inputfile'
+local Matrix    = require 'nx.matrix'
+local Log       = require 'nx.log'
+local class     = require 'nx.class'
+
+local Shader = class 'nx.shader'
+
 ------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
@@ -48,27 +53,11 @@ ffi.cdef [[
 ]]
 
 ------------------------------------------------------------
--- A set of vertex and fragment shaders
-------------------------------------------------------------
-local class  = require 'nx.class'
-local Shader = class 'nx.shader'
-
-local InputFile = require 'nx.inputfile'
-local Matrix    = require 'nx.matrix'
-
-------------------------------------------------------------
-function Shader.static._fromCData(cdata)
-    local shader = Shader:allocate()
-    shader._cdata = ffi.cast('NxShader*', cdata)
-    shader._uniforms = {}
-    shader._samplers = {}
-    return shader
-end
-
-------------------------------------------------------------
 function Shader.static.bind(shader)
     if shader then shader = shader._cdata end
     C.nxShaderBind(shader)
+
+    return Shader
 end
 
 ------------------------------------------------------------
@@ -80,10 +69,7 @@ function Shader:initialize(vertexShader, fragmentShader)
     self._samplers = {}
 
     if vertexShader or fragmentShader then
-        ok, err = self:load(vertexShader, fragmentShader)
-        if not ok then
-            return nil, err
-        end
+        self:load(vertexShader, fragmentShader)
     end
 end
 
@@ -91,62 +77,59 @@ end
 function Shader:release()
     if self._cdata == nil then return end
     C.nxShaderRelease(ffi.gc(self._cdata, nil))
+    self._cdata = nil
 end
 
 ------------------------------------------------------------
 function Shader:load(vertexShader, fragmentShader)
-    local file, dontClose
-    if class.Object.isInstanceOf(vertexShader, InputFile) then
-        file = vertexShader
-        file:seek(0)
-        dontClose = true
-    else
-        file = InputFile:new(vertexShader)
-    end
+    if type(vertexShader) == 'string' then
+        -- Try to open vertex shader file
+        local file = InputFile:new()
+            :onError(function() end)
+            :open(vertexShader)
 
-    if file then
-        vertexShader = file:read()
-        if not dontClose then file:close() end
-        file = nil
-    elseif type(vertexShader) ~= 'string' then
+        if file:isOpen() then
+            vertexShader = file:read()
+            file:release()
+        end
+    else
         -- Fall back to default vertex shader
         vertexShader = C.nxShaderDefaultVSCode()
     end
 
-    if class.Object.isInstanceOf(fragmentShader, InputFile) then
-        file = fragmentShader
-        file:seek(0)
-        dontClose = true
-    else
-        file = InputFile:new(fragmentShader)
-    end
+    if type(fragmentShader) == 'string' then
+        -- Try to open fragment shader file
+        file = InputFile:new()
+            :onError(function() end)
+            :open(fragmentShader)
 
-    if file then
-        fragmentShader = file:read()
-        if not dontClose then file:close() end
-        file = nil
-    elseif type(fragmentShader) ~= 'string' then
+        if file:isOpen() then
+            fragmentShader = file:read()
+            file = nil
+        end
+    else
         -- Fall back to default fragment shader
         fragmentShader = C.nxShaderDefaultFSCode()
     end
 
     if not C.nxShaderLoad(self._cdata, vertexShader, fragmentShader) then
-        return false, 'Cannot load shader: ' .. ffi.string(C.nxShaderLog())
+        Log.warning('Cannot load shader: ' .. ffi.string(C.nxShaderLog()))
+        self._cdata = nil
     end
 
-    return true
+    return self
 end
 
 ------------------------------------------------------------
 function Shader:bind()
     C.nxShaderBind(self._cdata)
+
+    return self
 end
 
 ------------------------------------------------------------
 function Shader:setUniform(name, a, b, c, d)
-    if not a then
-        return false, 'Invalid parameters'
-    end
+    if self._cdata == nil then return self end
 
     local uniform = self._uniforms[name]
 
@@ -155,53 +138,51 @@ function Shader:setUniform(name, a, b, c, d)
         self._uniforms[name] = uniform
     end
 
-    if uniform == -1 then
-        return false, 'Uniform "' .. name .. '" does not exist'
-    end
-
-    local uniformType, uniformData
-    if class.Object.isInstanceOf(a, Matrix) then
-        uniformType = 4
-        uniformData = a:data()
-    elseif not b then
-        uniformType = 0
-        uniformData = ffi.new('float[1]', {a})
-    elseif not c then
-        uniformType = 1
-        uniformData = ffi.new('float[2]', {a, b})
-    elseif not d then
-        uniformType = 2
-        uniformData = ffi.new('float[3]', {a, b, c})
+    if uniform < 0 then
+        Log.warning('Uniform "' .. name .. '" does not exist')
     else
-        uniformType = 3
-        uniformData = ffi.new('float[4]', {a, b, c, d})
+        local uniformType, uniformData
+        if class.Object.isInstanceOf(a, Matrix) then
+            uniformType = 4
+            uniformData = a:data()
+        elseif not b then
+            uniformType = 0
+            uniformData = ffi.new('float[1]', {a})
+        elseif not c then
+            uniformType = 1
+            uniformData = ffi.new('float[2]', {a, b})
+        elseif not d then
+            uniformType = 2
+            uniformData = ffi.new('float[3]', {a, b, c})
+        else
+            uniformType = 3
+            uniformData = ffi.new('float[4]', {a, b, c, d})
+        end
+
+        C.nxShaderSetUniform(self._cdata, uniform, uniformType, uniformData)
     end
 
-    C.nxShaderSetUniform(self._cdata, uniform, uniformType, uniformData)
-
-    return true
+    return self
 end
 
 ------------------------------------------------------------
 function Shader:setSampler(name, sampler)
-    if not sampler then
-        return false, 'Invalid parameters'
+    if self._cdata ~= nil then
+        -- Check local uniforms
+        local uniform = self._samplers[name]
+        if not uniform then
+            uniform = C.nxShaderSamplerLocation(self._cdata, name)
+            self._samplers[name] = uniform
+        end
+
+        if uniform < 0 then
+            Log.warning('Sampler "' .. name .. '"does not exist')
+        else
+            C.nxShaderSetSampler(self._cdata, uniform, sampler)
+        end
     end
 
-    local uniform = self._samplers[name]
-
-    if not uniform then
-        uniform = C.nxShaderSamplerLocation(self._cdata, name)
-        self._samplers[name] = uniform
-    end
-
-    if uniform == -1 then
-        return false, 'Sampler "' .. name .. '"does not exist'
-    end
-
-    C.nxShaderSetSampler(self._cdata, uniform, sampler)
-
-    return true
+    return self
 end
 
 ------------------------------------------------------------

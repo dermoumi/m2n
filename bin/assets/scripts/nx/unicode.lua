@@ -25,6 +25,9 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
+local Unicode = {}
+
+------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
@@ -32,9 +35,6 @@ ffi.cdef [[
     const uint32_t* nxUnicodeUtf8To32(const char*, uint32_t*);
     const char* nxUnicodeUtf32To8(const uint32_t*, uint32_t*);
 ]]
-
-------------------------------------------------------------
-local Unicode = {}
 
 ------------------------------------------------------------
 function Unicode.utf8To32(str)

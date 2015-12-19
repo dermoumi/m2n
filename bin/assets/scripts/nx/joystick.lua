@@ -25,13 +25,13 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
--- ffi C declarations
+local Joystick = {}
+
 ------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
-ffi.cdef[[
+ffi.cdef [[
     typedef struct NxJoystick NxJoystick;
 
     NxJoystick* nxJoystickOpen(int);
@@ -48,11 +48,6 @@ ffi.cdef[[
     const char* nxJoystickGetGUID(NxJoystick*);
 ]]
 
-------------------------------------------------------------
--- A set of functions to interact with Joystick devices
-------------------------------------------------------------
-local Joystick = {}
-
 -- Constants -----------------------------------------------
 local hatPos = {
     [0] = 'centered',
@@ -67,7 +62,6 @@ local hatPos = {
 }
 Joystick._hatPos = hatPos
 
--- Local variables -----------------------------------------
 local joysticks = {}
 
 ------------------------------------------------------------

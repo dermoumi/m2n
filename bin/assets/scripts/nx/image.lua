@@ -25,8 +25,11 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
--- ffi C declarations
+local Log   = require 'nx.log'
+local class = require 'nx.class'
+
+local Image = class 'nx.image'
+
 ------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
@@ -41,7 +44,6 @@ ffi.cdef [[
     void nxImageCreateFromData(NxImage*, uint32_t, uint32_t, const uint8_t*);
     bool nxImageOpenFromFile(NxImage*, const char*);
     bool nxImageOpenFromMemory(NxImage*, const void*, size_t);
-    bool nxImageOpenFromHandle(NxImage*, PHYSFS_File*, bool);
     bool nxImageSave(const NxImage*, const char*);
     void nxImageGetSize(const NxImage*, uint32_t*);
     void nxImageColorMask(NxImage*, uint8_t, uint8_t, uint8_t, uint8_t, uint8_t);
@@ -53,12 +55,6 @@ ffi.cdef [[
     void nxImageFlipHorizontally(NxImage*);
     void nxImageFlipVertically(NxImage*);
 ]]
-
-------------------------------------------------------------
--- A class to handle Image creation and management
-------------------------------------------------------------
-local class = require 'nx.class'
-local Image = class 'nx.image'
 
 ------------------------------------------------------------
 local function isCArray(a)
@@ -98,14 +94,12 @@ function Image:load(a, b)
         ok = C.nxImageOpenFromMemory(self._cdata, a, b)
     elseif type(a) == 'string' then -- Load from file
         ok = C.nxImageOpenFromFile(self._cdata, a)
-    elseif a and a.class and a.class.name == 'nx.inputfile' then -- Load from handle
-        ok = C.nxImageOpenFromHandle(self._data, a._cdata, false)
     end
 
-    -- Appropriate error message for each case
+    -- Failed to load, Create a dummy, magenta, image.
     if not ok then
-        print(self, self.create, 'um')
-        self:create(2, 2, 255, 0, 255)
+        Log.warning('Unable to load image: ' .. tostring(a) .. (b and ('/' .. tostring(b)) or ''))
+        self:create(1, 1, 255, 0, 255)
     end
 
     return self
@@ -113,18 +107,24 @@ end
 
 ------------------------------------------------------------
 function Image:save(filename)
-    if self._cdata == nil or not filename then return false end
-    return C.nxImageSave(self._cdata, filename)
+    if self._cdata ~= nil and not C.nxImageSave(self._cdata, filename) then
+        Log.warinng('Unable to save image as "' .. filename .. '"')
+    end
+
+    return self
 end
 
 ------------------------------------------------------------
 function Image:release()
     if self._cdata == nil then return end
     C.nxImageRelease(ffi.gc(self._cdata, nil))
+    self._cdata = nil
 end
 
 ------------------------------------------------------------
 function Image:size()
+    if self._cdata == nil then return 0, 0 end
+
     local sizePtr = ffi.new('unsigned int[2]')
     C.nxImageGetSize(self._cdata, sizePtr)
     return tonumber(sizePtr[0]), tonumber(sizePtr[1])
@@ -132,19 +132,23 @@ end
 
 ------------------------------------------------------------
 function Image:setColorMask(r, g, b, a, alpha)
-    C.nxImageColorMask(self._cdata, r or 0, g or 0, b or 0, a or 255, alpha or 0)
+    if self._cdata ~= nil then
+        C.nxImageColorMask(self._cdata, r or 0, g or 0, b or 0, a or 255, alpha or 0)
+    end
 
     return self
 end
 
 ------------------------------------------------------------
 function Image:copy(source, a, b, c, d, e, f, g, h)
-    if class.Object.isInstanceOf(source, Image) then
-        C.nxImageCopy(self._cdata, source._cdata.img, a or 0, b or 0, c or 0, d or 0,
-            e or 0, f or 0, not not g)
-    else
-        C.nxImageCopyPixels(self._cdata, source, a or 0, b or 0, c or 0, d or 0, e or 0, f or 0,
-            g or 0, not not h)
+    if self._cdata ~= nil then
+        if class.Object.isInstanceOf(source, Image) then
+            C.nxImageCopy(self._cdata, source._cdata.img, a or 0, b or 0, c or 0, d or 0,
+                e or 0, f or 0, not not g)
+        else
+            C.nxImageCopyPixels(self._cdata, source, a or 0, b or 0, c or 0, d or 0, e or 0,
+                f or 0, g or 0, not not h)
+        end
     end
 
     return self
@@ -152,13 +156,17 @@ end
 
 ------------------------------------------------------------
 function Image:setPixel(x, y, r, g, b, a)
-    C.nxImageSetPixel(self._cdata, x, y, r, g, b, a)
+    if self._cdata ~= nil then
+        C.nxImageSetPixel(self._cdata, x, y, r, g, b, a)
+    end
 
     return self
 end
 
 ------------------------------------------------------------
 function Image:pixel(x, y)
+    if self._cdata == nil then return 0, 0, 0, 0 end
+
     local colorPtr = ffi.new('uint8_t[4]')
     C.nxImageGetPixel(self._cdata, x, y, colorPtr)
 
@@ -170,17 +178,27 @@ end
 
 ------------------------------------------------------------
 function Image:data()
+    if self._cdata == nil then return nil end
+
     return C.nxImageGetPixelsPtr(self._cdata)
 end
 
 ------------------------------------------------------------
 function Image:flipHorizontally()
-    C.nxImageFlipHorizontally(self._cdata)
+    if self._cdata ~= nil then
+        C.nxImageFlipHorizontally(self._cdata)
+    end
+
+    return self
 end
 
 ------------------------------------------------------------
 function Image:flipVertically()
-    C.nxImageFlipVertically(self._cdata)
+    if self._cdata ~= nil then
+        C.nxImageFlipVertically(self._cdata)
+    end
+
+    return self
 end
 
 ------------------------------------------------------------

@@ -25,38 +25,62 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-local AudioFilter = require 'nx._audiofilter'
+local Matrix = require 'nx.matrix'
+local class  = require 'nx.class'
 
-local AudioBiquadResonantFilter = AudioFilter:subclass('nx.audiobiquadresonantfilter')
-
-------------------------------------------------------------
-local ffi = require 'ffi'
-local C = ffi.C
+local State2D = class 'nx._state2d'
 
 ------------------------------------------------------------
-local toFilterType = {
-    [0] = 'none',
-    [1] = 'lowpass',
-    [2] = 'highpass',
-    [3] = 'bandpass'
-}
+function State2D:initialize(transMatrix, r, g, b, a, blendSrc, blendDst)
+    self._transMatrix = transMatrix or Matrix:new()
+    self._colR = r or 255
+    self._colG = g or 255
+    self._colB = b or 255
+    self._colA = a or 255
 
-------------------------------------------------------------
-function AudioBiquadResonantFilter:initialize()
-    local handle = C.nxAudioFilterBiquadResonantCreate()
-    self._cdata = ffi.gc(handle, C.nxAudioFilterRelease)
+    self._blendSrc, self._blendDst = blendSrc or 'alpha', blendDst
 end
 
 ------------------------------------------------------------
-function AudioBiquadResonantFilter:setParams(filterType, samplerate, frequency, resonance)
-    if self._cdata ~= nil then
-        C.nxAudioFilterBiquadResonantSetParams(
-            self._cdata, toFilterType[filterType] or 0, samplerate, frequency, resonance
-        )
+function State2D:clone()
+    return State2D:new(
+        self:matrix():clone(),
+        self._corR, self._colG, self._colB, self._colA,
+        self._blendSrc, self._blendDst
+    )
+end
+
+------------------------------------------------------------
+function State2D:combineMatrix(mat)
+    self._transMatrix:combine(mat)
+end
+
+------------------------------------------------------------
+function State2D:combineColor(r, g, b, a)
+    self._colR = self._colR * r / 255
+    self._colG = self._colG * g / 255
+    self._colB = self._colB * b / 255
+    self._colA = self._colA * (a or 255) / 255
+end
+
+------------------------------------------------------------
+function State2D:matrix()
+    return self._transMatrix
+end
+
+------------------------------------------------------------
+function State2D:color(normalize)
+    if normalize then
+        return self._colR / 255, self._colG / 255, self._colB / 255, self._colA / 255
+    else
+        return self._colR, self._colG, self._colB, self._colA
     end
-    
-    return self
 end
 
 ------------------------------------------------------------
-return AudioBiquadResonantFilter
+function State2D:blendMode()
+    return self._blendSrc, self._blendDst
+end
+
+------------------------------------------------------------
+return State2D

@@ -25,13 +25,13 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
--- Represents a 2D view in space
-------------------------------------------------------------
-local Camera = require 'nx._camera'
-local Camera2D = Camera:subclass('nx.camera2d')
+local Matrix   = require 'nx.matrix'
+local Renderer = require 'nx.renderer'
+local Window   = require 'nx.window'
+local State2D  = require 'nx._state2d'
+local Camera   = require 'nx._camera'
 
-local Matrix = require 'nx.matrix'
+local Camera2D = Camera:subclass('nx.camera2d')
 
 ------------------------------------------------------------
 function Camera2D:initialize(x, y, width, height)
@@ -73,7 +73,7 @@ end
 
 ------------------------------------------------------------
 function Camera2D:reset(x, y, width, height)
-    local winWidth, winHeight = require('nx.window'):size()
+    local winWidth, winHeight = Window:size()
 
     x = x or 0
     y = y or 0
@@ -86,7 +86,7 @@ function Camera2D:reset(x, y, width, height)
     self._height   = height
     self._rotation = 0
 
-    self._matrix = nil
+    self._matrix    = nil
     self._invMatrix = nil
 
     return self
@@ -148,7 +148,7 @@ end
 function Camera2D:draw(drawable, state)
     self:apply()
 
-    state = state and state:clone() or require('nx.entity2d').State:new()
+    state = state and state:clone() or State2D:new()
     drawable:_draw(self, state)
 
     return self
@@ -157,7 +157,7 @@ end
 ------------------------------------------------------------
 function Camera2D:drawFsQuad(texture, width, height)
     self:apply()
-    require('nx.renderer').drawFsQuad(texture, width, height)
+    Renderer.drawFsQuad(texture, width, height)
 
     return self
 end
@@ -165,7 +165,7 @@ end
 ------------------------------------------------------------
 function Camera2D:fillFsQuad(r, g, b, a, blendMode)
     self:apply()
-    require('nx.renderer').fillFsQuad(r, g, b, a, blendMode)
+    Renderer.fillFsQuad(r, g, b, a, blendMode)
 
     return self
 end

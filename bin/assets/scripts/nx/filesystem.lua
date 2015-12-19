@@ -25,13 +25,15 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
--- ffi C declarations
+local Log = require 'nx.log'
+
+local Filesystem = {}
+
 ------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
-ffi.cdef[[
+ffi.cdef [[
     const char* nxFsGetError();
 
     char** nxFsEnumerateFiles(const char*);
@@ -41,52 +43,38 @@ ffi.cdef[[
 ]]
 
 ------------------------------------------------------------
--- A collection of functions to interact with the FS
-------------------------------------------------------------
-local Filesystem = {}
+local function getFsError()
+    return ffi.string(C.nxFsGetError())
+end
 
 ------------------------------------------------------------
 function Filesystem.enumerateFiles(path)
-    -- Make sure the arguments are valid
-    if type(path) ~= 'string' or path == '' then
-        return {}, 'Invalid argument'
-    end
+    local fileList = {}
 
     -- Retrieve files as C list
     local files = C.nxFsEnumerateFiles(path)
     if files == nil then
-        return {}, ffi.string(C.nxFsGetError())
+        Log.warning('Could not enumerate files in "' .. path .. '": ' .. getFsError())
+    else
+        -- Convert it to a lua table
+        while files[#fileList] ~= nil do
+            fileList[#fileList + 1] = ffi.string(files[#fileList])
+        end
+
+        -- Free the C list
+        C.nxFsFreeList(files)
     end
 
-    -- Convert it to a lua table
-    local fileList = {}
-    while files[#fileList] ~= nil do
-        fileList[#fileList + 1] = ffi.string(files[#fileList])
-    end
-
-    -- Free the C list
-    C.nxFsFreeList(files)
-
-    return fileList;
+    return fileList
 end
 
 ------------------------------------------------------------
 function Filesystem.isDirectory(path)
-    -- Make sure the arguments are valid
-    if type(path) ~= 'string' or path == '' then
-        return false, 'Invalid argument'
-    end
-
     return C.nxFsIsDirectory(path)
 end
 
 ------------------------------------------------------------
 function Filesystem.isFile(path)
-    -- Make sure the arguments are valid
-    if type(path) ~= 'string' or path == '' then
-        return false, 'Invalid argument'
-    end
-
     return C.nxFsIsFile(path)
 end
 

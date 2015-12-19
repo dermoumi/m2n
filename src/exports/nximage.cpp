@@ -74,12 +74,6 @@ NX_EXPORT bool nxImageOpenFromMemory(NxImage* image, const void* buffer, size_t 
 }
 
 //----------------------------------------------------------
-NX_EXPORT bool nxImageOpenFromHandle(NxImage* image, PHYSFS_File* file, bool close)
-{
-    return image->open(file, close);
-}
-
-//----------------------------------------------------------
 NX_EXPORT bool nxImageSave(const NxImage* image, const char* filename)
 {
     return image->save(filename);

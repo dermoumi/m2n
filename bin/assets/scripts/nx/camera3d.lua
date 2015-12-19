@@ -25,13 +25,10 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
--- Represents a Camera in a 3D space
-------------------------------------------------------------
-local Camera = require 'nx._camera'
-local Camera3D = Camera:subclass('nx.camera3d')
-
 local Matrix = require 'nx.matrix'
+local Camera = require 'nx._camera'
+
+local Camera3D = Camera:subclass('nx.camera3d')
 
 ------------------------------------------------------------
 function Camera3D:initialize(fov, aspect, near, far)

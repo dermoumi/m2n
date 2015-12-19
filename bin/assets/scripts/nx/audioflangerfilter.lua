@@ -25,10 +25,11 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
-local AudioFilter = require 'nx.audiofilter'
+local AudioFilter = require 'nx._audiofilter'
+
 local AudioFlangerFilter = AudioFilter:subclass('nx.audioflangerfilter')
 
+------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
@@ -40,7 +41,9 @@ end
 
 ------------------------------------------------------------
 function AudioFlangerFilter:setParams(delay, freq)
-    C.nxAudioFilterFlangerSetParams(self._cdata, delay, freq)
+    if self._cdata ~= nil then
+        C.nxAudioFilterFlangerSetParams(self._cdata, delay, freq)
+    end
 
     return self
 end

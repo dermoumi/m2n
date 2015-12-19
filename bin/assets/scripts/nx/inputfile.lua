@@ -25,8 +25,10 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
--- ffi C declarations
+local BinaryFile = require 'nx._binaryfile'
+
+local InputFile = BinaryFile:subclass('nx.inputfile')
+
 ------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
@@ -54,140 +56,168 @@ ffi.cdef[[
 ]]
 
 ------------------------------------------------------------
--- A class to open files for reading
-------------------------------------------------------------
-local class = require 'nx.class'
-local BinaryFile = require 'nx._binaryfile'
-local InputFile = class('nx.inputfile', BinaryFile)
-
-------------------------------------------------------------
-function InputFile.static._fromCData(data)
-    local file = InputFile:new()
-    file._cdata = ffi.cast('PHYSFS_File*', data)
-    return file
-end
-
-------------------------------------------------------------
 function InputFile:initialize(filename)
-    return BinaryFile.initialize(self, filename)
+    BinaryFile.initialize(self, filename)
 end
 
 ------------------------------------------------------------
 function InputFile:open(filename)
     -- Close if already open
-    if self:isOpen() then
-        self:close()
-    end
+    if self:isOpen() then self:close() end
 
     local handle = C.nxFsOpenRead(filename)
-    if handle ~= nil then
-        self._cdata = ffi.gc(handle, C.nxFsClose)
-        return true
-    else
-        return false, ffi.string(C.nxFsGetError())
-    end
+    if handle == nil then return self:_throwError(self) end
+
+    self._cdata = ffi.gc(handle, C.nxFsClose)
+    return self
 end
 
 ------------------------------------------------------------
-function InputFile:read(size)
+function InputFile:read(size, asCdata)
+    if self._cdata == nil then return '', 0 end
+
     -- If size is invalid, read all
-    if type(size) ~= 'number' then
-        size = self:size()
-    end
+    if type(size) ~= 'number' then size = self:size() end
 
     local readBytesPtr = ffi.new('size_t[1]')
-    local buffPtr      = ffi.new('char[?]', size)
+    local buffer       = ffi.new('char[?]', size)
 
-    local ok = C.nxFsRead(self._cdata, buffPtr, size, readBytesPtr)
-    if not ok then return '', ffi.string(C.nxFsGetError()) end
+    local ok = C.nxFsRead(self._cdata, buffer, size, readBytesPtr)
+    if not ok then return self:_throwError('', 0) end
 
-    return ffi.string(buffPtr, readBytesPtr[0]), tonumber(readBytesPtr[0])
+    if not asCdata then buffer = ffi.string(buffer, readBytesPtr[0]) end
+
+    return buffer, tonumber(readBytesPtr[0])
 end
 
 ------------------------------------------------------------
 function InputFile:readS8()
+    if self._cdata == nil then return 0 end
+
     local valPtr = ffi.new('int8_t[1]')
 
     local ok = C.nxFsReadS8(self._cdata, valPtr)
-    if not ok then return 0, ffi.string(C.nxFsGetError()) end
+    if not ok then return self:_throwError(0) end
 
     return tonumber(valPtr[0])
 end
 
 ------------------------------------------------------------
 function InputFile:readS16()
+    if self._cdata == nil then return 0 end
+
     local valPtr = ffi.new('int16_t[1]')
 
     local ok = C.nxFsReadS16(self._cdata, valPtr)
-    if not ok then return 0, ffi.string(C.nxFsGetError()) end
+    if not ok then return self:_throwError(0) end
 
     return tonumber(valPtr[0])
 end
 
 ------------------------------------------------------------
 function InputFile:readS32()
+    if self._cdata == nil then return 0 end
+
     local valPtr = ffi.new('int32_t[1]')
 
     local ok = C.nxFsReadS32(self._cdata, valPtr)
-    if not ok then  return 0, ffi.string(C.nxFsGetError()) end
+    if not ok then return self:_throwError(0) end
 
     return tonumber(valPtr[0])
 end
 
 ------------------------------------------------------------
+function InputFile:readS64()
+    if self._cdata == nil then return 0 end
+
+    local valPtr = ffi.new('int64_t[1]')
+
+    local ok = C.nxFsReadS64(self._cdata, valPtr)
+    if not ok then return self:_throwError(0) end
+
+    return valPtr[0]
+end
+
+------------------------------------------------------------
 function InputFile:readU8()
+    if self._cdata == nil then return 0 end
+
     local valPtr = ffi.new('uint8_t[1]')
 
     local ok = C.nxFsReadU8(self._cdata, valPtr)
-    if not ok then return 0, ffi.string(C.nxFsGetError()) end
+    if not ok then return self:_throwError(0) end
 
     return tonumber(valPtr[0])
 end
 
 ------------------------------------------------------------
 function InputFile:readU16()
+    if self._cdata == nil then return 0 end
+
     local valPtr = ffi.new('uint16_t[1]')
 
     local ok = C.nxFsReadU16(self._cdata, valPtr)
-    if not ok then return 0, ffi.string(C.nxFsGetError()) end
+    if not ok then return self:_throwError(0) end
 
     return tonumber(valPtr[0])
 end
 
 ------------------------------------------------------------
 function InputFile:readU32()
+    if self._cdata == nil then return 0 end
+
     local valPtr = ffi.new('uint32_t[1]')
 
     local ok = C.nxFsReadU32(self._cdata, valPtr)
-    if not ok then return 0, ffi.string(C.nxFsGetError()) end
+    if not ok then return self:_throwError(0) end
 
     return tonumber(valPtr[0])
 end
 
 ------------------------------------------------------------
+function InputFile:readU64()
+    if self._cdata == nil then return 0 end
+
+    local valPtr = ffi.new('uint64_t[1]')
+
+    local ok = C.nxFsReadU32(self._cdata, valPtr)
+    if not ok then return self:_throwError(0) end
+
+    return valPtr[0]
+end
+
+------------------------------------------------------------
 function InputFile:readFloat()
+    if self._cdata == nil then return 0 end
+
+    -- C function does float-->string-->double to prevent the loss of precision
+    -- that's due to float<->double
     local valPtr = ffi.new('double[1]')
 
     local ok = C.nxFsReadFloat(self._cdata, valPtr)
-    if not ok then return nil, ffi.string(C.nxFsGetError()) end
+    if not ok then return self:_throwError(0) end
 
     return tonumber(valPtr[0])
 end
 
 ------------------------------------------------------------
 function InputFile:readDouble()
+    if self._cdata == nil then return 0 end
+
     local valPtr = ffi.new('double[1]')
 
     local ok = C.nxFsReadDouble(self._cdata, valPtr)
-    if not ok then return 0, ffi.string(C.nxFsGetError()) end
+    if not ok then return self:_throwError(0) end
 
     return tonumber(valPtr[0])
 end
 
 ------------------------------------------------------------
 function InputFile:readString()
+    if self._cdata == nil then return '' end
+
     local str = C.nxFsReadString(self._cdata)
-    if str == nil then return '', ffi.string(C.nxFsGetError()) end
+    if str == nil then self:_throwError('') end
 
     return ffi.string(str)
 end

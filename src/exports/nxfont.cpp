@@ -43,18 +43,20 @@ NX_EXPORT void nxFontRelease(NxFont* font)
 
 //----------------------------------------------------------
 NX_EXPORT void nxFontGlyph(const NxFont* font, uint32_t codePoint, uint32_t charSize,
-    bool bold, float* fValues, uint32_t* uValues)
+    bool bold, double* values)
 {
     auto& glyph = font->glyph(codePoint, charSize, bold);
-    fValues[0] = glyph.advance;
-    fValues[1] = glyph.left;
-    fValues[2] = glyph.top;
-    fValues[3] = glyph.width;
-    fValues[4] = glyph.height;
-    uValues[0] = glyph.texLeft;
-    uValues[1] = glyph.texTop;
-    uValues[2] = glyph.texWidth;
-    uValues[3] = glyph.texHeight;
+    values[0]  = glyph.advance;
+    values[1]  = glyph.left;
+    values[2]  = glyph.top;
+    values[3]  = glyph.width;
+    values[4]  = glyph.height;
+    values[5]  = glyph.texLeft;
+    values[6]  = glyph.texTop;
+    values[7]  = glyph.texWidth;
+    values[8]  = glyph.texHeight;
+    values[9]  = glyph.page;
+    values[10] = glyph.valid ? 1.0 : 0.0;
 }
 
 //----------------------------------------------------------

@@ -25,8 +25,13 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
--- FFI C Declarations
+local Renderer    = require 'nx.renderer'
+local Arraybuffer = require 'nx.arraybuffer'
+local Texture     = require 'nx.texture'
+local Entity2D    = require 'nx.entity2d'
+
+local Text = Entity2D:subclass('nx.text')
+
 ------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
@@ -49,15 +54,7 @@ ffi.cdef [[
 ]]
 
 ------------------------------------------------------------
-local Entity2D = require 'nx.entity2d'
-local Text = Entity2D:subclass('nx.text')
-
-local Renderer = require 'nx.renderer'
-local Arraybuffer = require'nx.arraybuffer'
-local Texture = require 'nx.texture'
-
-local bufCountPtr = ffi.new('uint32_t[1]')
-local vertCountPtr = ffi.new('uint32_t[1]')
+local bufCountPtr, vertCountPtr = ffi.new('uint32_t[1]'), ffi.new('uint32_t[1]')
 
 local toStyle = {
     regular       = 0,
@@ -78,16 +75,17 @@ function Text.static._vertexLayout()
 end
 
 ------------------------------------------------------------
-function Text:initialize()
+function Text:initialize(str, font, charSize)
     Entity2D.initialize(self)
 
-    local handle = C.nxTextNew()
-    self._cdata = ffi.gc(handle, C.nxTextRelease)
+    self._cdata = ffi.gc(C.nxTextNew(), C.nxTextRelease)
 
-    self._string = ''
-    self._charSize = 30
+    self:setString(str or '')
+        :setFont(font)
+        :setCharacterSize(charSize or 30)
+
     self._style = 0
-    self._vertices = require('nx.arraybuffer'):new()
+    self._vertices = Arraybuffer:new()
 end
 
 ------------------------------------------------------------
@@ -95,6 +93,7 @@ function Text:release()
     if self._cdata == 0 then return end
 
     C.nxTextRelease(ffi.gc(self._cdata, nil))
+    self._cdata = nil
 end
 
 ------------------------------------------------------------
@@ -122,7 +121,7 @@ end
 ------------------------------------------------------------
 function Text:setFont(font)
     self._font = font
-    C.nxTextSetFont(self._cdata, font._cdata)
+    if font then C.nxTextSetFont(self._cdata, font._cdata) end
 
     return self
 end
@@ -191,6 +190,7 @@ end
 function Text:characterPosition(index)
     local posPtr = ffi.new('float[2]')
     C.nxTextCharacterPosition(self._cdata, index, posPtr)
+
     return posPtr[0], posPtr[1]
 end
 
@@ -198,15 +198,16 @@ end
 function Text:bounds()
     local boundsPtr = ffi.new('float[4]')
     C.nxTextBounds(self._cdata, boundsPtr)
+
     return boundsPtr[0], boundsPtr[1], boundsPtr[2], boundsPtr[3]
 end
 
 ------------------------------------------------------------
 function Text:_render(camera, state)
-    if self._font and self._font._cdata ~= nil then
+    if self._cdata ~= nil and self._font and self._font._cdata ~= nil then
         Renderer.setBlendMode(state:blendMode())
-    
         local shader = self._shader or Text._defaultShader()
+    
         shader:bind()
         shader:setUniform('uProjMat', camera:matrix())
         shader:setUniform('uTransMat', state:matrix())
@@ -217,13 +218,14 @@ function Text:_render(camera, state)
         for i = 0, bufCountPtr[0] - 1 do
             local bufferID = bufferIDs[i];
 
-            self._vertices._cdata.id = C.nxTextArraybuffer(self._cdata, vertCountPtr, bufferID)
+            self._vertices._cdata[0] = C.nxTextArraybuffer(self._cdata, vertCountPtr, bufferID)
 
             Arraybuffer.setVertexbuffer(self._vertices, 0, 0, 16)
             C.nxRendererSetVertexLayout(Text._vertexLayout())
 
             local texture = self._font:texture(self._charSize, bufferID)
             texture:bind(0)
+
             local texW, texH = texture:size()
             shader:setUniform('uTexSize', texW, texH)
 

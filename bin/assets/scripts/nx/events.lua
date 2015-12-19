@@ -25,8 +25,14 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
--- ffi C declarations
+local Keyboard = require 'nx.keyboard'
+local Mouse    = require 'nx.mouse'
+local Joystick = require 'nx.joystick'
+local Gamepad  = require 'nx.gamepad'
+local Window   = require 'nx.window'
+
+local Events = {}
+
 ------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
@@ -77,25 +83,11 @@ ffi.cdef [[
 ]]
 
 ------------------------------------------------------------
--- A set of functions to handle window events
-------------------------------------------------------------
-local Events = {}
-
-local Keyboard = require 'nx.keyboard'
-local Mouse = require 'nx.mouse'
-local Joystick = require 'nx.joystick'
-local Gamepad = require 'nx.gamepad'
-local Window = require 'nx.window'
-
-------------------------------------------------------------
--- Helpers
-------------------------------------------------------------
 local function nextEvent(func)
-    local evType
-    local evPtr = ffi.new('NxEvent[1]')
+    local evType, evPtr = nil, ffi.new('NxEvent[1]')
     repeat
         evType = func(evPtr)
-    until evType ~= NX_Other
+    until evType ~= C.NX_Other
     e = evPtr[0]
 
     if evType == C.NX_NoEvent then
@@ -103,24 +95,26 @@ local function nextEvent(func)
     elseif evType == C.NX_Quit then
         return 'quit'
     elseif evType == C.NX_Resized then
-        Window._resize(tonumber(e.a), tonumber(e.b))
+        Window.__resize(tonumber(e.a), tonumber(e.b))
         return 'resized', tonumber(e.a), tonumber(e.b)
     elseif evType == C.NX_Visible then
         return 'visible', e.a == 1
     elseif evType == C.NX_Focus then
-        Window._focus((e.a == 1.0))
+        Window.__focus((e.a == 1.0))
         return 'focus', e.a == 1
     elseif evType == C.NX_MouseFocus then
-        Window._mouseFocus((e.a == 1.0))
+        Window.__mouseFocus((e.a == 1.0))
         return 'mousefocus', (e.a == 1.0)
     elseif evType == C.NX_TextInput then
         return 'textinput', ffi.string(e.t)
     elseif evType == C.NX_TextEdit then
         return 'textedit', ffi.string(e.t), tonumber(e.a), tonumber(e.b)
     elseif evType == C.NX_KeyDown then
-        return 'keydown', Keyboard._sc[e.b], Keyboard._sym[e.c], e.a == 1
+        Keyboard.__keyDownEvent(e.a, e.b, e.c)
+        return 'keydown', Keyboard._sc[e.a], Keyboard._sym[e.b], e.c == 1
     elseif evType == C.NX_KeyUp then
-        return 'keyup', Keyboard._sc[e.b], Keyboard._sym[e.c], e.a == 1
+        Keyboard.__keyUpEvent(e.a, e.b)
+        return 'keyup', Keyboard._sc[e.a], Keyboard._sym[e.b]
     elseif evType == C.NX_MouseMotion then
         return 'mousemotion', tonumber(e.a), tonumber(e.b)
     elseif evType == C.NX_MouseDown then

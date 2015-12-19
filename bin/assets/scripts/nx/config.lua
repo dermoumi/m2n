@@ -25,38 +25,10 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-local AudioFilter = require 'nx._audiofilter'
+return {
+    -- Make sure the file is available at all times
+    defaultVectorFont = 'assets/fonts/01-Asap-Regular.otf',
 
-local AudioBiquadResonantFilter = AudioFilter:subclass('nx.audiobiquadresonantfilter')
-
-------------------------------------------------------------
-local ffi = require 'ffi'
-local C = ffi.C
-
-------------------------------------------------------------
-local toFilterType = {
-    [0] = 'none',
-    [1] = 'lowpass',
-    [2] = 'highpass',
-    [3] = 'bandpass'
+    -- Default multisampling for new render buffer
+    multisamplingLevel = 0
 }
-
-------------------------------------------------------------
-function AudioBiquadResonantFilter:initialize()
-    local handle = C.nxAudioFilterBiquadResonantCreate()
-    self._cdata = ffi.gc(handle, C.nxAudioFilterRelease)
-end
-
-------------------------------------------------------------
-function AudioBiquadResonantFilter:setParams(filterType, samplerate, frequency, resonance)
-    if self._cdata ~= nil then
-        C.nxAudioFilterBiquadResonantSetParams(
-            self._cdata, toFilterType[filterType] or 0, samplerate, frequency, resonance
-        )
-    end
-    
-    return self
-end
-
-------------------------------------------------------------
-return AudioBiquadResonantFilter

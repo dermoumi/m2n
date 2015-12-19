@@ -25,6 +25,12 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
+local Renderer    = require 'nx.renderer'
+local Arraybuffer = require 'nx.arraybuffer'
+local Entity2D    = require 'nx.entity2d'
+
+local Shape = Entity2D:subclass('nx.shape')
+
 ------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
@@ -43,19 +49,11 @@ ffi.cdef [[
 ]]
 
 ------------------------------------------------------------
--- Represents a 2D shape
-------------------------------------------------------------
-local Entity2D = require 'nx.entity2d'
-local Shape = Entity2D:subclass('nx.shape')
-
-local Renderer = require 'nx.renderer'
-local Arraybuffer = require 'nx.arraybuffer'
-
-------------------------------------------------------------
 local toPrimitive = {
     triangles = 0,
     trianglestrip = 1,
-    lines = 2 -- TODO
+    lines = 2
+    -- TODO: Add more primitive types
 }
 
 ------------------------------------------------------------
@@ -94,8 +92,9 @@ function Shape:setVertexData(primitive, hasColor, a, b, ...)
     if b then a = {a, b, ...} end
     if type(a) ~= 'table' then return self end
 
-    self._primitive = toPrimitive[primitive] or 0
-    self._hasColor = hasColor
+    self._primitive  = toPrimitive[primitive] or 0
+    self._hasColor   = hasColor
+    
     local structName, valueCount, vertexSize = vertexStruct(hasColor)
     self._vertexSize = vertexSize
 

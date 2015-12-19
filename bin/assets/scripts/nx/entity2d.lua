@@ -25,77 +25,13 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
--- A parent of all classes that can be drawn on a 2d space
-------------------------------------------------------------
-local class = require 'nx.class'
+local Matrix = require 'nx.matrix'
+local class  = require 'nx.class'
+
 local Entity2D = class 'nx.entity2d'
 
-local Matrix = require 'nx.matrix'
-
 ------------------------------------------------------------
-local State = class 'nx.entity2d.state'
-Entity2D.static.State = State
-
-local toFactor = {
-    zero        = 0,
-    one         = 1,
-    srcalpha    = 2,
-    invsrcalpha = 3,
-    dstcolor    = 4
-}
-
-------------------------------------------------------------
-function State:initialize(transMatrix, r, g, b, a, blendSrc, blendDst)
-    self._transMatrix = transMatrix or Matrix:new()
-    self._colR = r or 255
-    self._colG = g or 255
-    self._colB = b or 255
-    self._colA = a or 255
-
-    self._blendSrc, self._blendDst = blendSrc or 'alpha', blendDst
-end
-
-------------------------------------------------------------
-function State:clone()
-    return State:new(
-        self:matrix():clone(),
-        self._corR, self._colG, self._colB, self._colA,
-        self._blendSrc, self._blendDst
-    )
-end
-
-------------------------------------------------------------
-function State:combineMatrix(mat)
-    self._transMatrix:combine(mat)
-end
-
-------------------------------------------------------------
-function State:combineColor(r, g, b, a)
-    self._colR = (self._colR / 255) * (r or 255)
-    self._colG = (self._colG / 255) * (g or 255)
-    self._colB = (self._colB / 255) * (b or 255)
-    self._colA = (self._colA / 255) * (a or 255)
-end
-
-------------------------------------------------------------
-function State:matrix()
-    return self._transMatrix
-end
-
-------------------------------------------------------------
-function State:color(normalize)
-    if normalize then
-        return self._colR / 255, self._colG / 255, self._colB / 255, self._colA / 255
-    else
-        return self._colR, self._colG, self._colB, self._colA
-    end
-end
-
-------------------------------------------------------------
-function State:blendMode()
-    return self._blendSrc, self._blendDst
-end
+Entity2D.static.State = require 'nx._state2d'
 
 ------------------------------------------------------------
 function Entity2D:initialize()

@@ -25,10 +25,11 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
-local AudioFilter = require 'nx.audiofilter'
+local AudioFilter = require 'nx._audiofilter'
+
 local AudioBassboostFilter = AudioFilter:subclass('nx.audiobassboostfilter')
 
+------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
@@ -40,7 +41,9 @@ end
 
 ------------------------------------------------------------
 function AudioBassboostFilter:setParams(boost)
-    C.nxAudioFilterBassboostSetParams(self._cdata, boost)
+    if self._cdata ~= nil then
+        C.nxAudioFilterBassboostSetParams(self._cdata, boost)
+    end
 
     return self
 end

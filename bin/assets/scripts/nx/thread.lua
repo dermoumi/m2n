@@ -25,8 +25,12 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
--- ffi C declarations
+local Log   = require 'nx.log'
+local LuaVM = require 'nx.luavm'
+local class = require 'nx.class'
+
+local Thread = class 'nx.thread'
+
 ------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
@@ -43,38 +47,23 @@ ffi.cdef [[
 ]]
 
 ------------------------------------------------------------
--- A class to create and use a thread
-------------------------------------------------------------
-local class = require 'nx.class'
-local LuaVM = require 'nx.luavm'
-local Thread = class 'nx.thread'
-
-------------------------------------------------------------
-function Thread.static._fromCData(data)
-    local thread = Thread:allocate()
-    thread._cdata = ffi.cast('NxThreadObj*', data)
-    thread._vm = LuaVM._fromCData(thread._cdata[0].state);
-    return thread
-end
-
-------------------------------------------------------------
 function Thread.static.isMain()
     return C.nxThreadIsMain()
 end
 
 ------------------------------------------------------------
 function Thread:initialize(func, ...)
-    local vm, err = LuaVM:new()
-    if not vm then return nil, err end
+    self._vm = LuaVM:new()
+    self._vm:push(func, ...)
 
-    local handle = C.nxThreadCreate(vm._cdata)
-    if handle == nil then return nil, 'Cannot create a new thread' end
+    local handle = C.nxThreadCreate(self._vm._cdata)
 
-    vm:push(func, ...)
+    if handle == nil then
+        Log.warning('Unable to create a new thread')
+        self._vm:release()
+        self._vm = nil
+    end
 
-    self._vm = vm
-
-    local thread = self
     self._cdata = ffi.gc(handle, C.nxThreadRelease)
 end
 

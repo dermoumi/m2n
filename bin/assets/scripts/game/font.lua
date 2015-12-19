@@ -25,8 +25,13 @@
  For more information, please refer to <http://unlicense.org>
  --]]----------------------------------------------------------------------------
 
+local VectorFont = require 'nx.vectorfont'
+local FontStack  = require 'nx.fontstack'
+local Log        = require 'nx.log'
+local GameCache  = require 'game.cache'
+
 ------------------------------------------------------------
-local stack = require('nx.fontstack'):new()
+local stack = FontStack:new()
 
 local fonts = {
     'assets/fonts/01-Asap-Regular.otf',
@@ -35,18 +40,9 @@ local fonts = {
 }
 
 for i, v in ipairs(fonts) do
-    local font, err = require('game.cache').get(v, function()
-        local fontObj = require('nx.vectorfont'):new()
-        local ok, err = fontObj:open(v)
-        if not ok then return nil, err end
-        return fontObj
-    end, true)
-
-    if not font then
-        require('nx.log').error(err)
-    else
-        stack:addFont(font)
-    end
+    stack:addFont(
+        GameCache.get(v, function() return VectorFont:new(v) end, true)
+    )
 end
 
 return stack

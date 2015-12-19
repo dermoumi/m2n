@@ -25,14 +25,13 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
--- Represents a renderable texture
-------------------------------------------------------------
-local class = require 'nx.class'
+local Texture = require 'nx.texture'
+local Config  = require 'nx.config'
+local Log     = require 'nx.log'
+local class   = require 'nx.class'
+
 local Renderbuffer = class 'nx.renderbuffer'
 
-------------------------------------------------------------
--- ffi C declarations
 ------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
@@ -55,60 +54,64 @@ ffi.cdef [[
 function Renderbuffer.static.bind(buffer)
     if buffer then buffer = buffer._cdata end
     C.nxRenderbufferBind(buffer)
-end
 
-------------------------------------------------------------
-function Renderbuffer.static._fromCData(cdata)
-    local rb = Renderbuffer:allocate()
-    rb._cdata = ffi.cast('NxRenderbuffer*', cdata)
-    rb._textures = {}
-    return rb 
+    return Renderbuffer
 end
 
 ------------------------------------------------------------
 function Renderbuffer:initialize(width, height, depth, samples, numColBufs)
-    local handle = C.nxRenderbufferNew();
-    self._cdata = ffi.gc(handle, C.nxRenderbufferRelease)
     self._textures = {}
 
     if width and height then
-        ok, err = self:create(width, height, depth, samples, numColBufs)
-        if not ok then
-            return nil, err
-        end
+        self:create(width, height, depth, samples, numColBufs)
     end
 end
 
 ------------------------------------------------------------
 function Renderbuffer:release()
     if not self._cdata then return end
+
     C.nxRenderbufferRelease(ffi.gc(self._cdata, nil))
     self._cdata = nil
+    self._textures = {}
 end
 
 ------------------------------------------------------------
 function Renderbuffer:bind()
+    -- No cdata check as to allow debinding
     C.nxRenderbufferBind(self._cdata)
+
+    return self
 end
 
 ------------------------------------------------------------
 function Renderbuffer:create(width, height, depth, samples, numColBufs)
+    self:release()
+
     if depth == nil then depth = false end
-    samples = samples or 0 -- TODO: fetch from settings
+    samples = samples or Config.multisamplingLevel
     numColBufs = numColBufs or 1
 
-    local status = C.nxRenderbufferCreate(self._cdata, 1, width, height, depth, numColBufs, samples)
+    local handle = C.nxRenderbufferNew()
+    local status = C.nxRenderbufferCreate(handle, 1, width, height, depth, numColBufs, samples)
+
     if status == 1 then
-        return false, 'Cannot create renderbuffer: invalid size'
+        Log.warning('Cannot create renderbuffer: invalid size')
+        C.nxRenderbufferRelease(handle)
     elseif status == 2 then
-        return false, 'Cannot create renderbuffer'
+        Log.warning('Cannot create renderbuffer')
+        C.nxRenderbufferRelease(handle)
+    else
+        self._cdata = ffi.gc(handle, C.nxRenderbufferRelease)
     end
 
-    return true
+    return self
 end
 
 ------------------------------------------------------------
 function Renderbuffer:texture(bufIndex)
+    if self._cdata == nil then return Texture:new() end
+
     if bufIndex == 'depth' then
         bufIndex = 32
     elseif not bufIndex then
@@ -118,7 +121,8 @@ function Renderbuffer:texture(bufIndex)
     local texture = self._textures[bufIndex]
 
     if not texture then
-        texture = require('nx.texture')._fromCData(C.nxRenderbufferTexture(self._cdata, bufIndex))
+        texture = Texture:allocate()
+        texture._cdata = ffi.cast('NxTexture*', C.nxRenderbufferTexture(self._cdata, bufIndex))
         self._textures[bufIndex] = texture
     end
 
@@ -129,6 +133,7 @@ end
 function Renderbuffer:size()
     local sizePtr = ffi.new('uint16_t[2]')
     C.nxRenderbufferSize(self._cdata, sizePtr)
+
     return tonumber(sizePtr[0]), tonumber(sizePtr[1])
 end
 

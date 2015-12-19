@@ -25,8 +25,10 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
--- FFI C Declarations
+local AudioVoice = require 'nx._audiovoice'
+
+local VoiceGroup = AudioVoice:subclass('nx.voicegroup')
+
 ------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
@@ -41,17 +43,6 @@ ffi.cdef [[
     void nxAudioVoiceAddToGroup(NxVoiceGroup*, uint32_t);
     bool nxAudioVoiceIsEmpty(NxVoiceGroup*);
 ]]
-
-------------------------------------------------------------
-local AudioVoice = require 'nx._audiovoice'
-local VoiceGroup = AudioVoice:subclass('nx.voicegroup')
-
-------------------------------------------------------------
-function VoiceGroup.static._fromCData(data)
-    local handle = VoiceGroup:allocate()
-    handle._cdata = ffi.cast('NxVoiceGroup*', data)
-    return handle
-end
 
 ------------------------------------------------------------
 function VoiceGroup:initialize()
@@ -71,13 +62,17 @@ end
 
 ------------------------------------------------------------
 function VoiceGroup:add(voice)
-    C.nxAudioVoiceAddToGroup(self._cdata, voice:_handle())
+    if self._cdata ~= nil then
+        C.nxAudioVoiceAddToGroup(self._cdata, voice:_handle())
+    end
 
     return self
 end
 
 ------------------------------------------------------------
 function VoiceGroup:empty()
+    if self._cdata == nil then return true end
+    
     return C.nxAudioVoiceIsEmpty(self._cdata)
 end
 

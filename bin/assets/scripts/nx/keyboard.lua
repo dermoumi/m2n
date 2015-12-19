@@ -25,8 +25,8 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
--- ffi C declarations
+local Keyboard = {}
+
 ------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
@@ -41,14 +41,9 @@ ffi.cdef[[
 ]]
 
 ------------------------------------------------------------
--- A set of functions to get the keyboard state
-------------------------------------------------------------
-local Keyboard = {}
-
--- Constants -----------------------------------------------
 
 -- Scancodes table
-local scancode = {
+local fromScancode = {
     [0] = 'key_unknown',
     [4] = 'a',
     [5] = 'b',
@@ -291,10 +286,15 @@ local scancode = {
     [283] = 'key_283',
     [284] = 'key_284'
 }
-Keyboard._sc = scancode
+Keyboard._sc = fromScancode
+
+local toScancode = {}
+for i, v in pairs(fromScancode) do
+    toScancode[v] = i
+end
 
 -- Key syms table
-local keysym = {
+local fromKeysym = {
     [0] = 'key_unknown',
     [13] = 'return',
     [27] = 'escape',
@@ -532,10 +532,15 @@ local keysym = {
     [1073742105] = 'eject',
     [1073742106] = 'sleep'
 }
-Keyboard._sym = keysym
+Keyboard._sym = fromKeysym
+
+local toKeysym = {}
+for i, v in pairs(fromKeysym) do
+    toKeysym[v] = i
+end
 
 -- Modifier keys table
-local modkey = {
+local toModkey = {
     lshift = 1,
     rshift = 2,
     lctrl = 64,
@@ -552,30 +557,24 @@ local modkey = {
     alt = 768,
     meta = 3072
 }
-Keyboard._mod = modkey
+Keyboard._mod = toModkey
+
+local fromModkey = {}
+for i, v in pairs(toModkey) do
+    fromModkey[v] = i
+end
+
+local downKeysSc = {}
+local downKeysSym = {}
 
 ------------------------------------------------------------
 function Keyboard.KeyToScancode(key)
-    for i = 0, #keysym do
-        if keysym[i] == key then
-            return scancode[C.nxKeyboardToScancode(keysym[i])] or 'key_unknown'
-        end
-    end
-
-    -- Nothing found :(
-    return 'key_unknown'
+    return fromScancode[C.nxKeyboardToScancode(toKeysym[key] or 0)] or 'key_unknown'
 end
 
 ------------------------------------------------------------
 function Keyboard.ScancodeToKey(key)
-    for i = 0, #scancode do
-        if scancode[i] == key then
-            return keysym[C.nxKeyboardToKeysym(scancode[i])] or 'key_unknown'
-        end
-    end
-
-    -- Nothing found :(
-    return 'key_unknown'
+    return fromKeysym[C.nxKeyboardToKeysym(toScancode[key] or 0)] or 'key_unknown'
 end
 
 ------------------------------------------------------------
@@ -587,18 +586,46 @@ function Keyboard.modKeyDown(mod)
 end
 
 ------------------------------------------------------------
+function Keyboard.keysymDown(key)
+    return downKeysSym[toKeysym[key] or 0]
+end
+
+------------------------------------------------------------
+function Keyboard.scancodeDown(key)
+    return downKeysSc[toScancode[key] or 0]
+end
+
+------------------------------------------------------------
 function Keyboard.startTextInput(x, y, width, height)
     C.nxKeyboardStartTextInput(x, y, width, height)
+
+    return Keyboard
 end
 
 ------------------------------------------------------------
 function Keyboard.stopTextInput()
     C.nxKeyboardStopTextInput()
+
+    return Keyboard
 end
 
 ------------------------------------------------------------
 function Keyboard.isTextInputActive()
     return C.nxKeyboardTextInputActive()
+end
+
+------------------------------------------------------------
+function Keyboard.__keyDownEvent(scancode, keysym, isRepeated)
+    if not isRepeated then
+        downKeysSc[scancode] = true
+        downKeysSym[keysym]  = true
+    end
+end
+
+------------------------------------------------------------
+function Keyboard.__keyUpEvent(scancode, keysym)
+    downKeysSc[scancode] = nil
+    downKeysSym[keysym]  = nil
 end
 
 ------------------------------------------------------------

@@ -25,8 +25,10 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
--- FFI C Declarations
+local class = require 'nx.class'
+
+local AudioVoice = class 'nx._audiovoice'
+
 ------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
@@ -71,10 +73,6 @@ ffi.cdef [[
     float nxAudioVoiceFilterParamter(uint32_t, uint32_t, uint32_t);
     void nxAudioVoiceFadeFilterParameter(uint32_t, uint32_t, uint32_t, float, double);
 ]]
-
-------------------------------------------------------------
-local class = require 'nx.class'
-local AudioVoice = class 'nx._audiovoice'
 
 ------------------------------------------------------------
 local toFilterAttribute = {

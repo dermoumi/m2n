@@ -25,8 +25,11 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
--- ffi C declarations
+local class = require 'nx.class'
+local Log   = require 'nx.log'
+
+local BinaryFile = class 'nx._binaryfile'
+
 ------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
@@ -43,19 +46,31 @@ ffi.cdef[[
 ]]
 
 ------------------------------------------------------------
--- Base class for InputFile and OutputFile
-------------------------------------------------------------
-local class = require 'nx.class'
-local BinaryFile = class 'nx._binaryfile'
+function BinaryFile.static.defaultCallback(message)
+    Log.error('File I/O error: ' .. message)
+end
 
 ------------------------------------------------------------
 function BinaryFile:initialize(filename)
-    -- Attempt to open the file if the argument is valid
-    if type(filename) == 'string' and filename ~= '' then
-        -- Call the subclass' open() method
-        local ok, err = self:open(filename)
-        if not ok then return nil, err end
-    end
+    self._errorCallback = BinaryFile.defaultCallback
+
+    -- Attempt to open the file if given a string
+    if type(filename) == 'string' then self:open(filename) end
+end
+
+------------------------------------------------------------
+function BinaryFile:onError(callback)
+    self._errorCallback = callback
+
+    return self
+end
+
+------------------------------------------------------------
+function BinaryFile:_throwError(retVal1, retVal2)
+    self._errorCallback(ffi.string(C.nxFsGetError()))
+    self:release()
+
+    return retVal1, retVal2
 end
 
 ------------------------------------------------------------
@@ -64,39 +79,40 @@ function BinaryFile:isOpen()
 end
 
 ------------------------------------------------------------
-function BinaryFile:close()
-    -- Make sure the file is open
+function BinaryFile:release()
     if self._cdata == nil then return end
 
-    -- Make the cdata unmanaged before setting it to nil
     C.nxFsClose(ffi.gc(self._cdata, nil))
     self._cdata = nil
 end
 
 ------------------------------------------------------------
 function BinaryFile:size()
+    if self._cdata == nil then return 0 end
+
     local size = ffi.new('size_t[1]')
-    if not C.nxFsSize(self._cdata, size) then
-        return 0, ffi.string(C.nxFsGetError())
-    end
+    if not C.nxFsSize(self._cdata, size) then return self:_throwError(0) end
 
     return tonumber(size[0])
 end
 
 ------------------------------------------------------------
 function BinaryFile:tell()
+    if self._cdata == nil then return 0 end
+
     local position = ffi.new('size_t[1]')
-    if not C.nxFsTell(self._cdata, position) then
-        return 0, ffi.string(C.nxFsGetError())
-    end
+    if not C.nxFsTell(self._cdata, position) then return self:_throwError(0) end
 
     return tonumber(position[0])
 end
 
 ------------------------------------------------------------
 function BinaryFile:seek(position)
-    if C.nxFsSeek(self._cdata, position) then return true end
-    return false, ffi.string(C.nxFsGetError())
+    if self._cdata == nil then return self end
+
+    if not C.nxFsSeek(self._cdata, position) then self._throwError() end
+
+    return self
 end
 
 ------------------------------------------------------------

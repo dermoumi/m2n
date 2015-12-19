@@ -25,10 +25,11 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
-local AudioFilter = require 'nx.audiofilter'
+local AudioFilter = require 'nx._audiofilter'
+
 local AudioEchoFilter = AudioFilter:subclass('nx.audioechofilter')
 
+------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
@@ -40,7 +41,9 @@ end
 
 ------------------------------------------------------------
 function AudioEchoFilter:setParams(delay, decay, filter)
-    C.nxAudioFilterEchoSetParams(self._cdata, delay, decay or 0.7, filter or 0)
+    if self._cdata ~= nil then
+        C.nxAudioFilterEchoSetParams(self._cdata, delay, decay or 0.7, filter or 0)
+    end
 
     return self
 end
