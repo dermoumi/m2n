@@ -25,12 +25,11 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-local class = require 'nx.class'
-local Scene = require 'scene'
-local SceneTitle = class('scene.title', Scene)
-
-local Renderer = require 'nx.renderer'
 local Log      = require 'nx.log'
+local Renderer = require 'nx.renderer'
+local Scene    = require 'scene'
+
+local SceneTitle = Scene:subclass('scene.title')
 
 ------------------------------------------------------------
 function SceneTitle:initialize(firstRun)
@@ -56,12 +55,10 @@ function SceneTitle:load()
 
     Log.info('GPU Capabilities:')
     for i, v in pairs(caps) do
-        Log.info(i .. ': ' .. tostring(v))
+        Log.info('%s: %s', i, v)
     end
 
     self.camera = require('nx.camera2d'):new()
-
-    -- Scene.push('scene.subtitle')
 
     self.text = require('nx.text'):new()
         :setFont(require('game.font'))

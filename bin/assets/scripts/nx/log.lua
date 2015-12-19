@@ -41,33 +41,33 @@ ffi.cdef [[
 ]]
 
 ------------------------------------------------------------
-function Log.verbose(message)
-    C.nxLogVerbose(message)
+function Log.verbose(message, arg, ...)
+    C.nxLogVerbose(arg and tostring(message):format(arg, ...) or message)
 end
 
 ------------------------------------------------------------
-function Log.debug(message)
-    C.nxLogDebug(message)
+function Log.debug(message, arg, ...)
+    C.nxLogDebug(arg and tostring(message):format(arg, ...) or message)
 end
 
 ------------------------------------------------------------
-function Log.warning(message)
-    C.nxLogWarning(message)
+function Log.warning(message, arg, ...)
+    C.nxLogWarning(arg and tostring(message):format(arg, ...) or message)
 end
 
 ------------------------------------------------------------
-function Log.info(message)
-    C.nxLogInfo(message)
+function Log.info(message, arg, ...)
+    C.nxLogInfo(arg and tostring(message):format(arg, ...) or message)
 end
 
 ------------------------------------------------------------
-function Log.error(message)
-    C.nxLogError(message)
+function Log.error(message, arg, ...)
+    C.nxLogError(arg and tostring(message):format(arg, ...) or message)
 end
 
 ------------------------------------------------------------
-function Log.fatal(message)
-    C.nxLogFatal(message)
+function Log.fatal(message, arg, ...)
+    C.nxLogFatal(arg and tostring(message):format(arg, ...) or message)
 end
 
 ------------------------------------------------------------
