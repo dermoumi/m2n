@@ -48,7 +48,6 @@ end
 ------------------------------------------------------------
 -- Renderer setup
 ------------------------------------------------------------
-
 -- Create window
 Window.create("m2n", 1280, 720, graphicsFlags or {vsync = false})
 
@@ -81,6 +80,13 @@ end)
 end)
 
 ------------------------------------------------------------
+-- Scene checker
+------------------------------------------------------------
+local function checkScene(scene)
+    return scene ~= Scene.currentScene()
+end
+
+------------------------------------------------------------
 -- Startup scene
 ------------------------------------------------------------
 Scene.goTo('scene.title', true)
@@ -88,7 +94,7 @@ Scene.goTo('scene.title', true)
 ------------------------------------------------------------
 -- Main loop
 ------------------------------------------------------------
-while true do
+while Window.isOpen() do
     local scene = Scene.currentScene()
 
     -- Process events
@@ -98,23 +104,28 @@ while true do
             break
         else
             scene:__onEvent(e, a, b, c, d)
+            if checkScene(scene) then goto continue end
         end
     end
 
-    -- Check if the window is still open
+    -- Check that the window is still open
     if not Window.isOpen() then break end
 
     scene:__update(Window.frameTime())
+    if checkScene(scene) then goto continue end
 
     totalTime = totalTime + Window.frameTime()
     for i = 1, totalTime / fixedFrameTime do
         scene:__fixedUpdate(fixedFrameTime)
+        if checkScene(scene) then goto continue end
     end
     totalTime = totalTime % fixedFrameTime
 
     Renderer.begin()
     scene:__render()
     Renderer.finish()
+
+    ::continue::
 
     Window.display()
 

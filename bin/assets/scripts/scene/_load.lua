@@ -75,19 +75,19 @@ function SceneLoad:load()
 
     self.opaque = not self.parent or self.parent:isLoading() or self.parent:isTransitioning()
 
-    self:performTransition()
+    self:transition()
 end
 
 ------------------------------------------------------------
 function SceneLoad:update(dt)
-    self:check()
-
-    self.fadePercent = 1
-
     -- Calculate fading percent if there's any ongoing fading
-    if self:isTransitioning() and not self.__transitionFadingIn then
-        self.fadePercent = self.__transitionTime / self:transitionDuration()
+    if self:isOpening() then
+        self.fadePercent = self.__transTime / self:transitionDuration()
+    else
+        self.fadePercent = 1
     end
+
+    self:check()
 
     local w, h = self:view():size()
     self.text:setPosition(30, h - 50)
@@ -110,9 +110,9 @@ function SceneLoad:render()
 end
 
 ------------------------------------------------------------
-function SceneLoad:renderTransition(time, isFadingIn)
-    if not self.parent or isFadingIn then
-        Scene.renderTransition(self, time, isFadingIn)
+function SceneLoad:renderTransition(time, isOpening)
+    if not self.parent or isOpening then
+        Scene.renderTransition(self, time, isOpening)
     end
 end
 
@@ -132,10 +132,10 @@ function SceneLoad:check()
         if self:isLoading() then
             Scene.replace(self.nextScene)
         else
-            self:performTransition(Scene.replace, self.nextScene)
+            self:transition(Scene.replace, self.nextScene)
         end
 
-        self.nextScene:performTransition()
+        self.nextScene:transition()
         return true
     end
 end
