@@ -75,7 +75,7 @@ function SceneLoad:load()
 
     self.opaque = not self.parent or self.parent:isLoading() or self.parent:isTransitioning()
 
-    self:transition()
+    self:performTransition()
 end
 
 ------------------------------------------------------------
@@ -132,10 +132,10 @@ function SceneLoad:check()
         if self:isLoading() then
             Scene.replace(self.nextScene)
         else
-            self:transition(Scene.replace, self.nextScene)
+            self:performTransition(Scene.replace, self.nextScene)
         end
 
-        self.nextScene:transition()
+        self.nextScene:performTransition()
         return true
     end
 end

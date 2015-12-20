@@ -137,7 +137,7 @@ function Scene:__load()
     self.__isLoading = false
 
     if not self.parent or self.parent:isTransitioning() then
-        self:transition()
+        self:performTransition()
     end
 end
 
@@ -219,9 +219,9 @@ function Scene:isLoading()
 end
 
 ------------------------------------------------------------
-function Scene:transition(callback, arg)
+function Scene:performTransition(callback, arg)
     if self ~= Scene.currentScene() then
-        Scene.currentScene():transition(callback, arg)
+        Scene.currentScene():performTransition(callback, arg)
     elseif not self:isTransitioning() then
         self.__transTime = 0
 
@@ -336,7 +336,7 @@ end
 ------------------------------------------------------------
 function Scene:back(scene, ...)
     if scene:isTransitioning() then
-        self:transition()
+        self:performTransition()
     else
         self.__transTime = self:transitionDuration()
     end

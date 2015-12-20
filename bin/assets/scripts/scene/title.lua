@@ -83,8 +83,8 @@ end
 ------------------------------------------------------------
 function SceneTitle:onKeyDown(scancode, keyCode, repeated)
     if scancode == 'f2' then
-        -- self:transition(Scene.push, 'scene.test.3d')
-        Scene.push('scene.test.3d')
+        self:performTransition(Scene.push, 'scene.test.3d')
+        -- Scene.push('scene.test.3d')
     elseif scancode == 'f10' then
         require('nx.window').create('m2n-', 1280, 720, {})
     elseif scancode == 'f11' then
@@ -98,7 +98,7 @@ function SceneTitle:onKeyDown(scancode, keyCode, repeated)
             print('Lua usage: ' .. tostring(collectgarbage('count') * 1024))
         end
     elseif scancode == 'a' then
-        self:transition(Scene.goTo, 'scene.title')
+        self:performTransition(Scene.goTo, 'scene.title')
     end
 end
 

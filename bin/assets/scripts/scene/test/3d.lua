@@ -61,7 +61,7 @@ function SceneTest3D:onKeyDown(scancode, keyCode, repeated)
     elseif scancode == 'up' then
         self.camera:translate(0, 0, .1)
     elseif scancode == 'f1' then
-        self:transition(Scene.back)
+        self:performTransition(Scene.back)
     end
 end
 
