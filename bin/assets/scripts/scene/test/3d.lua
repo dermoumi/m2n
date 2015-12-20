@@ -68,4 +68,9 @@ function SceneTest3D:onKeyDown(scancode, keyCode, repeated)
 end
 
 ------------------------------------------------------------
+function SceneTest3D:updateParent()
+    return true
+end
+
+------------------------------------------------------------
 return SceneTest3D

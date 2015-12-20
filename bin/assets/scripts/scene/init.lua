@@ -33,8 +33,38 @@ local class    = require 'nx.class'
 local Scene = class 'nx.scene'
 
 -- Local variables -----------------------------------------
-local sceneStack = {}
-local releaseStack = {}
+local sceneStack, releaseStack = {}, {}
+
+-- Mapping events to their respective functions
+local eventMapping = {
+    focus             = 'onFocus',
+    visible           = 'onVisible',
+    resized           = 'onResize',
+    textinput         = 'onTextInput',
+    textedit          = 'onTextEdit',
+    keydown           = 'onKeyDown',
+    keyup             = 'onKeyUp',
+    mousefocus        = 'onMouseFocus',
+    mousemotion       = 'onMouseMotion',
+    mousedown         = 'onMouseDown',
+    mouseup           = 'onMouseUp',
+    wheelscroll       = 'onWheelScroll',
+    joyaxismotion     = 'onJoyAxisMotion',
+    joyballmotion     = 'onJoyBallMotion',
+    joyhatmotion      = 'onJoyHatMotion',
+    joybuttondown     = 'onJoyButtonDown',
+    joybuttonup       = 'onJoyButtonUp',
+    joyconnect        = 'onJoyConnect',
+    gamepadmotion     = 'onGamepadMotion',
+    gamepadbuttondown = 'onGamepadButtonDown',
+    gamepadbuttonup   = 'onGamepadButtonUp',
+    gamepadconnect    = 'onGamepadConnect',
+    gamepadremap      = 'onGamepadRemap',
+    touchdown         = 'onTouchDown',
+    touchup           = 'onTouchUp',
+    touchmotion       = 'onTouchMotion',
+    filedrop          = 'onFileDrop'
+}
 
 ------------------------------------------------------------
 function Scene.static.currentScene()
@@ -99,12 +129,8 @@ end
 
 ------------------------------------------------------------
 function Scene:_update(dt)
-    if self.parent then
-        if self:updateParent() then
-            self.parent:_update(dt)
-        else
-            self.parent._transitionTime = nil
-        end
+    if self.parent and self:updateParent() then
+        self.parent:_update(dt)
     end
 
     self:updateTransition(dt)
@@ -113,18 +139,20 @@ end
 
 ------------------------------------------------------------
 function Scene:_fixedUpdate(dt)
-    if self:updateParent() and self.parent then self.parent:_fixedUpdate(dt) end
+    if self.parent and self:updateParent() then
+        self.parent:_fixedUpdate(dt)
+    end
 
     self:fixedUpdate(dt)
 end
 
 ------------------------------------------------------------
 function Scene:_render()
-    if self:renderParent() and self.parent then self.parent:_render() end
+    if self.parent and self:renderParent() then
+        self.parent:_render()
+    end
 
     self:render()
-
-    -- Render transition if there's any
     self:renderTransition()
 end
 
@@ -146,9 +174,9 @@ function Scene:_onEvent(e, a, b, c, d)
     if self._transitionTime then
         -- While transitioning, disable most events
         return true
-    elseif self[e](self, a, b, c, d) == false then
+    elseif self:onEvent(e, a, b, c, d) == false then
         return false
-    elseif self:processParent() and self.parent then
+    elseif self:updateParent() and self.parent then
         return self.parent:_onEvent(e, a, b, c, d)
     end
 
@@ -232,23 +260,26 @@ function Scene:transitionDuration()
 end
 
 ------------------------------------------------------------
+function Scene:isTransitioning()
+    return self._transitionTime ~= nil
+end
+
+------------------------------------------------------------
 function Scene:cache(id, loaderFunc)
     -- Make local cache table if there isn't any
     self.__cache = self.__cache or {}
 
     -- Attempt to load it from the scene's local cache
     local obj = self.__cache[id]
-    if obj then return obj end
+    if not obj then
+        -- Not found, attempt to load it from game cache
+        obj, err = Cache.get(id, loaderFunc, true)
+        if not obj then return nil, err end
 
-    -- Not found, attempt to load it from game cache
-    obj, err = Cache.get(id, loaderFunc, true)
-    if obj then
         self.__cache[id] = obj
-        return obj
     end
 
-    -- Not found in game cache, return error
-    return nil, err
+    return obj
 end
 
 ------------------------------------------------------------
@@ -284,6 +315,8 @@ end
 function Scene:back(scene, ...)
     if scene._transitionTime ~= nil then
         self:performTransition()
+    else
+        self._transitionTime = self:transitionDuration()
     end
 end
 
@@ -434,7 +467,10 @@ end
 
 ------------------------------------------------------------
 function Scene:onEvent(e, a, b, c, d)
-    -- Nothing to do
+    local event = eventMapping[e]
+    if not event then return true end
+
+    return self[event](self, a, b, c, d)
 end
 
 ------------------------------------------------------------

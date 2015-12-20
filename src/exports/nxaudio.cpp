@@ -39,9 +39,17 @@ using NxAudioFilter = SoLoud::Filter;
 //----------------------------------------------------------
 // Exported functions
 //----------------------------------------------------------
+NX_EXPORT void nxAudioRelease()
+{
+    if (!initialized) return;
+
+    Audio::instance().deinit();
+}
+
+//----------------------------------------------------------
 NX_EXPORT bool nxAudioInit()
 {
-    if (initialized) return true;
+    if (initialized) nxAudioRelease();
 
     if (SDL_InitSubSystem(SDL_INIT_AUDIO) != 0) return false;
 
@@ -49,14 +57,6 @@ NX_EXPORT bool nxAudioInit()
 
     initialized = true;
     return true;
-}
-
-//----------------------------------------------------------
-NX_EXPORT void nxAudioRelease()
-{
-    if (!initialized) return;
-
-    Audio::instance().deinit();
 }
 
 //----------------------------------------------------------

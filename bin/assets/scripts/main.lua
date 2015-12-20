@@ -33,41 +33,6 @@ local Renderer = require 'nx.renderer'
 local Scene    = require 'scene'
 
 ------------------------------------------------------------
--- Helpers
-------------------------------------------------------------
-
--- Mapping events to their respecting nx.Scene functions
-local eventMapping = {
-    focus             = 'onFocus',
-    visible           = 'onVisible',
-    resized           = 'onResize',
-    textinput         = 'onTextInput',
-    textedit          = 'onTextEdit',
-    keydown           = 'onKeyDown',
-    keyup             = 'onKeyUp',
-    mousefocus        = 'onMouseFocus',
-    mousemotion       = 'onMouseMotion',
-    mousedown         = 'onMouseDown',
-    mouseup           = 'onMouseUp',
-    wheelscroll       = 'onWheelScroll',
-    joyaxismotion     = 'onJoyAxisMotion',
-    joyballmotion     = 'onJoyBallMotion',
-    joyhatmotion      = 'onJoyHatMotion',
-    joybuttondown     = 'onJoyButtonDown',
-    joybuttonup       = 'onJoyButtonUp',
-    joyconnect        = 'onJoyConnect',
-    gamepadmotion     = 'onGamepadMotion',
-    gamepadbuttondown = 'onGamepadButtonDown',
-    gamepadbuttonup   = 'onGamepadButtonUp',
-    gamepadconnect    = 'onGamepadConnect',
-    gamepadremap      = 'onGamepadRemap',
-    touchdown         = 'onTouchDown',
-    touchup           = 'onTouchUp',
-    touchmotion       = 'onTouchMotion',
-    filedrop          = 'onFileDrop'
-}
-
-------------------------------------------------------------
 -- Load settings
 ------------------------------------------------------------
 local graphicsFlags
@@ -128,12 +93,11 @@ while true do
 
     -- Process events
     for e, a, b, c, d in Events.poll() do
-        if e == 'quit' and scene:_onEvent('onQuit') then
+        if e == 'quit' and scene:_onEvent('quit') then
             Window.close()
             break
         else
-            local event = eventMapping[e] or 'onEvent'
-            scene:_onEvent(event, a, b, c, d)
+            scene:_onEvent(e, a, b, c, d)
         end
     end
 
@@ -161,6 +125,7 @@ end
 ------------------------------------------------------------
 -- Release stuff
 ------------------------------------------------------------
+Scene.clean()
 require('nx.audio').release()
 
 ------------------------------------------------------------
