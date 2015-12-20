@@ -25,8 +25,9 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-local Text  = require 'nx.text'
-local Scene = require 'scene'
+local GameFont = require 'game.font'
+local Text     = require 'nx.text'
+local Scene    = require 'scene'
 
 local SceneLoad = Scene:subclass('scene._load')
 
@@ -65,9 +66,9 @@ function SceneLoad:load()
     self.worker:start()
 
     self.text = Text:new()
-        :setFont(require('game.font'))
-        :setCharacterSize(20)
-        :setString(self.message:format(0))
+        :setString(self.message, 0)
+        :setFont(GameFont)
+        :setSize(20)
         :setColor(self.messageColR, self.messageColG, self.messageColB, self.messageColA)
 
     if self:check() then return end
@@ -125,7 +126,7 @@ function SceneLoad:check()
     local loaded, failed, total = self.worker:progress()
 
     local percent = total ~= 0 and math.floor(100 * (loaded + failed) / total + 0.5) or 1
-    self.text:setString(self.message:format(percent))
+    self.text:setString(self.message, percent)
 
     if loaded + failed == total then
         if self:isLoading() then

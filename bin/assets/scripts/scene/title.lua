@@ -59,14 +59,14 @@ end
 ------------------------------------------------------------
 function SceneTitle:load()
     self.text = require('nx.text')
-        :new('Current FPS:', require 'game.font', 14)
+        :new('', require 'game.font', 14)
         :setColor(255, 255, 255)
         :setPosition(10, 10)
 end
 
 ------------------------------------------------------------
 function SceneTitle:update(dt)
-    self.text:setString('Current FPS: ' .. require('nx.window').currentFPS())
+    self.text:setString('Current FPS: %i', require('nx.window').currentFPS())
 end
 
 ------------------------------------------------------------

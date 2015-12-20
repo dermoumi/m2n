@@ -82,7 +82,7 @@ function Text:initialize(str, font, charSize)
 
     self:setString(str or '')
         :setFont(font)
-        :setCharacterSize(charSize or 30)
+        :setSize(charSize or 30)
 
     self._style = 0
     self._vertices = Arraybuffer:new()
@@ -97,7 +97,9 @@ function Text:release()
 end
 
 ------------------------------------------------------------
-function Text:setString(str)
+function Text:setString(str, arg, ...)
+    if arg then str = str:format(arg, ...) end
+
     if type(str) == 'string' then
         if self._string == str then return self end
         self._string = str
@@ -127,7 +129,7 @@ function Text:setFont(font)
 end
 
 ------------------------------------------------------------
-function Text:setCharacterSize(size)
+function Text:setSize(size)
     self._charSize = size
     C.nxTextSetCharacterSize(self._cdata, size)
 
@@ -177,7 +179,7 @@ function Text:font()
 end
 
 ------------------------------------------------------------
-function Text:characterSize()
+function Text:size()
     return self._charSize
 end
 
