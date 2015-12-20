@@ -110,9 +110,9 @@ function SceneLoad:render()
 end
 
 ------------------------------------------------------------
-function SceneLoad:renderTransition()
-    if not self.parent or self.__transitionFadingIn then
-        Scene.renderTransition(self)
+function SceneLoad:renderTransition(time, isFadingIn)
+    if not self.parent or isFadingIn then
+        Scene.renderTransition(self, time, isFadingIn)
     end
 end
 

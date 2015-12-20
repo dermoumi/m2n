@@ -54,6 +54,8 @@ function SceneTitle:initialize(firstRun)
             Log.info('%s: %s', i, v)
         end        
     end
+
+    self:worker():addFile('nx.image', 'assets/pasrien.png')
 end
 
 ------------------------------------------------------------
@@ -62,6 +64,8 @@ function SceneTitle:load()
         :new('', require 'game.font', 14)
         :setColor(255, 255, 255)
         :setPosition(10, 10)
+
+    self:cache('assets/pasrien.png')
 end
 
 ------------------------------------------------------------

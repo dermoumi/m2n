@@ -147,7 +147,10 @@ function Scene:__update(dt)
         self.parent:__update(dt)
     end
 
-    self:updateTransition(dt)
+    if self:isTransitioning() then
+        self:updateTransition(dt)
+    end
+
     self:update(dt)
 end
 
@@ -167,7 +170,10 @@ function Scene:__render()
     end
 
     self:render()
-    self:renderTransition()
+
+    if self:isTransitioning() then
+        self:renderTransition(self.__transitionTime, self.__transitionFadingIn)
+    end
 end
 
 ------------------------------------------------------------
@@ -214,7 +220,7 @@ end
 
 ------------------------------------------------------------
 function Scene:performTransition(callback, arg)
-    if self.__transitionTime then return end
+    if self:isTransitioning() then return end
 
     if self ~= Scene.currentScene() then
         Scene.currentScene():performTransition(callback, arg)
@@ -224,27 +230,22 @@ function Scene:performTransition(callback, arg)
         if type(callback) == 'function' then
             -- Has a callback, assume it's a fade out transition
             self.__transitionFadingIn = true
-            self.__transitionCallback = callback
-            self.__transitionCallbackArg = arg
+            self.__transitionCb, self.__transitionCbArg = callback, arg
         else
             self.__transitionFadingIn = false
-            self.__transitionCallback = nil
-            self.__transitionCallbackArg = nil
+            self.__transitionCb, self.__transitionCbArg = nil, nil
         end
     end
 end
 
 ------------------------------------------------------------
 function Scene:updateTransition(dt)
-    if not self.__transitionTime then return end
-
     local duration = self:transitionDuration(self.__transitionFadingIn)
 
     if self.__transitionTime >= duration then
-        if self.__transitionCallback then
-            self.__transitionCallback(self.__transitionCallbackArg)
-            self.__transitionCallback = nil
-            self.__transitionCallbackArg = nil
+        if self.__transitionCb then
+            self.__transitionCb(self.__transitionCbArg)
+            self.__transitionCb, self.__transitionCbArg = nil, nil
         else
             self.__transitionTime = nil
         end
@@ -254,13 +255,11 @@ function Scene:updateTransition(dt)
 end
 
 ------------------------------------------------------------
-function Scene:renderTransition()
-    if not self.__transitionTime then return end
-
+function Scene:renderTransition(transitionTime, isFadingIn)
     local r, g, b, a = self:transitionColor()
 
-    a = a * (self.__transitionTime / self:transitionDuration())
-    if not self.__transitionFadingIn then a = 255 - a end
+    a = a * (transitionTime / self:transitionDuration())
+    if not isFadingIn then a = 255 - a end
 
     self:view():fillFsQuad(r, g, b, a)
 end
@@ -271,7 +270,7 @@ function Scene:transitionColor()
 end
 
 ------------------------------------------------------------
-function Scene:transitionDuration()
+function Scene:transitionDuration(isFadingIn)
     return .2
 end
 
