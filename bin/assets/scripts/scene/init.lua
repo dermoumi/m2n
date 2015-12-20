@@ -94,7 +94,7 @@ function Scene.static.push(scene, ...)
     end
 
     sceneStack[#sceneStack+1] = scene
-    scene:_load()
+    scene:__load()
 end
 
 ------------------------------------------------------------
@@ -122,14 +122,14 @@ end
 ------------------------------------------------------------
 function Scene.static.clean()
     for i, scene in ipairs(releaseStack) do
-        scene:_release()
+        scene:__release()
     end
 
     releaseStack = {}
 end
 
 ------------------------------------------------------------
-function Scene:_load()
+function Scene:__load()
     self.parent = sceneStack[#sceneStack-1]
 
     self.__isLoading = true
@@ -142,9 +142,9 @@ function Scene:_load()
 end
 
 ------------------------------------------------------------
-function Scene:_update(dt)
+function Scene:__update(dt)
     if self.parent and self:updateParent() then
-        self.parent:_update(dt)
+        self.parent:__update(dt)
     end
 
     self:updateTransition(dt)
@@ -152,18 +152,18 @@ function Scene:_update(dt)
 end
 
 ------------------------------------------------------------
-function Scene:_fixedUpdate(dt)
+function Scene:__fixedUpdate(dt)
     if self.parent and self:updateParent() then
-        self.parent:_fixedUpdate(dt)
+        self.parent:__fixedUpdate(dt)
     end
 
     self:fixedUpdate(dt)
 end
 
 ------------------------------------------------------------
-function Scene:_render()
+function Scene:__render()
     if self.parent and self:renderParent() then
-        self.parent:_render()
+        self.parent:__render()
     end
 
     self:render()
@@ -171,7 +171,7 @@ function Scene:_render()
 end
 
 ------------------------------------------------------------
-function Scene:_release()
+function Scene:__release()
     -- Release all cached elements
     if self.__cache then
         for i, v in pairs(self.__cache) do
@@ -184,14 +184,13 @@ function Scene:_release()
 end
 
 ------------------------------------------------------------
-function Scene:_onEvent(e, a, b, c, d)
-    if self._transitionTime then
-        -- While transitioning, disable most events
-        return true
-    elseif self:onEvent(e, a, b, c, d) == false then
-        return false
-    elseif self:updateParent() and self.parent then
-        return self.parent:_onEvent(e, a, b, c, d)
+function Scene:__onEvent(e, a, b, c, d)
+    if not self:isTransitioning() then
+        if self:onEvent(e, a, b, c, d) == false then
+            return false
+        elseif self:updateParent() and self.parent then
+            return self.parent:__onEvent(e, a, b, c, d)
+        end
     end
 
     return true
@@ -215,53 +214,53 @@ end
 
 ------------------------------------------------------------
 function Scene:performTransition(callback, arg)
-    if self._transitionTime then return end
+    if self.__transitionTime then return end
 
     if self ~= Scene.currentScene() then
         Scene.currentScene():performTransition(callback, arg)
     else
-        self._transitionTime = 0
+        self.__transitionTime = 0
 
         if type(callback) == 'function' then
             -- Has a callback, assume it's a fade out transition
-            self._transitionFadingIn = true
-            self._transitionCallback = callback
-            self._transitionCallbackArg = arg
+            self.__transitionFadingIn = true
+            self.__transitionCallback = callback
+            self.__transitionCallbackArg = arg
         else
-            self._transitionFadingIn = false
-            self._transitionCallback = nil
-            self._transitionCallbackArg = nil
+            self.__transitionFadingIn = false
+            self.__transitionCallback = nil
+            self.__transitionCallbackArg = nil
         end
     end
 end
 
 ------------------------------------------------------------
 function Scene:updateTransition(dt)
-    if not self._transitionTime then return end
+    if not self.__transitionTime then return end
 
-    local duration = self:transitionDuration(self._transitionFadingIn)
+    local duration = self:transitionDuration(self.__transitionFadingIn)
 
-    if self._transitionTime >= duration then
-        if self._transitionCallback then
-            self._transitionCallback(self._transitionCallbackArg)
-            self._transitionCallback = nil
-            self._transitionCallbackArg = nil
+    if self.__transitionTime >= duration then
+        if self.__transitionCallback then
+            self.__transitionCallback(self.__transitionCallbackArg)
+            self.__transitionCallback = nil
+            self.__transitionCallbackArg = nil
         else
-            self._transitionTime = nil
+            self.__transitionTime = nil
         end
     else
-        self._transitionTime = math.min(duration, self._transitionTime + dt)
+        self.__transitionTime = math.min(duration, self.__transitionTime + dt)
     end
 end
 
 ------------------------------------------------------------
 function Scene:renderTransition()
-    if not self._transitionTime then return end
+    if not self.__transitionTime then return end
 
     local r, g, b, a = self:transitionColor()
 
-    a = a * (self._transitionTime / self:transitionDuration())
-    if not self._transitionFadingIn then a = 255 - a end
+    a = a * (self.__transitionTime / self:transitionDuration())
+    if not self.__transitionFadingIn then a = 255 - a end
 
     self:view():fillFsQuad(r, g, b, a)
 end
@@ -278,7 +277,7 @@ end
 
 ------------------------------------------------------------
 function Scene:isTransitioning()
-    return self._transitionTime ~= nil
+    return self.__transitionTime ~= nil
 end
 
 ------------------------------------------------------------
@@ -301,11 +300,11 @@ end
 
 ------------------------------------------------------------
 function Scene:view()
-    if not self._view then
-        self._view = Camera2D:new()
+    if not self.__view then
+        self.__view = Camera2D:new()
     end
 
-    return self._view
+    return self.__view
 end
 
 ------------------------------------------------------------
@@ -330,10 +329,10 @@ end
 
 ------------------------------------------------------------
 function Scene:back(scene, ...)
-    if scene._transitionTime ~= nil then
+    if scene:isTransitioning() then
         self:performTransition()
     else
-        self._transitionTime = self:transitionDuration()
+        self.__transitionTime = self:transitionDuration()
     end
 end
 

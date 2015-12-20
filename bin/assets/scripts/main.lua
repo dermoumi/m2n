@@ -93,27 +93,27 @@ while true do
 
     -- Process events
     for e, a, b, c, d in Events.poll() do
-        if e == 'quit' and scene:_onEvent('quit') then
+        if e == 'quit' and scene:__onEvent('quit') then
             Window.close()
             break
         else
-            scene:_onEvent(e, a, b, c, d)
+            scene:__onEvent(e, a, b, c, d)
         end
     end
 
     -- Check if the window is still open
     if not Window.isOpen() then break end
 
-    scene:_update(Window.frameTime())
+    scene:__update(Window.frameTime())
 
     totalTime = totalTime + Window.frameTime()
     for i = 1, totalTime / fixedFrameTime do
-        scene:_fixedUpdate(fixedFrameTime)
+        scene:__fixedUpdate(fixedFrameTime)
     end
     totalTime = totalTime % fixedFrameTime
 
     Renderer.begin()
-    scene:_render()
+    scene:__render()
     Renderer.finish()
 
     Window.display()
