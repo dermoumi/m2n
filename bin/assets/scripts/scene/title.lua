@@ -62,8 +62,6 @@ function SceneTitle:load()
         :new('Current FPS:', require 'game.font', 14)
         :setColor(255, 255, 255)
         :setPosition(10, 10)
-
-    return true
 end
 
 ------------------------------------------------------------
@@ -81,7 +79,8 @@ end
 ------------------------------------------------------------
 function SceneTitle:onKeyDown(scancode, keyCode, repeated)
     if scancode == 'f2' then
-        self:performTransition(Scene.push, 'scene.test.3d')
+        -- self:performTransition(Scene.push, 'scene.test.3d')
+        Scene.push('scene.test.3d')
     elseif scancode == 'f10' then
         require('nx.window').create('m2n-', 1280, 720, {})
     elseif scancode == 'f11' then

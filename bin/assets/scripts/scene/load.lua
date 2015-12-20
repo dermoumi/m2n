@@ -72,9 +72,9 @@ function SceneLoad:load()
 
     if self:check() then return end
 
-    self.notOpaque = self.parent and not self.parent:isLoading() and not self.parent._transitionTime
+    self.opaque = not self.parent or self.parent:isLoading() or self.parent._transitionTime
 
-    return true
+    self:performTransition()
 end
 
 ------------------------------------------------------------
@@ -99,10 +99,10 @@ end
 ------------------------------------------------------------
 function SceneLoad:render()
     -- Draw overlay quad only if there's a scene *currently* rendering behind
-    if self.notOpaque then
-        self:view():fillFsQuad(self.colR, self.colG, self.colB, self.colA * self.fadePercent)
-    else    
+    if self.opaque then
         self:view():clear(self.colR, self.colG, self.colB)
+    else    
+        self:view():fillFsQuad(self.colR, self.colG, self.colB, self.colA * self.fadePercent)
     end
 
     self:view():draw(self.text)
@@ -128,17 +128,13 @@ function SceneLoad:check()
     self.text:setString(self.message:format(percent))
 
     if loaded + failed == total then
-        local function callback()
-            Scene.back()
-            Scene.push(self.nextScene)
-        end
-
         if self:isLoading() then
-            callback()
+            Scene.replace(self.nextScene)
         else
-            self:performTransition(callback)
+            self:performTransition(Scene.replace, self.nextScene)
         end
 
+        self.nextScene:performTransition()
         return true
     end
 end
@@ -150,7 +146,7 @@ end
 
 ------------------------------------------------------------
 function SceneLoad:renderParent()
-    return true
+    return not self.opaque
 end
 
 ------------------------------------------------------------

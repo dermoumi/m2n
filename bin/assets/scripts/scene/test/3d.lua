@@ -44,8 +44,6 @@ function SceneTest3D:load()
     self.sprite = require('nx.sprite'):new(self.texture)
         :setScale(1/512, 1/512)
         :setPosition(-1/2, -1/2)
-
-    return true
 end
 
 ------------------------------------------------------------
@@ -63,7 +61,7 @@ function SceneTest3D:onKeyDown(scancode, keyCode, repeated)
     elseif scancode == 'up' then
         self.camera:translate(0, 0, .1)
     elseif scancode == 'f1' then
-        Scene.back()
+        self:performTransition(Scene.back)
     end
 end
 

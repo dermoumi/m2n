@@ -74,7 +74,7 @@ end
 ------------------------------------------------------------
 function Scene.static.goTo(scene, ...)
     for i = #sceneStack, 1, -1 do
-        releaseStack[#releaseStack + 1] = sceneStack[i]
+        releaseStack[#releaseStack+1] = sceneStack[i]
         sceneStack[i] = nil
     end
 
@@ -100,13 +100,23 @@ end
 ------------------------------------------------------------
 function Scene.static.back(...)
     local scene = sceneStack[#sceneStack]
-    releaseStack[#releaseStack + 1] = scene
+    releaseStack[#releaseStack+1] = scene
 
     sceneStack[#sceneStack] = nil
 
     if sceneStack[#sceneStack] then
         sceneStack[#sceneStack]:back(scene, ...)
     end
+end
+
+------------------------------------------------------------
+function Scene.static.replace(scene, ...)
+    local lastScene = sceneStack[#sceneStack]
+    releaseStack[#releaseStack+1] = lastScene
+
+    sceneStack[#sceneStack] = nil
+
+    Scene.push(scene, ...)
 end
 
 ------------------------------------------------------------
@@ -123,8 +133,12 @@ function Scene:_load()
     self.parent = sceneStack[#sceneStack-1]
 
     self.__isLoading = true
-    if self:load() then self:performTransition() end
+    self:load()
     self.__isLoading = false
+
+    if not self.parent or self.parent:isTransitioning() then
+        self:performTransition()
+    end
 end
 
 ------------------------------------------------------------
@@ -200,21 +214,23 @@ function Scene:isLoading()
 end
 
 ------------------------------------------------------------
-function Scene:performTransition(arg1, arg2)
+function Scene:performTransition(callback, arg)
     if self._transitionTime then return end
 
     if self ~= Scene.currentScene() then
-        Scene.currentScene():performTransition(arg1, arg2)
+        Scene.currentScene():performTransition(callback, arg)
     else
         self._transitionTime = 0
 
-        if type(arg1) == 'function' then
+        if type(callback) == 'function' then
             -- Has a callback, assume it's a fade out transition
             self._transitionFadingIn = true
-            self._transitionCallback = arg2 and function() arg1(arg2) end or arg1
+            self._transitionCallback = callback
+            self._transitionCallbackArg = arg
         else
             self._transitionFadingIn = false
             self._transitionCallback = nil
+            self._transitionCallbackArg = nil
         end
     end
 end
@@ -227,8 +243,9 @@ function Scene:updateTransition(dt)
 
     if self._transitionTime >= duration then
         if self._transitionCallback then
-            self._transitionCallback()
+            self._transitionCallback(self._transitionCallbackArg)
             self._transitionCallback = nil
+            self._transitionCallbackArg = nil
         else
             self._transitionTime = nil
         end
