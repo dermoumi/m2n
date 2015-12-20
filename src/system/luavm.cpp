@@ -45,7 +45,10 @@ bool LuaVM::initialize()
         return false;
     }
 
-    luaL_openlibs(state);
+    if (!loadNxLibs(state, &mErrorMessage)) {
+        mErrorMessage = "Could not load Lua libraries: " + mErrorMessage;
+        return false;
+    }
 
     mState = state;
     return true;
@@ -84,24 +87,63 @@ bool LuaVM::runCode(const std::string& filename, const std::string& code, int& r
 }
 
 //----------------------------------------------------------
-bool LuaVM::loadNxLibs()
-{
-    return loadNxLibs(mState);
-}
-
-//----------------------------------------------------------
 std::string LuaVM::getErrorMessage() const
 {
     return mErrorMessage;
 }
 
 //----------------------------------------------------------
-bool LuaVM::loadNxLibs(lua_State* state)
+bool LuaVM::loadNxLibs(lua_State* state, std::string* err)
 {
     // Make sure we have a valid Lua state
-    if (!state) return false;
+    if (!state) {
+        if (err) *err = "Invalid state";
+        return false;
+    }
 
-    // Load data into a string?
+    // Lua libraries to load
+    static const luaL_Reg lj_lib_load[] = {
+        { "",              luaopen_base },
+        { LUA_LOADLIBNAME, luaopen_package },
+        { LUA_TABLIBNAME,  luaopen_table },
+        // { LUA_IOLIBNAME,   luaopen_io },
+        // { LUA_OSLIBNAME,   luaopen_os },
+        { LUA_STRLIBNAME,  luaopen_string },
+        { LUA_MATHLIBNAME, luaopen_math },
+        // { LUA_DBLIBNAME,   luaopen_debug },
+        { LUA_BITLIBNAME,  luaopen_bit },
+        // { LUA_JITLIBNAME,  luaopen_jit },
+        { NULL,            NULL }
+    };
+
+    static const luaL_Reg lj_lib_preload[] = {
+        { LUA_FFILIBNAME, luaopen_ffi },
+        { NULL,           NULL }
+    };
+
+    // Attempt to load lua libs
+    const luaL_Reg *lib;
+    for (lib = lj_lib_load; lib->func; lib++) {
+        lua_pushcfunction(state, lib->func);
+        lua_pushstring(state, lib->name);
+        
+        if (lua_pcall(state, 1, 0, 0) != 0) {
+            if (err) *err = lua_tolstring(state, -1, nullptr);
+            return false;
+        }
+    }
+
+    luaL_findtable(
+        state, LUA_REGISTRYINDEX, "_PRELOAD", sizeof(lj_lib_preload)/sizeof(lj_lib_preload[0])-1
+    );
+    
+    for (lib = lj_lib_preload; lib->func; lib++) {
+        lua_pushcfunction(state, lib->func);
+        lua_setfield(state, -2, lib->name);
+    }
+    lua_pop(state, 1);
+
+    // Load custom nxLibs
     static std::string code(
         #include "../lua/nxlib.luainl"
     );
@@ -110,7 +152,10 @@ bool LuaVM::loadNxLibs(lua_State* state)
     if (luaL_loadbuffer(state, code.data(), code.size(), "nxlib.lua") != 0) return false;
 
     // Try to run the code
-    if (lua_pcall(state, 0, 1, 0) != 0) return false;
+    if (lua_pcall(state, 0, 1, 0) != 0) {
+        if (err) *err = lua_tolstring(state, -1, nullptr);
+        return false;
+    }
 
     return true;
 }

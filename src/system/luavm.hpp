@@ -42,11 +42,10 @@ public:
 
     bool initialize();
     bool runCode(const std::string& filename, const std::string& code, int& retval);
-    bool loadNxLibs();
 
     std::string getErrorMessage() const;
 
-    static bool loadNxLibs(lua_State* state);
+    static bool loadNxLibs(lua_State* state, std::string* err = nullptr);
 
 private:
     lua_State* mState {nullptr};

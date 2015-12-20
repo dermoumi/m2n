@@ -132,7 +132,7 @@ int main(int argc, char* argv[])
     {
         LuaVM lua;
 
-        if (!lua.initialize() || !lua.loadNxLibs()) {
+        if (!lua.initialize()) {
             return fatalError(lua.getErrorMessage());
         }
 

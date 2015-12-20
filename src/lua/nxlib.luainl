@@ -108,11 +108,6 @@ function NX_CData(ptr, type, dereference)
     return ptr
 end
 
--- Remove potentially dangerous functions
-os.remove = nil
-os.rename = nil
-os.execute = nil
-
 -- Return 1 to indicate went smoothly?
 return 1
 

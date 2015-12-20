@@ -41,7 +41,6 @@ ffi.cdef [[
     void* nxLuaToCdata(lua_State*, int);
 
     lua_State* luaL_newstate();
-    void luaL_openlibs(lua_State*);
     void lua_close(lua_State*);
     
     int lua_gettop(lua_State*);
@@ -272,8 +271,6 @@ function LuaVM:initialize()
     if handle == nil then
         Log.warning('Cannot create new Lua VM')
     else
-        C.luaL_openlibs(handle)
-
         if C.nxLuaLoadNxLibs(handle) then
             self._cdata = ffi.gc(handle, C.lua_close)
         else
