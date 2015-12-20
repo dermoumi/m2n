@@ -89,7 +89,7 @@ function Scene.static.push(scene, ...)
         -- Check if this scene's worker contains any item that need preloading
         if scene.__worker and scene.__worker:taskCount() > 0 then
             -- Start preloading
-            return Scene.push('scene.load', scene)
+            return Scene.push('scene._load', scene)
         end
     end
 

@@ -28,7 +28,7 @@
 local Text  = require 'nx.text'
 local Scene = require 'scene'
 
-local SceneLoad = Scene:subclass('scene.load')
+local SceneLoad = Scene:subclass('scene._load')
 
 ------------------------------------------------------------
 function SceneLoad:initialize(scene)
