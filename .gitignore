@@ -48,7 +48,7 @@ android/.gradle/*
 android/local.properties
 
 # Generated library files
-extlibs/*/*/libphysfs*.*
-extlibs/*/*/soloud*.lib
+extlibs/libs-mingw/*/physfs*.*
+extlibs/libs-mingw/*/soloud*.lib
 extlibs/*/libphysfs*.a
 extlibs/*/libsoloud*.a
