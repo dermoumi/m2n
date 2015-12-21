@@ -30,6 +30,7 @@ local Log      = require 'nx.log'
 local Window   = require 'nx.window'
 local Events   = require 'nx.events'
 local Renderer = require 'nx.renderer'
+local Audio    = require 'nx.audio'
 local Scene    = require 'scene'
 
 ------------------------------------------------------------
@@ -46,7 +47,7 @@ else
 end
 
 ------------------------------------------------------------
--- Renderer setup
+-- Setup
 ------------------------------------------------------------
 -- Create window
 Window.create("m2n", 1280, 720, graphicsFlags or {vsync = false})
@@ -56,6 +57,11 @@ Renderer.init()
 
 -- Set window icon
 Window.setIcon('assets/icon.png')
+
+-- Initialize audio module
+if not Audio.init() then
+    Log.error('Could not initialize sound system')
+end
 
 ------------------------------------------------------------
 -- Handling FPS
@@ -133,7 +139,7 @@ end
 ------------------------------------------------------------
 -- Release stuff
 ------------------------------------------------------------
-require('nx.audio').release()
+Audio.release()
 
 ------------------------------------------------------------
 -- The end?

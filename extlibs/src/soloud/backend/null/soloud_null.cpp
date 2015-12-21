@@ -21,43 +21,37 @@ freely, subject to the following restrictions:
    3. This notice may not be removed or altered from any source
    distribution.
 */
-#ifndef SOLOUD_SPEECH_H
-#define SOLOUD_SPEECH_H
 
 #include "soloud.h"
-#include "speech/darray.h"
-#include "speech/klatt.h"
-#include "speech/tts.h"
+
+#if !defined(WITH_NULL)
 
 namespace SoLoud
 {
-	class Speech;
-
-	class Speech : public AudioSource
+    result null_init(Soloud *aSoloud, unsigned int aFlags, unsigned int aSamplerate, unsigned int aBuffer)
 	{
-	public:
-		int mFrames;
-		darray mElement;
-		Speech();
-		result setText(const char *aText);
-		virtual ~Speech();
-		virtual AudioSourceInstance *createInstance();
-	};
-
-	class SpeechInstance : public AudioSourceInstance
-	{
-		klatt mSynth;
-		Speech *mParent;
-		short *mSample;
-		int mSampleCount;
-		int mOffset;
-	public:
-		SpeechInstance(Speech *aParent);
-        virtual ~SpeechInstance();
-		virtual void getAudio(float *aBuffer, unsigned int aSamples);
-		virtual result rewind();
-		virtual bool hasEnded();
-	};
+		return NOT_IMPLEMENTED;
+	}
 };
 
+#else
+
+namespace SoLoud
+{
+    static void nullCleanup(Soloud *aSoloud)
+    {
+    }
+
+    result null_init(Soloud *aSoloud, unsigned int aFlags, unsigned int aSamplerate, unsigned int aBuffer, unsigned int aChannels)
+    {
+		if (aChannels == 0 || aChannels == 3 || aChannels == 5 || aChannels > 6 || aBuffer < SAMPLE_GRANULARITY)
+			return INVALID_PARAMETER;
+        aSoloud->mBackendData = 0;
+        aSoloud->mBackendCleanupFunc = nullCleanup;
+
+        aSoloud->postinit(aSamplerate, aBuffer, aFlags, aChannels);
+        aSoloud->mBackendString = "null driver";
+        return SO_NO_ERROR;
+    }
+};
 #endif

@@ -36,28 +36,25 @@ local SceneTitle = Scene:subclass('scene.title')
 ------------------------------------------------------------
 function SceneTitle:initialize(firstRun)
     if firstRun then
-        self:setPreloadParams({
-            message = 'INITIALIZING %i%%'
-        })
-
-        self:worker():addTask(function()
-            if not require('nx.audio').init() then
-                require('nx.log').error('Could not initialize sound system')
-                return false
-            end
-
-            return true
-        end)
-
-        self:worker():addFile('nx.image', 'assets/cursor.png')
-
         local caps = Renderer.getCapabilities()
 
         Log.info('GPU Capabilities:')
         for i, v in pairs(caps) do
             Log.info('%s: %s', i, v)
-        end        
+        end
+
+        self:setPreloadParams({
+            message = 'INITIALIZING %i%%'
+        })
     end
+    
+    self:worker():addFile('nx.image', 'assets/cursor.png')
+    self:worker():addFile('nx.soundsource', 'assets/test.wav')
+
+    self.musicSource = require('nx.musicsource'):new()
+    self:worker():addTask(function(music)
+        music:open('assets/undersodiumbulb.ogg')
+    end, self.musicSource)
 end
 
 ------------------------------------------------------------
@@ -66,6 +63,25 @@ function SceneTitle:load()
         :new('', require 'game.font', 14)
         :setColor(255, 255, 255)
         :setPosition(10, 10)
+
+    self.voiceGroup = require('nx.audiovoicegroup'):new()
+    self.echoFilter = require('nx.audioechofilter'):new()
+        :setParams(.5, .5)
+
+    self.voiceGroup = require('nx.audiovoicegroup'):new()
+
+    self.audiobus = require('nx.audiobus'):new()
+        -- :setFilter(self.echoFilter)
+    self.audiobus:play()
+
+    self.soundSource = self:cache('assets/test.wav')
+        :setLooping(true)
+    self.voiceGroup:add(self.soundSource:playThrough(self.audiobus, -1, 0, true))
+
+    self.musicSource:setVolume(.1)
+    self.voiceGroup:add(self.musicSource:playThrough(self.audiobus, -1, 0, true))
+
+    self.voiceGroup:pause(false)
 
     Mouse.setCursor(self:cache('assets/cursor.png'), 4, 4)
 end
@@ -113,6 +129,11 @@ function SceneTitle:onKeyDown(scancode, keyCode, repeated)
             'cancel'
         }))
     end
+end
+
+------------------------------------------------------------
+function SceneTitle:release()
+    self.audiobus:stop()
 end
 
 ------------------------------------------------------------

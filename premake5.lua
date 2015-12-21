@@ -108,17 +108,34 @@ project 'soloud'
     -- rtti           'Off'
 
     includedirs {
-        'extlibs/include/soloud'
+        'extlibs/include/soloud',
+        'extlibs/src/soloud/',
+        'extlibs/src/soloud/audiosource',
+        'extlibs/src/soloud/filter',
+        'extlibs/src/soloud/core'
     }
 
     files {
-        'extlibs/src/soloud/backend/sdl2_static/**.c*',
+        'extlibs/src/soloud/backend/null/**.c*',
         'extlibs/src/soloud/audiosource/**.c*',
         'extlibs/src/soloud/filter/**.c*',
         'extlibs/src/soloud/core/**.c*'
     }
 
-    defines { 'WITH_SDL2_STATIC' }
+    defines { 'WITH_NULL' }
+    
+    filter { 'system:windows' }
+        defines { 'WITH_WINMM' }
+        files { 'extlibs/src/soloud/backend/winmm/**.c*' }
+    filter { 'system:macosx' }
+        defines { 'WITH_COREAUDIO' }
+        files { 'extlibs/src/soloud/backend/coreaudio/**.c*' }
+    filter { 'system:not windows', 'system:not macosx' }
+        defines { 'WITH_ALSA', 'WITH_OSS' }
+        files {
+            'extlibs/src/soloud/backend/alsa/**.c*',
+            'extlibs/src/soloud/backend/oss/**.c*'
+        }
 
     filter { 'action:gmake' }
         buildoptions { '-x c++ -std=c++11' }
@@ -144,7 +161,7 @@ project 'soloud'
         defines { '_CRT_SECURE_NO_WARNINGS' }
 
     filter { 'action:gmake', 'system:windows', 'architecture:x32' }
-        buildoptions { --[['-fPIC',]] '-msse4.1' }
+        defines { 'DISABLE_SIMD' }
 
 -- The Game
 project 'game'

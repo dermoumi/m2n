@@ -51,12 +51,7 @@ NX_EXPORT void nxAudioRelease()
 NX_EXPORT bool nxAudioInit()
 {
     if (initialized) nxAudioRelease();
-
-    if (SDL_InitSubSystem(SDL_INIT_AUDIO) != 0) {
-        Log::error("Unable to initialize SDL Audio: %s", SDL_GetError());
-        return false;
-    }
-
+    
     Audio::instance().init();
 
     initialized = true;

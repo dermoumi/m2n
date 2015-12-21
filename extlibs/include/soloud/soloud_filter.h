@@ -38,6 +38,7 @@ namespace SoLoud
 		unsigned int mParamChanged;
 		float *mParam;
 		Fader *mParamFader;
+		
 
 		FilterInstance();
 		virtual result initParams(int aNumParams);
