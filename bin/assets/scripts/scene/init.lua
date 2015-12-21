@@ -33,7 +33,7 @@ local class    = require 'nx.class'
 local Scene = class 'nx.scene'
 
 -- Local variables -----------------------------------------
-local sceneStack, releaseStack = {}, {}
+local sceneStack, lastScene = {}, nil
 
 -- Mapping events to their respective functions
 local eventMapping = {
@@ -67,29 +67,15 @@ local eventMapping = {
 }
 
 ------------------------------------------------------------
-function Scene.static.currentScene()
-    return sceneStack[#sceneStack]
-end
-
-------------------------------------------------------------
-function Scene.static.goTo(scene, ...)
-    for i = #sceneStack, 1, -1 do
-        releaseStack[#releaseStack+1] = sceneStack[i]
-        sceneStack[i] = nil
-    end
-
-    Scene.push(scene, ...)
-end
-
-------------------------------------------------------------
-function Scene.static.push(scene, ...)
+local function addScene(scene, ...)
     if type(scene) == 'string' then
         scene = require(scene):new(...)
 
         -- Check if this scene's worker contains any item that need preloading
         if scene.__worker and scene.__worker:taskCount() > 0 then
             -- Start preloading
-            return Scene.push('scene._load', scene)
+            Scene.push('scene._load', scene)
+            return
         end
     end
 
@@ -98,34 +84,56 @@ function Scene.static.push(scene, ...)
 end
 
 ------------------------------------------------------------
-function Scene.static.back(...)
-    local scene = sceneStack[#sceneStack]
-    releaseStack[#releaseStack+1] = scene
+local function dropScene()
+    lastScene = sceneStack[#sceneStack]
+    lastScene:__release()
 
     sceneStack[#sceneStack] = nil
+end
+
+------------------------------------------------------------
+function Scene.static.currentScene()
+    return sceneStack[#sceneStack]
+end
+
+------------------------------------------------------------
+function Scene.static.lastScene()
+    return lastScene
+end
+
+------------------------------------------------------------
+function Scene.static.goTo(scene, ...)
+    lastScene = Scene.currentScene()
+
+    for i = #sceneStack, 1, -1 do
+        sceneStack[i]:__release()
+        sceneStack[i] = nil
+    end
+
+    addScene(scene, ...)
+end
+
+------------------------------------------------------------
+function Scene.static.push(scene, ...)
+    lastScene = Scene.currentScene()
+
+    addScene(scene, ...)
+end
+
+------------------------------------------------------------
+function Scene.static.back(...)
+    dropScene()
 
     if sceneStack[#sceneStack] then
-        sceneStack[#sceneStack]:back(scene, ...)
+        sceneStack[#sceneStack]:back(...)
     end
 end
 
 ------------------------------------------------------------
 function Scene.static.replace(scene, ...)
-    local lastScene = sceneStack[#sceneStack]
-    releaseStack[#releaseStack+1] = lastScene
+    dropScene()
 
-    sceneStack[#sceneStack] = nil
-
-    Scene.push(scene, ...)
-end
-
-------------------------------------------------------------
-function Scene.static.clean()
-    for i, scene in ipairs(releaseStack) do
-        scene:__release()
-    end
-
-    releaseStack = {}
+    addScene(scene, ...)
 end
 
 ------------------------------------------------------------
@@ -136,7 +144,7 @@ function Scene:__load()
     self:load()
     self.__isLoading = false
 
-    if not self.parent or self.parent:isTransitioning() then
+    if not Scene.lastScene() or Scene.lastScene():isTransitioning() then
         self:performTransition()
     end
 end
@@ -178,15 +186,15 @@ end
 
 ------------------------------------------------------------
 function Scene:__release()
+    -- Call the scene's release method
+    self:release()
+
     -- Release all cached elements
     if self.__cache then
         for i, v in pairs(self.__cache) do
             Cache.release(i)
         end
     end
-
-    -- Call the scene's release method
-    self:release()
 end
 
 ------------------------------------------------------------
@@ -225,7 +233,7 @@ function Scene:performTransition(callback, arg)
     elseif not self:isTransitioning() then
         self.__transTime = 0
 
-        if type(callback) == 'function' then
+        if callback then
             -- Has a callback, assume it's a fade out transition
             self.__opening = false
             self.__transCb, self.__transCbArg = callback, arg
@@ -268,7 +276,7 @@ end
 
 ------------------------------------------------------------
 function Scene:transitionDuration()
-    return 0.2
+    return .2
 end
 
 ------------------------------------------------------------
@@ -334,8 +342,8 @@ function Scene:render()
 end
 
 ------------------------------------------------------------
-function Scene:back(scene, ...)
-    if scene:isTransitioning() then
+function Scene:back(...)
+    if Scene.lastScene() and Scene.lastScene():isTransitioning() then
         self:performTransition()
     else
         self.__transTime = self:transitionDuration()

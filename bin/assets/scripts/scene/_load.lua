@@ -65,15 +65,18 @@ end
 function SceneLoad:load()
     self.worker:start()
 
+    self.currentPercent = 0
+
     self.text = Text:new()
-        :setString(self.message, 0)
+        :setString(self.message, self.currentPercent)
         :setFont(GameFont)
         :setSize(20)
         :setColor(self.messageColR, self.messageColG, self.messageColB, self.messageColA)
 
     if self:check() then return end
 
-    self.opaque = not self.parent or self.parent:isLoading() or self.parent:isTransitioning()
+    local lastScene = Scene.lastScene()
+    self.opaque = not lastSCene or lastScene:isLoading() or lastScene:isTransitioning()
 
     self:performTransition()
 end
@@ -111,7 +114,7 @@ end
 
 ------------------------------------------------------------
 function SceneLoad:renderTransition(time, isOpening)
-    if not self.parent or isOpening then
+    if not isOpening then
         Scene.renderTransition(self, time, isOpening)
     end
 end
@@ -125,8 +128,11 @@ end
 function SceneLoad:check()
     local loaded, failed, total = self.worker:progress()
 
-    local percent = total ~= 0 and math.floor(100 * (loaded + failed) / total + 0.5) or 1
-    self.text:setString(self.message, percent)
+    local percent = total ~= 0 and math.floor(100 * (loaded + failed) / total + 0.5) or 100
+    if self.currentPercent <= percent then
+        self.currentPercent = math.min(self.currentPercent + 1, percent)
+        self.text:setString(self.message, self.currentPercent)
+    end
 
     if loaded + failed == total then
         if self:isLoading() then

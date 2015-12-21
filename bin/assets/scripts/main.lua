@@ -125,18 +125,14 @@ while Window.isOpen() do
     scene:__render()
     Renderer.finish()
 
-    ::continue::
-
     Window.display()
 
-    -- Clean the scene stack
-    Scene.clean()
+    ::continue::
 end
 
 ------------------------------------------------------------
 -- Release stuff
 ------------------------------------------------------------
-Scene.clean()
 require('nx.audio').release()
 
 ------------------------------------------------------------

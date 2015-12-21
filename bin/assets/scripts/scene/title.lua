@@ -55,7 +55,7 @@ function SceneTitle:initialize(firstRun)
         end        
     end
 
-    self:worker():addFile('nx.image', 'assets/pasrien.png')
+    -- self:worker():addFile('nx.image', 'assets/pasrien.png')
 end
 
 ------------------------------------------------------------
