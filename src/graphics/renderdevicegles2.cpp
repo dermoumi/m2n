@@ -139,8 +139,8 @@ bool RenderDeviceGLES2::initialize()
     mIndexFormat = GL_UNSIGNED_SHORT;
     mActiveVertexAttribsMask = 0u;
 
-    // TODO: Find supported depth format (some old ATI cards only support 16 bit depth for FBOs)
-
+    mDepthFormat = GL_DEPTH_COMPONENT16;
+    
     initStates();
     resetStates();
 
@@ -926,7 +926,6 @@ uint32_t RenderDeviceGLES2::createRenderBuffer(uint32_t width, uint32_t height,
             // Create a color texture
             uint32_t texObj = createTexture(Tex2D, rb.width, rb.height, 1, format, false, false,
                 false);
-            // TODO: Assert here
             uploadTextureData(texObj, 0, 0, nullptr);
             rb.colTexs[i] = texObj;
 
@@ -989,7 +988,6 @@ uint32_t RenderDeviceGLES2::createRenderBuffer(uint32_t width, uint32_t height,
         else {
             uint32_t texObj = createTexture(Tex2D, rb.width, rb.height, 1, DEPTH, false, false,
                 false);
-            // TODO: Assert here
             if (glExt::EXT_shadow_samplers) {
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE_EXT, GL_NONE);
             }
@@ -1115,7 +1113,6 @@ void RenderDeviceGLES2::setRenderBuffer(uint32_t rbObj)
         auto& rb = mRenderBuffers.getRef(rbObj);
 
         glBindFramebuffer(GL_FRAMEBUFFER, rb.fboMS != 0 ? rb.fboMS : rb.fbo);
-        // TODO: Assert here
 
         mFbWidth  = rb.width;
         mFbHeight = rb.height;

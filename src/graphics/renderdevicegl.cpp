@@ -956,7 +956,6 @@ uint32_t RenderDeviceGL::createRenderBuffer(uint32_t width, uint32_t height,
             // Create a color texturee
             uint32_t texObj = createTexture(Tex2D, rb.width, rb.height, 1, format, false, false,
                 false);
-            // TODO: Assert here
             uploadTextureData(texObj, 0, 0, nullptr);
             rb.colTexs[i] = texObj;
 
@@ -1007,7 +1006,6 @@ uint32_t RenderDeviceGL::createRenderBuffer(uint32_t width, uint32_t height,
 
         // Create a depth texture
         uint32_t texObj = createTexture(Tex2D, rb.width, rb.height, 1, DEPTH, false, false, false);
-        // TODO: Assert here
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
         uploadTextureData(texObj, 0, 0, nullptr);
         rb.depthTex = texObj;
@@ -1122,7 +1120,6 @@ void RenderDeviceGL::setRenderBuffer(uint32_t rbObj)
 
         glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, rb.fboMS ? rb.fboMS : rb.fbo);
         
-        // TODO: Assert here
         mFbWidth  = rb.width;
         mFbHeight = rb.height;
 

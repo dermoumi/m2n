@@ -491,7 +491,7 @@ Glyph VectorFont::loadGlyph(uint32_t codePoint, uint32_t charSize, bool bold) co
     // Delete the FT_Glyph
     FT_Done_Glyph(glyphDesc);
 
-    // TODO: Force an OpenGL flush
+    // Force an OpenGL flush
     RenderDevice::instance().sync();
 
     // Done
