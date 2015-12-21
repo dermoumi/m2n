@@ -388,8 +388,14 @@ NX_EXPORT void nxWindowSetIcon(unsigned int width, unsigned int height, const ui
         amask = 0xff000000;
     #endif
  
-    SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(const_cast<uint8_t*>(data), width, height, 32,
-        width * 4, rmask, gmask, bmask, amask);
+    SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(
+        const_cast<uint8_t*>(data), width, height, 32, width * 4, rmask, gmask, bmask, amask
+    );
+
+    if (!surface) {
+        Log::error("Window's icon surface creation failed: %s", SDL_GetError());
+        return;
+    }
  
     SDL_SetWindowIcon(window, surface);
     SDL_FreeSurface(surface);

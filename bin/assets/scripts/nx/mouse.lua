@@ -34,7 +34,7 @@ local C = ffi.C
 ffi.cdef [[
     bool nxMouseVisible(int);
     void nxMouseSetSystemCursor(int);
-    int nxMouseGetCursor();
+    void nxMouseSetImageCursor(const void*, int, int, int, int);
     void nxMouseSetPosition(int, int, bool);
     void nxMouseGetPosition(int*, bool);
     bool nxMouseSetRelativeMode(bool);
@@ -44,9 +44,8 @@ ffi.cdef [[
     bool nxMouseIsGrabbed();
 ]]
 
--- Constants -----------------------------------------------
-local cursors = {
-    [-2] = 'image',
+------------------------------------------------------------
+local fromCursor = {
     [-1] = 'default',
     [0] = 'arrow',
     'Ibeam',
@@ -61,6 +60,10 @@ local cursors = {
     'no',
     'hand',
 }
+local toCursor = {}
+for i, v in ipairs(fromCursor) do
+    toCursor[v] = i
+end
 
 local buttons = {
     'left',
@@ -77,6 +80,8 @@ local buttons = {
 }
 Mouse._btn = buttons
 
+local currentCursor, imageCursor = 'default', nil
+
 ------------------------------------------------------------
 function Mouse.setVisible(visible)
     return C.nxMouseVisible(visible and 1 or 0)
@@ -89,17 +94,15 @@ end
 
 ------------------------------------------------------------
 function Mouse.setCursor(cursor, originX, originY)
+    if not cursor then cursor = 'default' end
+    
     if type(cursor) == 'string' then
-        if cursor ~= 'image' then
-            for i = -1, #cursors do
-                if cursors[i] == cursor then
-                    C.nxMouseSetSystemCursor(i)
-                    break
-                end
-            end
-        end
+        C.nxMouseSetSystemCursor(toCursor[cursor] or -1)
+        currentCursor, imageCursor = cursor, nil
     else
-        -- TODO: Set an image as cursor
+        local width, height = cursor:size()
+        C.nxMouseSetImageCursor(cursor:data(), width, height, originX, originY)
+        imageCursor = cursor
     end
 
     return Mouse
@@ -107,7 +110,7 @@ end
 
 ------------------------------------------------------------
 function Mouse.getCursor()
-    return cursors[C.nxMouseGetCursor()]
+    return imageCursor or currentCursor
 end
 
 ------------------------------------------------------------

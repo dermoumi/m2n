@@ -27,6 +27,7 @@
 
 local Log      = require 'nx.log'
 local Renderer = require 'nx.renderer'
+local Mouse    = require 'nx.mouse'
 local Scene    = require 'scene'
 
 local SceneTitle = Scene:subclass('scene.title')
@@ -47,6 +48,8 @@ function SceneTitle:initialize(firstRun)
             return true
         end)
 
+        self:worker():addFile('nx.image', 'assets/cursor.png')
+
         local caps = Renderer.getCapabilities()
 
         Log.info('GPU Capabilities:')
@@ -54,8 +57,6 @@ function SceneTitle:initialize(firstRun)
             Log.info('%s: %s', i, v)
         end        
     end
-
-    -- self:worker():addFile('nx.image', 'assets/pasrien.png')
 end
 
 ------------------------------------------------------------
@@ -65,7 +66,7 @@ function SceneTitle:load()
         :setColor(255, 255, 255)
         :setPosition(10, 10)
 
-    self:cache('assets/pasrien.png')
+    Mouse.setCursor(self:cache('assets/cursor.png'), 4, 4)
 end
 
 ------------------------------------------------------------
@@ -99,6 +100,12 @@ function SceneTitle:onKeyDown(scancode, keyCode, repeated)
         end
     elseif scancode == 'a' then
         self:performTransition(Scene.goTo, 'scene.title')
+    elseif scancode == '1' then
+        Mouse.setCursor(self:cache('assets/cursor.png'), 4, 4)
+    elseif scancode == '2' then
+        Mouse.setCursor('default')
+    elseif scancode == '3' then
+        Mouse.setCursor('hand')
     end
 end
 

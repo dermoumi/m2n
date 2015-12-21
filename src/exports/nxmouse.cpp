@@ -25,13 +25,13 @@
     For more information, please refer to <http://unlicense.org>
 *///============================================================================
 #include "../config.hpp"
+#include "../system/log.hpp"
 
 #include <SDL2/SDL.h>
 
 //----------------------------------------------------------
 // Locals
 //----------------------------------------------------------
-static int currentCursor = -1;
 // static bool grabbed = false;
 
 //----------------------------------------------------------
@@ -50,7 +50,7 @@ NX_EXPORT bool nxMouseVisible(int toggle)
 //----------------------------------------------------------
 NX_EXPORT void nxMouseSetSystemCursor(int type)
 {
-    SDL_Cursor* cursor;
+    static SDL_Cursor* cursor;
     if (type == -1) {
         cursor = SDL_GetDefaultCursor();
     }
@@ -59,20 +59,48 @@ NX_EXPORT void nxMouseSetSystemCursor(int type)
     }
 
     SDL_SetCursor(cursor);
-    currentCursor = type;
 }
 
 //----------------------------------------------------------
-NX_EXPORT int nxMouseGetCursor()
+NX_EXPORT void nxMouseSetImageCursor(const void* data, int width, int height, int originX,
+    int originY)
 {
-    return currentCursor;
+    uint32_t rmask, gmask, bmask, amask;
+ 
+    #if SDL_BYTEORDER == SDL_BIG_ENDIAN
+        rmask = 0xff000000;
+        gmask = 0x00ff0000;
+        bmask = 0x0000ff00;
+        amask = 0x000000ff;
+    #else
+        rmask = 0x000000ff;
+        gmask = 0x0000ff00;
+        bmask = 0x00ff0000;
+        amask = 0xff000000;
+    #endif
+ 
+    static SDL_Surface* surface;
+    surface = SDL_CreateRGBSurfaceFrom(
+        const_cast<void*>(data), width, height, 32, width * 4, rmask, gmask, bmask, amask
+    );
+    
+    if (!surface) {
+        Log::error("Cursor surface creation failde: %s", SDL_GetError());
+        return;
+    }
+ 
+    static SDL_Cursor* cursor;
+    cursor = SDL_CreateColorCursor(surface, originX, originY);
+    // SDL_FreeSurface(surface);
+
+    SDL_SetCursor(cursor);
 }
 
 //----------------------------------------------------------
 NX_EXPORT void nxMouseSetPosition(int x, int y, bool global)
 {
     if (global) {
-        // TODO: Upgrade to SDL 2.0.4?
+        // Upgrade to SDL 2.0.4?
         // SDL_WarpMouseGlobal(x, y);
     }
     else {
@@ -87,7 +115,7 @@ NX_EXPORT void nxMouseGetPosition(int* pos, bool global)
         SDL_GetRelativeMouseState(&pos[0], &pos[1]);
     }
     else if (global) {
-        // TODO: Upgrade to SDL 2.0.4?
+        // Upgrade to SDL 2.0.4?
         // SDL_GetGlobalMouseState(&pos[0], &pos[1]);
     }
     else {
@@ -116,7 +144,7 @@ NX_EXPORT bool nxMouseIsButtonDown(int button)
 //----------------------------------------------------------
 NX_EXPORT bool nxMouseSetGrab(bool /*enabled*/)
 {
-    // TODO: Upgrade to SDL 2.0.4?
+    // Upgrade to SDL 2.0.4?
     // if (SDL_CaptureMouse(enabled) == 0) {
     //     grabbed = enabled;
     //     return true;
@@ -128,7 +156,7 @@ NX_EXPORT bool nxMouseSetGrab(bool /*enabled*/)
 //----------------------------------------------------------
 NX_EXPORT bool nxMouseIsGrabbed()
 {
-    // TODO: Upgrade to SDL 2.0.4?
+    // Upgrade to SDL 2.0.4?
     // return grabbed;
     return false;
 }
