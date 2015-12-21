@@ -52,10 +52,13 @@ static const char* defaultShaderFS =
 
 static GLenum toVertexFormat[] = {GL_FLOAT, GL_UNSIGNED_BYTE};
 static GLenum toIndexFormat[]  = {GL_UNSIGNED_SHORT, GL_UNSIGNED_INT};
-static GLenum toPrimType[]     = {GL_TRIANGLES, GL_TRIANGLE_STRIP};
 static GLenum toTexType[]      = {GL_TEXTURE_2D, GL_TEXTURE_3D, GL_TEXTURE_CUBE_MAP};
 static GLenum toTexBinding[]   = {
     GL_TEXTURE_BINDING_2D, GL_TEXTURE_BINDING_3D, GL_TEXTURE_BINDING_CUBE_MAP
+};
+static GLenum toPrimType[]     = {
+    GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_LINE_LOOP, GL_TRIANGLES, GL_TRIANGLE_STRIP,
+    GL_TRIANGLE_FAN
 };
 
 static std::mutex vlMutex; // Vertex layouts mutex

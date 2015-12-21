@@ -307,7 +307,7 @@ function Renderer.drawFsQuad(texture, width, height)
     Arraybuffer.setVertexbuffer(vbFsQuad, 0, 0, 16)
     C.nxRendererSetVertexLayout(vertexLayouts[1])
 
-    C.nxRendererDraw(0, 0, 3)
+    C.nxRendererDraw(4, 0, 3)
 
     return Renderer
 end
@@ -330,7 +330,7 @@ function Renderer.fillFsQuad(r, g, b, a, blendMode)
     Arraybuffer.setVertexbuffer(vbFsQuad, 0, 0, 16)
     C.nxRendererSetVertexLayout(vertexLayouts[1])
 
-    C.nxRendererDraw(0, 0, 3)
+    C.nxRendererDraw(4, 0, 3)
 
     return Renderer
 end

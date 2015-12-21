@@ -104,7 +104,7 @@ function Text:setString(str, arg, ...)
         if self._string == str then return self end
         self._string = str
         self._u32string = nil
-        
+
         C.nxTextSetString(self._cdata, str)
     else
         -- Make sure it ends with a 0
@@ -232,7 +232,7 @@ function Text:_render(camera, state)
             local texW, texH = texture:size()
             shader:setUniform('uTexSize', texW, texH)
 
-            C.nxRendererDraw(0, 0, vertCountPtr[0])
+            C.nxRendererDraw(4, 0, vertCountPtr[0])
         end
     end
 end

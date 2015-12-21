@@ -184,7 +184,7 @@ function Sprite:_render(camera, state)
         Arraybuffer.setVertexbuffer(self._vertexbuffer, 0, 0, 16)
         C.nxRendererSetVertexLayout(Sprite._vertexLayout())
 
-        C.nxRendererDraw(1, 0, 4)
+        C.nxRendererDraw(5, 0, 4)
     end
 end
 

@@ -50,10 +50,13 @@ ffi.cdef [[
 
 ------------------------------------------------------------
 local toPrimitive = {
-    triangles = 0,
-    trianglestrip = 1,
-    lines = 2
-    -- TODO: Add more primitive types
+    points = 0,
+    lines = 1,
+    linestrip = 2,
+    lineloop = 3,
+    triangles = 4,
+    trianglestrip = 5,
+    trianglefan = 6
 }
 
 ------------------------------------------------------------

@@ -122,8 +122,13 @@ public:
 
     enum PrimType
     {
+        Points,
+        Lines,
+        LineStrip,
+        LineLoop,
         Triangles,
-        TriangleStrip
+        TriangleStrip,
+        TriangleFan
     };
 
     enum ShaderConstType
