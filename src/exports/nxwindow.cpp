@@ -28,7 +28,6 @@
 
 #include "../system/thread.hpp"
 #include "../system/log.hpp"
-#include "../graphics/glcontext.hpp"
 #include "../graphics/image.hpp"
 
 #include <SDL2/SDL.h>
@@ -43,6 +42,7 @@ using NxWindow = SDL_Window;
 // Locals
 //----------------------------------------------------------
 static NxWindow* window {nullptr};
+static SDL_GLContext context;
 static Image icon;
 
 //----------------------------------------------------------
@@ -58,7 +58,7 @@ NX_EXPORT void nxWindowClose()
 {
     if (!window) return;
     
-    GlContext::release();
+    SDL_GL_DeleteContext(context);
     SDL_DestroyWindow(window);
     window = nullptr;
 }
@@ -70,8 +70,6 @@ NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, int
 {
     // Get a valid display number
     display = std::max(0, std::min(display - 1, SDL_GetNumVideoDisplays() - 1));
-
-
 
     if      (posX == -1) posX = SDL_WINDOWPOS_UNDEFINED_DISPLAY(display);
     else if (posX == -2) posX = SDL_WINDOWPOS_CENTERED_DISPLAY(display);
@@ -133,6 +131,14 @@ NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, int
         SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
 
         window = SDL_CreateWindow(title, posX, posY, width, height, flags);
+        if (!window) return nullptr;
+
+        context = SDL_GL_CreateContext(window);
+        if (!context) {
+            SDL_DestroyWindow(window);
+            window = nullptr;
+            return nullptr;
+        }
     }
     else {
         // There's already a window
@@ -158,9 +164,17 @@ NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, int
 
     SDL_SetWindowMinimumSize(window, minWidth, minHeight);
 
-    // Context settings
-    auto* context = GlContext::ensure();
-    context->setVSyncEnabled(vsync);
+    // VSync
+    if (vsync) {
+        // // Attempt to enable late-swap tearing
+        if (SDL_GL_SetSwapInterval(-1) != 0) {
+            // Late-swap tearing failed
+            SDL_GL_SetSwapInterval(1);   
+        }
+    }
+    else {
+        SDL_GL_SetSwapInterval(0);
+    }
 
     return window;
 }
@@ -168,7 +182,7 @@ NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, int
 //----------------------------------------------------------
 NX_EXPORT void nxWindowDisplay()
 {
-    GlContext::ensure()->display();
+    SDL_GL_SwapWindow(window);
 }
 
 //----------------------------------------------------------
@@ -191,7 +205,7 @@ NX_EXPORT void nxWindowGetFlags(int* flagsPtr)
     flagsPtr[1] = std::max(0, SDL_GetWindowDisplayIndex(window));
 
     // Vsync
-    flagsPtr[2] = GlContext::ensure()->isVSyncEnabled() ? 1 : 0;
+    flagsPtr[2] = (SDL_GL_GetSwapInterval() > 0) ? 1 : 0;
 
     // Resizable
     flagsPtr[3] = (flags & SDL_WINDOW_RESIZABLE) ? 1 : 0;
@@ -223,12 +237,6 @@ NX_EXPORT void nxWindowGetFlags(int* flagsPtr)
     if (!msaaEnabled || SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &flagsPtr[13]) != 0) {
         flagsPtr[13] = 0;
     }
-}
-
-//----------------------------------------------------------
-NX_EXPORT void nxWindowEnsureContext()
-{
-    GlContext::ensure();
 }
 
 //----------------------------------------------------------
