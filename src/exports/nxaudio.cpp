@@ -25,6 +25,7 @@
     For more information, please refer to <http://unlicense.org>
 *///============================================================================
 #include "../config.hpp"
+#include "../system/log.hpp"
 #include "../audio/audio.hpp"
 
 #include <SDL2/SDL.h>
@@ -51,7 +52,10 @@ NX_EXPORT bool nxAudioInit()
 {
     if (initialized) nxAudioRelease();
 
-    if (SDL_InitSubSystem(SDL_INIT_AUDIO) != 0) return false;
+    if (SDL_InitSubSystem(SDL_INIT_AUDIO) != 0) {
+        Log::error("Unable to initialize SDL Audio: %s", SDL_GetError());
+        return false;
+    }
 
     Audio::instance().init();
 
