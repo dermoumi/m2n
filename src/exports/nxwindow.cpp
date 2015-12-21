@@ -359,6 +359,44 @@ NX_EXPORT void nxWindowSimpleMessageBox(const char* title, const char* message, 
 }
 
 //----------------------------------------------------------
+NX_EXPORT int nxWindowMessageBox(const char* title, const char* message, const char** entries,
+    uint32_t count, uint32_t accept, uint32_t cancel, uint32_t type, bool attach)
+{
+    std::vector<SDL_MessageBoxButtonData> buttons(count);
+    for (uint32_t i = 0; i < count; ++i) {
+        buttons[i].flags = 0;
+
+        if (i+1 == accept) {
+            buttons[i].flags |= SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
+        }
+        if (i+1 == cancel) {
+            buttons[i].flags |= SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
+        }
+
+        buttons[i].buttonid = i;
+        buttons[i].text = entries[i];
+    }
+
+    const SDL_MessageBoxData messageboxdata {
+        type,
+        attach ? window : nullptr,
+        title,
+        message,
+        static_cast<int>(count),
+        buttons.data(),
+        nullptr
+    };
+
+    int buttonID;
+    if (SDL_ShowMessageBox(&messageboxdata, &buttonID) < 0) {
+        Log::error("Error displaying message box: %s", SDL_GetError());
+        return -1;
+    }
+
+    return buttonID + 1;
+}
+
+//----------------------------------------------------------
 NX_EXPORT void nxWindowGetDrawableSize(int* sizePtr)
 {
     SDL_GL_GetDrawableSize(window, &sizePtr[0], &sizePtr[1]);

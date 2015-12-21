@@ -58,6 +58,8 @@ ffi.cdef [[
     void nxWindowSetSize(int, int);
     void nxWindowSetTitle(const char*);
     void nxWindowSimpleMessageBox(const char*, const char*, uint32_t, bool);
+    int nxWindowMessageBox(const char*, const char*, const char**, uint32_t, uint32_t, uint32_t,
+        uint32_t, bool);
     void nxWindowGetDrawableSize(int*);
     const uint8_t* nxWindowGetIcon(unsigned int*);
     void nxWindowSetIcon(unsigned int, unsigned int, const uint8_t*);
@@ -370,11 +372,25 @@ function Window.minimize()
 end
 
 ------------------------------------------------------------
-function Window.showMessageBox(title, message, type, attach)
-    -- TODO: Implement other types of message box
-    C.nxWindowSimpleMessageBox(title, message, MsgBoxType[type] or MsgBoxType.error, not not attach)
+function Window.showMessageBox(title, message, a, b, c)
+    if type(a) == 'table' then
+        if c == nil then c = true end
 
-    return Window
+        for i, v in ipairs(a) do
+            a[i] = ffi.new('char[?]', #v, v)
+        end
+
+        local entries = ffi.cast('const char**', ffi.new('char*[?]', #a, a))
+        return C.nxWindowMessageBox(
+            title, message, entries, #a, a.accept or 0, a.cancel or 0,
+            MsgBoxType[b] or MsgBoxType.error, c
+        )
+    else
+        if b == nil then b = true end
+        C.nxWindowSimpleMessageBox(
+            title, message, MsgBoxType[a] or MsgBoxType.error, b
+        )
+    end
 end
 
 ------------------------------------------------------------

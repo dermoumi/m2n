@@ -28,6 +28,7 @@
 local Log      = require 'nx.log'
 local Renderer = require 'nx.renderer'
 local Mouse    = require 'nx.mouse'
+local Window   = require 'nx.window'
 local Scene    = require 'scene'
 
 local SceneTitle = Scene:subclass('scene.title')
@@ -106,6 +107,11 @@ function SceneTitle:onKeyDown(scancode, keyCode, repeated)
         Mouse.setCursor('default')
     elseif scancode == '3' then
         Mouse.setCursor('hand')
+    elseif scancode == 'return' then
+        print(Window.showMessageBox('test', 'helloworld!', {
+            'ok',
+            'cancel'
+        }))
     end
 end
 
