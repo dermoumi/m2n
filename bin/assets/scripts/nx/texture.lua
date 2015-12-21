@@ -25,7 +25,8 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-local class = require 'nx.class'
+local Config = require 'nx.config'
+local class  = require 'nx.class'
 
 local Texture = class 'nx.texture'
 
@@ -74,12 +75,28 @@ local fromTextureType = {
     'cube'
 }
 
-local toTextureFormat = {
-    -- TODO: Implement texture formats
-}
 local fromTextureFormat = {
-    -- TODO: Implement texture formats
+    [0] = 'unknown',
+    
+    'rgba8',
+    'dxt1',
+    'dxt3',
+    'dxt5',
+    'rgba16f',
+    'rgba32f',
+
+    'pvrtci2bpp',
+    'pvrtcia2bpp',
+    'pvrtci4bpp',
+    'pvrtcia4bpp',
+    'etc1',
+
+    'depth'
 }
+local toTextureFormat = {}
+for i, v in ipairs(fromTextureFormat) do
+    toTextureFormat[v] = i
+end
 
 local toFilter = {
     bilinear  = 0x0,
@@ -181,8 +198,10 @@ function Texture:create(texType, width, height, depth, hasMips, mipMap)
     texType = toTextureType[texType]
     if texType then
         local handle = C.nxTextureNew()
-        local status = C.nxTextureCreate(handle, texType, 1, width, height, depth, hasMips,
-            mipMap, Renderer.getCapabilities('sRGBTexturesSupported'))
+        local status = C.nxTextureCreate(
+            handle, texType, toTextureFormat[Config.textureFormat] or 1, width, height, depth,
+            hasMips, mipMap, Renderer.getCapabilities('sRGBTexturesSupported')
+        )
 
         if status == 1 then
             Log.warning('Cannot create texture: invalid texture size')

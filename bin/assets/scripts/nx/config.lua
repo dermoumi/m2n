@@ -30,5 +30,8 @@ return {
     defaultVectorFont = 'assets/fonts/01-Asap-Regular.otf',
 
     -- Default multisampling for new render buffer
-    multisamplingLevel = 0
+    multisamplingLevel = 0,
+
+    -- Default texture format for new textures
+    textureFormat = 'rgba8'
 }
