@@ -98,12 +98,13 @@ end
 
 ------------------------------------------------------------
 function Text:setString(str, arg, ...)
-    if arg then str = str:format(arg, ...) end
-
     if type(str) == 'string' then
+        if arg then str = str:format(arg, ...) end
+
         if self._string == str then return self end
         self._string = str
         self._u32string = nil
+        
         C.nxTextSetString(self._cdata, str)
     else
         -- Make sure it ends with a 0
