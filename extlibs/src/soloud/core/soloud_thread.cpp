@@ -25,188 +25,60 @@ freely, subject to the following restrictions:
 #include "soloud.h"
 #include "soloud_thread.h"
 
-#ifdef WINDOWS_VERSION
-#include <Windows.h>
-#else
-#include <pthread.h>
-#include <unistd.h>
-#endif
+#include <thread>
+#include <mutex>
 
 namespace SoLoud
 {
 	namespace Thread
 	{
-#ifdef WINDOWS_VERSION
         struct ThreadHandleData
         {
-            HANDLE thread;
+            std::thread thread;
         };
 
 		void * createMutex()
 		{
-			CRITICAL_SECTION * cs = new CRITICAL_SECTION;
-			InitializeCriticalSectionAndSpinCount(cs, 100);
-			return (void*)cs;
+			return new std::mutex();
 		}
 
 		void destroyMutex(void *aHandle)
 		{
-			CRITICAL_SECTION *cs = (CRITICAL_SECTION*)aHandle;
-			DeleteCriticalSection(cs);
-			delete cs;
+			delete static_cast<std::mutex*>(aHandle);
 		}
 
 		void lockMutex(void *aHandle)
 		{
-			CRITICAL_SECTION *cs = (CRITICAL_SECTION*)aHandle;
-			if (cs)
-			{
-				EnterCriticalSection(cs);
-			}
+			static_cast<std::mutex*>(aHandle)->lock();
 		}
 
 		void unlockMutex(void *aHandle)
 		{
-			CRITICAL_SECTION *cs = (CRITICAL_SECTION*)aHandle;
-			if (cs)
-			{
-				LeaveCriticalSection(cs);
-			}
-		}
-
-		struct soloud_thread_data
-		{
-			threadFunction mFunc;
-			void *mParam;
-		};
-
-		static DWORD WINAPI threadfunc(LPVOID d)
-		{
-			soloud_thread_data *p = (soloud_thread_data *)d;
-			p->mFunc(p->mParam);
-			delete p;
-			return 0;
+			static_cast<std::mutex*>(aHandle)->unlock();
 		}
 
         ThreadHandle createThread(threadFunction aThreadFunction, void *aParameter)
 		{
-			soloud_thread_data *d = new soloud_thread_data;
-			d->mFunc = aThreadFunction;
-			d->mParam = aParameter;
-			HANDLE h = CreateThread(NULL,0,threadfunc,d,0,NULL);
-            if (0 == h)
-            {
-                return 0;
-            }
-            ThreadHandleData *threadHandle = new ThreadHandleData;
-            threadHandle->thread = h;
-            return threadHandle;
+            return new ThreadHandleData {
+            	std::thread(aThreadFunction, aParameter)
+            };
 		}
 
 		void sleep(int aMSec)
 		{
-			Sleep(aMSec);
+		    auto time = std::chrono::duration<double>(aMSec / 1000.0);
+		    std::this_thread::sleep_for(time);
 		}
 
         void wait(ThreadHandle aThreadHandle)
         {
-            WaitForSingleObject(aThreadHandle->thread, INFINITE);
-        }
-
-        void release(ThreadHandle aThreadHandle)
-        {
-            CloseHandle(aThreadHandle->thread);
-            delete aThreadHandle;
-        }
-
-#else // pthreads
-        struct ThreadHandleData
-        {
-            pthread_t thread;
-        };
-
-		void * createMutex()
-		{
-			pthread_mutex_t *mutex;
-			mutex = new pthread_mutex_t;
-		
-			pthread_mutexattr_t attr;
-			pthread_mutexattr_init(&attr);
-
-			pthread_mutex_init(mutex, &attr);
-		
-			return (void*)mutex;
-		}
-
-		void destroyMutex(void *aHandle)
-		{
-			pthread_mutex_t *mutex = (pthread_mutex_t*)aHandle;
-
-			if (mutex)
-			{
-				pthread_mutex_destroy(mutex);
-				delete mutex;
-			}
-		}
-
-		void lockMutex(void *aHandle)
-		{
-			pthread_mutex_t *mutex = (pthread_mutex_t*)aHandle;
-			if (mutex)
-			{
-				pthread_mutex_lock(mutex);
-			}
-		}
-
-		void unlockMutex(void *aHandle)
-		{
-			pthread_mutex_t *mutex = (pthread_mutex_t*)aHandle;
-			if (mutex)
-			{
-				pthread_mutex_unlock(mutex);
-			}
-		}
-
-		struct soloud_thread_data
-		{
-			threadFunction mFunc;
-			void *mParam;
-		};
-
-		static void * threadfunc(void * d)
-		{
-			soloud_thread_data *p = (soloud_thread_data *)d;
-			p->mFunc(p->mParam);
-			delete p;
-			return 0;
-		}
-
-		ThreadHandle createThread(threadFunction aThreadFunction, void *aParameter)
-		{
-			soloud_thread_data *d = new soloud_thread_data;
-			d->mFunc = aThreadFunction;
-			d->mParam = aParameter;
-
-			ThreadHandleData *threadHandle = new ThreadHandleData;
-			pthread_create(&threadHandle->thread, NULL, threadfunc, (void*)d);
-            return threadHandle;
-		}
-
-		void sleep(int aMSec)
-		{
-			usleep(aMSec * 1000);
-		}
-
-        void wait(ThreadHandle aThreadHandle)
-        {
-            pthread_join(aThreadHandle->thread, 0);
+        	if (aThreadHandle) aThreadHandle->thread.detach();
         }
 
         void release(ThreadHandle aThreadHandle)
         {
             delete aThreadHandle;
         }
-#endif
 
 		static void poolWorker(void *aParam)
 		{
