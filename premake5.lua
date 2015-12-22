@@ -186,7 +186,7 @@ project 'game'
 
     -- Linux specific
     filter { 'system:linux' }
-        links        { 'GL', 'luajit-5.1' }
+        links        { 'GL', 'luajit-5.1', 'asound' }
         linkoptions  { "-export-dynamic" }
 
     -- Windows specific
