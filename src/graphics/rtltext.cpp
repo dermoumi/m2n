@@ -27,6 +27,7 @@
 #include "rtltext.hpp"
 #include "renderdevice.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <set>
 

@@ -24,14 +24,27 @@ bin/*.app
 bin/game
 bin/game-d
 
+# Other executable clutter
+bin/*.exp
+bin/*.idb
+bin/*.lib
+bin/*.ilk
+bin/*.pdb
+
 # Objects directory
 obj/*
 
 # Generated makefiles
+Debug32/*
+Debug64/*
+Release32/*
+Release64/*
 Makefile
 *.make
+*.vcxproj*
+*.sdf
+*.sln
 .vs/*
-bin/.vs/*
 
 # Sublime text project files
 *.sublime-project
@@ -48,7 +61,7 @@ android/.gradle/*
 android/local.properties
 
 # Generated library files
-extlibs/libs-mingw/*/physfs*.*
-extlibs/libs-mingw/*/soloud*.lib
+extlibs/libs-*/*/physfs*
+extlibs/libs-*/*/soloud*
 extlibs/*/libphysfs*.a
 extlibs/*/libsoloud*.a

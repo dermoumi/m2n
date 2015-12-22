@@ -25,7 +25,9 @@
     For more information, please refer to <http://unlicense.org>
 *///============================================================================
 #include "renderdevice.hpp"
+
 #include <memory>
+#include <algorithm>
 
 #if !defined(NX_OPENGL_ES)
     #include "renderdevicegl.hpp"

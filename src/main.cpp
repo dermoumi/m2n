@@ -36,6 +36,11 @@
 #include <SDL2/SDL.h>
 #include <string>
 
+#if _MSC_VER >= 1900
+    // Quick fix for visual studio 2015's little problem with SDL 2.0.3
+    extern "C" { FILE __iob_func[3] = { *stdin,*stdout,*stderr }; }
+#endif
+
 extern "C" void nxWindowClose();
 
 //----------------------------------------------------------

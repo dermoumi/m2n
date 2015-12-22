@@ -32,6 +32,7 @@
 #include "opengl.hpp"
 
 #include <mutex>
+#include <algorithm>
 
 //==========================================================
 // Locals

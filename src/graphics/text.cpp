@@ -28,6 +28,7 @@
 #include "renderdevice.hpp"
 #include "../system/unicode.hpp"
 
+#include <algorithm>
 #include <cmath>
 
 //----------------------------------------------------------

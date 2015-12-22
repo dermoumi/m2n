@@ -26,6 +26,8 @@
 *///============================================================================
 #include "unicode.hpp"
 
+#include <iterator>
+
 template <typename In>
 static In decodeUtf8(In begin, In end, uint32_t& output, uint32_t rep)
 {

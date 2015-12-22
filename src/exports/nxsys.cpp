@@ -55,8 +55,8 @@ NX_EXPORT void nxSysSleep(double s)
     #endif
         
     // Wait...
-    auto time = std::chrono::duration<double>(s);
-    std::this_thread::sleep_for(time);
+    const unsigned long time = s * 1000;
+    std::this_thread::sleep_for(std::chrono::milliseconds(time));
 
     #if defined(NX_SYSTEM_WINDOWS) || defined(NX_SYSTEM_WINCE)
         // Reset the timer resolution back to the system default

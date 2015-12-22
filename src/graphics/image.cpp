@@ -28,6 +28,7 @@
 #include "../system/log.hpp"
 
 #include <physfs/physfs.h>
+#include <algorithm>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image/stb_image.h>

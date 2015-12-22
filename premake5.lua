@@ -1,7 +1,7 @@
 -- The solution
 solution 'm2n'
     configurations { 'Debug', 'Release', 'Debug32', 'Release32', 'Debug64', 'Release64' }
-    location       '.'
+    location       'build'
     language       'C'
     includedirs {
         'src',
@@ -39,9 +39,9 @@ solution 'm2n'
         libdirs      { 'extlibs/libs-mingw/x86' }
     filter { 'action:gmake', 'system:windows', 'architecture:x64' }
         libdirs      { 'extlibs/libs-mingw/x64' }
-    filter { 'action:vs2013', 'system:windows', 'architecture:x32' }
+    filter { 'action:vs*', 'system:windows', 'architecture:x32' }
         libdirs      { 'extlibs/libs-vs2013/x86' }
-    filter { 'action:vs2013', 'system:windows', 'architecture:x64' }
+    filter { 'action:vs*', 'system:windows', 'architecture:x64' }
         libdirs      { 'extlibs/libs-vs2013/x64' }
 
     -- Archituectures
@@ -93,9 +93,9 @@ project 'physfs'
         targetdir 'extlibs/libs-mingw/x86'
     filter { 'action:gmake', 'system:windows', 'architecture:x64' }
         targetdir 'extlibs/libs-mingw/x64'
-    filter { 'action:vs2013', 'system:windows', 'architecture:x32' }
+    filter { 'action:vs*', 'system:windows', 'architecture:x32' }
         targetdir 'extlibs/libs-vs2013/x86'
-    filter { 'action:vs2013', 'system:windows', 'architecture:x64' }
+    filter { 'action:vs*', 'system:windows', 'architecture:x64' }
         targetdir 'extlibs/libs-vs2013/x64'
 
 -- Soloud
@@ -147,9 +147,9 @@ project 'soloud'
         targetdir 'extlibs/libs-mingw/x86'
     filter { 'action:gmake', 'system:windows', 'architecture:x64' }
         targetdir 'extlibs/libs-mingw/x64'
-    filter { 'action:vs2013', 'system:windows', 'architecture:x32' }
+    filter { 'action:vs*', 'system:windows', 'architecture:x32' }
         targetdir 'extlibs/libs-vs2013/x86'
-    filter { 'action:vs2013', 'system:windows', 'architecture:x64' }
+    filter { 'action:vs*', 'system:windows', 'architecture:x64' }
         targetdir 'extlibs/libs-vs2013/x64'
 
     filter { 'configurations:Release*' }
@@ -157,7 +157,7 @@ project 'soloud'
     filter { 'architecture:x32', 'configurations:Release*' }
         flags { 'EnableSSE2' }
 
-    filter { 'action:vs2013', 'system:windows' }
+    filter { 'action:vs*', 'system:windows' }
         defines { '_CRT_SECURE_NO_WARNINGS' }
 
     filter { 'action:gmake', 'system:windows', 'architecture:x32' }
@@ -208,7 +208,7 @@ project 'game'
         postbuildcommands { 'postbuild-win mingw/x86'}
     filter { 'action:gmake', 'system:windows', 'architecture:x64' }
         postbuildcommands { 'postbuild-win mingw/x64'}
-    filter { 'action:vs2013', 'system:windows', 'architecture:x32' }
+    filter { 'action:vs*', 'system:windows', 'architecture:x32' }
         postbuildcommands { 'postbuild-win vs2013/x86'}
-    filter { 'action:vs2013', 'system:windows', 'architecture:x64' }
+    filter { 'action:vs*', 'system:windows', 'architecture:x64' }
         postbuildcommands { 'postbuild-win vs2013/x64'}

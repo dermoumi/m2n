@@ -36,6 +36,7 @@
 #include FT_GLYPH_H
 #include FT_OUTLINE_H
 #include FT_BITMAP_H
+#include <algorithm>
 #include <cstdlib>
 #include <cstring>
 #include <sstream>
