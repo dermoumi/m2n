@@ -28,10 +28,10 @@
 local Matrix = require 'nx.matrix'
 local class  = require 'nx.class'
 
-local Entity2D = class 'nx.entity2d'
+local Entity2D = {}
 
 ------------------------------------------------------------
-Entity2D.static.State = require 'nx._state2d'
+Entity2D.State = require 'nx._state2d'
 
 ------------------------------------------------------------
 function Entity2D:initialize()

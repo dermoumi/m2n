@@ -29,8 +29,10 @@ local Renderer    = require 'nx.renderer'
 local Arraybuffer = require 'nx.arraybuffer'
 local Texture     = require 'nx.texture'
 local Entity2D    = require 'nx.entity2d'
+local class       = require 'nx.class'
 
-local Text = Entity2D:subclass('nx.text')
+local Text = class 'nx.text'
+Text:include(Entity2D)
 
 ------------------------------------------------------------
 local ffi = require 'ffi'

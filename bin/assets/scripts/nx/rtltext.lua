@@ -30,6 +30,7 @@ local ArrayBuffer = require 'nx.arraybuffer'
 local Text        = require 'nx.text'
 
 local RtlText = Text:subclass('nx.rtltext')
+-- RtlText:include(Entity2D)
 
 ------------------------------------------------------------
 local ffi = require 'ffi'
@@ -47,7 +48,7 @@ function RtlText:initialize(str, font, charSize)
 
     self:setString(str or '')
         :setFont(font)
-        :setCharacterSize(charSize or 30)
+        :setSize(charSize or 30)
         
     self._style = 0
     self._vertices = ArrayBuffer:new()

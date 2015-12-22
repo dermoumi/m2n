@@ -28,8 +28,10 @@
 local Renderer    = require 'nx.renderer'
 local Arraybuffer = require 'nx.arraybuffer'
 local Entity2D    = require 'nx.entity2d'
+local class       = require 'nx.class'
 
-local Shape = Entity2D:subclass('nx.shape')
+local Shape = class 'nx.shape'
+Shape:include(Entity2D)
 
 ------------------------------------------------------------
 local ffi = require 'ffi'
