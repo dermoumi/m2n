@@ -70,7 +70,7 @@ function Camera3D:draw(drawable, state)
     
     self:apply()
 
-    state = state and state:clone() or require('nx.state2d'):new()
+    state = state and state:clone() or require('nx._state2d'):new()
     drawable:_draw(self, state)
 
     return self
