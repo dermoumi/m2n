@@ -36,8 +36,8 @@
 using NxAudioFilter = SoLoud::Filter;
 struct NxAudioSource
 {
-    SoLoud::AudioSource* handle {nullptr};
-    Audio::File* file {nullptr}; // Used if the audio source needs an active file
+    SoLoud::AudioSource* handle;
+    Audio::File* file; // Used if the audio source needs an active file
 };
 
 //----------------------------------------------------------
@@ -45,7 +45,11 @@ struct NxAudioSource
 //----------------------------------------------------------
 NX_EXPORT NxAudioSource* nxAudioSourceCreate()
 {
-    return new NxAudioSource();
+    // Create with a dummy Wav object
+    return new NxAudioSource {
+        new SoLoud::Wav(),
+        nullptr
+    };
 }
 
 //----------------------------------------------------------
@@ -216,9 +220,10 @@ NX_EXPORT void nxAudioSourceSetFilter(NxAudioSource* source, NxAudioFilter* filt
 //----------------------------------------------------------
 NX_EXPORT NxAudioSource* nxAudioBusCreate()
 {
-    auto source = new NxAudioSource();
-    source->handle = new SoLoud::Bus();
-    return source;
+    return new NxAudioSource {
+        new SoLoud::Bus(),
+        nullptr
+    };
 }
 
 //----------------------------------------------------------
