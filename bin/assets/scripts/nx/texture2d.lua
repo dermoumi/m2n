@@ -31,11 +31,13 @@ local Texture = require 'nx.texture'
 local Texture2D = Texture:subclass('nx.texture2d')
 
 ------------------------------------------------------------
-function Texture2D:initialize(width, height, hasMips, mipMap)
+function Texture2D:initialize(a, b, c, d)
     Texture.initialize(self)
 
-    if width and height then
-        self:create(width, height, hasMips, mipMap)
+    if type(a) == 'number' then
+        self:create(a, b, c, d)
+    elseif a then
+        self:load(a, b, c)
     end
 end
 

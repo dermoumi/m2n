@@ -48,6 +48,7 @@ function SceneTitle:initialize(firstRun)
         })
     end
     
+    self:worker():addFile('nx.image', 'assets/pasrien.png')
     self:worker():addFile('nx.image', 'assets/cursor.png')
     self:worker():addFile('nx.audiosource', 'assets/test.wav')
 
@@ -63,6 +64,10 @@ function SceneTitle:load()
         :new('', require 'game.font', 14)
         :setColor(255, 255, 255)
         :setPosition(10, 10)
+
+    self.sprite = require('nx.sprite')
+        :new(self:cache('assets/pasrien.png'))
+        :setPosition(100, 100)
 
     self.voiceGroup = require('nx.audiovoicegroup'):new()
     self.echoFilter = require('nx.audioechofilter'):new()
@@ -96,6 +101,7 @@ function SceneTitle:render()
     self:view():clear()
 
     self:view():draw(self.text)
+        :draw(self.sprite)
 end
 
 ------------------------------------------------------------

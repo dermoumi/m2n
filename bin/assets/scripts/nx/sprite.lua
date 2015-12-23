@@ -27,6 +27,7 @@
 
 local Arraybuffer = require 'nx.arraybuffer'
 local Renderer    = require 'nx.renderer'
+local Texture2D   = require 'nx.texture2d'
 local Entity2D    = require 'nx.entity2d'
 local class       = require 'nx.class'
 
@@ -75,15 +76,20 @@ end
 
 ------------------------------------------------------------
 function Sprite:setTexture(texture, keepSubrect)
-    if texture:texType() == '2d' then -- only accept 2D textures
-        self._texture = texture
+    if type(texture) == 'string' or texture.class.name == 'nx.image' then
+        -- Make a texture out of the image
+        texture = Texture2D:new(texture)
+    elseif texture:texType() ~= '2d' then
+        -- only accept 2D textures
+        return self
+    end
 
-        if keepSubrect then
-            self._bufferUpdated = false
-        else
-            local w, h = texture:size()
-            self:setSubrect(0, 0, w, h)
-        end
+    self._texture = texture
+    if keepSubrect then
+        self._bufferUpdated = false
+    else
+        local w, h = texture:size()
+        self:setSubrect(0, 0, w, h)
     end
 
     return self
