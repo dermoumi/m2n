@@ -10,6 +10,9 @@ LOCAL_MODULE := SoLoud
 
 LOCAL_C_INCLUDES = \
     ${SRC_PATH} \
+    ${SRC_PATH}/core \
+    ${SRC_PATH}/filter \
+    ${SRC_PATH}/audiosource \
     ${BASE_PATH}/extlibs/include \
     ${BASE_PATH}/extlibs/include/soloud
 
