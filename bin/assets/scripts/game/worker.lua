@@ -58,6 +58,17 @@ local function genericLoadingFunc(loaderFunc, obj, filename, loadedCount)
 end
 
 ------------------------------------------------------------
+local function callLoadFunc(obj, id)
+    obj:load(id)
+    return true
+end
+
+------------------------------------------------------------
+local function returnFalseFunc()
+    return false
+end
+
+------------------------------------------------------------
 function Worker.static.registerFunc(objType, func)
     loaderFunc[objType] = func
     return Worker
@@ -79,14 +90,19 @@ function Worker:addFile(objType, id)
     if obj then return end
 
     -- Not loaded. Check if loader function is valid
-    local loaderFunc = loaderFunc[objType] or function() return false end
     obj = require(objType):new()
+    local func = loaderFunc[objType]
+    if not func then
+        -- No registered loading func, if obj has a :load() method, use it. Otherwise, abort.
+        func = (type(obj.load) == 'function') and callLoadFunc or returnFalseFunc
+        loaderFunc[objType] = func
+    end
 
     -- Valid, push a new task to load it
     self:checkCount()
     self._taskCount = self._taskCount + 1
 
-    self._tasks[#self._tasks+1] = {genericLoadingFunc, loaderFunc, obj, id, self._loadedCount}
+    self._tasks[#self._tasks+1] = {genericLoadingFunc, func, obj, id, self._loadedCount}
 
     Cache.add(id, obj)
 end
