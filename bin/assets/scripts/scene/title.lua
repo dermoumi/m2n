@@ -101,7 +101,8 @@ function SceneTitle:render()
     self:view():clear()
 
     self:view():draw(self.text)
-        :draw(self.sprite)
+        :draw(self.sprite:setPosition(100, 100))
+        :draw(self.sprite:setPosition(600, 100))
 end
 
 ------------------------------------------------------------

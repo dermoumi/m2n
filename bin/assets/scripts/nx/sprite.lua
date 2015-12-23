@@ -174,26 +174,24 @@ function Sprite:_render(camera, state)
         self._bufferUpdated = true
     end
 
-    if self._vertexbuffer then
-        self._texture:bind(0)
+    self._texture:bind(0)
 
-        Renderer.setBlendMode(state:blendMode())
+    Renderer.setBlendMode(state:blendMode())
 
-        if self._normalized then texW, texH = 1, 1 end
+    if self._normalized then texW, texH = 1, 1 end
 
-        local shader = self._shader or Sprite._defaultShader()
-        shader:bind()
-        shader:setUniform('uProjMat', camera:matrix())
-        shader:setUniform('uTransMat', state:matrix())
-        shader:setUniform('uColor', state:color(true))
-        shader:setUniform('uTexSize', texW, texH)
-        shader:setSampler('uTexture', 0)
+    local shader = self._shader or Sprite._defaultShader()
+    shader:bind()
+    shader:setUniform('uProjMat', camera:matrix())
+    shader:setUniform('uTransMat', state:matrix())
+    shader:setUniform('uColor', state:color(true))
+    shader:setUniform('uTexSize', texW, texH)
+    shader:setSampler('uTexture', 0)
 
-        Arraybuffer.setVertexbuffer(self._vertexbuffer, 0, 0, 16)
-        C.nxRendererSetVertexLayout(Sprite._vertexLayout())
+    Arraybuffer.setVertexbuffer(self._vertexbuffer, 0, 0, 16)
+    C.nxRendererSetVertexLayout(Sprite._vertexLayout())
 
-        C.nxRendererDraw(5, 0, 4)
-    end
+    C.nxRendererDraw(5, 0, 4)
 end
 
 ------------------------------------------------------------
