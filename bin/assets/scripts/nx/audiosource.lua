@@ -115,7 +115,6 @@ function AudioSource:load(a, b)
     if b then
         C.nxAudioSourceLoadMemory(self._cdata, a, b)
     else
-        print('loading file', a)
         C.nxAudioSourceLoadFile(self._cdata, a)
     end
 
