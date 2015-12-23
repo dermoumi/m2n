@@ -648,9 +648,10 @@ uint32_t RenderDeviceGLES2::createShader(const char* vertexShaderSrc, const char
     // Run through vertex layouts and check which is compatible with this shader
     for (uint32_t i = 0; i < mNumVertexLayouts; ++i) {
         bool allAttribsFound = true;
+        auto& vl = mVertexLayouts[i];
 
         // Reset attribute indices to -1 (no attribute)
-        for (uint32_t j = 0; j < 16; ++j) {
+        for (uint32_t j = 0; j < 16u; ++j) {
             shader.inputLayouts[i].attribIndices[j] = -1;
         }
 
@@ -662,13 +663,12 @@ uint32_t RenderDeviceGLES2::createShader(const char* vertexShaderSrc, const char
             glGetActiveAttrib(programObj, j, 32, nullptr, (int*)&size, &type, name);
 
             bool attribFound = false;
-
-            auto& vl = mVertexLayouts[i];
             for (uint32_t k = 0; k < vl.numAttribs; ++k) {
                 if (vl.attribs[k].semanticName == name) {
                     auto loc = glGetAttribLocation(programObj, name);
                     shader.inputLayouts[i].attribIndices[k] = loc;
                     attribFound = true;
+                    break;
                 }
             }
 
@@ -1501,40 +1501,36 @@ bool RenderDeviceGLES2::linkShaderProgram(uint32_t programObj)
 //----------------------------------------------------------
 bool RenderDeviceGLES2::applyVertexLayout()
 {
-    uint32_t newVertexAttribMask {0u};
-
     if (mNewVertexLayout != 0) {
         if (mCurShaderID == 0) return false;
 
+        uint32_t newVertexAttribMask {0u};
+
         RDIShader& shader           = mShaders.getRef(mCurShaderID);
-        RDIInputLayout& inputLayout = shader.inputLayouts[mNewVertexLayout - 1];
+        RDIInputLayout& inputLayout = shader.inputLayouts[mNewVertexLayout-1];
 
         if (!inputLayout.valid) return false;
 
         // Set vertex attrib pointers
-        auto& vl = mVertexLayouts[mNewVertexLayout - 1];
+        auto& vl = mVertexLayouts[mNewVertexLayout-1];
         for (uint32_t i = 0; i < vl.numAttribs; ++i) {
             int8_t attribIndex = inputLayout.attribIndices[i];
             if (attribIndex >= 0) {
                 VertexLayoutAttrib& attrib = vl.attribs[i];
                 const auto& vbSlot = mVertBufSlots[attrib.vbSlot];
 
-                if (mBuffers.getRef(vbSlot.vbObj).glObj == 0 ||
-                    mBuffers.getRef(vbSlot.vbObj).type != GL_ARRAY_BUFFER) {
-                    Log::error("Attempting to reference an invalid vertex buffer");
-                    return false;
-                }
-
                 GLenum format = toVertexFormat[attrib.format];
                 glBindBuffer(GL_ARRAY_BUFFER, mBuffers.getRef(vbSlot.vbObj).glObj);
-                glVertexAttribPointer(attribIndex, attrib.size, format,
-                    format == GL_UNSIGNED_BYTE ? GL_TRUE : GL_FALSE,
-                    vbSlot.stride, (char*)0 + vbSlot.offset + attrib.offset);
+                glVertexAttribPointer(
+                    attribIndex, attrib.size, format, format == GL_UNSIGNED_BYTE,
+                    vbSlot.stride, (char*)0 + vbSlot.offset + attrib.offset
+                );
 
                 newVertexAttribMask |= 1 << attribIndex;
             }
         }
 
+        // Enable/Disable active vertex attribute arrays
         for (uint32_t i = 0; i < 16u; ++i) {
             uint32_t curBit = 1 << i;
             if ((newVertexAttribMask & curBit) != (mActiveVertexAttribsMask & curBit)) {
@@ -1547,8 +1543,6 @@ bool RenderDeviceGLES2::applyVertexLayout()
             }
         }
         mActiveVertexAttribsMask = newVertexAttribMask;
-
-        return true;
     }
 
     return true;
@@ -1568,8 +1562,9 @@ void RenderDeviceGLES2::applySamplerState(RDITexture& tex)
     uint32_t target = tex.type;
 
     auto filter = (state & FilterMask) >> FilterStart;
-    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, tex.hasMips ?
-        minFiltersMips[filter] : magFilters[filter]);
+    glTexParameteri(
+        target, GL_TEXTURE_MIN_FILTER, tex.hasMips ? minFiltersMips[filter] : magFilters[filter]
+    );
 
     filter = (state & FilterMask) >> FilterStart;
     glTexParameteri(target, GL_TEXTURE_MAG_FILTER, magFilters[filter]);
@@ -1595,8 +1590,9 @@ void RenderDeviceGLES2::applySamplerState(RDITexture& tex)
             glTexParameteri(target, GL_TEXTURE_COMPARE_MODE_EXT, GL_NONE);
         }
         else {
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE_EXT,
-                GL_COMPARE_REF_TO_TEXTURE_EXT);
+            glTexParameteri(
+                GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE_EXT, GL_COMPARE_REF_TO_TEXTURE_EXT
+            );
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC_EXT, GL_LEQUAL);
         }
     }
@@ -1666,8 +1662,10 @@ void RenderDeviceGLES2::applyRenderStates()
             };
 
             glEnable(GL_BLEND);
-            glBlendFunc(oglBlendFuncs[mNewBlendState.srcBlendFunc],
-                oglBlendFuncs[mNewBlendState.dstBlendFunc]);
+            glBlendFunc(
+                oglBlendFuncs[mNewBlendState.srcBlendFunc],
+                oglBlendFuncs[mNewBlendState.dstBlendFunc]
+            );
         }
 
         mCurBlendState.hash = mNewBlendState.hash;
@@ -1718,23 +1716,27 @@ void RenderDeviceGLES2::resolveRenderBuffer(uint32_t rbObj)
     for (uint32_t i = 0; i < RDIRenderBuffer::MaxColorAttachmentCount; ++i) {
         if (rb.colBufs[i] != 0) {
             int mask = GL_COLOR_BUFFER_BIT;
-            if (!depthResolved && rb.depthBufMS != 0 && rb.depthTex != 0 &&
-                !glExt::ANGLE_depth_texture)
-            {
+            if (
+                !depthResolved && rb.depthBufMS != 0 && rb.depthTex != 0 &&
+                !glExt::ANGLE_depth_texture
+            ) {
                 //Cannot resolve depth textures created with ANGLE_depth_texture
                 mask |= GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT;
                 depthResolved = true;
             }
 
-            glBlitFramebufferANGLE(0, 0, rb.width, rb.height, 0, 0, rb.width, rb.height, mask,
-                GL_NEAREST);
+            glBlitFramebufferANGLE(
+                0, 0, rb.width, rb.height, 0, 0, rb.width, rb.height, mask, GL_NEAREST
+            );
         }
     }
 
     if (!depthResolved && rb.depthBufMS != 0 && rb.depthTex != 0 && !glExt::ANGLE_depth_texture) {
         //Cannot resolve depth textures created with ANGLE_depth_texture
-        glBlitFramebufferANGLE(0, 0, rb.width, rb.height, 0, 0, rb.width, rb.height,
-            GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT, GL_NEAREST);
+        glBlitFramebufferANGLE(
+            0, 0, rb.width, rb.height, 0, 0, rb.width, rb.height,
+            GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT, GL_NEAREST
+        );
     }
 
     glBindFramebuffer(GL_READ_FRAMEBUFFER_ANGLE, mDefaultFBO);

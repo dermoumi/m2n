@@ -680,9 +680,10 @@ uint32_t RenderDeviceGL::createShader(const char* vertexShaderSrc, const char* f
     // Run through vertex layouts and check which is compatible with this shader
     for (uint32_t i = 0; i < mNumVertexLayouts; ++i) {
         bool allAttribsFound = true;
+        auto& vl = mVertexLayouts[i];
 
         // Reset attribute indices to -1 (no attribute)
-        for (uint32_t j = 0; j < 16; ++j) {
+        for (uint32_t j = 0; j < 16u; ++j) {
             shader.inputLayouts[i].attribIndices[j] = -1;
         }
 
@@ -694,7 +695,6 @@ uint32_t RenderDeviceGL::createShader(const char* vertexShaderSrc, const char* f
             glGetActiveAttrib(programObj, j, 32, nullptr, (int*)&size, &type, name);
 
             bool attribFound = false;
-            auto& vl = mVertexLayouts[i];
             for (uint32_t k = 0; k < vl.numAttribs; ++k) {
                 if (vl.attribs[k].semanticName == name) {
                     auto loc = glGetAttribLocation(programObj, name);
@@ -1516,18 +1516,18 @@ bool RenderDeviceGL::linkShaderProgram(uint32_t programObj)
 //----------------------------------------------------------
 bool RenderDeviceGL::applyVertexLayout()
 {
-    uint32_t newVertexAttribMask {0u};
-
     if (mNewVertexLayout != 0) {
         if (mCurShaderID == 0) return false;
 
+        uint32_t newVertexAttribMask {0u};
+
         RDIShader& shader           = mShaders.getRef(mCurShaderID);
-        RDIInputLayout& inputLayout = shader.inputLayouts[mNewVertexLayout - 1];
+        RDIInputLayout& inputLayout = shader.inputLayouts[mNewVertexLayout-1];
 
         if (!inputLayout.valid) return false;
 
         // Set vertex attrib pointers
-        auto& vl = mVertexLayouts[mNewVertexLayout - 1];
+        auto& vl = mVertexLayouts[mNewVertexLayout-1];
         for (uint32_t i = 0; i < vl.numAttribs; ++i) {
             int8_t attribIndex = inputLayout.attribIndices[i];
             if (attribIndex >= 0) {
@@ -1536,14 +1536,16 @@ bool RenderDeviceGL::applyVertexLayout()
 
                 GLenum format = toVertexFormat[attrib.format];
                 glBindBuffer(GL_ARRAY_BUFFER, mBuffers.getRef(vbSlot.vbObj).glObj);
-                glVertexAttribPointer(attribIndex, attrib.size, format,
-                    format == GL_UNSIGNED_BYTE ? GL_TRUE : GL_FALSE,
-                    vbSlot.stride, (char*)0 + vbSlot.offset + attrib.offset);
+                glVertexAttribPointer(
+                    attribIndex, attrib.size, format, format == GL_UNSIGNED_BYTE,
+                    vbSlot.stride, (char*)0 + vbSlot.offset + attrib.offset
+                );
 
                 newVertexAttribMask |= 1 << attribIndex;
             }
         }
 
+        // Enable/Disable active vertex attribute arrays
         for (uint32_t i = 0; i < 16u; ++i) {
             uint32_t curBit = 1 << i;
             if ((newVertexAttribMask & curBit) != (mActiveVertexAttribsMask & curBit)) {
@@ -1556,8 +1558,6 @@ bool RenderDeviceGL::applyVertexLayout()
             }
         }
         mActiveVertexAttribsMask = newVertexAttribMask;
-
-        return true;
     }
     
     return true;
@@ -1577,8 +1577,9 @@ void RenderDeviceGL::applySamplerState(RDITexture& tex)
     uint32_t target = tex.type;
 
     auto filter = (state & SamplerState::FilterMask) >> SamplerState::FilterStart;
-    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, tex.hasMips ?
-        minFiltersMips[filter] : magFilters[filter]);
+    glTexParameteri(
+        target, GL_TEXTURE_MIN_FILTER, tex.hasMips ? minFiltersMips[filter] : magFilters[filter]
+    );
 
     filter = (state & SamplerState::FilterMask) >> SamplerState::FilterStart;
     glTexParameteri(target, GL_TEXTURE_MAG_FILTER, magFilters[filter]);
@@ -1667,8 +1668,10 @@ void RenderDeviceGL::applyRenderStates()
             };
 
             glEnable(GL_BLEND);
-            glBlendFunc(oglBlendFuncs[mNewBlendState.srcBlendFunc],
-                oglBlendFuncs[mNewBlendState.dstBlendFunc]);
+            glBlendFunc(
+                oglBlendFuncs[mNewBlendState.srcBlendFunc],
+                oglBlendFuncs[mNewBlendState.dstBlendFunc]
+            );
         }
 
         mCurBlendState.hash = mNewBlendState.hash;
