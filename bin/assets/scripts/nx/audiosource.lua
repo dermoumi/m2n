@@ -28,7 +28,7 @@
 local class      = require 'nx.class'
 local AudioVoice = require 'nx._audiovoice'
 
-local AudioSource = class 'nx._audiosource'
+local AudioSource = class 'nx.audiosource'
 
 ------------------------------------------------------------
 local ffi = require 'ffi'
@@ -67,6 +67,14 @@ ffi.cdef [[
     void nxAudioBusEnableVisualization(NxAudioSource*, bool);
     const float* nxAudioBusCalcFFT(NxAudioSource*);
     const float* nxAudioBusCurrentWaveData(NxAudioSource*);
+
+    NxAudioSource* nxAudioSourceCreate();
+    void nxAudioSourceLoadFile(NxAudioSource*, const char*);
+    void nxAudioSourceLoadMemory(NxAudioSource*, uint8_t*, size_t);
+    double nxAudioSourceStaticLength(NxAudioSource*);
+    void nxAudioSourceOpenFile(NxAudioSource*, const char*);
+    void nxAudioSourceOpenMemory(NxAudioSource*, uint8_t* buffer, size_t size);
+    double nxAudioSourceStreamLength(NxAudioSource*);
 ]]
 
 ------------------------------------------------------------
@@ -79,15 +87,60 @@ local toAttenuationModel = {
 AudioSource.static._toAttenuationModel = toAttenuationModel;
 
 ------------------------------------------------------------
+function AudioSource:initialize()
+    self._cdata = ffi.gc(C.nxAudioSourceCreate(), C.nxAudioSourceRelease)
+end
+
+------------------------------------------------------------
 function AudioSource:release()
-    if self._cdata == nil then return end
     C.nxAudioSourceRelease(ffi.gc(self._cdata, nil))
     self._cdata = nil
+    self._type = nil
+end
+
+------------------------------------------------------------
+function AudioSource:open(a, b)
+    if b then
+        C.nxAudioSourceOpenMemory(self._cdata, a, b)
+    else
+        C.nxAudioSourceOpenFile(self._cdata, a)
+    end
+
+    self._type = 'stream'
+    return self
+end
+
+------------------------------------------------------------
+function AudioSource:load(a, b)
+    if b then
+        C.nxAudioSourceLoadMemory(self._cdata, a, b)
+    else
+        print('loading file', a)
+        C.nxAudioSourceLoadFile(self._cdata, a)
+    end
+
+    self._type = 'static'
+    return self
+end
+
+------------------------------------------------------------
+function AudioSource:length()
+    if self._type == 'stream' then
+        return C.nxAudioSourceStreamLength(self._cdata)
+    elseif self._type == 'static' then
+        return C.nxAudioSourceStaticLength(self._cdata)
+    else
+        return 0
+    end
+end
+
+------------------------------------------------------------
+function AudioSource:type()
+    return self._type
 end
 
 ------------------------------------------------------------
 function AudioSource:play(volume, pan, paused)
-    if self._cdata == nil then return AudioVoice:new(0) end
     local handle = C.nxAudioPlay(self._cdata, volume or -1, pan or 0, not not paused)
 
     return AudioVoice:new(handle)
@@ -95,7 +148,6 @@ end
 
 ------------------------------------------------------------
 function AudioSource:playClocked(interval, volume, pan)
-    if self._cdata == nil then return AudioVoice:new(0) end
     local handle = C.nxAudioPlayClocked(
         self._cdata, interval, volume or -1, pan or 0, not not paused
     )
@@ -105,7 +157,6 @@ end
 
 ------------------------------------------------------------
 function AudioSource:play3d(x, y, z, velX, velY, velZ, volume, paused)
-    if self._cdata == nil then return AudioVoice:new(0) end
     local handle = C.nxAudioPlay3d(
         self._cdata, x, y, z, velX or 1, velY or 1, velZ or 1, volume or -1, not not paused
     )
@@ -115,7 +166,6 @@ end
 
 ------------------------------------------------------------
 function AudioSource:play3dClocked(interval, x, y, z, velX, velY, velZ, volume)
-    if self._cdata == nil then return AudioVoice:new(0) end
     local handle = C.nxAudioPlay3dClocked(
         self._cdata, interval, x, y, z, velX or 0, velY or 0, velZ or 0, volume or -1
     )
@@ -125,7 +175,6 @@ end
 
 ------------------------------------------------------------
 function AudioSource:playThrough(bus, volume, pan, paused)
-    if self._cdata == nil then return AudioVoice:new(0) end
     local handle = C.nxAudioSourcePlayThrough(
         self._cdata, bus._cdata, volume or -1, pan or 0, not not paused
     )
@@ -135,7 +184,6 @@ end
 
 ------------------------------------------------------------
 function AudioSource:playClockedThrough(bus, interval, volume, pan)
-    if self._cdata == nil then return AudioVoice:new(0) end
     local handle = C.nxAudioSourcePlayClockedThrough(
         self._cdata, bus._cdata, interval, volume or -1, pan or 0
     )
@@ -145,7 +193,6 @@ end
 
 ------------------------------------------------------------
 function AudioSource:play3dThrough(bus, x, y, z, velX, velY, velZ, volume, paused)
-    if self._cdata == nil then return AudioVoice:new(0) end
     local handle = C.nxAudioSourcePlay3dThrough(
         self._cdata, bus._cdata, x, y, z, velX or 0, velY or 0, velZ or 0, volume or -1,
         not not paused
@@ -156,7 +203,6 @@ end
 
 ------------------------------------------------------------
 function AudioSource:play3dClockedThrough(bus, interval, x, y, z, velX, velY, velZ, volume)
-    if self._cdata == nil then return AudioVoice:new(0) end
     local handle = C.nxAudioSourcePlay3dClockedThrough(
         self._cdata, bus._cdata, interval, x, y, z, velX or 0, velY or 0, velZ or 0, volume or -1
     )
@@ -166,100 +212,78 @@ end
 
 ------------------------------------------------------------
 function AudioSource:setVolume(volume)
-    if self._cdata ~= nil then
-        C.nxAudioSetVolume(self._cdata, volume)
-    end
+    C.nxAudioSetVolume(self._cdata, volume)
 
     return self
 end
 
 ------------------------------------------------------------
 function AudioSource:setLooping(looping)
-    if self._cdata ~= nil then
-        C.nxAudioSetLooping(self._cdata, looping)
-    end
+    C.nxAudioSetLooping(self._cdata, looping)
 
     return self
 end
 
 ------------------------------------------------------------
 function AudioSource:setSingleInstance(singleInstance)
-    if self._cdata ~= nil then
-        C.nxAudioSetSingleInstance(self._cdata, singleInstance)
-    end
+    C.nxAudioSetSingleInstance(self._cdata, singleInstance)
 
     return self
 end
 
 ------------------------------------------------------------
 function AudioSource:stop()
-    if self._cdata ~= nil then
-        C.nxAudioSourceStop(self._cdata)
-    end
+    C.nxAudioSourceStop(self._cdata)
 
     return self
 end
 
 ------------------------------------------------------------
 function AudioSource:setInaudibleBehavior(ticks, kill)
-    if self._cdata ~= nil then
-        C.nxAudioSetInaudibleBehavior(self._cdata, ticks, kill)
-    end
+    C.nxAudioSetInaudibleBehavior(self._cdata, ticks, kill)
 
     return self
 end
 
 ------------------------------------------------------------
 function AudioSource:set3dMinMaxDistance(min, max)
-    if self._cdata ~= nil then
-        C.nxAudioSet3dMinMaxDistance(self._cdata, min, max)
-    end
+    C.nxAudioSet3dMinMaxDistance(self._cdata, min, max)
 
     return self
 end
 
 ------------------------------------------------------------
 function AudioSource:set3dAttenuation(model, rolloffFactor)
-    if self._cdata ~= nil then
-        C.nxAudioSet3dAttenuation(self._cdata, toAttenuationModel[model] or 0, rolloffFactor)
-    end
+    C.nxAudioSet3dAttenuation(self._cdata, toAttenuationModel[model] or 0, rolloffFactor)
 
     return self
 end
 
 ------------------------------------------------------------
 function AudioSource:set3dDopplerFactor(factor)
-    if self._cdata ~= nil then
-        C.nxAudioSet3dDopplerFactor(self._cdata, factor)
-    end
+    C.nxAudioSet3dDopplerFactor(self._cdata, factor)
 
     return self
 end
 
 ------------------------------------------------------------
 function AudioSource:set3dListenerRelative(enable)
-    if self._cdata ~= nil then
-        C.nxAudioSet3dListenerRelative(self._cdata, enable)
-    end
+    C.nxAudioSet3dListenerRelative(self._cdata, enable)
 
     return self
 end
 
 ------------------------------------------------------------
 function AudioSource:set3dDistanceDelay(enabled)
-    if self._cdata ~= nil then
-        C.nxAudioSet3dDistanceDelay(self._cdata, enabled)
-    end
+    C.nxAudioSet3dDistanceDelay(self._cdata, enabled)
 
     return self
 end
 
 ------------------------------------------------------------
 function AudioSource:setFilter(filter, id)
-    if self._cdata ~= nil then
-        if filter then filter = filter._cdata end
-        C.nxAudioSourceSetFilter(self._cdata, filter, id or 0)
-    end
+    if filter then filter = filter._cdata end
+    C.nxAudioSourceSetFilter(self._cdata, filter, id or 0)
 
     return self
 end

@@ -215,7 +215,7 @@ end
 ------------------------------------------------------------
 function AudioVoice:set3dAttenuation(model, rolloffFactor)
     C.nxAudioVoiceSet3dSourceAttenuation(
-        self:_handle(), require('nx._audiosource')._toAttenuationModel[model] or 0, rolloffFactor
+        self:_handle(), require('nx.audiosource')._toAttenuationModel[model] or 0, rolloffFactor
     )
 
     return self

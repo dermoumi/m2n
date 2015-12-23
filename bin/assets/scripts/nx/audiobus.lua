@@ -25,7 +25,7 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-local AudioSource = require 'nx._audiosource'
+local AudioSource = require 'nx.audiosource'
 
 local AudioBus = AudioSource:subclass('nx.audiobus')
 
@@ -35,39 +35,43 @@ local C = ffi.C
 
 ------------------------------------------------------------
 function AudioBus:initialize()
-    local handle = C.nxAudioBusCreate()
-    self._cdata = ffi.gc(handle, C.nxAudioSourceRelease)
+    self._cdata = ffi.gc(C.nxAudioBusCreate(), C.nxAudioSourceRelease)
+    self._type = 'bus'
+end
+
+------------------------------------------------------------
+function AudioBus:load()
+    -- no op
+    return self
+end
+
+------------------------------------------------------------
+function AudioBus:open()
+    -- no op
+    return self
 end
 
 ------------------------------------------------------------
 function AudioBus:setChannels(channelCount)
-    if self._cdata ~= nil then
-        C.nxAudioBusSetChannels(self._cdata, channelCount)
-    end
+    C.nxAudioBusSetChannels(self._cdata, channelCount)
 
     return self
 end
 
 ------------------------------------------------------------
 function AudioBus:enableVisualization(enable)
-    if self._cdata ~= nil then
-        C.nxAudioBusEnableVisualization(self._cdata, enable)
-    end
+    C.nxAudioBusEnableVisualization(self._cdata, enable)
 
     return self
 end
 
 ------------------------------------------------------------
 function AudioBus:calcFFTData()
-    if self._cdata == nil then return nil end
-
     return C.nxAudioBusCalcFFT(self._cdata)
 end
 
 ------------------------------------------------------------
 function AudioBus:currentWaveData()
-    if self._cdata == nil then return nil end
-
     return C.nxAudioBusCurrentWaveData(self._cdata)
 end
 

@@ -76,8 +76,8 @@ Window.setFramerateLimit(
 -- Setup loader
 ------------------------------------------------------------
 require('game.worker')
-.registerFunc('nx.soundsource', function(obj, id)
-    obj:open(id)
+.registerFunc('nx.audiosource', function(obj, id)
+    obj:load(id)
     return true
 end)
 .registerFunc('nx.image', function(obj, id)

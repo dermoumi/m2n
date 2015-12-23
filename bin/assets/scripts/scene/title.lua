@@ -49,9 +49,9 @@ function SceneTitle:initialize(firstRun)
     end
     
     self:worker():addFile('nx.image', 'assets/cursor.png')
-    self:worker():addFile('nx.soundsource', 'assets/test.wav')
+    self:worker():addFile('nx.audiosource', 'assets/test.wav')
 
-    self.musicSource = require('nx.musicsource'):new()
+    self.musicSource = require('nx.audiosource'):new()
     self:worker():addTask(function(music)
         music:open('assets/undersodiumbulb.ogg')
     end, self.musicSource)
@@ -78,7 +78,7 @@ function SceneTitle:load()
         :setLooping(true)
     self.voiceGroup:add(self.soundSource:playThrough(self.audiobus, -1, 0, true))
 
-    self.musicSource:setVolume(.1)
+    self.musicSource:setVolume(1)
     self.voiceGroup:add(self.musicSource:playThrough(self.audiobus, -1, 0, true))
 
     self.voiceGroup:pause(false)

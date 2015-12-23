@@ -43,20 +43,9 @@ struct NxAudioSource
 //----------------------------------------------------------
 // Exported functions
 //----------------------------------------------------------
-NX_EXPORT NxAudioSource* nxAudioSoundCreate()
+NX_EXPORT NxAudioSource* nxAudioSourceCreate()
 {
-    auto source = new NxAudioSource();
-    source->handle = new SoLoud::Wav();
-    return source;
-}
-
-
-//----------------------------------------------------------
-NX_EXPORT NxAudioSource* nxAudioMusicCreate()
-{
-    auto source = new NxAudioSource();
-    source->handle = new SoLoud::WavStream();
-    return source;
+    return new NxAudioSource();
 }
 
 //----------------------------------------------------------
@@ -68,41 +57,61 @@ NX_EXPORT void nxAudioSourceRelease(NxAudioSource* source)
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxAudioSoundOpenFile(NxAudioSource* source, const char* filename)
+NX_EXPORT void nxAudioSourceLoadFile(NxAudioSource* source, const char* filename)
 {
+    delete source->file;
+    source->file = nullptr;
+
     Audio::File file;
     file.open(filename);
+
+    delete static_cast<SoLoud::Wav*>(source->handle);
+    source->handle = new SoLoud::Wav();
     static_cast<SoLoud::Wav*>(source->handle)->loadFile(&file);
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxAudioSoundOpenMemory(NxAudioSource* source, uint8_t* buffer, size_t size)
+NX_EXPORT void nxAudioSourceLoadMemory(NxAudioSource* source, uint8_t* buffer, size_t size)
 {
+    delete source->file;
+    source->file = nullptr;
+
+    delete static_cast<SoLoud::Wav*>(source->handle);
+    source->handle = new SoLoud::Wav();
     static_cast<SoLoud::Wav*>(source->handle)->loadMem(buffer, size, true, false);
 }
 
 //----------------------------------------------------------
-NX_EXPORT double nxAudioSoundLength(NxAudioSource* source)
+NX_EXPORT double nxAudioSourceStaticLength(NxAudioSource* source)
 {
     return static_cast<SoLoud::Wav*>(source->handle)->getLength();
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxAudioMusicOpenFile(NxAudioSource* source, const char* filename)
+NX_EXPORT void nxAudioSourceOpenFile(NxAudioSource* source, const char* filename)
 {
+    delete source->file;
     source->file = new Audio::File();
     source->file->open(filename);
+
+    delete static_cast<SoLoud::WavStream*>(source->handle);
+    source->handle = new SoLoud::WavStream();
     static_cast<SoLoud::WavStream*>(source->handle)->loadFile(source->file);
 }
 
 //----------------------------------------------------------
-NX_EXPORT void nxAudioMusicOpenMemory(NxAudioSource* source, uint8_t* buffer, size_t size)
+NX_EXPORT void nxAudioSourceOpenMemory(NxAudioSource* source, uint8_t* buffer, size_t size)
 {
+    delete source->file;
+    source->file = nullptr;
+
+    delete static_cast<SoLoud::WavStream*>(source->handle);
+    source->handle = new SoLoud::WavStream();
     static_cast<SoLoud::WavStream*>(source->handle)->loadMem(buffer, size, true, false);
 }
 
 //----------------------------------------------------------
-NX_EXPORT double nxAudioMusicLength(NxAudioSource* source)
+NX_EXPORT double nxAudioSourceStreamLength(NxAudioSource* source)
 {
     return static_cast<SoLoud::WavStream*>(source->handle)->getLength();
 }
