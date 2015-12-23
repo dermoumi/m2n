@@ -31,7 +31,6 @@
 #include "../system/log.hpp"
 #include "opengl.hpp"
 
-#include <mutex>
 #include <algorithm>
 
 //==========================================================
@@ -62,8 +61,7 @@ static GLenum toPrimType[]     = {
     GL_TRIANGLE_FAN
 };
 
-static std::mutex vlMutex; // Vertex layouts mutex
-thread_local std::string shaderLog;
+static std::string shaderLog;
 
 //----------------------------------------------------------
 bool RenderDeviceGL::initialize()
@@ -351,8 +349,6 @@ uint32_t RenderDeviceGL::registerVertexLayout(uint8_t numAttribs,
     const VertexLayoutAttrib* attribs)
 {
     if (mNumVertexLayouts == MaxNumVertexLayouts) return 0;
-
-    std::lock_guard<std::mutex> lock(vlMutex);
 
     mVertexLayouts[mNumVertexLayouts].numAttribs = numAttribs;
     for (uint8_t i = 0; i < numAttribs; ++i) {
@@ -698,16 +694,12 @@ uint32_t RenderDeviceGL::createShader(const char* vertexShaderSrc, const char* f
             glGetActiveAttrib(programObj, j, 32, nullptr, (int*)&size, &type, name);
 
             bool attribFound = false;
-            {
-                std::lock_guard<std::mutex> lock(vlMutex);
-
-                auto& vl = mVertexLayouts[i];
-                for (uint32_t k = 0; k < vl.numAttribs; ++k) {
-                    if (vl.attribs[k].semanticName == name) {
-                        auto loc = glGetAttribLocation(programObj, name);
-                        shader.inputLayouts[i].attribIndices[k] = loc;
-                        attribFound = true;
-                    }
+            auto& vl = mVertexLayouts[i];
+            for (uint32_t k = 0; k < vl.numAttribs; ++k) {
+                if (vl.attribs[k].semanticName == name) {
+                    auto loc = glGetAttribLocation(programObj, name);
+                    shader.inputLayouts[i].attribIndices[k] = loc;
+                    attribFound = true;
                 }
             }
 

@@ -69,13 +69,8 @@ end
 local totalTime = 0
 local fixedFrameTime = 1/30
 Window.setFramerateLimit(
-    Nx.platform('android', 'ios') and 1/30 or 1/60
+    -- Nx.platform('android', 'ios') and 1/30 or 1/60
 )
-
-------------------------------------------------------------
--- Setup loader
-------------------------------------------------------------
-require('game.worker')
 
 ------------------------------------------------------------
 -- Scene checker

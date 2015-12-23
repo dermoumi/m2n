@@ -78,7 +78,7 @@ function SceneTitle:load()
         :setLooping(true)
     self.voiceGroup:add(self.soundSource:playThrough(self.audiobus, -1, 0, true))
 
-    self.musicSource:setVolume(1)
+    self.musicSource:setVolume(.1)
     self.voiceGroup:add(self.musicSource:playThrough(self.audiobus, -1, 0, true))
 
     self.voiceGroup:pause(false)
@@ -93,7 +93,7 @@ end
 
 ------------------------------------------------------------
 function SceneTitle:render()
-    self:view():clear(255, 128, 0)
+    self:view():clear()
 
     self:view():draw(self.text)
 end

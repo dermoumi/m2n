@@ -31,8 +31,6 @@
 #include "../system/log.hpp"
 #include "opengles2.hpp"
 
-#include <mutex>
-
 //==========================================================
 // Locals
 //==========================================================
@@ -61,8 +59,7 @@ static GLenum toPrimType[]     = {
     GL_TRIANGLE_FAN
 };
 
-static std::mutex vlMutex; // Vertex layouts mutex
-thread_local std::string shaderLog;
+static std::string shaderLog;
 
 //----------------------------------------------------------
 bool RenderDeviceGLES2::initialize()
@@ -316,8 +313,6 @@ uint32_t RenderDeviceGLES2::registerVertexLayout(uint8_t numAttribs,
     const VertexLayoutAttrib* attribs)
 {
     if (mNumVertexLayouts == MaxNumVertexLayouts) return 0;
-
-    std::lock_guard<std::mutex> lock(vlMutex);
     
     mVertexLayouts[mNumVertexLayouts].numAttribs = numAttribs;
     for (uint8_t i = 0; i < numAttribs; ++i) {
@@ -668,16 +663,12 @@ uint32_t RenderDeviceGLES2::createShader(const char* vertexShaderSrc, const char
 
             bool attribFound = false;
 
-            {
-                std::lock_guard<std::mutex> lock(vlMutex);
-
-                auto& vl = mVertexLayouts[i];
-                for (uint32_t k = 0; k < vl.numAttribs; ++k) {
-                    if (vl.attribs[k].semanticName == name) {
-                        auto loc = glGetAttribLocation(programObj, name);
-                        shader.inputLayouts[i].attribIndices[k] = loc;
-                        attribFound = true;
-                    }
+            auto& vl = mVertexLayouts[i];
+            for (uint32_t k = 0; k < vl.numAttribs; ++k) {
+                if (vl.attribs[k].semanticName == name) {
+                    auto loc = glGetAttribLocation(programObj, name);
+                    shader.inputLayouts[i].attribIndices[k] = loc;
+                    attribFound = true;
                 }
             }
 
