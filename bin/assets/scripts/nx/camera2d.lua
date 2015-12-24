@@ -25,11 +25,11 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-local Matrix   = require 'nx.matrix'
-local Renderer = require 'nx.renderer'
-local Window   = require 'nx.window'
-local State2D  = require 'nx._state2d'
-local Camera   = require 'nx._camera'
+local RenderState = require 'nx.renderstate'
+local Matrix      = require 'nx.matrix'
+local Renderer    = require 'nx.renderer'
+local Window      = require 'nx.window'
+local Camera      = require 'nx._camera'
 
 local Camera2D = Camera:subclass('nx.camera2d')
 
@@ -148,7 +148,7 @@ end
 function Camera2D:draw(drawable, state)
     self:apply()
 
-    state = state and state:clone() or State2D:new()
+    state = state and state:clone() or RenderState:new()
     drawable:_draw(self, state)
 
     return self

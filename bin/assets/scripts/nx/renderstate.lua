@@ -28,10 +28,10 @@
 local Matrix = require 'nx.matrix'
 local class  = require 'nx.class'
 
-local State2D = class 'nx._state2d'
+local RenderState = class 'nx.renderstate'
 
 ------------------------------------------------------------
-function State2D:initialize(transMatrix, r, g, b, a, blendSrc, blendDst)
+function RenderState:initialize(transMatrix, r, g, b, a, blendSrc, blendDst)
     self._transMatrix = transMatrix or Matrix:new()
     self._colR = r or 255
     self._colG = g or 255
@@ -42,8 +42,8 @@ function State2D:initialize(transMatrix, r, g, b, a, blendSrc, blendDst)
 end
 
 ------------------------------------------------------------
-function State2D:clone()
-    return State2D:new(
+function RenderState:clone()
+    return RenderState:new(
         self:matrix():clone(),
         self._corR, self._colG, self._colB, self._colA,
         self._blendSrc, self._blendDst
@@ -51,12 +51,12 @@ function State2D:clone()
 end
 
 ------------------------------------------------------------
-function State2D:combineMatrix(mat)
+function RenderState:combineMatrix(mat)
     self._transMatrix:combine(mat)
 end
 
 ------------------------------------------------------------
-function State2D:combineColor(r, g, b, a)
+function RenderState:combineColor(r, g, b, a)
     self._colR = self._colR * r / 255
     self._colG = self._colG * g / 255
     self._colB = self._colB * b / 255
@@ -64,12 +64,12 @@ function State2D:combineColor(r, g, b, a)
 end
 
 ------------------------------------------------------------
-function State2D:matrix()
+function RenderState:matrix()
     return self._transMatrix
 end
 
 ------------------------------------------------------------
-function State2D:color(normalize)
+function RenderState:color(normalize)
     if normalize then
         return self._colR / 255, self._colG / 255, self._colB / 255, self._colA / 255
     else
@@ -78,9 +78,9 @@ function State2D:color(normalize)
 end
 
 ------------------------------------------------------------
-function State2D:blendMode()
+function RenderState:blendMode()
     return self._blendSrc, self._blendDst
 end
 
 ------------------------------------------------------------
-return State2D
+return RenderState

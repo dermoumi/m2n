@@ -25,9 +25,10 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-local Matrix   = require 'nx.matrix'
-local Entity3D = require 'nx.entity3d'
-local Camera   = require 'nx._camera'
+local RenderState = require 'nx.renderstate'
+local Matrix      = require 'nx.matrix'
+local Entity3D    = require 'nx.entity3d'
+local Camera      = require 'nx._camera'
 
 local Camera3D = Camera:subclass('nx.camera3d')
 Camera3D:include(Entity3D)
@@ -81,7 +82,7 @@ function Camera3D:draw(drawable, state)
     
     self:apply()
 
-    state = state and state:clone() or require('nx._state2d'):new()
+    state = state and state:clone() or RenderState:new()
     drawable:_draw(self, state)
 
     return self

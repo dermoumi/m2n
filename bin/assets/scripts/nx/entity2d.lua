@@ -30,9 +30,6 @@ local Matrix = require 'nx.matrix'
 local Entity2D = {}
 
 ------------------------------------------------------------
-Entity2D.State = require 'nx._state2d'
-
-------------------------------------------------------------
 function Entity2D:initialize()
     self._posX,    self._posY    = 0, 0
     self._scaleX,  self._scaleY  = 1, 1

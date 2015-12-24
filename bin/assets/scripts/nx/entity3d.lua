@@ -30,9 +30,6 @@ local Matrix = require 'nx.matrix'
 local Entity3D = {}
 
 ------------------------------------------------------------
--- Entity3D.state = require 'nx._state3d'
-
-------------------------------------------------------------
 function Entity3D:initialize()
     self._posX, self._posY, self._posZ = 0, 0, 0
     self._rotX, self._rotY, self._rotZ = 0, 0, 0
