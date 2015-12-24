@@ -110,13 +110,13 @@ local function nextEvent(func)
     elseif evType == C.NX_TextEdit then
         return 'textedit', ffi.string(e.t), tonumber(e.a), tonumber(e.b)
     elseif evType == C.NX_KeyDown then
-        Keyboard.__keyDownEvent(e.a, e.b, e.c)
+        Keyboard.__keyDownEvent(e.a, e.b, e.c == 1)
         return 'keydown', Keyboard._sc[e.a], Keyboard._sym[e.b], e.c == 1
     elseif evType == C.NX_KeyUp then
         Keyboard.__keyUpEvent(e.a, e.b)
         return 'keyup', Keyboard._sc[e.a], Keyboard._sym[e.b]
     elseif evType == C.NX_MouseMotion then
-        return 'mousemotion', tonumber(e.a), tonumber(e.b)
+        return 'mousemotion', tonumber(e.a), tonumber(e.b), tonumber(e.c), tonumber(e.d)
     elseif evType == C.NX_MouseDown then
         return 'mousedown', tonumber(e.a), tonumber(e.b), Mouse._btn[e.c]
     elseif evType == C.NX_MouseUp then

@@ -25,7 +25,10 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-local Scene = require 'scene'
+local Window   = require 'nx.window'
+local Keyboard = require 'nx.keyboard'
+local Mouse    = require 'nx.mouse'
+local Scene    = require 'scene'
 
 local SceneTest3D = Scene:subclass('scene.test.3d')
 
@@ -38,10 +41,10 @@ end
 function SceneTest3D:load()
     self.camera = require('nx.camera3d')
         :new(70, 16/9, -1, 1)
-        :setPosition(1, 0, 3)
-        :setRotation(0, 0, math.pi / 4)
-        :setScaling(2, 2, 2)
-        :lookAt(0, 0, 0)
+        :setPosition(0, 0, 3)
+        -- :setRotation(0, 0, math.pi / 4)
+        -- :setScaling(2, 2, 2)
+        -- :lookAt(0, 0, 0)
 
     self.texture = require('nx.texture2d'):new()
         :load(self:cache('assets/pasrien.png'))
@@ -49,6 +52,28 @@ function SceneTest3D:load()
     self.sprite = require('nx.sprite'):new(self.texture)
         :setScaling(1/512, 1/512)
         :setPosition(-1/2, -1/2)
+
+    self.camVelX, self.camVelY, self.camVelZ, self.camSpeed = 0, 0, 0, 3
+    self.camSensitivity = 0.001
+
+    self.prevMouseMode = Mouse.isRelativeMode()
+    Mouse.setRelativeMode(true)
+end
+
+------------------------------------------------------------
+function SceneTest3D:release()
+    Mouse.setRelativeMode(self.prevMouseMode)
+end
+
+------------------------------------------------------------
+function SceneTest3D:update(dt)
+    local xRot, yRot, zRot = self.camera:rotation()
+
+    self.camera:move(
+        dt * (math.cos(yRot) * self.camVelX + math.sin(yRot) * self.camVelZ),
+        self.camVelY * dt,
+        dt * (math.cos(yRot) * self.camVelZ - math.sin(yRot) * self.camVelX)
+    )
 end
 
 ------------------------------------------------------------
@@ -61,13 +86,43 @@ end
 
 ------------------------------------------------------------
 function SceneTest3D:onKeyDown(scancode, keyCode, repeated)
-    if scancode == 'down' then
-        self.camera:translate(0, 0, -.1)
-    elseif scancode == 'up' then
-        self.camera:translate(0, 0, .1)
-    elseif scancode == 'f1' then
+    if scancode == 'f1' then
         self:performTransition(Scene.back)
+    elseif scancode == 'w' then
+        self.camVelZ = -self.camSpeed
+    elseif scancode == 'a' then
+        self.camVelX = -self.camSpeed
+    elseif scancode == 'left ctrl' then
+        self.camVelY = -self.camSpeed
+    elseif scancode == 's' then
+        self.camVelZ = self.camSpeed 
+    elseif scancode == 'd' then
+        self.camVelX = self.camSpeed
+    elseif scancode == 'space' then
+        self.camVelY = self.camSpeed
     end
+end
+
+------------------------------------------------------------
+function SceneTest3D:onKeyUp(scancode, keyCode)
+    if scancode == 'a' then
+        self.camVelX = Keyboard.scancodeDown('d') and self.camSpeed or 0
+    elseif scancode == 'w' then
+        self.camVelZ = Keyboard.scancodeDown('s') and self.camSpeed or 0
+    elseif scancode == 'left ctrl' then
+        self.camVelY = Keyboard.scancodeDown('space') and self.camSpeed or 0
+    elseif scancode == 'd' then
+        self.camVelX = Keyboard.scancodeDown('a') and -self.camSpeed or 0
+    elseif scancode == 's' then
+        self.camVelZ = Keyboard.scancodeDown('w') and -self.camSpeed or 0
+    elseif scancode == 'space' then
+        self.camVelY = Keyboard.scancodeDown('left ctrl') and -self.camSpeed or 0
+    end
+end
+
+------------------------------------------------------------
+function SceneTest3D:onMouseMotion(x, y, xRel, yRel)
+    self.camera:rotate(-yRel * self.camSensitivity, -xRel * self.camSensitivity, 0)
 end
 
 ------------------------------------------------------------

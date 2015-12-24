@@ -401,7 +401,7 @@ function Scene:onKeyUp(scancode, keysym)
 end
 
 ------------------------------------------------------------
-function Scene:onMouseMotion(x, y)
+function Scene:onMouseMotion(x, y, xRel, yRel)
     -- Nothing to do
 end
 

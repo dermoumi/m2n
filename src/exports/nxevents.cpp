@@ -147,6 +147,8 @@ static NxEventType nextEvent(NxEvent* e, int (*func)(SDL_Event*))
         if (event.motion.which == SDL_TOUCH_MOUSEID) return NX_Other;
         e->a = event.motion.x;
         e->b = event.motion.y;
+        e->c = event.motion.xrel;
+        e->d = event.motion.yrel;
         return NX_MouseMotion;
     case SDL_MOUSEBUTTONDOWN:
         if (event.button.which == SDL_TOUCH_MOUSEID) return NX_Other;

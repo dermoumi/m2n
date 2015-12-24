@@ -54,7 +54,7 @@ function Camera3D:matrix()
         if self._targetX then
             self._matrix
                 :combine(Matrix.fromLookAt(
-                    self._posX-self._originX, self._posY-self._originY, self._posZ-self._originZ,
+                    self._originX-self._posX, self._originY-self._posY, self._originZ-self._posZ,
                     self._targetX, self._targetY, self._targetZ,
                     self._upX, self._upY, self._upZ
                 ))

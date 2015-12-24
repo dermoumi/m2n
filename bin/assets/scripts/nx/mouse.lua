@@ -121,7 +121,7 @@ function Mouse.setPosition(x, y)
 end
 
 ------------------------------------------------------------
-function Mouse.getPosition()
+function Mouse.position()
     local posPtr = ffi.new('int[2]')
     C.nxMouseGetPosition(posPtr, false)
 
@@ -134,7 +134,7 @@ function Mouse.setRelativeMode(relative)
 end
 
 ------------------------------------------------------------
-function Mouse.getRelativeMode()
+function Mouse.isRelativeMode()
     return C.nxMouseGetRelativeMode()
 end
 

@@ -122,7 +122,7 @@ function SceneTitle:onKeyDown(scancode, keyCode, repeated)
         else
             print('Lua usage: ' .. tostring(collectgarbage('count') * 1024))
         end
-    elseif scancode == 'a' then
+    elseif scancode == '\\' then
         self:performTransition(Scene.goTo, 'scene.title')
     elseif scancode == '1' then
         Mouse.setCursor(self:cache('assets/cursor.png'), 4, 4)
