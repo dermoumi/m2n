@@ -80,6 +80,13 @@ function Entity3D:setOrigin(x, y, z)
 end
 
 ------------------------------------------------------------
+function Entity3D:setColor(r, g, b, a)
+    self._colR, self._colG, self._colB, self._colA = r, g, b, a
+
+    return self
+end
+
+------------------------------------------------------------
 function Entity3D:move(x, y, z)
     return self:setPosition(self._posX + x, self._posY + y, self._posZ + z)
 end
@@ -97,6 +104,11 @@ end
 ------------------------------------------------------------
 function Entity3D:offset(x, y, z)
     return self:setORigin(self._originX + x, self._originY + y, self._originZ + z)
+end
+
+------------------------------------------------------------
+function Entity3D:color()
+    return self._colR, self._colG, self._colB, self._colA
 end
 
 ------------------------------------------------------------
@@ -139,13 +151,21 @@ end
 
 ------------------------------------------------------------
 function Entity3D:matrix()
+    if not self._matrix then
+        self._matrix = Matrix:new()
+            :combine(Matrix.fromTranslation(self._posX, self._posY, self._posZ))
+            :combine(Matrix.fromScaling(self._scaleX, self._scaleY, self._scaleZ))
+            :combine(Matrix.fromRotation(self._rotX, self._rotY, self._rotZ))
+            :combine(Matrix.fromTranslation(-self._originX, -self._originY, -self._originZ))
+    end
 
+    return self._matrix
 end
 
 ------------------------------------------------------------
 function Entity3D:invMatrix()
     if not self._invMatrix then
-        self._invMatrix = self._matrix:inverse()
+        self._invMatrix = self:matrix():inverse()
     end
 
     return self._invMatrix
@@ -159,7 +179,7 @@ end
 ------------------------------------------------------------
 function Entity3D:_draw(camera, state)
     state:combineMatrix(self:matrix())
-    -- state:combineColor(self:color())
+    state:combineColor(self:color())
 
     self:_render(camera, state)
 end
