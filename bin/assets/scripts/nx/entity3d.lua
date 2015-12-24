@@ -27,121 +27,145 @@
 
 local Matrix = require 'nx.matrix'
 
-local Entity2D = {}
+local Entity3D = {}
 
 ------------------------------------------------------------
-Entity2D.State = require 'nx._state2d'
+-- Entity3D.state = require 'nx._state3d'
 
 ------------------------------------------------------------
-function Entity2D:initialize()
-    self._posX,    self._posY    = 0, 0
-    self._scaleX,  self._scaleY  = 1, 1
-    self._originX, self._originY = 0, 0
-    self._rotation = 0
+function Entity3D:initialize()
+    self._posX, self._posY, self._posZ = 0, 0, 0
+    self._rotX, self._rotY, self._rotZ = 0, 0, 0
+    self._scaleX, self._scaleY, self._scaleZ = 1, 1, 1
+    self._originX, self._originY, self._originZ = 0, 0, 0
 
     self._colR, self._colG, self._colB, self._colA = 255, 255, 255, 255
 end
 
 ------------------------------------------------------------
-function Entity2D:setPosition(x, y)
-    self._posX, self._posY = x, y
+function Entity3D:setPosition(x, y, z)
+    self._posX, self._posY, self._posZ = x, y, z
 
     self._matrix = nil
+    self._invMatrix = nil
+
     return self
 end
 
 ------------------------------------------------------------
-function Entity2D:setScaling(x, y)
-    self._scaleX, self._scaleY = x, y
+function Entity3D:setRotation(x, y, z)
+    self._rotX, self._rotY, self._rotZ = x, y, z
 
     self._matrix = nil
+    self._invMatrix = nil
+
     return self
 end
 
 ------------------------------------------------------------
-function Entity2D:setRotation(rad)
-    self._rotation = rad % (math.pi * 2)
+function Entity3D:setScaling(x, y, z)
+    self._scaleX, self._scaleY, self._scaleZ = x, y, z
 
     self._matrix = nil
+    self._invMatrix = nil
+
     return self
 end
 
 ------------------------------------------------------------
-function Entity2D:setOrigin(x, y)
-    self._originX, self._originY = x, y
+function Entity3D:setOrigin(x, y, z)
+    self._originX, self._originY, self._originZ = x, y, z
 
     self._matrix = nil
-    return self
-end
-
-------------------------------------------------------------
-function Entity2D:setColor(r, g, b, a)
-    self._colR = r or 255
-    self._colG = g or 255
-    self._colB = b or 255
-    self._colA = a or 255
+    self._invMatrix = nil
 
     return self
 end
 
 ------------------------------------------------------------
-function Entity2D:position()
-    return self._posX, self._posY
+function Entity3D:move(x, y, z)
+    return self:setPosition(self._posX + x, self._posY + y, self._posZ + z)
 end
 
 ------------------------------------------------------------
-function Entity2D:scaling()
-    return self._scaleX, self._scaleY
+function Entity3D:rotate(x, y, z)
+    return self:setRotation(self._rotX + x, self._rotY + y, self._rotZ + z)
 end
 
 ------------------------------------------------------------
-function Entity2D:rotation()
-    return self._rotation
+function Entity3D:scale(x, y, z)
+    return self:setScale(self._scaleX * x, self._scaleY * y, self._scaleZ * z)
 end
 
 ------------------------------------------------------------
-function Entity2D:origin()
-    return self._originX, self._originY
+function Entity3D:offset(x, y, z)
+    return self:setORigin(self._originX + x, self._originY + y, self._originZ + z)
 end
 
 ------------------------------------------------------------
-function Entity2D:color()
-    return self._colR, self._colG, self._colB, self._colA
+function Entity3D:lookAt(targetX, targetY, targetZ, upX, upY, upZ)
+    self._targetX, self._targetY, self._targetZ = targetX, targetY, targetZ
+    self._upX, self._upY, self._upZ = upX or 0, upY or 1, upZ or 0
+
+    self._matrix = nil
+    self._invMatrix = nil
+
+    return self
 end
 
 ------------------------------------------------------------
-function Entity2D:matrix()
-    if not self._matrix then
-        local cos = math.cos(-self._rotation)
-        local sin = math.sin(-self._rotation)
-        local sxc = self._scaleX * cos
-        local syc = self._scaleY * cos
-        local sxs = self._scaleX * sin
-        local sys = self._scaleY * sin
-        local tx  = self._posX - self._originX * sxc - self._originY * sys
-        local ty  = self._posY + self._originX * sxs - self._originY * syc
+function Entity3D:position()
+    return self._posX, self._posY, self._posZ
+end
 
-        self._matrix = Matrix:new()
-        local m = self._matrix._cdata
-        m[0], m[4], m[12] =  sxc, sys, tx
-        m[1], m[5], m[13] = -sxs, syc, ty
+------------------------------------------------------------
+function Entity3D:rotation()
+    return self._rotX, self._rotY, self._rotZ
+end
+
+------------------------------------------------------------
+function Entity3D:scaling()
+    return self._scaleX, self._scaleY, self._scaleZ
+end
+
+------------------------------------------------------------
+function Entity3D:origin()
+    return self._originX, self._originY, self._originZ
+end
+
+------------------------------------------------------------
+function Entity3D:target()
+    if not self._tragetX then return nil end
+
+    return self._targetX, self._targetY, self._tragetZ, self._upX, self._upY, self._upZ
+end
+
+------------------------------------------------------------
+function Entity3D:matrix()
+
+end
+
+------------------------------------------------------------
+function Entity3D:invMatrix()
+    if not self._invMatrix then
+        self._invMatrix = self._matrix:inverse()
     end
 
-    return self._matrix
+    return self._invMatrix
 end
 
 ------------------------------------------------------------
-function Entity2D:_render(camera, state)
+function Entity3D:_render(camera, state)
     -- Nothing to do
 end
 
 ------------------------------------------------------------
-function Entity2D:_draw(camera, state)
+function Entity3D:_draw(camera, state)
     state:combineMatrix(self:matrix())
-    state:combineColor(self:color())
+    -- state:combineColor(self:color())
 
     self:_render(camera, state)
 end
 
 ------------------------------------------------------------
-return Entity2D
+return Entity3D

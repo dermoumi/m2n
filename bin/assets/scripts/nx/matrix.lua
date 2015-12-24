@@ -31,6 +31,9 @@ local class = require 'nx.class'
 local Matrix = class 'nx.matrix'
 
 ------------------------------------------------------------
+local EPSILON = 0.000001
+
+------------------------------------------------------------
 function Matrix.static.fromTranslation(x, y, z)
     local mat = Matrix:new()
     local m   = mat._cdata
@@ -99,6 +102,55 @@ function Matrix.static.fromZRotation(rad)
     m[1]  = s
     m[4]  = -s
     m[5]  = c
+
+    return mat
+end
+
+------------------------------------------------------------
+function Matrix.static.fromLookAt(posX, posY, posZ, targetX, targetY, targetZ, upX, upY, upZ)
+    if 
+        math.abs(posX - targetX) < EPSILON and
+        math.abs(posY - targetY) < EPSILON and
+        math.abs(posZ - targetZ) < EPSILON
+    then
+        return Matrix:new()
+    end
+
+    local z0, z1, z2 = posX - targetX, posY - targetY, posZ - targetZ
+    local len = 1 / math.sqrt(z0 * z0 + z1 * z1 + z2 * z2)
+    z0, z1, z2 = z0 * len, z1 * len, z2 * len
+
+    local x0, x1, x2 = upY * z2 - upZ * z1, upZ * z0 - upX * z2, upX * z1 - upY * z0
+    len = math.sqrt(x0 * x0 + x1 * x1 + x2 * x2)
+    if len == 0 then
+        x0, x1, x2 = 0, 0, 0
+    else
+        x0, x1, x2 = x0 / len, x1 / len, x2 / len
+    end
+
+    local y0, y1, y2 = z1 * x2 - z2 * x1, z2 * x0 - z0 * x2, z0 * x1 - z1 * x0
+    len = math.sqrt(y0 * y0 + y1 * y1 + y2 * y2)
+    if len == 0 then
+        y0, y1, y2 = 0, 0, 0
+    else
+        y0, y1, y2 = y0 / len, y1 / len, y2 / len
+    end
+
+    local mat = Matrix:new()
+    local m = mat._cdata
+
+    m[0]  = x0
+    m[1]  = y0
+    m[2]  = z0
+    m[4]  = x1
+    m[5]  = y1
+    m[6]  = z1
+    m[8]  = x2
+    m[9]  = y2
+    m[10] = z2
+    m[12] = -(x0 * posX + x1 * posY + x2 * posZ);
+    m[13] = -(y0 * posX + y1 * posY + y2 * posZ);
+    m[14] = -(z0 * posX + z1 * posY + z2 * posZ);
 
     return mat
 end

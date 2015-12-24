@@ -34,15 +34,20 @@ function SceneTest3D:initialize()
     self:worker():addFile('nx.image', 'assets/pasrien.png')
 end
 
-------------------------------------------------------------
+--------------------------------------------------------
 function SceneTest3D:load()
-    self.camera = require('nx.camera3d'):new(70, 16/9, -1, 1)
+    self.camera = require('nx.camera3d')
+        :new(70, 16/9, -1, 1)
+        :setPosition(1, 0, 3)
+        :setRotation(0, 0, math.pi / 4)
+        :setScaling(2, 2, 2)
+        :lookAt(0, 0, 0)
 
     self.texture = require('nx.texture2d'):new()
         :load(self:cache('assets/pasrien.png'))
 
     self.sprite = require('nx.sprite'):new(self.texture)
-        :setScale(1/512, 1/512)
+        :setScaling(1/512, 1/512)
         :setPosition(-1/2, -1/2)
 end
 

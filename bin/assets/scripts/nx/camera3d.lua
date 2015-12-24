@@ -25,10 +25,12 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-local Matrix = require 'nx.matrix'
-local Camera = require 'nx._camera'
+local Matrix   = require 'nx.matrix'
+local Entity3D = require 'nx.entity3d'
+local Camera   = require 'nx._camera'
 
 local Camera3D = Camera:subclass('nx.camera3d')
+Camera3D:include(Entity3D)
 
 ------------------------------------------------------------
 function Camera3D:initialize(fov, aspect, near, far)
@@ -38,9 +40,7 @@ end
 ------------------------------------------------------------
 function Camera3D:reset(fov, aspect, near, far)
     self._fov, self._aspect, self._near, self._far = fov, aspect, near, far
-
-    self._matrix = nil
-    self._invMatrix = nil
+    Entity3D.initialize(self)
 
     return self
 end
@@ -48,20 +48,31 @@ end
 ------------------------------------------------------------
 function Camera3D:matrix()
     if not self._matrix then
-        self._matrix = Matrix.fromPerspective(self._fov, self._aspect, self._near, self._far)
-            :combine(Matrix.fromTranslation(0, 0, -3))
+        self._matrix = Matrix.fromPerspective(self._fov, self._aspect, self._near, self._far) 
+
+        if self._targetX then
+            self._matrix
+                :combine(Matrix.fromLookAt(
+                    self._posX-self._originX, self._posY-self._originY, self._posZ-self._originZ,
+                    self._targetX, self._targetY, self._targetZ,
+                    self._upX, self._upY, self._upZ
+                ))
+                :combine(Matrix.fromScaling(self._scaleX, self._scaleY, self._scaleZ))
+        else
+            self._matrix
+                :combine(Matrix.fromTranslation(self._originX, self._originY, self._originZ))
+                :combine(Matrix.fromScaling(1/self._scaleX, 1/self._scaleY, 1/self._scaleZ))
+                :combine(Matrix.fromRotation(-self._rotX, -self._rotY, -self._rotZ))
+                :combine(Matrix.fromTranslation(-self._posX, -self._posY, -self._posZ))
+        end
     end
 
     return self._matrix
 end
 
 ------------------------------------------------------------
-function Camera3D:invMatrix()
-    if not self._invMatrix then
-        self._invMatrix = self._matrix:inverse()
-    end
-
-    return self._invMatrix
+function Camera3D:_draw()
+    -- Nullifier override / Nothing to do
 end
 
 ------------------------------------------------------------
