@@ -35,14 +35,59 @@ function Entity3D:initialize()
     self._rotX, self._rotY, self._rotZ = 0, 0, 0
     self._scaleX, self._scaleY, self._scaleZ = 1, 1, 1
     self._originX, self._originY, self._originZ = 0, 0, 0
+
+    self._children = {}
+end
+
+------------------------------------------------------------
+function Entity3D:_invalidate()
+    self._matrix = nil
+    self._absMatrix = nil
+end
+
+------------------------------------------------------------
+function Entity3D:setParent(parent)
+    parent:addChild(self)
+
+    return self
+end
+
+------------------------------------------------------------
+function Entity3D:addChild(child)
+    if child._parent ~= self then
+        if child._parent then
+            child._parent:removeChild(child)
+        end
+
+        child._parent = self
+        child._absMatrix = nil
+
+        self._children[#self._children+1] = child
+    end
+
+    return self
+end
+
+------------------------------------------------------------
+function Entity3D:removeChild(child)
+    child._parent = nil
+    child._absMatrix = nil
+
+    for i, v in pairs(self._children) do
+        if v == child then
+            self._children[i] = nil
+            break
+        end
+    end
+
+    return self
 end
 
 ------------------------------------------------------------
 function Entity3D:setPosition(x, y, z)
     self._posX, self._posY, self._posZ = x, y, z
 
-    self._matrix = nil
-    self._invMatrix = nil
+    self:_invalidate()
 
     return self
 end
@@ -51,8 +96,7 @@ end
 function Entity3D:setRotation(x, y, z)
     self._rotX, self._rotY, self._rotZ = x, y, z
 
-    self._matrix = nil
-    self._invMatrix = nil
+    self:_invalidate()
 
     return self
 end
@@ -61,8 +105,7 @@ end
 function Entity3D:setScaling(x, y, z)
     self._scaleX, self._scaleY, self._scaleZ = x, y, z
 
-    self._matrix = nil
-    self._invMatrix = nil
+    self:_invalidate()
 
     return self
 end
@@ -71,8 +114,7 @@ end
 function Entity3D:setOrigin(x, y, z)
     self._originX, self._originY, self._originZ = x, y, z
 
-    self._matrix = nil
-    self._invMatrix = nil
+    self:_invalidate()
 
     return self
 end
@@ -102,29 +144,46 @@ function Entity3D:lookAt(targetX, targetY, targetZ, upX, upY, upZ)
     self._targetX, self._targetY, self._targetZ = targetX, targetY, targetZ
     self._upX, self._upY, self._upZ = upX or 0, upY or 1, upZ or 0
 
-    self._matrix = nil
-    self._invMatrix = nil
+    self:_invalidate()
 
     return self
 end
 
 ------------------------------------------------------------
-function Entity3D:position()
+function Entity3D:position(absolute)
+    if absolute and self._parent then
+        return self._parent:matrix(true):apply(self._posX, self._posY, self._posZ)
+    end
+
     return self._posX, self._posY, self._posZ
 end
 
 ------------------------------------------------------------
-function Entity3D:rotation()
+function Entity3D:rotation(absolute)
+    if absolute and self._parent then
+        local rotX, rotY, rotZ = self._parent:rotation(true)
+        return self._rotX + rotX, self._rotY + rotY, self._rotZ + rotZ
+    end
+
     return self._rotX, self._rotY, self._rotZ
 end
 
 ------------------------------------------------------------
-function Entity3D:scaling()
+function Entity3D:scaling(absolute)
+    if absolute and self._parent then
+        local x, y, z = self._parent:scaling(true)
+        return self._scaleX * x, self._scaleY * y, self._scaleZ * z
+    end
+
     return self._scaleX, self._scaleY, self._scaleZ
 end
 
 ------------------------------------------------------------
-function Entity3D:origin()
+function Entity3D:origin(absolute)
+    if absolute and self._parent then
+        return self._parent:matrix():apply(self._originX, self._originY, self._originZ)
+    end
+
     return self._originX, self._originY, self._originZ
 end
 
@@ -136,7 +195,7 @@ function Entity3D:target()
 end
 
 ------------------------------------------------------------
-function Entity3D:matrix()
+function Entity3D:matrix(absolute)
     if not self._matrix then
         self._matrix = Matrix:new()
             :combine(Matrix.fromTranslation(self._posX, self._posY, self._posZ))
@@ -145,16 +204,17 @@ function Entity3D:matrix()
             :combine(Matrix.fromTranslation(-self._originX, -self._originY, -self._originZ))
     end
 
-    return self._matrix
-end
+    if absolute then
+        if not self._parent then
+            self._absMatrix = self._matrix
+        elseif not self._absMatrix or not self._parent._absMatrix then
+            self._absMatrix = self._matrix:clone():combine(self._parent:matrix(true))
+        end
 
-------------------------------------------------------------
-function Entity3D:invMatrix()
-    if not self._invMatrix then
-        self._invMatrix = self:matrix():inverse()
+        return self._absMatrix
     end
 
-    return self._invMatrix
+    return self._matrix
 end
 
 ------------------------------------------------------------
@@ -165,6 +225,10 @@ end
 ------------------------------------------------------------
 function Entity3D:_draw(camera, context)
     self:_render(camera, context)
+
+    for i, v in pairs(self._children) do
+        camera:draw(v)
+    end
 end
 
 ------------------------------------------------------------

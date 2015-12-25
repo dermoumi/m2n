@@ -459,7 +459,7 @@ function Renderer.blendMode()
 end
 
 ------------------------------------------------------------
-function Renderer.enabledDepthMask(enabled)
+function Renderer.enableDepthMask(enabled)
     C.nxRendererSetDepthMask(enabled)
 
     return Renderer
@@ -471,7 +471,7 @@ function Renderer.depthMaskEnabled()
 end
 
 ------------------------------------------------------------
-function Renderer.enabledDepthTest(enabled)
+function Renderer.enableDepthTest(enabled)
     C.nxRendererSetDepthTest(enabled)
 
     return Renderer

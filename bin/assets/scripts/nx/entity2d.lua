@@ -43,6 +43,12 @@ function Entity2D:initialize()
 end
 
 ------------------------------------------------------------
+function Entity2D:_invalidate()
+    self._matrix = nil
+    self._absMatrix = nil
+end
+
+------------------------------------------------------------
 function Entity2D:setParent(parent)
     parent:addChild(self)
 
@@ -84,8 +90,7 @@ end
 function Entity2D:setPosition(x, y)
     self._posX, self._posY = x, y
 
-    self._matrix = nil
-    self._absMatrix = nil
+    self:_invalidate()
     return self
 end
 
@@ -93,8 +98,7 @@ end
 function Entity2D:setScaling(x, y)
     self._scaleX, self._scaleY = x, y
 
-    self._matrix = nil
-    self._absMatrix = nil
+    self:_invalidate()
     return self
 end
 
@@ -102,8 +106,7 @@ end
 function Entity2D:setRotation(rad)
     self._rotation = rad % (math.pi * 2)
 
-    self._matrix = nil
-    self._absMatrix = nil
+    self:_invalidate()
     return self
 end
 
@@ -111,8 +114,7 @@ end
 function Entity2D:setOrigin(x, y)
     self._originX, self._originY = x, y
 
-    self._matrix = nil
-    self._absMatrix = nil
+    self:_invalidate()
     return self
 end
 
@@ -210,8 +212,10 @@ function Entity2D:matrix(absolute)
         m[1], m[5], m[13] = -sxs, syc, ty
     end
 
-    if absolute and self._parent then
-        if not self._absMatrix or not self._parent._absMatrix then
+    if absolute then
+        if not self._parent then
+            self._absMatrix = self._matrix
+        elseif not self._absMatrix or not self._parent._absMatrix then
             self._absMatrix = self._matrix:clone():combine(self._parent:matrix(true))
         end
 

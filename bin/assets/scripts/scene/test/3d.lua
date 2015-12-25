@@ -33,11 +33,6 @@ local Scene    = require 'scene'
 
 local SceneTest3D = Scene:subclass('scene.test.3d')
 
-------------------------------------------------------------
-function SceneTest3D:initialize()
-    self:worker():addFile('nx.image', 'assets/pasrien.png')
-end
-
 --------------------------------------------------------
 function SceneTest3D:load()
     self.camera = require('nx.camera3d')
@@ -46,13 +41,6 @@ function SceneTest3D:load()
         -- :setRotation(0, 0, math.pi / 4)
         -- :setScaling(2, 2, 2)
         -- :lookAt(0, 0, 0)
-
-    self.texture = require('nx.texture2d'):new()
-        :load(self:cache('assets/pasrien.png'))
-
-    self.sprite = require('nx.sprite'):new(self.texture)
-        :setScaling(1/512, 1/512)
-        :setPosition(-1/2, -1/2)
 
     self.mesh = Mesh:new()
         :setVertexData(
@@ -93,6 +81,51 @@ function SceneTest3D:load()
             -1, 1, 1, 0, 0,
              1,-1, 1, 0, 0
         )
+    
+    self.mesh:material():setColor(255, 128, 0)
+
+    self.subMesh = Mesh:new()
+        :setVertexData(
+            -1,-1,-1, 0, 0,
+            -1,-1, 1, 0, 0,
+            -1, 1, 1, 0, 0,
+             1, 1,-1, 0, 0,
+            -1,-1,-1, 0, 0,
+            -1, 1,-1, 0, 0,
+             1,-1, 1, 0, 0,
+            -1,-1,-1, 0, 0,
+             1,-1,-1, 0, 0,
+             1, 1,-1, 0, 0,
+             1,-1,-1, 0, 0,
+            -1,-1,-1, 0, 0,
+            -1,-1,-1, 0, 0,
+            -1, 1, 1, 0, 0,
+            -1, 1,-1, 0, 0,
+             1,-1, 1, 0, 0,
+            -1,-1, 1, 0, 0,
+            -1,-1,-1, 0, 0,
+            -1, 1, 1, 0, 0,
+            -1,-1, 1, 0, 0,
+             1,-1, 1, 0, 0,
+             1, 1, 1, 0, 0,
+             1,-1,-1, 0, 0,
+             1, 1,-1, 0, 0,
+             1,-1,-1, 0, 0,
+             1, 1, 1, 0, 0,
+             1,-1, 1, 0, 0,
+             1, 1, 1, 0, 0,
+             1, 1,-1, 0, 0,
+            -1, 1,-1, 0, 0,
+             1, 1, 1, 0, 0,
+            -1, 1,-1, 0, 0,
+            -1, 1, 1, 0, 0,
+             1, 1, 1, 0, 0,
+            -1, 1, 1, 0, 0,
+             1,-1, 1, 0, 0
+        )
+        :setPosition(0, 1, 0)
+        :setScaling(.5, .5, .5)
+        :setParent(self.mesh)
 
     self.camVelX, self.camVelY, self.camVelZ, self.camSpeed = 0, 0, 0, 3
     self.camSensitivity = 0.001
@@ -120,6 +153,8 @@ end
 ------------------------------------------------------------
 function SceneTest3D:render()
     require('nx.renderer').setCullMode('none')
+        .enableDepthTest(true)
+
     self.camera:clear(200, 200, 200)
 
     self.camera:draw(self.mesh)

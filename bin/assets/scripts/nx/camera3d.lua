@@ -38,6 +38,12 @@ function Camera3D:initialize(fov, aspect, near, far)
 end
 
 ------------------------------------------------------------
+function Camera3D:_invalidate()
+    Entity3D._invalidate(self)
+    self._invMatrix = nil
+end
+
+------------------------------------------------------------
 function Camera3D:reset(fov, aspect, near, far)
     self._fov, self._aspect, self._near, self._far = fov, aspect, near, far
     Entity3D.initialize(self)
@@ -68,6 +74,15 @@ function Camera3D:matrix()
     end
 
     return self._matrix
+end
+
+------------------------------------------------------------
+function Camera3D:invMatrix()
+    if not self._invMatrix then
+        self._invMatrix = self:matrix():inverse()
+    end
+
+    return self._invMatrix
 end
 
 ------------------------------------------------------------
