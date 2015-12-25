@@ -62,12 +62,13 @@ end
 function SceneTitle:load()
     self.text = require('nx.text')
         :new('', require 'game.font', 14)
-        :setColor(255, 255, 255)
+        :setColor(255, 128, 0)
         :setPosition(10, 10)
 
     self.sprite = require('nx.sprite')
         :new(self:cache('assets/pasrien.png'))
         :setPosition(100, 100)
+        :addChild(self.text)
 
     self.voiceGroup = require('nx.audiovoicegroup'):new()
     self.echoFilter = require('nx.audioechofilter'):new()
@@ -100,7 +101,7 @@ end
 function SceneTitle:render()
     self:view():clear()
 
-    self:view():draw(self.text)
+    self:view()--:draw(self.text)
         :draw(self.sprite:setPosition(100, 100))
         :draw(self.sprite:setPosition(600, 100))
 end

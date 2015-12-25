@@ -208,15 +208,14 @@ function Text:bounds()
 end
 
 ------------------------------------------------------------
-function Text:_render(camera, state)
+function Text:_render(camera)
     if self._cdata ~= nil and self._font and self._font._cdata ~= nil then
-        Renderer.setBlendMode(state:blendMode())
         local shader = self._shader or Text._defaultShader()
     
         shader:bind()
         shader:setUniform('uProjMat', camera:matrix())
-        shader:setUniform('uTransMat', state:matrix())
-        shader:setUniform('uColor', state:color(true))
+        shader:setUniform('uTransMat', self:matrix(true))
+        shader:setUniform('uColor', self:color(true, true))
         shader:setSampler('uTexture', 0)
         
         local bufferIDs = C.nxTextArraybufferIDs(self._cdata, bufCountPtr)

@@ -25,7 +25,8 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-local Matrix = require 'nx.matrix'
+local Renderer = require 'nx.renderer'
+local Matrix   = require 'nx.matrix'
 
 local Entity2D = {}
 
@@ -37,6 +38,46 @@ function Entity2D:initialize()
     self._rotation = 0
 
     self._colR, self._colG, self._colB, self._colA = 255, 255, 255, 255
+
+    self._children = {}
+end
+
+------------------------------------------------------------
+function Entity2D:setParent(parent)
+    parent:addChild(self)
+
+    return self
+end
+
+------------------------------------------------------------
+function Entity2D:addChild(child)
+    if child._parent ~= self then
+        if child._parent then
+            child._parent:removeChild(child)
+        end
+
+        child._parent = self
+        child._absMatrix = nil
+
+        self._children[#self._children+1] = child
+    end
+
+    return self
+end
+
+------------------------------------------------------------
+function Entity2D:removeChild(child)
+    child._parent = nil
+    child._absMatrix = nil
+
+    for i, v in pairs(self._children) do
+        if v == child then
+            self._children[i] = nil
+            break
+        end
+    end
+
+    return self
 end
 
 ------------------------------------------------------------
@@ -44,6 +85,7 @@ function Entity2D:setPosition(x, y)
     self._posX, self._posY = x, y
 
     self._matrix = nil
+    self._absMatrix = nil
     return self
 end
 
@@ -52,6 +94,7 @@ function Entity2D:setScaling(x, y)
     self._scaleX, self._scaleY = x, y
 
     self._matrix = nil
+    self._absMatrix = nil
     return self
 end
 
@@ -60,6 +103,7 @@ function Entity2D:setRotation(rad)
     self._rotation = rad % (math.pi * 2)
 
     self._matrix = nil
+    self._absMatrix = nil
     return self
 end
 
@@ -68,6 +112,7 @@ function Entity2D:setOrigin(x, y)
     self._originX, self._originY = x, y
 
     self._matrix = nil
+    self._absMatrix = nil
     return self
 end
 
@@ -82,32 +127,73 @@ function Entity2D:setColor(r, g, b, a)
 end
 
 ------------------------------------------------------------
-function Entity2D:position()
+function Entity2D:setBlendMode(blendSrc, blendDst)
+    self._blendSrc, self._blendDst = blendSrc, blendDst
+end
+
+------------------------------------------------------------
+function Entity2D:position(absolute)
+    if absolute and self._parent then
+        local x, y, z = self._parent:matrix(true):apply(self._posX, self._posY, 0)
+        return x, y
+    end
+
     return self._posX, self._posY
 end
 
 ------------------------------------------------------------
 function Entity2D:scaling()
+    if absoulte and self._parent then
+        local x, y = self._parent:scaling(true)
+        return self._scaleX * x, self._scaleY * y
+    end
+
     return self._scaleX, self._scaleY
 end
 
 ------------------------------------------------------------
 function Entity2D:rotation()
+    if absolute and self._parent then
+        local rot = self._parent:rotation(true)
+        return self._rotation + rot
+    end
+
     return self._rotation
 end
 
 ------------------------------------------------------------
 function Entity2D:origin()
+    if absolute and self._parent then
+        local x, y, z = self._parent:matrix(true):apply(self._originX, self._originY, 0)
+        return x, y
+    end
+
     return self._originX, self._originY
 end
 
 ------------------------------------------------------------
-function Entity2D:color()
-    return self._colR, self._colG, self._colB, self._colA
+function Entity2D:color(normalize, absolute)
+    local r, g, b, a = self._colR, self._colG, self._colB, self._colA
+
+    if absolute and self._parent then
+        local pR, pG, pB, pA = self._parent:color(true, true)
+        r, g, b, a = r * pR, g * pG, b * pB, a * pA
+    end
+
+    if normalize then
+        return r/255, g/255, b/255, a/255
+    end
+
+    return r, g, b, a
 end
 
 ------------------------------------------------------------
-function Entity2D:matrix()
+function Entity2D:blendMode()
+    return self._blendSrc or 'alpha', self._blendDst
+end
+
+------------------------------------------------------------
+function Entity2D:matrix(absolute)
     if not self._matrix then
         local cos = math.cos(-self._rotation)
         local sin = math.sin(-self._rotation)
@@ -124,20 +210,31 @@ function Entity2D:matrix()
         m[1], m[5], m[13] = -sxs, syc, ty
     end
 
+    if absolute and self._parent then
+        if not self._absMatrix or not self._parent._absMatrix then
+            self._absMatrix = self._matrix:clone():combine(self._parent:matrix(true))
+        end
+
+        return self._absMatrix
+    end
+
     return self._matrix
 end
 
 ------------------------------------------------------------
-function Entity2D:_render(camera, state)
+function Entity2D:_render(camera, context)
     -- Nothing to do
 end
 
 ------------------------------------------------------------
-function Entity2D:_draw(camera, state)
-    state:combineMatrix(self:matrix())
-    state:combineColor(self:color())
+function Entity2D:_draw(camera, context)
+    Renderer.setBlendMode(self:blendMode())
 
-    self:_render(camera, state)
+    self:_render(camera, context)
+
+    for i, v in pairs(self._children) do
+        camera:draw(v)
+    end
 end
 
 ------------------------------------------------------------

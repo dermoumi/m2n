@@ -143,18 +143,16 @@ function Shape:texture()
 end
 
 ------------------------------------------------------------
-function Shape:_render(camera, state)
+function Shape:_render(camera)
     if self._vertexBuffer then
         local texture = self._texture or Renderer.defaultTexture()
         texture:bind(0)
 
-        Renderer.setBlendMode(state:blendMode())
-
         local shader = self._shader or Shape._defaultShader(self._hasColor)
         shader:bind()
         shader:setUniform('uProjMat', camera:matrix())
-        shader:setUniform('uTransMat', state:matrix())
-        shader:setUniform('uColor', state:color(true))
+        shader:setUniform('uTransMat', self:matrix(true))
+        shader:setUniform('uColor', self:color(true, true))
         shader:setUniform('uTexSize', 1, 1)
         shader:setSampler('uTexture', 0)
 

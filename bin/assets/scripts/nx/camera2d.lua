@@ -25,7 +25,6 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-local RenderState = require 'nx.renderstate'
 local Matrix      = require 'nx.matrix'
 local Renderer    = require 'nx.renderer'
 local Window      = require 'nx.window'
@@ -145,11 +144,10 @@ function Camera2D:invMatrix()
 end
 
 ------------------------------------------------------------
-function Camera2D:draw(drawable, state)
+function Camera2D:draw(drawable, context)
     self:apply()
 
-    state = state and state:clone() or RenderState:new()
-    drawable:_draw(self, state)
+    drawable:_draw(self, context)
 
     return self
 end

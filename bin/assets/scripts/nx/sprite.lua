@@ -130,7 +130,7 @@ function Sprite:size()
 end
 
 ------------------------------------------------------------
-function Sprite:_render(camera, state)
+function Sprite:_render(camera)
     if not self._texture then return end
 
     local texW, texH = self._texture:size()
@@ -176,15 +176,13 @@ function Sprite:_render(camera, state)
 
     self._texture:bind(0)
 
-    Renderer.setBlendMode(state:blendMode())
-
     if self._normalized then texW, texH = 1, 1 end
 
     local shader = self._shader or Sprite._defaultShader()
     shader:bind()
     shader:setUniform('uProjMat', camera:matrix())
-    shader:setUniform('uTransMat', state:matrix())
-    shader:setUniform('uColor', state:color(true))
+    shader:setUniform('uTransMat', self:matrix(true))
+    shader:setUniform('uColor', self:color(true, true))
     shader:setUniform('uTexSize', texW, texH)
     shader:setSampler('uTexture', 0)
 

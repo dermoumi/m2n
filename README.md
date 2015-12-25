@@ -6,7 +6,7 @@ A small game (and game engine)
 Requires premake5 in path.
 
 ### MinGW and GCC
-On linux requires developement libraries for `luaJIT`, `sdl2`, `freetype2` and `asound` (ALSO/OSS)
+On linux requires developement libraries for `luaJIT`, `sdl2`, `freetype2` and `asound`
 
     premake5 gmake
     make config=release -C build
