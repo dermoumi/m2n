@@ -25,7 +25,6 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-local RenderState = require 'nx.renderstate'
 local Matrix      = require 'nx.matrix'
 local Entity3D    = require 'nx.entity3d'
 local Camera      = require 'nx._camera'
@@ -77,13 +76,12 @@ function Camera3D:_draw()
 end
 
 ------------------------------------------------------------
-function Camera3D:draw(drawable, state)
+function Camera3D:draw(drawable)
     -- Temporarily until we add 3d entities
     
     self:apply()
 
-    state = state and state:clone() or RenderState:new()
-    drawable:_draw(self, state)
+    drawable:_draw(self)
 
     return self
 end

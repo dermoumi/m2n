@@ -28,6 +28,7 @@
 local Window   = require 'nx.window'
 local Keyboard = require 'nx.keyboard'
 local Mouse    = require 'nx.mouse'
+local Mesh     = require 'nx.mesh'
 local Scene    = require 'scene'
 
 local SceneTest3D = Scene:subclass('scene.test.3d')
@@ -52,6 +53,46 @@ function SceneTest3D:load()
     self.sprite = require('nx.sprite'):new(self.texture)
         :setScaling(1/512, 1/512)
         :setPosition(-1/2, -1/2)
+
+    self.mesh = Mesh:new()
+        :setVertexData(
+            -1,-1,-1, 0, 0,
+            -1,-1, 1, 0, 0,
+            -1, 1, 1, 0, 0,
+             1, 1,-1, 0, 0,
+            -1,-1,-1, 0, 0,
+            -1, 1,-1, 0, 0,
+             1,-1, 1, 0, 0,
+            -1,-1,-1, 0, 0,
+             1,-1,-1, 0, 0,
+             1, 1,-1, 0, 0,
+             1,-1,-1, 0, 0,
+            -1,-1,-1, 0, 0,
+            -1,-1,-1, 0, 0,
+            -1, 1, 1, 0, 0,
+            -1, 1,-1, 0, 0,
+             1,-1, 1, 0, 0,
+            -1,-1, 1, 0, 0,
+            -1,-1,-1, 0, 0,
+            -1, 1, 1, 0, 0,
+            -1,-1, 1, 0, 0,
+             1,-1, 1, 0, 0,
+             1, 1, 1, 0, 0,
+             1,-1,-1, 0, 0,
+             1, 1,-1, 0, 0,
+             1,-1,-1, 0, 0,
+             1, 1, 1, 0, 0,
+             1,-1, 1, 0, 0,
+             1, 1, 1, 0, 0,
+             1, 1,-1, 0, 0,
+            -1, 1,-1, 0, 0,
+             1, 1, 1, 0, 0,
+            -1, 1,-1, 0, 0,
+            -1, 1, 1, 0, 0,
+             1, 1, 1, 0, 0,
+            -1, 1, 1, 0, 0,
+             1,-1, 1, 0, 0
+        )
 
     self.camVelX, self.camVelY, self.camVelZ, self.camSpeed = 0, 0, 0, 3
     self.camSensitivity = 0.001
@@ -81,7 +122,7 @@ function SceneTest3D:render()
     require('nx.renderer').setCullMode('none')
     self.camera:clear(200, 200, 200)
 
-    self.camera:draw(self.sprite)
+    self.camera:draw(self.mesh)
 end
 
 ------------------------------------------------------------
@@ -127,7 +168,7 @@ end
 
 ------------------------------------------------------------
 function SceneTest3D:updateParent()
-    return true
+    return self.parent and self.parent.class.name == 'scene.title'
 end
 
 ------------------------------------------------------------

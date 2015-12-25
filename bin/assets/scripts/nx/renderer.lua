@@ -157,6 +157,11 @@ function Renderer.init()
         {'aColor',     0, 4, 8,  1},
         {'aTexCoords', 0, 2, 12, 0}
     }))
+    ------------------------------------------------------------
+    vertexLayouts[3] = C.nxRendererRegisterVertexLayout(2, ffi.new('NxVertexLayoutAttrib[2]', {
+        {'aPosition',  0, 3, 0,  0},
+        {'aTexCoords', 0, 2, 12, 0}
+    }))
 
     -- Initialize default shaders
     local Shader = require('nx.shader')
@@ -201,6 +206,26 @@ function Renderer.init()
         varying vec4 vColor;
         void main() {
             gl_FragColor = texture2D(uTexture, vTexCoords / uTexSize) * uColor * vColor;
+        }
+    ]])
+    --
+    defaultShaders[3] = Shader:new([[
+        attribute vec3 aPosition;
+        attribute vec2 aTexCoords;
+        uniform mat4 uTransMat;
+        uniform mat4 uProjMat;
+        varying vec2 vTexCoords;
+        void main() {
+            vTexCoords  = aTexCoords;
+            gl_Position = uProjMat * uTransMat * vec4(aPosition, 1.0);
+        }
+    ]], [[
+        uniform sampler2D uTexture;
+        uniform vec2 uTexSize;
+        uniform vec4 uColor;
+        varying vec2 vTexCoords;
+        void main() {
+            gl_FragColor = texture2D(uTexture, vTexCoords / uTexSize) * uColor;
         }
     ]])
 

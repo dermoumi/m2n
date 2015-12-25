@@ -27,11 +27,11 @@
 
 local Renderer    = require 'nx.renderer'
 local Arraybuffer = require 'nx.arraybuffer'
-local Entity2D    = require 'nx.entity2d'
+local Entity3D    = require 'nx.entity3d'
 local class       = require 'nx.class'
 
-local Shape = class 'nx.shape'
-Shape:include(Entity2D)
+local Mesh = class 'nx.mesh'
+Mesh:include(Entity3D)
 
 ------------------------------------------------------------
 local ffi = require 'ffi'
@@ -39,83 +39,52 @@ local C = ffi.C
 
 ffi.cdef [[
     typedef struct {
-        float x, y;
-        float u, v;
-    } NxShapeVertexPosCoords;
-
-    typedef struct {
-        float x, y;
-        uint8_t r, g, b, a;
-        float u, v;
-    } NxShapeVertexPosColorCoords;
+        float x, y, z, u, v;
+    } NxMeshVertexPosCoords;
 ]]
 
 ------------------------------------------------------------
-local toPrimitive = {
-    points = 0,
-    lines = 1,
-    linestrip = 2,
-    lineloop = 3,
-    triangles = 4,
-    trianglestrip = 5,
-    trianglefan = 6
-}
+local vertexSize = ffi.sizeof('NxMeshVertexPosCoords')
 
 ------------------------------------------------------------
-local function vertexStruct(hasColor)
-    if hasColor then
-        return 'NxShapeVertexPosColorCoords', 8, 20
-    else
-        return 'NxShapeVertexPosCoords', 4, 16
-    end
+function Mesh.static._defaultShader()
+    return Renderer.defaultShader(3)
 end
 
 ------------------------------------------------------------
-function Shape.static._defaultShader(hasColor)
-    return Renderer.defaultShader(hasColor and 2 or 1)
+function Mesh.static._vertexLayout()
+    return Renderer.vertexLayout(3)
 end
 
 ------------------------------------------------------------
-function Shape.static._vertexLayout(hasColor)
-    return Renderer.vertexLayout(hasColor and 2 or 1)
+function Mesh:initialize()
+    Entity3D.initialize(self)
 end
 
 ------------------------------------------------------------
-function Shape:initialize()
-    Entity2D.initialize(self)
-end
-
-------------------------------------------------------------
-function Shape:setTexture(texture)
-    self._texture = texture
-
+function Mesh:setMaterial(mat)
+    -- TODO: Implement materials
     return self
 end
 
 ------------------------------------------------------------
-function Shape:setVertexData(primitive, hasColor, a, b, ...)
+function Mesh:setVertexData(a, b, ...)
     if b then a = {a, b, ...} end
     if type(a) ~= 'table' then return self end
-
-    self._primitive  = toPrimitive[primitive] or 0
-    self._hasColor   = hasColor
-    
-    local structName, valueCount, vertexSize = vertexStruct(hasColor)
-    self._vertexSize = vertexSize
 
     local buffer
     if type(a[0]) == 'table' then
         self._vertexCount = #a
-        buffer = ffi.new(structName .. '[?]', self._vertexCount, a)
+        buffer = ffi.new('NxMeshVertexPosCoords[?]', self._vertexCount, a)
     else
-        self._vertexCount = #a / valueCount
-        buffer = ffi.new(structName .. '[?]', self._vertexCount)
+        self._vertexCount = #a / 5 -- Five values: xyz, uv
+        buffer = ffi.new('NxMeshVertexPosCoords[?]', self._vertexCount)
         for i = 1, self._vertexCount do
             local vertex = {}
-            for j = 1, valueCount do
-                vertex[j] = a[(i-1)*valueCount + j]
+            for j = 1, 5 do
+                vertex[j] = a[(i-1) * 5 + j]
             end
-            buffer[if-1] = ffi.new(structName, vertex)
+            buffer[i-1] = ffi.new('NxMeshVertexPosCoords', vertex)
         end
     end
 
@@ -125,50 +94,43 @@ function Shape:setVertexData(primitive, hasColor, a, b, ...)
 end
 
 ------------------------------------------------------------
-function Shape:setIndexData(a, b, ...)
+function Mesh:setIndexData(a, b, ...)
     if b then a = {a, b, ...} end
     if type(a) ~= 'table' then return self end
 
     local buffer = ffi.new('uint16_t[?]', #a, a)
 
     self._indexCount = #a
-    self._indexBuffer = Arraybuffer.indexbuffer(ffi.sizeof(buffer), buffer)
+    self._indexBuffer = Arraybuffer._indexbuffer(ffi.sizeof(buffer), buffer)
 
     return self
 end
 
 ------------------------------------------------------------
-function Shape:texture()
-    return self._texture
-end
-
-------------------------------------------------------------
-function Shape:_render(camera, state)
+function Mesh:_render(camera)
     if self._vertexBuffer then
-        local texture = self._texture or Renderer.defaultTexture()
+        local texture = Renderer.defaultTexture()
         texture:bind(0)
 
-        Renderer.setBlendMode(state:blendMode())
-
-        local shader = self._shader or Shape._defaultShader(self._hasColor)
+        local shader = Mesh._defaultShader()
         shader:bind()
         shader:setUniform('uProjMat', camera:matrix())
-        shader:setUniform('uTransMat', state:matrix())
-        shader:setUniform('uColor', state:color(true))
+        shader:setUniform('uTransMat', self:matrix())
+        shader:setUniform('uColor', 1, 1, 1, 1)
         shader:setUniform('uTexSize', 1, 1)
         shader:setSampler('uTexture', 0)
 
-        Arraybuffer.setVertexbuffer(self._vertexBuffer, 0, 0, self._vertexSize)
+        Arraybuffer.setVertexbuffer(self._vertexBuffer, 0, 0, vertexSize)
         Arraybuffer.setIndexbuffer(self._indexBuffer, 16)
-        C.nxRendererSetVertexLayout(Shape._vertexLayout(self._hasColor))
+        C.nxRendererSetVertexLayout(Mesh._vertexLayout())
 
         if self._indexBuffer then
-            C.nxRendererDrawIndexed(self._primitive, 0, self._indexCount)
+            C.nxRendererDrawIndexed(4, 0, self._indexCount)
         else
-            C.nxRendererDraw(self._primitive, 0, self._vertexCount)
+            C.nxRendererDraw(4, 0, self._vertexCount)
         end
     end
 end
 
 ------------------------------------------------------------
-return Shape
+return Mesh

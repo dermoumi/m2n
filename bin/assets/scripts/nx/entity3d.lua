@@ -35,8 +35,6 @@ function Entity3D:initialize()
     self._rotX, self._rotY, self._rotZ = 0, 0, 0
     self._scaleX, self._scaleY, self._scaleZ = 1, 1, 1
     self._originX, self._originY, self._originZ = 0, 0, 0
-
-    self._colR, self._colG, self._colB, self._colA = 255, 255, 255, 255
 end
 
 ------------------------------------------------------------
@@ -80,13 +78,6 @@ function Entity3D:setOrigin(x, y, z)
 end
 
 ------------------------------------------------------------
-function Entity3D:setColor(r, g, b, a)
-    self._colR, self._colG, self._colB, self._colA = r, g, b, a
-
-    return self
-end
-
-------------------------------------------------------------
 function Entity3D:move(x, y, z)
     return self:setPosition(self._posX + x, self._posY + y, self._posZ + z)
 end
@@ -104,11 +95,6 @@ end
 ------------------------------------------------------------
 function Entity3D:offset(x, y, z)
     return self:setORigin(self._originX + x, self._originY + y, self._originZ + z)
-end
-
-------------------------------------------------------------
-function Entity3D:color()
-    return self._colR, self._colG, self._colB, self._colA
 end
 
 ------------------------------------------------------------
@@ -172,15 +158,12 @@ function Entity3D:invMatrix()
 end
 
 ------------------------------------------------------------
-function Entity3D:_render(camera, state)
+function Entity3D:_render(camera)
     -- Nothing to do
 end
 
 ------------------------------------------------------------
-function Entity3D:_draw(camera, state)
-    state:combineMatrix(self:matrix())
-    state:combineColor(self:color())
-
+function Entity3D:_draw(camera)
     self:_render(camera, state)
 end
 
