@@ -27,6 +27,7 @@
 
 local Renderer    = require 'nx.renderer'
 local Arraybuffer = require 'nx.arraybuffer'
+local Material    = require 'nx.material'
 local Entity3D    = require 'nx.entity3d'
 local class       = require 'nx.class'
 
@@ -47,11 +48,6 @@ ffi.cdef [[
 local vertexSize = ffi.sizeof('NxMeshVertexPosCoords')
 
 ------------------------------------------------------------
-function Mesh.static._defaultShader()
-    return Renderer.defaultShader(3)
-end
-
-------------------------------------------------------------
 function Mesh.static._vertexLayout()
     return Renderer.vertexLayout(3)
 end
@@ -59,12 +55,22 @@ end
 ------------------------------------------------------------
 function Mesh:initialize()
     Entity3D.initialize(self)
+
+    self._materials = {
+        ambient = Material:new()
+    }
 end
 
 ------------------------------------------------------------
-function Mesh:setMaterial(mat)
-    -- TODO: Implement materials
+function Mesh:setMaterial(material, context)
+    self._materials[context or 'ambient'] = material
+
     return self
+end
+
+------------------------------------------------------------
+function Mesh:material(context)
+    return self._materials[context or 'ambient']
 end
 
 ------------------------------------------------------------
@@ -107,19 +113,11 @@ function Mesh:setIndexData(a, b, ...)
 end
 
 ------------------------------------------------------------
-function Mesh:_render(camera)
-    if self._vertexBuffer then
-        local texture = Renderer.defaultTexture()
-        texture:bind(0)
-
-        local shader = Mesh._defaultShader()
-        shader:bind()
-        shader:setUniform('uProjMat', camera:matrix())
-        shader:setUniform('uTransMat', self:matrix())
-        shader:setUniform('uColor', 1, 1, 1, 1)
-        shader:setUniform('uTexSize', 1, 1)
-        shader:setSampler('uTexture', 0)
-
+function Mesh:_render(camera, context)
+    local material = self._materials[context]
+    if self._vertexBuffer and material then
+        material:_apply(camera:matrix(), self:matrix())
+        
         Arraybuffer.setVertexbuffer(self._vertexBuffer, 0, 0, vertexSize)
         Arraybuffer.setIndexbuffer(self._indexBuffer, 16)
         C.nxRendererSetVertexLayout(Mesh._vertexLayout())

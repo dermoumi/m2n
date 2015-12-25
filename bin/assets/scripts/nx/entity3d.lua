@@ -158,13 +158,13 @@ function Entity3D:invMatrix()
 end
 
 ------------------------------------------------------------
-function Entity3D:_render(camera)
+function Entity3D:_render(camera, context)
     -- Nothing to do
 end
 
 ------------------------------------------------------------
-function Entity3D:_draw(camera)
-    self:_render(camera, state)
+function Entity3D:_draw(camera, context)
+    self:_render(camera, context)
 end
 
 ------------------------------------------------------------

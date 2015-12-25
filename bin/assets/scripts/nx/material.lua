@@ -25,64 +25,73 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-local Matrix      = require 'nx.matrix'
-local Entity3D    = require 'nx.entity3d'
-local Camera      = require 'nx._camera'
+local Renderer = require 'nx.renderer'
+local class    = require 'nx.class'
 
-local Camera3D = Camera:subclass('nx.camera3d')
-Camera3D:include(Entity3D)
+local Material = class 'nx.material'
 
 ------------------------------------------------------------
-function Camera3D:initialize(fov, aspect, near, far)
-    self:reset(fov, aspect, near, far)
+function Material:initialize()
+    self._textures = {}
+    self._colR, self._colG, self._colB, self._colA = 255, 255, 255, 255
 end
 
 ------------------------------------------------------------
-function Camera3D:reset(fov, aspect, near, far)
-    self._fov, self._aspect, self._near, self._far = fov, aspect, near, far
-    Entity3D.initialize(self)
+function Material:setShader(shader)
+    self._shader = shader or Renderer.defaultShader(3)
 
     return self
 end
 
 ------------------------------------------------------------
-function Camera3D:matrix()
-    if not self._matrix then
-        self._matrix = Matrix.fromPerspective(self._fov, self._aspect, self._near, self._far) 
+function Material:setTexture(texture, slot)
+    self._textures[slot or 'uTexture'] = texture
 
-        if self._targetX then
-            self._matrix
-                :combine(Matrix.fromLookAt(
-                    self._originX-self._posX, self._originY-self._posY, self._originZ-self._posZ,
-                    self._targetX, self._targetY, self._targetZ,
-                    self._upX, self._upY, self._upZ
-                ))
-                :combine(Matrix.fromScaling(self._scaleX, self._scaleY, self._scaleZ))
-        else
-            self._matrix
-                :combine(Matrix.fromTranslation(self._originX, self._originY, self._originZ))
-                :combine(Matrix.fromScaling(1/self._scaleX, 1/self._scaleY, 1/self._scaleZ))
-                :combine(Matrix.fromRotation(-self._rotX, -self._rotY, -self._rotZ))
-                :combine(Matrix.fromTranslation(-self._posX, -self._posY, -self._posZ))
-        end
+    return self
+end
+
+------------------------------------------------------------
+function Material:setColor(r, g, b, a)
+    self._colR, self._colG, self._colB, self._colA = r, g, b, a or 255
+
+    return self
+end
+
+------------------------------------------------------------
+function Material:shader()
+    return self._shader
+end
+
+------------------------------------------------------------
+function Material:texture(slot)
+    return self._textures[slot or 'uTexture']
+end
+
+------------------------------------------------------------
+function Material:color()
+    return self._colR, self._colG, self._colB, self._colA
+end
+
+------------------------------------------------------------
+function Material:_apply(projMat, transMat)
+    local shader = self._shader or Renderer.defaultShader(3)
+    shader:bind()
+    shader:setUniform('uProjMat', projMat)
+    shader:setUniform('uTransMat', transMat)
+    shader:setUniform('uColor', self._colR/255, self._colG/255, self._colB/255, self._colA/255)
+
+    local i = 0
+    for slot, texture in pairs(self._textures) do
+        texture:bind(i)
+        shader:setSampler(slot, i)
+        i = i + 1
     end
 
-    return self._matrix
+    if i == 0 then
+        Renderer.defaultTexture():bind(0)
+        shader:setSampler('uTexture', 0)
+    end
 end
 
 ------------------------------------------------------------
-function Camera3D:_draw()
-    -- Nullifier override / Nothing to do
-end
-
-------------------------------------------------------------
-function Camera3D:draw(drawable, context)
-    self:apply()
-
-    drawable:_draw(self, context or 'ambient')
-
-    return self
-end
-
-------------------------------------------------------------
-return Camera3D
+return Material
