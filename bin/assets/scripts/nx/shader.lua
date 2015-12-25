@@ -129,37 +129,37 @@ end
 
 ------------------------------------------------------------
 function Shader:setUniform(name, a, b, c, d)
-    if self._cdata == nil then return self end
+    if self._cdata ~= nil then
+        local uniform = self._uniforms[name]
 
-    local uniform = self._uniforms[name]
-
-    if not uniform then
-        uniform = C.nxShaderUniformLocation(self._cdata, name)
-        self._uniforms[name] = uniform
-    end
-
-    if uniform < 0 then
-        Log.warning('Uniform "' .. name .. '" does not exist')
-    else
-        local uniformType, uniformData
-        if class.Object.isInstanceOf(a, Matrix) then
-            uniformType = 4
-            uniformData = a:data()
-        elseif not b then
-            uniformType = 0
-            uniformData = ffi.new('float[1]', {a})
-        elseif not c then
-            uniformType = 1
-            uniformData = ffi.new('float[2]', {a, b})
-        elseif not d then
-            uniformType = 2
-            uniformData = ffi.new('float[3]', {a, b, c})
-        else
-            uniformType = 3
-            uniformData = ffi.new('float[4]', {a, b, c, d})
+        if not uniform then
+            uniform = C.nxShaderUniformLocation(self._cdata, name)
+            self._uniforms[name] = uniform
         end
 
-        C.nxShaderSetUniform(self._cdata, uniform, uniformType, uniformData)
+        if uniform < 0 then
+            Log.warning('Uniform "' .. name .. '" does not exist')
+        else
+            local uniformType, uniformData
+            if class.Object.isInstanceOf(a, Matrix) then
+                uniformType = 4
+                uniformData = a:data()
+            elseif not b then
+                uniformType = 0
+                uniformData = ffi.new('float[1]', {a})
+            elseif not c then
+                uniformType = 1
+                uniformData = ffi.new('float[2]', {a, b})
+            elseif not d then
+                uniformType = 2
+                uniformData = ffi.new('float[3]', {a, b, c})
+            else
+                uniformType = 3
+                uniformData = ffi.new('float[4]', {a, b, c, d})
+            end
+
+            C.nxShaderSetUniform(self._cdata, uniform, uniformType, uniformData)
+        end
     end
 
     return self

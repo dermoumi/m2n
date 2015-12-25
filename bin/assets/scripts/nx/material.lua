@@ -33,7 +33,23 @@ local Material = class 'nx.material'
 ------------------------------------------------------------
 function Material:initialize()
     self._textures = {}
+    self._shader = Renderer.defaultShader(3)
     self._colR, self._colG, self._colB, self._colA = 255, 255, 255, 255
+end
+
+------------------------------------------------------------
+function Material:clone()
+    local material = Material:new()
+
+    for i, texture in pairs(self._textures) do
+        material._textures[i] = texture
+    end
+
+    material._shader = self._shader
+    material._colR, material._colG, material._colB, material._colA =
+        self._colR, self._colG, self._colB, self._colA
+
+    return material
 end
 
 ------------------------------------------------------------
@@ -74,11 +90,10 @@ end
 
 ------------------------------------------------------------
 function Material:_apply(projMat, transMat)
-    local shader = self._shader or Renderer.defaultShader(3)
-    shader:bind()
-    shader:setUniform('uProjMat', projMat)
-    shader:setUniform('uTransMat', transMat)
-    shader:setUniform('uColor', self._colR/255, self._colG/255, self._colB/255, self._colA/255)
+    self._shader:bind()
+        :setUniform('uProjMat', projMat)
+        :setUniform('uTransMat', transMat)
+        :setUniform('uColor', self._colR/255, self._colG/255, self._colB/255, self._colA/255)
 
     local i = 0
     for slot, texture in pairs(self._textures) do
@@ -89,7 +104,7 @@ function Material:_apply(projMat, transMat)
 
     if i == 0 then
         Renderer.defaultTexture():bind(0)
-        shader:setSampler('uTexture', 0)
+        self._shader:setSampler('uTexture', 0)
     end
 end
 

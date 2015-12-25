@@ -62,6 +62,23 @@ function Mesh:initialize()
 end
 
 ------------------------------------------------------------
+function Mesh:clone(cloneMaterials)
+    local mesh = Mesh:new()
+
+    mesh._vertexBuffer, mesh._vertexCount = self._vertexBuffer, self._vertexCount
+    mesh._indexBuffer, mesh._indexCount = self._indexBuffer, self._indexCount
+    if cloneMaterials then
+        for context, material in pairs(self._materials) do
+            mesh._materials[context] = material:clone()
+        end
+    else
+        mesh._materials = self._materials
+    end
+
+    return mesh
+end
+
+------------------------------------------------------------
 function Mesh:setMaterial(material, context)
     self._materials[context or 'ambient'] = material
 
@@ -75,39 +92,47 @@ end
 
 ------------------------------------------------------------
 function Mesh:setVertexData(a, b, ...)
-    if b then a = {a, b, ...} end
-    if type(a) ~= 'table' then return self end
-
-    local buffer
-    if type(a[0]) == 'table' then
-        self._vertexCount = #a
-        buffer = ffi.new('NxMeshVertexPosCoords[?]', self._vertexCount, a)
+    if not a then
+        self._vertexBuffer = nil
     else
-        self._vertexCount = #a / 5 -- Five values: xyz, uv
-        buffer = ffi.new('NxMeshVertexPosCoords[?]', self._vertexCount)
-        for i = 1, self._vertexCount do
-            local vertex = {}
-            for j = 1, 5 do
-                vertex[j] = a[(i-1) * 5 + j]
-            end
-            buffer[i-1] = ffi.new('NxMeshVertexPosCoords', vertex)
-        end
-    end
+        if b then a = {a, b, ...} end
+        if type(a) ~= 'table' then return self end
 
-    self._vertexBuffer = Arraybuffer.vertexbuffer(ffi.sizeof(buffer), buffer)
+        local buffer
+        if type(a[0]) == 'table' then
+            self._vertexCount = #a
+            buffer = ffi.new('NxMeshVertexPosCoords[?]', self._vertexCount, a)
+        else
+            self._vertexCount = #a / 5 -- Five values: xyz, uv
+            buffer = ffi.new('NxMeshVertexPosCoords[?]', self._vertexCount)
+            for i = 1, self._vertexCount do
+                local vertex = {}
+                for j = 1, 5 do
+                    vertex[j] = a[(i-1) * 5 + j]
+                end
+                buffer[i-1] = ffi.new('NxMeshVertexPosCoords', vertex)
+            end
+        end
+
+        self._vertexBuffer = Arraybuffer.vertexbuffer(ffi.sizeof(buffer), buffer)
+    end
 
     return self
 end
 
 ------------------------------------------------------------
 function Mesh:setIndexData(a, b, ...)
-    if b then a = {a, b, ...} end
-    if type(a) ~= 'table' then return self end
+    if not a then
+        self._indexBuffer = nil
+    else
+        if b then a = {a, b, ...} end
+        if type(a) ~= 'table' then return self end
 
-    local buffer = ffi.new('uint16_t[?]', #a, a)
+        local buffer = ffi.new('uint16_t[?]', #a, a)
 
-    self._indexCount = #a
-    self._indexBuffer = Arraybuffer._indexbuffer(ffi.sizeof(buffer), buffer)
+        self._indexCount = #a
+        self._indexBuffer = Arraybuffer._indexbuffer(ffi.sizeof(buffer), buffer)
+    end
 
     return self
 end

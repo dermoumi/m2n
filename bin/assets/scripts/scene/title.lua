@@ -68,7 +68,7 @@ function SceneTitle:load()
     self.sprite = require('nx.sprite')
         :new(self:cache('assets/pasrien.png'))
         :setPosition(100, 100)
-        :addChild(self.text)
+        -- :addChild(self.text)
 
     self.voiceGroup = require('nx.audiovoicegroup'):new()
     self.echoFilter = require('nx.audioechofilter'):new()
@@ -99,9 +99,13 @@ end
 
 ------------------------------------------------------------
 function SceneTitle:render()
+    require('nx.renderer')
+        .enableDepthTest(false)
+        .enableDepthMask(false)
+
     self:view():clear()
 
-    self:view()--:draw(self.text)
+    self:view():draw(self.text)
         :draw(self.sprite:setPosition(100, 100))
         :draw(self.sprite:setPosition(600, 100))
 end

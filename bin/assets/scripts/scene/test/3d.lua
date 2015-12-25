@@ -82,50 +82,12 @@ function SceneTest3D:load()
              1,-1, 1, 0, 0
         )
     
-    self.mesh:material():setColor(255, 128, 0)
-
-    self.subMesh = Mesh:new()
-        :setVertexData(
-            -1,-1,-1, 0, 0,
-            -1,-1, 1, 0, 0,
-            -1, 1, 1, 0, 0,
-             1, 1,-1, 0, 0,
-            -1,-1,-1, 0, 0,
-            -1, 1,-1, 0, 0,
-             1,-1, 1, 0, 0,
-            -1,-1,-1, 0, 0,
-             1,-1,-1, 0, 0,
-             1, 1,-1, 0, 0,
-             1,-1,-1, 0, 0,
-            -1,-1,-1, 0, 0,
-            -1,-1,-1, 0, 0,
-            -1, 1, 1, 0, 0,
-            -1, 1,-1, 0, 0,
-             1,-1, 1, 0, 0,
-            -1,-1, 1, 0, 0,
-            -1,-1,-1, 0, 0,
-            -1, 1, 1, 0, 0,
-            -1,-1, 1, 0, 0,
-             1,-1, 1, 0, 0,
-             1, 1, 1, 0, 0,
-             1,-1,-1, 0, 0,
-             1, 1,-1, 0, 0,
-             1,-1,-1, 0, 0,
-             1, 1, 1, 0, 0,
-             1,-1, 1, 0, 0,
-             1, 1, 1, 0, 0,
-             1, 1,-1, 0, 0,
-            -1, 1,-1, 0, 0,
-             1, 1, 1, 0, 0,
-            -1, 1,-1, 0, 0,
-            -1, 1, 1, 0, 0,
-             1, 1, 1, 0, 0,
-            -1, 1, 1, 0, 0,
-             1,-1, 1, 0, 0
-        )
+    self.subMesh = self.mesh:clone(true)
         :setPosition(0, 1, 0)
         :setScaling(.5, .5, .5)
         :setParent(self.mesh)
+
+    self.mesh:material():setColor(255, 128, 0)
 
     self.camVelX, self.camVelY, self.camVelZ, self.camSpeed = 0, 0, 0, 3
     self.camSensitivity = 0.001
@@ -152,7 +114,7 @@ end
 
 ------------------------------------------------------------
 function SceneTest3D:render()
-    require('nx.renderer').setCullMode('back')
+    require('nx.renderer')
         .setDepthFunc('lequal')
         .enableDepthTest(true)
         .enableDepthMask(true)
