@@ -36,7 +36,7 @@ local SceneTest3D = Scene:subclass('scene.test.3d')
 --------------------------------------------------------
 function SceneTest3D:load()
     self.camera = require('nx.camera3d')
-        :new(70, 16/9, -1, 1)
+        :new(70, 16/9, 1, -1000)
         :setPosition(0, 0, 3)
         -- :setRotation(0, 0, math.pi / 4)
         -- :setScaling(2, 2, 2)
@@ -152,8 +152,11 @@ end
 
 ------------------------------------------------------------
 function SceneTest3D:render()
-    require('nx.renderer').setCullMode('none')
+    require('nx.renderer').setCullMode('back')
+        .setDepthFunc('lequal')
         .enableDepthTest(true)
+        .enableDepthMask(true)
+        -- .setFillMode('wireframe')
 
     self.camera:clear(200, 200, 200)
 
