@@ -42,7 +42,15 @@ end
 ------------------------------------------------------------
 function Entity3D:_invalidate()
     self._matrix = nil
-    self._absMatrix = nil
+
+    if self._absMatrix then
+        self._absMatrix = nil
+        for i, child in pairs(self._children) do
+            child._absMatrix = nil
+        end
+    end
+
+    return self
 end
 
 ------------------------------------------------------------
@@ -87,36 +95,28 @@ end
 function Entity3D:setPosition(x, y, z)
     self._posX, self._posY, self._posZ = x, y, z
 
-    self:_invalidate()
-
-    return self
+    return self:_invalidate()
 end
 
 ------------------------------------------------------------
 function Entity3D:setRotation(x, y, z)
     self._rotX, self._rotY, self._rotZ = x, y, z
 
-    self:_invalidate()
-
-    return self
+    return self:_invalidate()
 end
 
 ------------------------------------------------------------
 function Entity3D:setScaling(x, y, z)
     self._scaleX, self._scaleY, self._scaleZ = x, y, z
 
-    self:_invalidate()
-
-    return self
+    return self:_invalidate()
 end
 
 ------------------------------------------------------------
 function Entity3D:setOrigin(x, y, z)
     self._originX, self._originY, self._originZ = x, y, z
 
-    self:_invalidate()
-
-    return self
+    return self:_invalidate()
 end
 
 ------------------------------------------------------------
@@ -144,9 +144,7 @@ function Entity3D:lookAt(targetX, targetY, targetZ, upX, upY, upZ)
     self._targetX, self._targetY, self._targetZ = targetX, targetY, targetZ
     self._upX, self._upY, self._upZ = upX or 0, upY or 1, upZ or 0
 
-    self:_invalidate()
-
-    return self
+    return self:_invalidate()
 end
 
 ------------------------------------------------------------
@@ -205,10 +203,10 @@ function Entity3D:matrix(absolute)
     end
 
     if absolute then
-        if not self._parent then
-            self._absMatrix = self._matrix
-        elseif not self._absMatrix or not self._parent._absMatrix then
-            self._absMatrix = self._matrix:clone():combine(self._parent:matrix(true))
+        if not self._absMatrix then
+            self._absMatrix = self._parent
+                and self._parent:matrix(true):clone():combine(self._matrix)
+                or  self._matrix
         end
 
         return self._absMatrix

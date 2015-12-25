@@ -42,10 +42,7 @@ function Camera2D:setCenter(x, y)
     self._centerX = x
     self._centerY = y
 
-    self._matrix = nil
-    self._invMatrix = nil
-
-    return self
+    return self:_invalidate()
 end
 
 ------------------------------------------------------------
@@ -53,10 +50,7 @@ function Camera2D:setSize(width, height)
     self._width = width
     self._height = height
 
-    self._matrix = nil
-    self._invMatrix = nil
-
-    return self
+    return self:_invalidate()
 end
 
 ------------------------------------------------------------
@@ -64,10 +58,7 @@ function Camera2D:setRotation(rad)
     self._rotation = rad % (math.pi * 2)
     if self._rotation < 0 then self._rotation = self._rotation + math.pi * 2 end
 
-    self._matrix = nil
-    self._invMatrix = nil
-
-    return self
+    return self:_invalidate()
 end
 
 ------------------------------------------------------------
@@ -85,10 +76,7 @@ function Camera2D:reset(x, y, width, height)
     self._height   = height
     self._rotation = 0
 
-    self._matrix    = nil
-    self._invMatrix = nil
-
-    return self
+    return self:_invalidate()
 end
 
 ------------------------------------------------------------
@@ -113,8 +101,8 @@ function Camera2D:zoom(factor, factor2)
 end
 
 ------------------------------------------------------------
-function Camera2D:matrix()
-    if not self._matrix then
+function Camera2D:projection()
+    if not self._projection then
         local cos = math.cos(self._rotation)
         local sin = math.sin(self._rotation)
         local tx  = self._centerX - self._centerX * cos - self._centerY * sin
@@ -125,22 +113,13 @@ function Camera2D:matrix()
         local y = -2 / self._height
 
         -- Rebuild the projection matrix
-        self._matrix = Matrix:new()
-        local m = self._matrix._cdata
+        self._projection = Matrix:new()
+        local m = self._projection._cdata
         m[0], m[4], m[12] =  x * cos, x * sin, x * tx - x * self._centerX
         m[1], m[5], m[13] = -y * sin, y * cos, y * ty - y * self._centerY
     end
 
-    return self._matrix
-end
-
-------------------------------------------------------------
-function Camera2D:invMatrix()
-    if not self._invMatrix then
-        self._invMatrix = self:matrix():inverse()
-    end
-
-    return self._invMatrix
+    return self._projection
 end
 
 ------------------------------------------------------------

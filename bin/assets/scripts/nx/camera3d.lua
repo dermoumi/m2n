@@ -40,7 +40,9 @@ end
 ------------------------------------------------------------
 function Camera3D:_invalidate()
     Entity3D._invalidate(self)
-    self._invMatrix = nil
+    Camera._invalidate(self)
+
+    return self
 end
 
 ------------------------------------------------------------
@@ -52,12 +54,12 @@ function Camera3D:reset(fov, aspect, near, far)
 end
 
 ------------------------------------------------------------
-function Camera3D:matrix()
-    if not self._matrix then
-        self._matrix = Matrix.fromPerspective(self._fov, self._aspect, self._near, self._far) 
+function Camera3D:projection()
+    if not self._projection then
+        self._projection = Matrix.fromPerspective(self._fov, self._aspect, self._near, self._far) 
 
         if self._targetX then
-            self._matrix
+            self._projection
                 :combine(Matrix.fromLookAt(
                     self._originX-self._posX, self._originY-self._posY, self._originZ-self._posZ,
                     self._targetX, self._targetY, self._targetZ,
@@ -65,7 +67,7 @@ function Camera3D:matrix()
                 ))
                 :combine(Matrix.fromScaling(self._scaleX, self._scaleY, self._scaleZ))
         else
-            self._matrix
+            self._projection
                 :combine(Matrix.fromTranslation(self._originX, self._originY, self._originZ))
                 :combine(Matrix.fromScaling(1/self._scaleX, 1/self._scaleY, 1/self._scaleZ))
                 :combine(Matrix.fromRotation(-self._rotX, -self._rotY, -self._rotZ))
@@ -73,16 +75,7 @@ function Camera3D:matrix()
         end
     end
 
-    return self._matrix
-end
-
-------------------------------------------------------------
-function Camera3D:invMatrix()
-    if not self._invMatrix then
-        self._invMatrix = self:matrix():inverse()
-    end
-
-    return self._invMatrix
+    return self._projection
 end
 
 ------------------------------------------------------------

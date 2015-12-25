@@ -45,7 +45,15 @@ end
 ------------------------------------------------------------
 function Entity2D:_invalidate()
     self._matrix = nil
-    self._absMatrix = nil
+
+    if self._absMatrix then
+        self._absMatrix = nil
+        for i, child in pairs(self._children) do
+            child._absMatrix = nil
+        end
+    end
+
+    return self
 end
 
 ------------------------------------------------------------
@@ -90,32 +98,28 @@ end
 function Entity2D:setPosition(x, y)
     self._posX, self._posY = x, y
 
-    self:_invalidate()
-    return self
+    return self:_invalidate()
 end
 
 ------------------------------------------------------------
 function Entity2D:setScaling(x, y)
     self._scaleX, self._scaleY = x, y
 
-    self:_invalidate()
-    return self
+    return self:_invalidate()
 end
 
 ------------------------------------------------------------
 function Entity2D:setRotation(rad)
     self._rotation = rad % (math.pi * 2)
 
-    self:_invalidate()
-    return self
+    return self:_invalidate()
 end
 
 ------------------------------------------------------------
 function Entity2D:setOrigin(x, y)
     self._originX, self._originY = x, y
 
-    self:_invalidate()
-    return self
+    return self:_invalidate()
 end
 
 ------------------------------------------------------------
@@ -213,16 +217,16 @@ function Entity2D:matrix(absolute)
     end
 
     if absolute then
-        if not self._parent then
-            self._absMatrix = self._matrix
-        elseif not self._absMatrix or not self._parent._absMatrix then
-            self._absMatrix = self._matrix:clone():combine(self._parent:matrix(true))
+        if not self._absMatrix then
+            self._absMatrix = self._parent
+                and self._parent:matrix(true):clone():combine(self._matrix)
+                or  self._matrix
         end
 
         return self._absMatrix
+    else
+        return self._matrix
     end
-
-    return self._matrix
 end
 
 ------------------------------------------------------------

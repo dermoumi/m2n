@@ -108,7 +108,7 @@ end
 
 ------------------------------------------------------------
 function SceneTitle:onKeyDown(scancode, keyCode, repeated)
-    if scancode == 'f2' then
+    if scancode == '2' then
         self:performTransition(Scene.push, 'scene.test.3d')
         -- Scene.push('scene.test.3d')
     elseif scancode == 'f10' then
@@ -125,12 +125,6 @@ function SceneTitle:onKeyDown(scancode, keyCode, repeated)
         end
     elseif scancode == '\\' then
         self:performTransition(Scene.goTo, 'scene.title')
-    elseif scancode == '1' then
-        Mouse.setCursor(self:cache('assets/cursor.png'), 4, 4)
-    elseif scancode == '2' then
-        Mouse.setCursor('default')
-    elseif scancode == '3' then
-        Mouse.setCursor('hand')
     elseif scancode == 'return' then
         print(Window.showMessageBox('test', 'helloworld!', {
             'ok',

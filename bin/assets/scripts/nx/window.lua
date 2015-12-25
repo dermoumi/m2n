@@ -125,7 +125,7 @@ local function checkFlags(flags)
     if flags.x == nil              then flags.x = 'undefined' end
     if flags.y == nil              then flags.y = 'undefined' end
     if flags.depthbits == nil      then flags.depthbits = 24 end
-    if flags.stencilbits == nil    then flags.stencilbits = 8 end
+    if flags.stencilbits == nil    then flags.stencilbits = 8 end   
     if flags.msaa == nil           then flags.msaa = 0 end
 
     -- Windowed mode and fullscreen don't mix up well

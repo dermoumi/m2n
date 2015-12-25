@@ -38,6 +38,14 @@ local ffi = require 'ffi'
 local C   = ffi.C
 
 ------------------------------------------------------------
+function Camera:_invalidate()
+    self._projection = nil
+    self._invProjection = nil
+
+    return self
+end
+
+------------------------------------------------------------
 function Camera:setViewport(left, top, width, height)
     self._vpX = left
     self._vpY = top
@@ -72,8 +80,17 @@ function Camera:renderbuffer()
 end
 
 ------------------------------------------------------------
-function Camera:matrix()
+function Camera:projection()
     return Matrix:new()
+end
+
+------------------------------------------------------------
+function Camera:invProjection()
+    if not self._invProjection then
+        self._invProjection = self:projection():inverse()
+    end
+
+    return self._invProjection
 end
 
 ------------------------------------------------------------

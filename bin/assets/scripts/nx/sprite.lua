@@ -180,7 +180,7 @@ function Sprite:_render(camera)
 
     local shader = self._shader or Sprite._defaultShader()
     shader:bind()
-    shader:setUniform('uProjMat', camera:matrix())
+    shader:setUniform('uProjMat', camera:projection())
     shader:setUniform('uTransMat', self:matrix(true))
     shader:setUniform('uColor', self:color(true, true))
     shader:setUniform('uTexSize', texW, texH)

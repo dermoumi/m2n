@@ -116,7 +116,7 @@ end
 function Mesh:_render(camera, context)
     local material = self._materials[context]
     if self._vertexBuffer and material then
-        material:_apply(camera:matrix(), self:matrix())
+        material:_apply(camera:projection(), self:matrix())
         
         Arraybuffer.setVertexbuffer(self._vertexBuffer, 0, 0, vertexSize)
         Arraybuffer.setIndexbuffer(self._indexBuffer, 16)

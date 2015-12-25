@@ -165,7 +165,7 @@ end
 
 ------------------------------------------------------------
 function SceneTest3D:onKeyDown(scancode, keyCode, repeated)
-    if scancode == 'f1' then
+    if scancode == '1' then
         self:performTransition(Scene.back)
     elseif scancode == 'w' then
         self.camVelZ = -self.camSpeed
