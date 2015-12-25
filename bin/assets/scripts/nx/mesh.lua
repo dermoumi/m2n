@@ -62,17 +62,17 @@ function Mesh:initialize()
 end
 
 ------------------------------------------------------------
-function Mesh:clone(cloneMaterials)
+function Mesh:clone(shareMaterials)
     local mesh = Mesh:new()
 
     mesh._vertexBuffer, mesh._vertexCount = self._vertexBuffer, self._vertexCount
     mesh._indexBuffer, mesh._indexCount = self._indexBuffer, self._indexCount
-    if cloneMaterials then
+    if shareMaterials then
+        mesh._materials = self._materials
+    else
         for context, material in pairs(self._materials) do
             mesh._materials[context] = material:clone()
         end
-    else
-        mesh._materials = self._materials
     end
 
     return mesh
@@ -141,7 +141,7 @@ end
 function Mesh:_render(camera, context)
     local material = self._materials[context]
     if self._vertexBuffer and material then
-        material:_apply(camera:projection(), self:matrix())
+        material:_apply(camera:projection(), self:matrix(true))
         
         Arraybuffer.setVertexbuffer(self._vertexBuffer, 0, 0, vertexSize)
         Arraybuffer.setIndexbuffer(self._indexBuffer, 16)

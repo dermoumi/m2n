@@ -82,7 +82,7 @@ function SceneTest3D:load()
              1,-1, 1, 0, 0
         )
     
-    self.subMesh = self.mesh:clone(true)
+    self.subMesh = self.mesh:clone()
         :setPosition(0, 1, 0)
         :setScaling(.5, .5, .5)
         :setParent(self.mesh)
@@ -104,6 +104,9 @@ end
 ------------------------------------------------------------
 function SceneTest3D:update(dt)
     local xRot, yRot, zRot = self.camera:rotation()
+
+    -- self.subMesh:rotate(0, math.pi * dt / 2, 0)
+    self.mesh:rotate(0, -math.pi * dt / 2, 0)
 
     self.camera:move(
         dt * (math.cos(yRot) * self.camVelX + math.sin(yRot) * self.camVelZ),
