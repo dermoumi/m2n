@@ -26,6 +26,7 @@
 --]]----------------------------------------------------------------------------
 
 local Matrix      = require 'nx.matrix'
+local Window      = require 'nx.window'
 local Entity3D    = require 'nx.entity3d'
 local Camera      = require 'nx._camera'
 
@@ -34,7 +35,8 @@ Camera3D:include(Entity3D)
 
 ------------------------------------------------------------
 function Camera3D:initialize(fov, aspect, near, far)
-    self:reset(fov, aspect, near, far)
+    self:setPerspective(fov, aspect, near, far)
+    Entity3D.initialize(self)
 end
 
 ------------------------------------------------------------
@@ -46,17 +48,57 @@ function Camera3D:_invalidate()
 end
 
 ------------------------------------------------------------
-function Camera3D:reset(fov, aspect, near, far)
-    self._fov, self._aspect, self._near, self._far = fov, aspect, near, far
-    Entity3D.initialize(self)
+function Camera3D:setView(type, a, b, c, d, e, f)
+    self._type, self._a, self._b, self._c, self._d, self._e, self._f = type, a, b, c, d, e, f
 
-    return self
+    return self:_invalidate()
+end
+
+------------------------------------------------------------
+function Camera3D:setPerspective(fov, aspect, near, far)
+    local w, h = Window.size()
+    return self:setView('perspective', fov or 70, aspect or w/h, near or 1, far or -1000)
+end
+
+------------------------------------------------------------
+function Camera3D:setOrtho(left, right, bottom, top, near, far)
+    if left then
+        return self:setView('ortho', left, right, bottom, top, near or 1, far or -1000)
+    else
+        local w, h = Window.size()
+        return self:setView('ortho', -w/h, w/h, 1, -1, 1, -1000)
+    end
+end
+
+------------------------------------------------------------
+function Camera3D:setFrustum(left, right, bottom, top, near, far)
+    if left then
+        return self:setView('frustum', left, right, bottom, top, near or 1, far or -1000)
+    else
+        local w, h = Window.size()
+        return self:setView('frustum', -w/h, w/h, 1, -1, 1, -1000)
+    end
+end
+
+------------------------------------------------------------
+function Camera3D:view()
+    return self._type, self._a, self._b, self._c, self._d, self._e, self._f
 end
 
 ------------------------------------------------------------
 function Camera3D:projection()
     if not self._projection then
-        self._projection = Matrix.fromPerspective(self._fov, self._aspect, self._near, self._far) 
+        if self._type == 'perspective' then
+            self._projection = Matrix.fromPerspective(self._a, self._b, self._c, self._d)
+        elseif self._type == 'ortho' then
+            self._projection = Matrix.fromOrtho(
+                self._a, self._b, self._c, self._d, self._e, self._f
+            )
+        elseif self._type == 'frustum' then
+            self._projection = Matrix.fromFrustum(
+                self._a, self._b, self._c, self._d, self._e, self._f
+            )
+        end
 
         if self._targetX then
             self._projection

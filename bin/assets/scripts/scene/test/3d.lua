@@ -35,8 +35,7 @@ local SceneTest3D = Scene:subclass('scene.test.3d')
 
 --------------------------------------------------------
 function SceneTest3D:load()
-    self.camera = require('nx.camera3d')
-        :new(70, 16/9, 1, -1000)
+    self.camera = require('nx.camera3d'):new()
         :setPosition(0, 0, 3)
         -- :setRotation(0, 0, math.pi / 4)
         -- :setScaling(2, 2, 2)
@@ -103,16 +102,32 @@ end
 
 ------------------------------------------------------------
 function SceneTest3D:update(dt)
-    local xRot, yRot, zRot = self.camera:rotation()
-
-    -- self.subMesh:rotate(0, math.pi * dt / 2, 0)
     self.mesh:rotate(0, -math.pi * dt / 2, 0)
+    -- self.subMesh:rotate(0, math.pi * dt / 2, 0)
 
-    self.camera:move(
-        dt * (math.cos(yRot) * self.camVelX + math.sin(yRot) * self.camVelZ),
-        self.camVelY * dt,
-        dt * (math.cos(yRot) * self.camVelZ - math.sin(yRot) * self.camVelX)
-    )
+    if self.camVelX ~= 0 or self.camVelY ~= 0 or self.camVelZ ~= 0 then
+        local xRot, yRot, zRot = self.camera:rotation()
+
+        self.camera:move(
+            dt * (math.cos(yRot) * self.camVelX + math.sin(yRot) * self.camVelZ),
+            self.camVelY * dt,
+            dt * (math.cos(yRot) * self.camVelZ - math.sin(yRot) * self.camVelX)
+        )
+    end
+
+    local fovSpeed = 0
+    if Keyboard.scancodeDown('[') then
+        fovSpeed = 1
+    elseif Keyboard.scancodeDown(']') then
+        fovSpeed = -1
+    else
+        fovSpeed = 0
+    end
+
+    if fovSpeed ~= 0 then
+        local type, fov, aspect, near, far = self.camera:view()
+        self.camera:setPerspective(fov+fovSpeed*dt, aspect, near, far)
+    end
 end
 
 ------------------------------------------------------------
@@ -130,6 +145,8 @@ end
 
 ------------------------------------------------------------
 function SceneTest3D:onKeyDown(scancode, keyCode, repeated)
+    if repeated then return end
+
     if scancode == '1' then
         self:performTransition(Scene.back)
     elseif scancode == 'w' then
@@ -161,6 +178,17 @@ function SceneTest3D:onKeyUp(scancode, keyCode)
         self.camVelZ = Keyboard.scancodeDown('w') and -self.camSpeed or 0
     elseif scancode == 'space' then
         self.camVelY = Keyboard.scancodeDown('left ctrl') and -self.camSpeed or 0
+    elseif scancode == 'tab' then
+        if self.camera:view() == 'perspective' then
+            self.camera:setOrtho()
+        else
+            self.camera:setPerspective()
+        end
+    elseif scancode == 'left shift' then
+        local type, fov, aspect, near, far = self.camera:view()
+        local ymax = near * math.tan(fov * math.pi / 360)
+        local xmax = ymax * aspect
+        self.camera:setFrustum(-xmax, xmax, -ymax, ymax, near, far)
     end
 end
 
