@@ -148,4 +148,12 @@ function Camera2D:fillFsQuad(r, g, b, a, blendMode)
 end
 
 ------------------------------------------------------------
+function Camera2D:apply()
+    Camera.apply(self)
+
+    Graphics.enableDepthTest(false)
+        .enableDepthMask(false)
+end
+
+------------------------------------------------------------
 return Camera2D

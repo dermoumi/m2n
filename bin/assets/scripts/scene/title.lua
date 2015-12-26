@@ -99,9 +99,6 @@ end
 
 ------------------------------------------------------------
 function SceneTitle:render()
-    Graphics.enableDepthTest(false)
-        .enableDepthMask(false)
-
     self:view():clear()
 
     self:view():draw(self.text)
