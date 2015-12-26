@@ -25,8 +25,8 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
+local Text     = require 'nx.graphics.text'
 local GameFont = require 'game.font'
-local Text     = require 'nx.text'
 local Scene    = require 'scene'
 
 local SceneLoad = Scene:subclass('scene._load')

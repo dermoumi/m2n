@@ -25,74 +25,47 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-local Cache = {}
+local Font = require 'nx.graphics.font'
 
-local Log = require 'nx.util.log'
-
-------------------------------------------------------------
-local items = {}
+local FontStack = Font:subclass('nx.graphics.fontstack')
 
 ------------------------------------------------------------
-function Cache.get(id, loadFunc, addCount)
-    local item = items[id]
+local ffi = require 'ffi'
+local C = ffi.C
 
-    -- If item does not exist, try to load it using loadFunc
-    if not item then
-        -- If no load func, abandon
-        if not loadFunc then
-            return nil, 'Invalid loading function'
+ffi.cdef [[
+    typedef struct NxFont NxFont;
+
+    NxFont* nxFontStackNew();
+    void nxFontStackAddFont(NxFont*, const NxFont*, bool);
+    void nxFontStackAddStack(NxFont*, const NxFont*, bool);
+]]
+
+------------------------------------------------------------
+function FontStack:initialize()
+    local handle = C.nxFontStackNew()
+    self._cdata = ffi.gc(handle, C.nxFontRelease)
+    self._fonts = {}
+end
+
+------------------------------------------------------------
+function FontStack:addFont(font, prepend)
+    if self._cdata ~= nil then
+        if font:isInstanceOf(FontStack) then
+            -- A font stack, append its child fonts instead
+            for i, v in ipairs(font._fonts) do
+                self._fonts[#self._fonts + 1] = v
+            end
+            C.nxFontStackAddStack(self._cdata, font._cdata, not not prepend)
+        else
+            -- A single font
+            self._fonts[#self._fonts] = font
+            C.nxFontStackAddFont(self._cdata, font._cdata, not not prepend)
         end
-
-        -- Try to load the object
-        local newObj, err = loadFunc()
-        if not newObj then
-            return nil, err or 'An error occurred while loading "' .. id .. '"'
-        end
-
-        -- Add the new object to the cache
-        item = Cache.add(id, newObj)
     end
 
-    -- If requested, increment the load count of the item
-    if addCount then
-        item.loadCount = item.loadCount + 1
-    end
-
-    -- Return the item's object
-    return item.obj
+    return self
 end
 
 ------------------------------------------------------------
-function Cache.release(id)
-    local item = items[id]
-    if not item then return end
-
-    -- Decrement load count
-    item.loadCount = item.loadCount - 1
-
-    -- If load count reaches zero, remove item from list
-    if item.loadCount <= 0 then
-        Log.info('Removing from cache: ' .. id)
-
-        items[id] = nil
-
-        -- If object can be released, do that
-        if item.obj.release then item.obj:release() end
-    end
-end
-
-------------------------------------------------------------
-function Cache.add(id, newObj)
-    Log.info('Adding to cache: ' .. id)
-
-    local item = {
-        loadCount = 0,
-        obj = newObj
-    }
-
-    items[id] = item
-    return item
-end
-
-------------------------------------------------------------
-return Cache
+return FontStack

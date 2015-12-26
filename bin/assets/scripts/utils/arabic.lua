@@ -482,7 +482,7 @@ end
 
 local function reshape(str, utf8)
     if type(str) == 'string' then
-        str = require('nx.unicode').utf8To32(str)
+        str = require('nx.util.unicode').utf8To32(str)
     end
 
     if not str[1] then return {} end
@@ -517,7 +517,7 @@ local function reshape(str, utf8)
         end
     end
 
-    return utf8 and require('nx.unicode').utf32To8(str) or str
+    return utf8 and require('nx.util.unicode').utf32To8(str) or str
 end
 
 return reshape

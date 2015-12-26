@@ -25,11 +25,11 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-local Nx       = require 'nx'
-local Log      = require 'nx.log'
+local System   = require 'nx.system'
+local Log      = require 'nx.util.log'
+local Events   = require 'nx.window.events'
+local Graphics = require 'nx.graphics'
 local Window   = require 'nx.window'
-local Events   = require 'nx.events'
-local Renderer = require 'nx.renderer'
 local Audio    = require 'nx.audio'
 local Scene    = require 'scene'
 
@@ -53,7 +53,7 @@ end
 Window.create("m2n", 1280, 720, graphicsFlags or {vsync = false})
 
 -- Initialize renderer
-Renderer.init()
+Graphics.init()
 
 -- Set window icon
 Window.setIcon('assets/icon.png')
@@ -69,7 +69,7 @@ end
 local totalTime = 0
 local fixedFrameTime = 1/30
 Window.setFramerateLimit(
-    -- Nx.platform('android', 'ios') and 1/30 or 1/60
+    -- System.platform('android', 'ios') and 1/30 or 1/60
 )
 
 ------------------------------------------------------------
@@ -114,9 +114,9 @@ while Window.isOpen() do
     end
     totalTime = totalTime % fixedFrameTime
 
-    Renderer.begin()
+    Graphics.begin()
     scene:__render()
-    Renderer.finish()
+    Graphics.finish()
 
     Window.display()
 

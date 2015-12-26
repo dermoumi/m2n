@@ -25,74 +25,70 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-local Cache = {}
+local class = require 'nx.class'
+local Log   = require 'nx.util.log'
+local LuaVM = require 'nx.system.luavm'
 
-local Log = require 'nx.util.log'
+local Thread = class 'nx.system.thread'
 
 ------------------------------------------------------------
-local items = {}
+local ffi = require 'ffi'
+local C = ffi.C
+
+ffi.cdef [[
+    typedef struct lua_State lua_State;
+    typedef struct NxThreadObj NxThreadObj;
+
+    NxThreadObj* nxThreadCreate(lua_State*);
+    void nxThreadRelease(NxThreadObj*);
+    bool nxThreadWait(NxThreadObj*);
+    void nxThreadDetach(NxThreadObj*);
+    bool nxThreadIsMain();
+]]
 
 ------------------------------------------------------------
-function Cache.get(id, loadFunc, addCount)
-    local item = items[id]
-
-    -- If item does not exist, try to load it using loadFunc
-    if not item then
-        -- If no load func, abandon
-        if not loadFunc then
-            return nil, 'Invalid loading function'
-        end
-
-        -- Try to load the object
-        local newObj, err = loadFunc()
-        if not newObj then
-            return nil, err or 'An error occurred while loading "' .. id .. '"'
-        end
-
-        -- Add the new object to the cache
-        item = Cache.add(id, newObj)
-    end
-
-    -- If requested, increment the load count of the item
-    if addCount then
-        item.loadCount = item.loadCount + 1
-    end
-
-    -- Return the item's object
-    return item.obj
+function Thread.static.isMain()
+    return C.nxThreadIsMain()
 end
 
 ------------------------------------------------------------
-function Cache.release(id)
-    local item = items[id]
-    if not item then return end
+function Thread:initialize(func, ...)
+    self._vm = LuaVM:new()
+    self._vm:push(func, ...)
 
-    -- Decrement load count
-    item.loadCount = item.loadCount - 1
-
-    -- If load count reaches zero, remove item from list
-    if item.loadCount <= 0 then
-        Log.info('Removing from cache: ' .. id)
-
-        items[id] = nil
-
-        -- If object can be released, do that
-        if item.obj.release then item.obj:release() end
+    local handle = C.nxThreadCreate(self._vm._cdata)
+    if handle == nil then
+        Log.warning('Unable to create a new thread')
+        self._vm:release()
+        self._vm = nil
     end
+
+    self._cdata = ffi.gc(handle, C.nxThreadRelease)
 end
 
 ------------------------------------------------------------
-function Cache.add(id, newObj)
-    Log.info('Adding to cache: ' .. id)
+function Thread:join()
+    local ok = C.nxThreadWait(self._cdata)
+    if ok then
+        local retCount = self._vm:getTop()
+        return self._vm:pop(retCount, true)
+    end
 
-    local item = {
-        loadCount = 0,
-        obj = newObj
-    }
-
-    items[id] = item
-    return item
+    -- If something's wrong
+    return nil, self._vm:pop(1, true)
 end
 
 ------------------------------------------------------------
-return Cache
+function Thread:detach()
+    C.nxThreadDetach(ffi.gc(self._cdata, nil))
+    ffi.gc(self._vm._cdata, nil)
+end
+
+------------------------------------------------------------
+function Thread:release()
+    if self._cdata == nil then return end
+    C.nxThreadRelease(ffi.gc(self._cdata, nil))
+end
+
+------------------------------------------------------------
+return Thread

@@ -25,74 +25,63 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-local Cache = {}
+local Image   = require 'nx.graphics.image'
+local Texture = require 'nx.graphics.texture'
 
-local Log = require 'nx.util.log'
-
-------------------------------------------------------------
-local items = {}
+local Texture2D = Texture:subclass('nx.graphics.texture2d')
 
 ------------------------------------------------------------
-function Cache.get(id, loadFunc, addCount)
-    local item = items[id]
+function Texture2D:initialize(a, b, c, d)
+    Texture.initialize(self)
 
-    -- If item does not exist, try to load it using loadFunc
-    if not item then
-        -- If no load func, abandon
-        if not loadFunc then
-            return nil, 'Invalid loading function'
-        end
-
-        -- Try to load the object
-        local newObj, err = loadFunc()
-        if not newObj then
-            return nil, err or 'An error occurred while loading "' .. id .. '"'
-        end
-
-        -- Add the new object to the cache
-        item = Cache.add(id, newObj)
-    end
-
-    -- If requested, increment the load count of the item
-    if addCount then
-        item.loadCount = item.loadCount + 1
-    end
-
-    -- Return the item's object
-    return item.obj
-end
-
-------------------------------------------------------------
-function Cache.release(id)
-    local item = items[id]
-    if not item then return end
-
-    -- Decrement load count
-    item.loadCount = item.loadCount - 1
-
-    -- If load count reaches zero, remove item from list
-    if item.loadCount <= 0 then
-        Log.info('Removing from cache: ' .. id)
-
-        items[id] = nil
-
-        -- If object can be released, do that
-        if item.obj.release then item.obj:release() end
+    if type(a) == 'number' then
+        self:create(a, b, c, d)
+    elseif a then
+        self:load(a, b, c)
     end
 end
 
 ------------------------------------------------------------
-function Cache.add(id, newObj)
-    Log.info('Adding to cache: ' .. id)
-
-    local item = {
-        loadCount = 0,
-        obj = newObj
-    }
-
-    items[id] = item
-    return item
+function Texture2D:create(width, height, hasMips, mipMap)
+    return Texture.create(self, '2d', width, height, 1, hasMips, mipMap)
 end
 
 ------------------------------------------------------------
-return Cache
+function Texture2D:load(image, hasMips, mipMap)
+    local localImage = false
+
+    if type(image) == 'string' then
+        image = Image:new(image)
+        if not image then return false, err end
+        localImage = true
+    end
+
+    local width, height = image:size()
+
+    self:create(width, height, hasMips, mipMap)
+        :setData(image:data())
+
+    if localImage then image:release() end
+
+    return self
+end
+
+------------------------------------------------------------
+function Texture2D:setData(data, a, b, c, d, e)
+    local x, y, width, height, mipLevel
+    if not b then
+        x, y, width, height, mipLevel = -1, -1, -1, -1, a
+    else
+        x, y, width, height, mipLevel = a, b, c, d, e
+    end
+
+    return Texture.setData(self, data, x, y, width, height, 1, mipLevel)
+end
+
+------------------------------------------------------------
+function Texture2D:data(mipLevel)
+    return Texture.data(self, 1, mipLevel)
+end
+
+------------------------------------------------------------
+return Texture2D

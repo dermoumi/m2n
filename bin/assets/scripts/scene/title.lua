@@ -25,9 +25,9 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-local Log      = require 'nx.log'
-local Renderer = require 'nx.renderer'
-local Mouse    = require 'nx.mouse'
+local Log      = require 'nx.util.log'
+local Mouse    = require 'nx.window.mouse'
+local Graphics = require 'nx.graphics'
 local Window   = require 'nx.window'
 local Scene    = require 'scene'
 
@@ -36,7 +36,7 @@ local SceneTitle = Scene:subclass('scene.title')
 ------------------------------------------------------------
 function SceneTitle:initialize(firstRun)
     if firstRun then
-        local caps = Renderer.getCapabilities()
+        local caps = Graphics.getCapabilities()
 
         Log.info('GPU Capabilities:')
         for i, v in pairs(caps) do
@@ -48,11 +48,11 @@ function SceneTitle:initialize(firstRun)
         })
     end
     
-    self:worker():addFile('nx.image', 'assets/pasrien.png')
-    self:worker():addFile('nx.image', 'assets/cursor.png')
-    self:worker():addFile('nx.audiosource', 'assets/test.wav')
+    self:worker():addFile('nx.graphics.image', 'assets/pasrien.png')
+    self:worker():addFile('nx.graphics.image', 'assets/cursor.png')
+    self:worker():addFile('nx.audio.source', 'assets/test.wav')
 
-    self.musicSource = require('nx.audiosource'):new()
+    self.musicSource = require('nx.audio.source'):new()
     self:worker():addTask(function(music)
         music:open('assets/undersodiumbulb.ogg')
     end, self.musicSource)
@@ -60,23 +60,23 @@ end
 
 ------------------------------------------------------------
 function SceneTitle:load()
-    self.text = require('nx.text')
+    self.text = require('nx.graphics.text')
         :new('', require 'game.font', 14)
         :setColor(255, 128, 0)
         :setPosition(10, 10)
 
-    self.sprite = require('nx.sprite')
+    self.sprite = require('nx.graphics.sprite')
         :new(self:cache('assets/pasrien.png'))
         :setPosition(100, 100)
         -- :addChild(self.text)
 
-    self.voiceGroup = require('nx.audiovoicegroup'):new()
-    self.echoFilter = require('nx.audioechofilter'):new()
+    self.voiceGroup = require('nx.audio.voicegroup'):new()
+    self.echoFilter = require('nx.audio.echofilter'):new()
         :setParams(.5, .5)
 
-    self.voiceGroup = require('nx.audiovoicegroup'):new()
+    self.voiceGroup = require('nx.audio.voicegroup'):new()
 
-    self.audiobus = require('nx.audiobus'):new()
+    self.audiobus = require('nx.audio.bus'):new()
         -- :setFilter(self.echoFilter)
     self.audiobus:play()
 
@@ -94,13 +94,12 @@ end
 
 ------------------------------------------------------------
 function SceneTitle:update(dt)
-    self.text:setString('Current FPS: %i', require('nx.window').currentFPS())
+    self.text:setString('Current FPS: %i', Window.currentFPS())
 end
 
 ------------------------------------------------------------
 function SceneTitle:render()
-    require('nx.renderer')
-        .enableDepthTest(false)
+    Graphics.enableDepthTest(false)
         .enableDepthMask(false)
 
     self:view():clear()
@@ -116,11 +115,11 @@ function SceneTitle:onKeyDown(scancode, keyCode, repeated)
         self:performTransition(Scene.push, 'scene.test.3d')
         -- Scene.push('scene.test.3d')
     elseif scancode == 'f10' then
-        require('nx.window').create('m2n-', 1280, 720, {})
+        Window.create('m2n-', 1280, 720, {})
     elseif scancode == 'f11' then
-        require('nx.window').create('m2n-', 1920, 1080, {fullscreen = true, msaa = 4})
+        Window.create('m2n-', 1920, 1080, {fullscreen = true, msaa = 4})
     elseif scancode == 'f12' then
-        require('nx.window').create('m2n-', 1024, 720, {fullscreen = true, msaa = 8})
+        Window.create('m2n-', 1024, 720, {fullscreen = true, msaa = 8})
     elseif scancode == 'f9' then
         if Keyboard.modKeyDown('ctrl') then
             collectgarbage('collect')

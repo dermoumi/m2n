@@ -25,74 +25,38 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-local Cache = {}
+local AudioFilter = require 'nx.audio._filter'
 
-local Log = require 'nx.util.log'
-
-------------------------------------------------------------
-local items = {}
+local AudioBiquadResonantFilter = AudioFilter:subclass('nx.audio.biquadresonantfilter')
 
 ------------------------------------------------------------
-function Cache.get(id, loadFunc, addCount)
-    local item = items[id]
+local ffi = require 'ffi'
+local C = ffi.C
 
-    -- If item does not exist, try to load it using loadFunc
-    if not item then
-        -- If no load func, abandon
-        if not loadFunc then
-            return nil, 'Invalid loading function'
-        end
+------------------------------------------------------------
+local toFilterType = {
+    [0] = 'none',
+    [1] = 'lowpass',
+    [2] = 'highpass',
+    [3] = 'bandpass'
+}
 
-        -- Try to load the object
-        local newObj, err = loadFunc()
-        if not newObj then
-            return nil, err or 'An error occurred while loading "' .. id .. '"'
-        end
-
-        -- Add the new object to the cache
-        item = Cache.add(id, newObj)
-    end
-
-    -- If requested, increment the load count of the item
-    if addCount then
-        item.loadCount = item.loadCount + 1
-    end
-
-    -- Return the item's object
-    return item.obj
+------------------------------------------------------------
+function AudioBiquadResonantFilter:initialize()
+    local handle = C.nxAudioFilterBiquadResonantCreate()
+    self._cdata = ffi.gc(handle, C.nxAudioFilterRelease)
 end
 
 ------------------------------------------------------------
-function Cache.release(id)
-    local item = items[id]
-    if not item then return end
-
-    -- Decrement load count
-    item.loadCount = item.loadCount - 1
-
-    -- If load count reaches zero, remove item from list
-    if item.loadCount <= 0 then
-        Log.info('Removing from cache: ' .. id)
-
-        items[id] = nil
-
-        -- If object can be released, do that
-        if item.obj.release then item.obj:release() end
+function AudioBiquadResonantFilter:setParams(filterType, samplerate, frequency, resonance)
+    if self._cdata ~= nil then
+        C.nxAudioFilterBiquadResonantSetParams(
+            self._cdata, toFilterType[filterType] or 0, samplerate, frequency, resonance
+        )
     end
+    
+    return self
 end
 
 ------------------------------------------------------------
-function Cache.add(id, newObj)
-    Log.info('Adding to cache: ' .. id)
-
-    local item = {
-        loadCount = 0,
-        obj = newObj
-    }
-
-    items[id] = item
-    return item
-end
-
-------------------------------------------------------------
-return Cache
+return AudioBiquadResonantFilter

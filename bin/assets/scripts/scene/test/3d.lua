@@ -25,17 +25,17 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
+local Keyboard = require 'nx.window.keyboard'
+local Mouse    = require 'nx.window.mouse'
 local Window   = require 'nx.window'
-local Keyboard = require 'nx.keyboard'
-local Mouse    = require 'nx.mouse'
-local Mesh     = require 'nx.mesh'
+local Mesh     = require 'nx.graphics.mesh'
 local Scene    = require 'scene'
 
 local SceneTest3D = Scene:subclass('scene.test.3d')
 
 --------------------------------------------------------
 function SceneTest3D:load()
-    self.camera = require('nx.camera3d'):new()
+    self.camera = require('nx.graphics.camera3d'):new()
         :setPosition(0, 0, 3)
         -- :setRotation(0, 0, math.pi / 4)
         -- :setScaling(2, 2, 2)
@@ -132,7 +132,7 @@ end
 
 ------------------------------------------------------------
 function SceneTest3D:render()
-    require('nx.renderer')
+    require('nx.graphics')
         .setDepthFunc('lequal')
         .enableDepthTest(true)
         .enableDepthMask(true)

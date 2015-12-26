@@ -25,9 +25,9 @@
  For more information, please refer to <http://unlicense.org>
  --]]----------------------------------------------------------------------------
 
-local VectorFont = require 'nx.vectorfont'
-local FontStack  = require 'nx.fontstack'
-local Log        = require 'nx.log'
+local VectorFont = require 'nx.graphics.vectorfont'
+local FontStack  = require 'nx.graphics.fontstack'
+local Log        = require 'nx.util.log'
 local GameCache  = require 'game.cache'
 
 ------------------------------------------------------------

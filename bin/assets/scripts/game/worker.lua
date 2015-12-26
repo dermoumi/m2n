@@ -25,14 +25,11 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-------------------------------------------------------------
--- Allows to do tasks and loads files in threads
-------------------------------------------------------------
-local class = require 'nx.class'
-local Worker = class 'Worker'
+local ffi    = require 'ffi'
+local class  = require 'nx.class'
+local Thread = require 'nx.system.thread'
 
-local Thread = require 'nx.thread'
-local ffi = require 'ffi'
+local Worker = class 'Worker'
 
 ------------------------------------------------------------
 local loaderFunc = {}
