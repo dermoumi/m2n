@@ -109,7 +109,7 @@ function Camera3D:projection()
                 ))
                 :combine(Matrix.fromScaling(self._scaleX, self._scaleY, self._scaleZ))
         else
-            self._projection:combine(self:matrix():inverse())
+            self._projection:combine(self:matrix(true):inverse())
         end
     end
 

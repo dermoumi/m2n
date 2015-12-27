@@ -46,7 +46,7 @@ function Entity3D:_invalidate()
     if self._absMatrix then
         self._absMatrix = nil
         for i, child in pairs(self._children) do
-            child._absMatrix = nil
+            child:_invalidate()
         end
     end
 

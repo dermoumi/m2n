@@ -29,14 +29,21 @@ local Keyboard = require 'nx.window.keyboard'
 local Mouse    = require 'nx.window.mouse'
 local Window   = require 'nx.window'
 local Mesh     = require 'nx.graphics.mesh'
+local Entity3D = require 'nx.graphics.entity3d'
 local Scene    = require 'scene'
 
 local SceneTest3D = Scene:subclass('scene.test.3d')
 
+local Node = require('nx.class')('node')
+Node:include(Entity3D)
+
 --------------------------------------------------------
 function SceneTest3D:load()
+    self.player = Node:new()
+        -- :setPosition(0, 0, 3)
+
     self.camera = require('nx.graphics.camera3d'):new()
-        :setPosition(0, 0, 3)
+        :setParent(self.player)
         -- :setRotation(0, 0, math.pi / 4)
         -- :setScaling(2, 2, 2)
         -- :lookAt(0, 0, 0)
@@ -80,6 +87,7 @@ function SceneTest3D:load()
             -1, 1, 1, 0, 0,
              1,-1, 1, 0, 0
         )
+        :setPosition(0, 0, -3)
     
     self.subMesh = self.mesh:clone()
         :setPosition(0, 1, 0)
@@ -106,8 +114,8 @@ function SceneTest3D:update(dt)
     self.subMesh:rotate(0, math.pi * dt / 2, 0)
 
     if self.camVelX ~= 0 or self.camVelY ~= 0 or self.camVelZ ~= 0 then
-        local q = self.camera:quaternion()
-        self.camera:move(q:apply(self.camVelX * dt, self.camVelY * dt, self.camVelZ * dt))
+        local q = self.player:quaternion()
+        self.player:move(q:apply(self.camVelX * dt, self.camVelY * dt, self.camVelZ * dt))
     end
 end
 
@@ -164,7 +172,8 @@ end
 
 ------------------------------------------------------------
 function SceneTest3D:onMouseMotion(x, y, xRel, yRel)
-    self.camera:rotate(-yRel * self.camSensitivity, -xRel * self.camSensitivity, 0)
+    self.player:rotate(0, -xRel * self.camSensitivity, 0)
+    self.camera:rotate(-yRel * self.camSensitivity, 0, 0)
 end
 
 ------------------------------------------------------------
