@@ -25,8 +25,9 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-local ffi   = require 'ffi'
-local class = require 'nx.class'
+local ffi        = require 'ffi'
+local class      = require 'nx.class'
+local Quaternion = require 'nx.graphics.quaternion'
 
 local Matrix = class 'nx.graphics.matrix'
 
@@ -58,10 +59,36 @@ function Matrix.static.fromScaling(x, y, z)
 end
 
 ------------------------------------------------------------
-function Matrix.static.fromRotation(x, y, z)
-    return Matrix.fromXRotation(x)
-        :combine(Matrix.fromYRotation(y))
-        :combine(Matrix.fromZRotation(z))
+function Matrix.static.fromRotation(x, y, z, w)
+    -- Get quaternion
+    if not y then
+        local q = x
+        x, y, z, w = q.x, q.y, q.z, q.w
+    elseif not w then
+        local q = Quaternion:new(x, y, z)
+        x, y, z, w = q.x, q.y, q.z, q.w
+    end
+
+    -- Calculate coefficients
+    local x2, y2, z2 = x+x,  y+y,  z+z
+    local xx, xy, xz = x*x2, x*y2, x*z2
+    local yy, yz, zz = y*y2, y*z2, z*z2
+    local wx, wy, wz = w*x2, w*y2, w*z2
+
+    local mat = Matrix:new()
+    local m = mat._cdata
+
+    m[0]  = 1 - yy - zz
+    m[1]  = xy + wz
+    m[2]  = xz - wy
+    m[4]  = xy - wz
+    m[5]  = 1 - xx - zz
+    m[6]  = yz + wx
+    m[8]  = xz + wy
+    m[9]  = yz - wx
+    m[10] = 1 - xx - yy
+
+    return mat
 end
 
 ------------------------------------------------------------
@@ -91,7 +118,7 @@ function Matrix.static.fromYRotation(rad)
 
     return mat
 end
-
+    
 ------------------------------------------------------------
 function Matrix.static.fromZRotation(rad)
     local mat  = Matrix:new()
