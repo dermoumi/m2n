@@ -25,15 +25,16 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-local Matrix = require 'nx.graphics.matrix'
+local Matrix     = require 'nx.util.matrix'
+local Quaternion = require 'nx.util.quaternion'
 
 local Entity3D = {}
 
 ------------------------------------------------------------
 function Entity3D:initialize()
     self._posX, self._posY, self._posZ = 0, 0, 0
-    self._rotX, self._rotY, self._rotZ = 0, 0, 0
     self._scaleX, self._scaleY, self._scaleZ = 1, 1, 1
+    self._quat = Quaternion:new(0, 0, 0)
 
     self._children = {}
 end
@@ -98,8 +99,12 @@ function Entity3D:setPosition(x, y, z)
 end
 
 ------------------------------------------------------------
-function Entity3D:setRotation(x, y, z)
-    self._rotX, self._rotY, self._rotZ = x, y, z
+function Entity3D:setRotation(x, y, z, w)
+    if not y then
+        self._quat = x:clone()
+    else
+        self._quat = Quaternion:new(x, y, z, w)
+    end
 
     return self:_invalidate()
 end
@@ -117,8 +122,14 @@ function Entity3D:move(x, y, z)
 end
 
 ------------------------------------------------------------
-function Entity3D:rotate(x, y, z)
-    return self:setRotation(self._rotX + x, self._rotY + y, self._rotZ + z)
+function Entity3D:rotate(x, y, z, w)
+    if not y then
+        self._quat:combine(x)
+    else
+        self._quat:combine(Quaternion:new(x, y, z, w))
+    end
+
+    return self:_invalidate()
 end
 
 ------------------------------------------------------------
@@ -144,13 +155,17 @@ function Entity3D:position(absolute)
 end
 
 ------------------------------------------------------------
-function Entity3D:rotation(absolute)
+function Entity3D:quaternion(absolute)
     if absolute and self._parent then
-        local rotX, rotY, rotZ = self._parent:rotation(true)
-        return self._rotX + rotX, self._rotY + rotY, self._rotZ + rotZ
+        return self._parent:quaternion(true):clone():combine(self._quat)
     end
 
-    return self._rotX, self._rotY, self._rotZ
+    return self._quat
+end
+
+------------------------------------------------------------
+function Entity3D:rotation(absolute)
+    return self:quaternion(absolute):angles()
 end
 
 ------------------------------------------------------------
@@ -175,7 +190,7 @@ function Entity3D:matrix(absolute)
     -- Calculate relative transformation
     if not self._matrix then
         self._matrix = Matrix.fromTranslation(self._posX, self._posY, self._posZ)
-            :combine(Matrix.fromRotation(self._rotX, self._rotY, self._rotZ))
+            :combine(Matrix.fromQuaternion(self._quat))
             :combine(Matrix.fromScaling(self._scaleX, self._scaleY, self._scaleZ))
     end
 

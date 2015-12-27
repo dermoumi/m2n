@@ -26,7 +26,7 @@
 --]]----------------------------------------------------------------------------
 
 local Graphics    = require 'nx.graphics'
-local Matrix      = require 'nx.graphics.matrix'
+local Matrix      = require 'nx.util.matrix'
 local Window      = require 'nx.window'
 local Camera      = require 'nx.graphics._camera'
 

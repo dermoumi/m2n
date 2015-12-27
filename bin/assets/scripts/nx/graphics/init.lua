@@ -87,7 +87,7 @@ ffi.cdef [[
 ------------------------------------------------------------
 local vertexLayouts = {}
 local defaultShaders = {}
-local identityMatrix = require('nx.graphics.matrix'):new()
+local identityMatrix = require('nx.util.matrix'):new()
 local defaultTexture, vbFsQuad, caps
 
 local toFillMode = {

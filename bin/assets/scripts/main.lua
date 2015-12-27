@@ -25,6 +25,16 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
+do
+    local q1 = require('nx.util.quaternion'):new(0, 0, math.pi/2)
+    local q2 = require('nx.util.quaternion'):new(math.pi/2, math.pi/2, -math.pi/2)
+    local x, y, z = q1:angles()
+    print(x/math.pi, y/math.pi, z/math.pi)
+    local x, y, z = q2:angles()
+    print(x/math.pi, y/math.pi, z/math.pi)
+    -- return 0
+end
+
 local System   = require 'nx.system'
 local Log      = require 'nx.util.log'
 local Events   = require 'nx.window.events'

@@ -27,11 +27,13 @@
 
 local class = require 'nx.class'
 
-local Quaternion = class 'nx.graphics.quaternion'
+local Quaternion = class 'nx.util.quaternion'
 
 ------------------------------------------------------------
 function Quaternion:initialize(x, y, z, w)
-    if w then
+    if not x then
+        self.x, self.y, self.z, self.w = 0, 0, 0, 0
+    elseif w then
         self.x, self.y, self.z, self.w = x, y, z, w
     else
         self.x, self.y, self.z, self.w = 0, math.sin(y/2), 0, math.cos(y/2)
@@ -49,9 +51,26 @@ function Quaternion:combine(q)
         y * q.z - z * q.y + q.x * w + x * q.w,
         z * q.x - x * q.z + q.y * w + y * q.w,
         x * q.y - y * q.x + q.z * w + z * q.w,
-        w * q.w - (x * q.x + y * q.y + z * q.z)
+        w * q.w - x * q.x - y * q.y - z * q.z
 
     return self
+end
+
+------------------------------------------------------------
+function Quaternion:angles()
+    local wx, wy, wz, xx, yy, zz, xy, xz, yz =
+        self.w * self.x, self.w * self.y, self.w * self.z,
+        self.x * self.x, self.y * self.y, self.z * self.z,
+        self.x * self.y, self.x * self.z, self.y * self.z
+
+    return math.atan2(2 * (wx+yz), 1 - 2 * (xx+yy)),
+        math.asin(2 * (wy-xz)),
+        math.atan2(2 * (wz+xy), 1 - 2 * (yy+zz))
+end
+
+------------------------------------------------------------
+function Quaternion:clone()
+    return Quaternion:new(self.x, self.y, self.z, self.w)
 end
 
 ------------------------------------------------------------

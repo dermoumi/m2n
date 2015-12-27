@@ -102,12 +102,11 @@ end
 
 ------------------------------------------------------------
 function SceneTest3D:update(dt)
-    self.mesh:rotate(0, -math.pi * dt / 2, 0)
+    self.subMesh:rotate(0, 0, math.pi * dt / 2)
     -- self.subMesh:rotate(0, math.pi * dt / 2, 0)
 
     if self.camVelX ~= 0 or self.camVelY ~= 0 or self.camVelZ ~= 0 then
-        local xRot, yRot, zRot = self.camera:rotation()
-
+        local xRot, yRot, zRot = self.camera:rotation(true)
         self.camera:move(
             dt * (math.cos(yRot) * self.camVelX + math.sin(yRot) * self.camVelZ),
             self.camVelY * dt,

@@ -27,9 +27,9 @@
 
 local ffi        = require 'ffi'
 local class      = require 'nx.class'
-local Quaternion = require 'nx.graphics.quaternion'
+local Quaternion = require 'nx.util.quaternion'
 
-local Matrix = class 'nx.graphics.matrix'
+local Matrix = class 'nx.util.matrix'
 
 ------------------------------------------------------------
 local EPSILON = 0.000001

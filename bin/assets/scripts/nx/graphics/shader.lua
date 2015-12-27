@@ -27,7 +27,7 @@
 
 local class     = require 'nx.class'
 local Log       = require 'nx.util.log'
-local Matrix    = require 'nx.graphics.matrix'
+local Matrix    = require 'nx.util.matrix'
 local InputFile = require 'nx.filesystem.inputfile'
 
 local Shader = class 'nx.graphics.shader'

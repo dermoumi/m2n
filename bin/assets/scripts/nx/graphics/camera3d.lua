@@ -25,8 +25,8 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-local Matrix      = require 'nx.graphics.matrix'
 local Window      = require 'nx.window'
+local Matrix      = require 'nx.util.matrix'
 local Entity3D    = require 'nx.graphics.entity3d'
 local Camera      = require 'nx.graphics._camera'
 

@@ -29,7 +29,7 @@ local class        = require 'nx.class'
 local Graphics     = require 'nx.graphics'
 local Window       = require 'nx.window'
 local Renderbuffer = require 'nx.graphics.renderbuffer'
-local Matrix       = require 'nx.graphics.matrix'
+local Matrix       = require 'nx.util.matrix'
 
 local Camera = class 'nx.graphics._camera'
 
