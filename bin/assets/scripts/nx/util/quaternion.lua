@@ -30,6 +30,42 @@ local class = require 'nx.class'
 local Quaternion = class 'nx.util.quaternion'
 
 ------------------------------------------------------------
+local EPSILON = 0.000001
+
+------------------------------------------------------------
+function Quaternion.static.fromToRotation(x1, y1, z1, x2, y2, z2)
+    local dot = x1*x2 + y1*y2 + z1*z2
+    if dot <= -1 then
+        -- Cross product with (1, 0, 0)
+        local x, y, z = 0, -z1, y1
+        -- If 0, cross product with (0, 1, 0)
+        if math.sqrt(y*y+z*z) < EPSILON then x, y, z = z1, 0, -x1 end
+        -- Normalize
+        local len = x*x + y*y + z*z
+        if len ~= 0 then
+            len = math.sqrt(len)
+            x, y, z = x/len, y/len, z/len
+        end
+        -- Axis angle
+        return Quaternion.fromAxisAngle(x, y, z, math.pi)
+    elseif dot >= 1 then
+        -- Invalid?
+        return 0, 0, 0, 1
+    else
+        -- Cross product a*b
+        local x, y, z = y1*z2 - z1*y2, z1*x2 - x1*z2, x1*y2 - y1*x2
+        return Quaternion:new(x, y, z, 1 + dot):normalize()
+    end
+end
+
+------------------------------------------------------------
+function Quaternion.static.fromAxisAngle(x, y, z, rad)
+    rad = rad / 2
+    local s = math.sin(rad)
+    return Quaternion:new(s*x, s*y, s*z, math.cos(rad))
+end
+
+------------------------------------------------------------
 function Quaternion:initialize(x, y, z, w)
     if not x then
         self.x, self.y, self.z, self.w = 0, 0, 0, 0
@@ -58,6 +94,8 @@ end
 
 ------------------------------------------------------------
 function Quaternion:angles()
+    self:normalize()
+
     local wx, wy, wz, xx, yy, zz, xy, xz, yz =
         self.w * self.x, self.w * self.y, self.w * self.z,
         self.x * self.x, self.y * self.y, self.z * self.z,
@@ -71,6 +109,30 @@ end
 ------------------------------------------------------------
 function Quaternion:clone()
     return Quaternion:new(self.x, self.y, self.z, self.w)
+end
+
+------------------------------------------------------------
+function Quaternion:normalize()
+    local len = self.x*self.x + self.y*self.y + self.z*self.z + self.w*self.w
+
+    if len ~= 0 then
+        len = math.sqrt(len)
+        self.x, self.y, self.z, self.w = self.x/len, self.y/len, self.z/len, self.w/len
+    end
+
+    return self
+end
+
+------------------------------------------------------------
+function Quaternion:apply(x, y, z)
+    local x2, y2, z2 = self.x * 2,  self.y * 2,  self.z * 2
+    local a1, a2, a3 = self.x * x2, self.y * y2, self.z * z2
+    local a4, a5, a6 = self.x * y2, self.x * z2, self.y * z2
+    local a7, a8, a9 = self.w * x2, self.w * y2, self.w * z2
+
+    return (1 - a2 - a3) * x + (a4 - a9) * y + (a5 + a8) * z,
+        (a4 + a9) * x + (1 - a1 - a3) * y + (a6 - a7) * z,
+        (a5 - a8) * x + (a6 + a7) * y + (1 - a1 - a2) * z
 end
 
 ------------------------------------------------------------
