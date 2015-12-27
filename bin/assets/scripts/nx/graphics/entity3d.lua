@@ -34,7 +34,6 @@ function Entity3D:initialize()
     self._posX, self._posY, self._posZ = 0, 0, 0
     self._rotX, self._rotY, self._rotZ = 0, 0, 0
     self._scaleX, self._scaleY, self._scaleZ = 1, 1, 1
-    self._originX, self._originY, self._originZ = 0, 0, 0
 
     self._children = {}
 end
@@ -113,13 +112,6 @@ function Entity3D:setScaling(x, y, z)
 end
 
 ------------------------------------------------------------
-function Entity3D:setOrigin(x, y, z)
-    self._originX, self._originY, self._originZ = x, y, z
-
-    return self:_invalidate()
-end
-
-------------------------------------------------------------
 function Entity3D:move(x, y, z)
     return self:setPosition(self._posX + x, self._posY + y, self._posZ + z)
 end
@@ -132,11 +124,6 @@ end
 ------------------------------------------------------------
 function Entity3D:scale(x, y, z)
     return self:setScale(self._scaleX * x, self._scaleY * y, self._scaleZ * z)
-end
-
-------------------------------------------------------------
-function Entity3D:offset(x, y, z)
-    return self:setORigin(self._originX + x, self._originY + y, self._originZ + z)
 end
 
 ------------------------------------------------------------
@@ -177,15 +164,6 @@ function Entity3D:scaling(absolute)
 end
 
 ------------------------------------------------------------
-function Entity3D:origin(absolute)
-    if absolute and self._parent then
-        return self._parent:matrix():apply(self._originX, self._originY, self._originZ)
-    end
-
-    return self._originX, self._originY, self._originZ
-end
-
-------------------------------------------------------------
 function Entity3D:target()
     if not self._tragetX then return nil end
 
@@ -194,12 +172,11 @@ end
 
 ------------------------------------------------------------
 function Entity3D:matrix(absolute)
+    -- Calculate relative transformation
     if not self._matrix then
-        self._matrix = Matrix:new()
-            :combine(Matrix.fromTranslation(self._posX, self._posY, self._posZ))
-            :combine(Matrix.fromScaling(self._scaleX, self._scaleY, self._scaleZ))
+        self._matrix = Matrix.fromTranslation(self._posX, self._posY, self._posZ)
             :combine(Matrix.fromRotation(self._rotX, self._rotY, self._rotZ))
-            :combine(Matrix.fromTranslation(-self._originX, -self._originY, -self._originZ))
+            :combine(Matrix.fromScaling(self._scaleX, self._scaleY, self._scaleZ))
     end
 
     if absolute then
@@ -210,9 +187,9 @@ function Entity3D:matrix(absolute)
         end
 
         return self._absMatrix
+    else
+        return self._matrix
     end
-
-    return self._matrix
 end
 
 ------------------------------------------------------------

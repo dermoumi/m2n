@@ -103,14 +103,15 @@ end
 ------------------------------------------------------------
 function Camera2D:projection()
     if not self._projection then
-        local cos = math.cos(self._rotation)
-        local sin = math.sin(self._rotation)
-        local tx  = self._centerX - self._centerX * cos - self._centerY * sin
-        local ty  = self._centerY + self._centerX * sin - self._centerY * cos
-
         -- Projection components
-        local x =  2 / self._width
-        local y = -2 / self._height
+        local cos, sin =
+            math.cos(self._rotation),
+            math.sin(self._rotation)
+        local tx, ty, x, y =
+            self._centerX - self._centerX * cos - self._centerY * sin,
+            self._centerY + self._centerX * sin - self._centerY * cos,
+            2 / self._width,
+            -2 / self._height
 
         -- Rebuild the projection matrix
         self._projection = Matrix:new()

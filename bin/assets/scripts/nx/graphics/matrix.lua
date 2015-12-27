@@ -59,14 +59,10 @@ function Matrix.static.fromScaling(x, y, z)
 end
 
 ------------------------------------------------------------
-function Matrix.static.fromRotation(x, y, z, w)
+function Matrix.static.fromQuaternion(x, y, z, w)
     -- Get quaternion
     if not y then
-        local q = x
-        x, y, z, w = q.x, q.y, q.z, q.w
-    elseif not w then
-        local q = Quaternion:new(x, y, z)
-        x, y, z, w = q.x, q.y, q.z, q.w
+        x, y, z, w = x.x, x.y, x.z, x.w
     end
 
     -- Calculate coefficients
@@ -92,45 +88,9 @@ function Matrix.static.fromRotation(x, y, z, w)
 end
 
 ------------------------------------------------------------
-function Matrix.static.fromXRotation(rad)
-    local mat  = Matrix:new()
-    local m    = mat._cdata
-    local s, c = math.sin(rad), math.cos(rad)
-
-    m[5]  = c
-    m[6]  = s
-    m[9]  = -s
-    m[10] = c
-
-    return mat
-end
-
-------------------------------------------------------------
-function Matrix.static.fromYRotation(rad)
-    local mat  = Matrix:new()
-    local m    = mat._cdata
-    local s, c = math.sin(rad), math.cos(rad)
-
-    m[0]  = c
-    m[2]  = -s
-    m[8]  = s
-    m[10] = c
-
-    return mat
-end
-    
-------------------------------------------------------------
-function Matrix.static.fromZRotation(rad)
-    local mat  = Matrix:new()
-    local m    = mat._cdata
-    local s, c = math.sin(rad), math.cos(rad)
-
-    m[0]  = c
-    m[1]  = s
-    m[4]  = -s
-    m[5]  = c
-
-    return mat
+function Matrix.static.fromRotation(x, y, z)
+    local q = Quaternion:new(x, y, z)
+    return Matrix.fromQuaternion(q.x, q.y, q.z, q.w)
 end
 
 ------------------------------------------------------------
