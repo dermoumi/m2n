@@ -106,12 +106,8 @@ end
 
 ------------------------------------------------------------
 function Shape:setVertexData(primitive, hasColor, a, b, ...)
-    if not a then
-        self._vertexBuffer = nil
-    else
-        if b then a = {a, b, ...} end
-        if type(a) ~= 'table' then return self end
-
+    if b then a = {a, b, ...} end
+    if type(a) == 'table' then
         self._primitive  = toPrimitive[primitive] or 0
         self._hasColor   = hasColor
         
@@ -135,6 +131,8 @@ function Shape:setVertexData(primitive, hasColor, a, b, ...)
         end
 
         self._vertexBuffer = Arraybuffer.vertexbuffer(ffi.sizeof(buffer), buffer)
+    else
+        self._vertexBuffer = nil
     end
 
     return self
@@ -142,16 +140,14 @@ end
 
 ------------------------------------------------------------
 function Shape:setIndexData(a, b, ...)
-    if not a then
-        self._indexBuffer = nil
-    else
-        if b then a = {a, b, ...} end
-        if type(a) ~= 'table' then return self end
-
+    if b then a = {a, b, ...} end
+    if type(a) == 'table' then
         local buffer = ffi.new('uint16_t[?]', #a, a)
 
         self._indexCount = #a
         self._indexBuffer = Arraybuffer.indexbuffer(ffi.sizeof(buffer), buffer)
+    else
+        self._indexBuffer = nil
     end
 
     return self

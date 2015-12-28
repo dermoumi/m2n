@@ -111,6 +111,8 @@ function Mesh:setVertexData(a, b, ...)
         end
 
         self._vertexBuffer = Arraybuffer.vertexbuffer(ffi.sizeof(buffer), buffer)
+    else
+        self._vertexBuffer = nil
     end
 
     return self
@@ -124,6 +126,8 @@ function Mesh:setIndexData(a, b, ...)
 
         self._indexCount = #a
         self._indexBuffer = Arraybuffer.indexbuffer(ffi.sizeof(buffer), buffer)
+    else
+        self._indexBuffer = nil
     end
 
     return self

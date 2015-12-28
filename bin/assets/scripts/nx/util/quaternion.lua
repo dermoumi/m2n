@@ -50,7 +50,7 @@ function Quaternion.static.fromToRotation(x1, y1, z1, x2, y2, z2)
         return Quaternion.fromAxisAngle(x, y, z, math.pi)
     elseif dot >= 1 then
         -- Invalid?
-        return 0, 0, 0, 1
+        return Quaternion:new(0, 0, 0, 1)
     else
         -- Cross product a*b
         local x, y, z = y1*z2 - z1*y2, z1*x2 - x1*z2, x1*y2 - y1*x2
