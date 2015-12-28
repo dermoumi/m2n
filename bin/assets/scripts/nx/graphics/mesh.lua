@@ -92,12 +92,8 @@ end
 
 ------------------------------------------------------------
 function Mesh:setVertexData(a, b, ...)
-    if not a then
-        self._vertexBuffer = nil
-    else
-        if b then a = {a, b, ...} end
-        if type(a) ~= 'table' then return self end
-
+    if b then a = {a, b, ...} end
+    if type(a) == 'table' then
         local buffer
         if type(a[0]) == 'table' then
             self._vertexCount = #a
@@ -122,16 +118,12 @@ end
 
 ------------------------------------------------------------
 function Mesh:setIndexData(a, b, ...)
-    if not a then
-        self._indexBuffer = nil
-    else
-        if b then a = {a, b, ...} end
-        if type(a) ~= 'table' then return self end
-
+    if b then a = {a, b, ...} end
+    if type(a) == 'table' then
         local buffer = ffi.new('uint16_t[?]', #a, a)
 
         self._indexCount = #a
-        self._indexBuffer = Arraybuffer._indexbuffer(ffi.sizeof(buffer), buffer)
+        self._indexBuffer = Arraybuffer.indexbuffer(ffi.sizeof(buffer), buffer)
     end
 
     return self
