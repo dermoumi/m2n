@@ -34,9 +34,13 @@ local Camera3D = Camera:subclass('nx.graphics.camera3d')
 Camera3D:include(Entity3D)
 
 ------------------------------------------------------------
-function Camera3D:initialize(fov, aspect, near, far)
-    self:setPerspective(fov, aspect, near, far)
+function Camera3D:initialize(a, b, c, d, e, f)
     Entity3D.initialize(self)
+    if e then
+        self:setOrtho(a, b, c, d, e, f)
+    else
+        self:setPerspective(a, b, c, d)
+    end
 end
 
 ------------------------------------------------------------
@@ -48,69 +52,58 @@ function Camera3D:_invalidate()
 end
 
 ------------------------------------------------------------
-function Camera3D:setView(type, a, b, c, d, e, f)
-    self._type, self._a, self._b, self._c, self._d, self._e, self._f = type, a, b, c, d, e, f
+function Camera3D:setView(left, right, bottom, top, near, far)
+    self._left, self._right, self._bottom, self._top, self._near, self._far =
+        left, right, bottom, top, near, far
 
     return self:_invalidate()
 end
 
 ------------------------------------------------------------
 function Camera3D:setPerspective(fov, aspect, near, far)
-    local w, h = Window.size()
-    return self:setView('perspective', fov or 70, aspect or w/h, near or 1, far or -1000)
+    fov, near, far = fov or 70, near or 1, far or -100
+    if not aspect then
+        local w, h = Window.size()
+        aspect = w/h
+    end
+
+    self._fov, self._aspect, self._perspective = fov, aspect, true
+
+    local ymax = near * math.tan(fov/360)
+    local xmax = ymax * aspect
+    return self:setView(-xmax, xmax, -ymax, ymax, near, far)
 end
 
 ------------------------------------------------------------
 function Camera3D:setOrtho(left, right, bottom, top, near, far)
-    if left then
-        return self:setView('ortho', left, right, bottom, top, near or 1, far or -1000)
-    else
-        local w, h = Window.size()
-        return self:setView('ortho', -w/h, w/h, 1, -1, 1, -1000)
-    end
-end
+    self._fov, self._aspect, self._perspective = nil, nil, false
 
-------------------------------------------------------------
-function Camera3D:setFrustum(left, right, bottom, top, near, far)
     if left then
-        return self:setView('frustum', left, right, bottom, top, near or 1, far or -1000)
+        return self:setView(left, right, bottom, top, near or 1, far or -1)
     else
         local w, h = Window.size()
-        return self:setView('frustum', -w/h, w/h, 1, -1, 1, -1000)
+        return self:setView(-w/h, w/h, 1, -1, 1, -1)
     end
 end
 
 ------------------------------------------------------------
 function Camera3D:view()
-    return self._type, self._a, self._b, self._c, self._d, self._e, self._f
+    return self._left, self._right, self._bottom, self._top, self._near, self._far
+end
+
+------------------------------------------------------------
+function Camera3D:isPerspective()
+    return self._perspective, self._fov, self._aspect, self._near, self._far
 end
 
 ------------------------------------------------------------
 function Camera3D:projection()
     if not self._projection then
-        if self._type == 'perspective' then
-            self._projection = Matrix.fromPerspective(self._a, self._b, self._c, self._d)
-        elseif self._type == 'ortho' then
-            self._projection = Matrix.fromOrtho(
-                self._a, self._b, self._c, self._d, self._e, self._f
+        local func = self._perspective and Matrix.fromFrustum or Matrix.fromOrtho
+        self._projection = func(
+                self._left, self._right, self._bottom, self._top, self._near, self._far
             )
-        elseif self._type == 'frustum' then
-            self._projection = Matrix.fromFrustum(
-                self._a, self._b, self._c, self._d, self._e, self._f
-            )
-        end
-
-        if self._targetX then
-            self._projection
-                :combine(Matrix.fromLookAt(
-                    self._originX-self._posX, self._originY-self._posY, self._originZ-self._posZ,
-                    self._targetX, self._targetY, self._targetZ,
-                    self._upX, self._upY, self._upZ
-                ))
-                :combine(Matrix.fromScaling(self._scaleX, self._scaleY, self._scaleZ))
-        else
-            self._projection:combine(self:matrix(true):inverse())
-        end
+            :combine(self:matrix(true):inverse())
     end
 
     return self._projection

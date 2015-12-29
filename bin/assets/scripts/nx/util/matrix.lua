@@ -165,38 +165,16 @@ function Matrix.static.fromFrustum(left, right, bottom, top, near, far)
 end
 
 ------------------------------------------------------------
-function Matrix.static.fromPerspective(fov, aspect, near, far)
-    local ymax = near * math.tan(fov * math.pi / 360)
-    local xmax = ymax * aspect
-
-    return Matrix.fromFrustum(-xmax, xmax, -ymax, ymax, near, far)
-    -- local mat = Matrix:new()
-    -- local m = mat._cdata
-
-    -- local f  = 1 / math.tan(fov * math.pi / 360)
-    -- local nf = near - far
-
-    -- m[0] = f
-    -- m[5] = aspect * f
-    -- m[10] = far / nf
-    -- m[11] = -1
-    -- m[14] = far * near / nf
-    -- m[15] = 0
-
-    -- return mat
-end
-
-------------------------------------------------------------
 function Matrix.static.fromOrtho(left, right, bottom, top, near, far)
     local mat = Matrix:new()
     local m   = mat._cdata
 
     m[0]  = 2 / (right - left)
     m[5]  = 2 / (top - bottom)
-    m[10] = 2 / (near - far)
-    m[12] = (right + left)   / (left   - right)
-    m[13] = (top   + bottom) / (bottom - top)
-    m[14] = (far   + near)   / (near   - far)
+    m[10] = -2 / (far - near)
+    m[12] = -(right + left)   / (right - left)
+    m[13] = -(top   + bottom) / (top   - bottom)
+    m[14] = -(far   + near)   / (far   - near)
 
     return mat
 end

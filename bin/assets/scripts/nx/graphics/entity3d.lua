@@ -138,14 +138,6 @@ function Entity3D:scale(x, y, z)
 end
 
 ------------------------------------------------------------
-function Entity3D:lookAt(targetX, targetY, targetZ, upX, upY, upZ)
-    self._targetX, self._targetY, self._targetZ = targetX, targetY, targetZ
-    self._upX, self._upY, self._upZ = upX or 0, upY or 1, upZ or 0
-
-    return self:_invalidate()
-end
-
-------------------------------------------------------------
 function Entity3D:position(absolute)
     if absolute and self._parent then
         return self._parent:matrix(true):apply(self._posX, self._posY, self._posZ)
@@ -176,13 +168,6 @@ function Entity3D:scaling(absolute)
     end
 
     return self._scaleX, self._scaleY, self._scaleZ
-end
-
-------------------------------------------------------------
-function Entity3D:target()
-    if not self._tragetX then return nil end
-
-    return self._targetX, self._targetY, self._tragetZ, self._upX, self._upY, self._upZ
 end
 
 ------------------------------------------------------------
