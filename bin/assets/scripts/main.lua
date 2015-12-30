@@ -40,7 +40,6 @@ local Graphics = require 'nx.graphics'
 local Window   = require 'nx.window'
 local Audio    = require 'nx.audio'
 local Scene    = require 'scene'
-local test  = require 'tsaoeu'
 
 ------------------------------------------------------------
 -- Load settings
