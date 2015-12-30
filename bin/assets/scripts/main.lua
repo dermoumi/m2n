@@ -40,6 +40,7 @@ local Graphics = require 'nx.graphics'
 local Window   = require 'nx.window'
 local Audio    = require 'nx.audio'
 local Scene    = require 'scene'
+local test  = require 'tsaoeu'
 
 ------------------------------------------------------------
 -- Load settings
@@ -77,7 +78,7 @@ end
 local totalTime = 0
 local fixedFrameTime = 1/30
 Window.setFramerateLimit(
-    System.platform('android', 'ios') and 1/30 or 1/60
+    -- System.platform('android', 'ios') and 1/30 or 1/60
 )
 
 ------------------------------------------------------------

@@ -306,7 +306,8 @@ end
 ------------------------------------------------------------
 function LuaVM:setTop(index)
     if self._cdata ~= nil then
-        C.lua_settop(self._cdata, index)
+        -- There's a reseved slot in the stack for the debug function
+        C.lua_settop(self._cdata, index + 1)
     end
 
     return self

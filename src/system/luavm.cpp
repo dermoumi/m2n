@@ -59,6 +59,10 @@ bool LuaVM::initialize(int argc, char** argv)
         return false;
     }
 
+    // Reserve the first slot for the debug function
+    lua_settop(state, 0);
+    lua_getglobal(state, "NX_Debug");
+    
     mState = state;
     return true;
 }
@@ -79,7 +83,7 @@ bool LuaVM::runCode(const std::string& filename, const std::string& code, int& r
     }
 
     // Try to run the code
-    if (lua_pcall(mState, 0, 1, 0) != 0) {
+    if (lua_pcall(mState, 0, 1, 1) != 0) {
         mErrorMessage = lua_tostring(mState, -1);
         return false;
     }
@@ -119,7 +123,7 @@ bool LuaVM::loadNxLibs(lua_State* state, std::string* err)
         // { LUA_OSLIBNAME,   luaopen_os },
         { LUA_STRLIBNAME,  luaopen_string },
         { LUA_MATHLIBNAME, luaopen_math },
-        // { LUA_DBLIBNAME,   luaopen_debug },
+        { LUA_DBLIBNAME,   luaopen_debug },
         { LUA_BITLIBNAME,  luaopen_bit },
         // { LUA_JITLIBNAME,  luaopen_jit },
         { NULL,            NULL }

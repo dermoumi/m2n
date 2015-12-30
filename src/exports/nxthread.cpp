@@ -49,7 +49,8 @@ struct NxThreadObj
 
 static void threadCallback(NxThreadObj* thread)
 {
-    int argCount = lua_gettop(thread->state) - 1; // Total elements in stack minus the function itself
+    // Total elements in stack minus the function itself AND the reserved function
+    int argCount = lua_gettop(thread->state) - 2;
     thread->succeeded = lua_pcall(thread->state, argCount, -1, 0) == 0;
 
     if (thread->ownsState) {

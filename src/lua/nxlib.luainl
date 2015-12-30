@@ -108,6 +108,8 @@ function NX_CData(ptr, type, dereference)
     return ptr
 end
 
+NX_Debug = debug and debug.traceback or function(err) return err end
+
 -- Return 1 to indicate went smoothly?
 return 1
 
