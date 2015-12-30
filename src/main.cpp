@@ -121,6 +121,9 @@ int main(int argc, char* argv[])
 
     #endif
 
+    // A simple separator
+    Log::info("----");
+
     // Set the current thread as the main thread
     Thread::setMain();
     Audio::instance();
@@ -137,7 +140,7 @@ int main(int argc, char* argv[])
     {
         LuaVM lua;
 
-        if (!lua.initialize()) {
+        if (!lua.initialize(argc, argv)) {
             return fatalError(lua.getErrorMessage());
         }
 

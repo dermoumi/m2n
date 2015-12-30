@@ -25,8 +25,16 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
+local Log = require 'nx.util.log'
+for i, v in ipairs(arg) do
+    if v == '--version' then
+        Log.info('Monsters of Second Night v0.0')
+        return 0
+    end
+end
+
+------------------------------------------------------------
 local System   = require 'nx.system'
-local Log      = require 'nx.util.log'
 local Events   = require 'nx.window.events'
 local Graphics = require 'nx.graphics'
 local Window   = require 'nx.window'

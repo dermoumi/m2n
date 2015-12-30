@@ -35,7 +35,7 @@ LuaVM::~LuaVM()
 }
 
 //----------------------------------------------------------
-bool LuaVM::initialize()
+bool LuaVM::initialize(int argc, char** argv)
 {
     if (mState) return true;
 
@@ -45,6 +45,15 @@ bool LuaVM::initialize()
         return false;
     }
 
+    // Push arguments
+    lua_newtable(state);
+    for (int i = 0; i < argc; i++) {
+        lua_pushstring(state, argv[i]);
+        lua_rawseti(state, -2, i);
+    }
+    lua_setglobal(state, "arg");
+
+    // Load NX library functions
     if (!loadNxLibs(state, &mErrorMessage)) {
         mErrorMessage = "Could not load Lua libraries: " + mErrorMessage;
         return false;
