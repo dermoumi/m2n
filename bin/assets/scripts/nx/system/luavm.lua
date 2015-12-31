@@ -130,7 +130,6 @@ local function funcPusher(s, f)
     C.lua_pushlstring(s, dump, #dump)
     if C.lua_pcall(s, 1, 2, 0) ~= 0 then
         error('LuaVM Function pusher: ' .. ffi.string(C.lua_tolstring(s, -1, nil)))
-        C.lua_settop(s, -2)
     end
 
     -- Remove the second return value in case there were no errors
@@ -152,7 +151,6 @@ local function nxClassPusher(s, o)
     C.lua_pushstring(s, tostring(o.class.name))
     if C.lua_pcall(s, 1, 0, 0) ~= 0 then
         error('LuaVM nxLib Class Object pusher: ' .. ffi.string(C.lua_tolstring(s, -1, nil)))
-        C.lua_settop(s, -1)
     end
 
     C.lua_getfield(s, -10002, 'NX_ClassObject')
@@ -161,7 +159,6 @@ local function nxClassPusher(s, o)
 
     if C.lua_pcall(s, 2, 1, 0) ~= 0 then
         error('LuaVM nxLib Class Object pusher: ' .. ffi.string(C.lua_tolstring(s, -1, nil)))
-        C.lua_settop(s, -2)
     end
 end
 
@@ -179,7 +176,6 @@ local function cdataPusher(s, o)
 
     if C.lua_pcall(s, 3, 1, 0) ~= 0 then
         error('LuaVM CData pusher: ' .. ffi.string(C.lua_tolstring(s, -1, nil)))
-        C.lua_settop(s, -3)
     end
 end
 
@@ -191,7 +187,7 @@ local function tableRetriever(s, i)
     local result = {}
 
     C.lua_pushnil(s)
-    while C.lua_next(s, i) do
+    while C.lua_next(s, i) ~= 0 do
         local keyType = typeof(s, -2)
         local keyRetriever = retrievers[keyType]
         if keyRetriever then
@@ -225,7 +221,6 @@ local function funcRetriever(s, i)
     C.lua_pushvalue(s, i)
     if C.lua_pcall(s, 1, 1, 0) == 0 then
         error('LuaVM Function pusher: ' .. ffi.string(C.lua_tolstring(s, -1, nil)))
-        C.lua_settop(s, -2)
     end
 
     local lenB = ffi.new('size_t[1]')
@@ -362,7 +357,6 @@ function LuaVM:pop(count, returnValues)
                 retval[retCount] = retriever(self._cdata, i)
             else
                 error('LuaVM:pop(): Type ' .. typename .. 'Unsupported. Skipping...')
-                retval[retCount] = nil
             end
 
             retCount = retCount + 1
@@ -379,20 +373,27 @@ end
 --  func must not contain upvalues (eg.: values from external scope)
 --  Returns the err if a problem occurs at calling
 --  Returned values are pushed to the stack, and their count is returned
-function LuaVM:call(func, ...)
+function LuaVM:pcall(func, ...)
     if self._cdata == nil then return 0 end
-
     local top = C.lua_gettop(self._cdata)
 
     local argc, err = self:push(func, ...)
-    if not argc then return 0, err end
+    if not argc then return nil, err end
 
     local args = {func, ...}
-
-    local ok = C.lua_pcall(self._cdata, argc - 1, -1, 0)
-    if ok ~= 0 then return 0, self:pop(1, true) end
+    if C.lua_pcall(self._cdata, argc - 1, -1, 0) ~= 0 then
+        return nil, self:pop(1, true)
+    end
 
     return C.lua_gettop(self._cdata) - top
+end
+
+------------------------------------------------------------
+function LuaVM:call(func, ...)
+    local argCount, err = self:pcall(func, ...)
+    if not argCount then error(err) end
+
+    return self:pop(argCount, true)
 end
 
 ------------------------------------------------------------

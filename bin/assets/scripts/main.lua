@@ -26,6 +26,8 @@
 --]]----------------------------------------------------------------------------
 
 local Log = require 'nx.util.log'
+
+-- Handle application arguments
 for i, v in ipairs(arg) do
     if v == '--version' then
         Log.info('Monsters of Second Night v0.0')
@@ -35,30 +37,29 @@ end
 
 ------------------------------------------------------------
 local System   = require 'nx.system'
+local LuaVM    = require 'nx.system.luavm'
 local Events   = require 'nx.window.events'
 local Graphics = require 'nx.graphics'
 local Window   = require 'nx.window'
 local Audio    = require 'nx.audio'
 local Scene    = require 'scene'
 
-------------------------------------------------------------
--- Load settings
-------------------------------------------------------------
-local graphicsFlags
+-- Load settings (in VM sandbox)
+local vm = LuaVM:new()
+local argsCount = vm:pcall(function()
+        local settings = loadfile('userdata/settings.lua')
+        if settings then
+            return settings()
+        else
+            return {}
+        end
+    end)
+local settings, err = vm:pop(argsCount, true)
 
-local settings, err = loadfile('userdata/settings.lua')
-if not settings then
-    Log.warning('Could not load user settings: ' .. err)
-else
-    settings = settings()
-    graphicsFlags = settings.graphics
-end
-
-------------------------------------------------------------
--- Setup
-------------------------------------------------------------
 -- Create window
-Window.create("m2n", 1280, 720, graphicsFlags or {vsync = false})
+Window.create("m2n", 1280, 720, settings.graphics or {
+    vsync = false
+})
 
 -- Initialize renderer
 Graphics.init()
@@ -71,30 +72,16 @@ if not Audio.init() then
     Log.error('Could not initialize sound system')
 end
 
-------------------------------------------------------------
 -- Handling FPS
-------------------------------------------------------------
-local totalTime = 0
-local fixedFrameTime = 1/30
+local totalTime, fixedFrameTime = 0, 1/30
 Window.setFramerateLimit(
-    -- System.platform('android', 'ios') and 1/30 or 1/60
+    System.platform('android', 'ios') and 1/30 or 1/60
 )
 
-------------------------------------------------------------
--- Scene checker
-------------------------------------------------------------
-local function checkScene(scene)
-    return scene ~= Scene.currentScene()
-end
-
-------------------------------------------------------------
 -- Startup scene
-------------------------------------------------------------
 Scene.goTo('scene.title', true)
 
-------------------------------------------------------------
 -- Main loop
-------------------------------------------------------------
 while Window.isOpen() do
     local scene = Scene.currentScene()
 
@@ -105,7 +92,7 @@ while Window.isOpen() do
             break
         else
             scene:__onEvent(e, a, b, c, d)
-            if checkScene(scene) then goto continue end
+            if scene ~= Scene.currentScene() then goto continue end
         end
     end
 
@@ -113,12 +100,12 @@ while Window.isOpen() do
     if not Window.isOpen() then break end
 
     scene:__update(Window.frameTime())
-    if checkScene(scene) then goto continue end
+    if scene ~= Scene.currentScene() then goto continue end
 
     totalTime = totalTime + Window.frameTime()
     for i = 1, totalTime / fixedFrameTime do
         scene:__fixedUpdate(fixedFrameTime)
-        if checkScene(scene) then goto continue end
+        if scene ~= Scene.currentScene() then goto continue end
     end
     totalTime = totalTime % fixedFrameTime
 
@@ -131,12 +118,6 @@ while Window.isOpen() do
     ::continue::
 end
 
-------------------------------------------------------------
--- Release stuff
-------------------------------------------------------------
 Audio.release()
 
-------------------------------------------------------------
--- The end?
-------------------------------------------------------------
 return 0
