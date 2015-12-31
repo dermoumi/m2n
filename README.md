@@ -1,9 +1,9 @@
 # m2n
-A small game (and game engine)
+A small game i'm doing for learning purposes (and game engine)
 
 ## Building
 
-Requires premake5 in path.
+Requires [premake5](https://premake.github.io/download.html) in `PATH` (or just drop in the root directory)
 
 ### MinGW and GCC
 On linux requires developement libraries for `luaJIT`, `sdl2`, `freetype2` and `asound`
