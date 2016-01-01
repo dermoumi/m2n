@@ -174,9 +174,14 @@ end
 function Entity3D:matrix(absolute)
     -- Calculate relative transformation
     if not self._matrix then
-        self._matrix = Matrix.fromTranslation(self._posX, self._posY, self._posZ)
-            :combine(Matrix.fromQuaternion(self._quat))
-            :combine(Matrix.fromScaling(self._scaleX, self._scaleY, self._scaleZ))
+       -- self._matrix = Matrix.fromTranslation(self._posX, self._posY, self._posZ)
+       --      :combine(Matrix.fromQuaternion(self._quat))
+       --      :combine(Matrix.fromScaling(self._scaleX, self._scaleY, self._scaleZ))
+        self._matrix = Matrix.fromTransformation(
+            self._quat,
+            self._posX, self._posY, self._posZ,
+            self._scaleX, self._scaleY, self._scaleZ
+        )
     end
 
     if absolute then
