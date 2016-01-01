@@ -31,8 +31,10 @@ local Graphics = require 'nx.graphics'
 local Material = class 'nx.graphics.material'
 
 ------------------------------------------------------------
-function Material:initialize()
+function Material:initialize(context)
+    self._context = context or 'ambient'
     self._textures = {}
+    self._uniforms = {}
     self._shader = Graphics.defaultShader(3)
     self._colR, self._colG, self._colB, self._colA = 255, 255, 255, 255
 end
@@ -43,6 +45,10 @@ function Material:clone()
 
     for i, texture in pairs(self._textures) do
         material._textures[i] = texture
+    end
+
+    for uniform, values in pairs(self._uniforms) do
+        material._uniforms[uniform] = values
     end
 
     material._shader = self._shader
@@ -74,6 +80,20 @@ function Material:setColor(r, g, b, a)
 end
 
 ------------------------------------------------------------
+function Material:setContext(context)
+    self._context = context
+
+    return self
+end
+
+------------------------------------------------------------
+function Material:setUniform(name, a, b, c, d)
+    self._uniforms[name] = {a, b, c, d}
+
+    return self
+end
+
+------------------------------------------------------------
 function Material:shader()
     return self._shader
 end
@@ -89,11 +109,20 @@ function Material:color()
 end
 
 ------------------------------------------------------------
+function Material:context()
+    return self._context
+end
+
+------------------------------------------------------------
 function Material:_apply(projMat, transMat)
     self._shader:bind()
         :setUniform('uProjMat', projMat)
         :setUniform('uTransMat', transMat)
         :setUniform('uColor', self._colR/255, self._colG/255, self._colB/255, self._colA/255)
+
+    for uniform, values in pairs(self._uniforms) do
+        self._shader:setUniform(uniform, unpack(values))
+    end
 
     local i = 0
     for slot, texture in pairs(self._textures) do

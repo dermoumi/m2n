@@ -25,12 +25,15 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-local Keyboard = require 'nx.window.keyboard'
-local Mouse    = require 'nx.window.mouse'
-local Window   = require 'nx.window'
-local Mesh     = require 'nx.graphics.mesh'
-local Entity3D = require 'nx.graphics.entity3d'
-local Scene    = require 'scene'
+local Keyboard  = require 'nx.window.keyboard'
+local Mouse     = require 'nx.window.mouse'
+local Window    = require 'nx.window'
+local Geometry  = require 'nx.graphics.geometry'
+local ModelNode = require 'nx.graphics.modelnode'
+local Model     = require 'nx.graphics.model'
+local Material  = require 'nx.graphics.material'
+local Entity3D  = require 'nx.graphics.entity3d'
+local Scene     = require 'scene'
 
 local SceneTest3D = Scene:subclass('scene.test.3d')
 
@@ -48,7 +51,7 @@ function SceneTest3D:load()
         -- :setScaling(2, 2, 2)
         -- :lookAt(0, 0, 0)
 
-    self.mesh = Mesh:new()
+    local cubeGeom = Geometry:new()
         :setVertexData(
             -1,-1,-1, 0, 0,
             -1,-1, 1, 0, 0,
@@ -87,14 +90,27 @@ function SceneTest3D:load()
             -1, 1, 1, 0, 0,
              1,-1, 1, 0, 0
         )
+
+    local solidOrangeMat = Material:new()
+        :setColor(255, 128, 0)
+
+    local cubeModel = Model:new()
+        :setGeometry(cubeGeom)
+        :addMesh(nil, 0, cubeGeom:vertexCount())
+
+    local orangeCubeModel = Model:new()
+        :setGeometry(cubeGeom)
+        :addMesh(solidOrangeMat, 0, cubeGeom:vertexCount())
+
+    self.mesh = ModelNode:new()
+        :setModel(orangeCubeModel)
         :setPosition(0, 0, -3)
     
-    self.subMesh = self.mesh:clone()
+    self.subMesh = ModelNode:new()
+        :setParent(self.mesh)
+        :setModel(cubeModel)
         :setPosition(0, 1, 0)
         :setScaling(.5, .5, .5)
-        :setParent(self.mesh)
-
-    self.mesh:material():setColor(255, 128, 0)
 
     self.camVelX, self.camVelY, self.camVelZ, self.camSpeed = 0, 0, 0, 3
     self.camSensitivity = 0.001

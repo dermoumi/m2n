@@ -25,43 +25,35 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-local class       = require 'nx.class'
-local Graphics    = require 'nx.graphics'
+local Entity3D = require 'nx.graphics.entity3d'
+local class    = require 'nx.class'
 
-local Mesh = class 'nx.graphics.mesh'
-
-------------------------------------------------------------
-local ffi = require 'ffi'
-local C = ffi.C
+local ModelNode = class 'nx.graphics.modelnode'
+ModelNode:include(Entity3D)
 
 ------------------------------------------------------------
-function Mesh:initialize(material, start, count)
-    self._material, self._start, self._count = material, start, count
+function ModelNode:initialize(model)
+    Entity3D.initialize(self)
+    self:setModel(model)
 end
 
 ------------------------------------------------------------
-function Mesh:setMaterial(material)
-    self._material = material
-
+function ModelNode:setModel(model)
+    self._model = model
     return self
 end
 
 ------------------------------------------------------------
-function Mesh:material()
-    return self._material
+function ModelNode:model()
+    return self._model
 end
 
 ------------------------------------------------------------
-function Mesh:_draw(projMat, transMat, context, indexed)
-    if self._material and self._material._context == context then
-        self._material:_apply(projMat, transMat)
-        if indexed then
-            C.nxRendererDrawIndexed(4, self._start, self._count)
-        else
-            C.nxRendererDraw(4, self._start, self._count)
-        end
+function ModelNode:_render(camera, context)
+    if self._model then
+        self._model:_draw(camera:projection(), self:matrix(true), context)
     end
 end
 
 ------------------------------------------------------------
-return Mesh
+return ModelNode

@@ -25,43 +25,42 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-local class       = require 'nx.class'
-local Graphics    = require 'nx.graphics'
+local Mesh     = require 'nx.graphics.mesh'
+local Material = require 'nx.graphics.material'
+local class    = require 'nx.class'
 
-local Mesh = class 'nx.graphics.mesh'
-
-------------------------------------------------------------
-local ffi = require 'ffi'
-local C = ffi.C
+local Model = class 'nx.graphics.model'
 
 ------------------------------------------------------------
-function Mesh:initialize(material, start, count)
-    self._material, self._start, self._count = material, start, count
+function Model:initialize()
+    self._meshes = {}
 end
 
 ------------------------------------------------------------
-function Mesh:setMaterial(material)
-    self._material = material
+function Model:addMesh(m, start, count)
+    if start then m = Mesh:new(m or Material:new(), start, count) end
+
+    self._meshes[#self._meshes+1] = m
 
     return self
 end
 
 ------------------------------------------------------------
-function Mesh:material()
-    return self._material
+function Model:setGeometry(geometry)
+    self._geometry = geometry
+
+    return self
 end
 
 ------------------------------------------------------------
-function Mesh:_draw(projMat, transMat, context, indexed)
-    if self._material and self._material._context == context then
-        self._material:_apply(projMat, transMat)
-        if indexed then
-            C.nxRendererDrawIndexed(4, self._start, self._count)
-        else
-            C.nxRendererDraw(4, self._start, self._count)
+function Model:_draw(projMat, transMat, context)
+    if #self._meshes > 0 and self._geometry and self._geometry:_apply() then
+        local indexed = self._geometry._indexBuffer
+        for i, mesh in ipairs(self._meshes) do
+            mesh:_draw(projMat, transMat, context, indexed)
         end
     end
 end
 
 ------------------------------------------------------------
-return Mesh
+return Model
