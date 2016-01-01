@@ -11,6 +11,9 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+    Based on Python Arabic Reshaper by mpcabd
+    https://github.com/mpcabd/python-arabic-reshaper
 --]]
 
 local OriginalAlfUpperMdd   = 0x0622
@@ -168,7 +171,7 @@ local GlyphList = {
 local function getReshapedGlyph(target, location)
     local glyph = Glyphs[target]
     if glyph then return glyph[location] end
-    
+
     return target
 end
 
@@ -476,7 +479,7 @@ end
 
 local function reshapeSentence(sentence)
     if not sentence[1] then return {} end
-    
+
     return reshapeWords(getWords(sentence))
 end
 

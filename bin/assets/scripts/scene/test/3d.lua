@@ -108,7 +108,7 @@ function SceneTest3D:load()
     self.mesh = ModelNode:new()
         :setModel(orangeCubeModel)
         :setPosition(0, 0, -3)
-    
+
     self.subMesh = ModelNode:new()
         :setParent(self.mesh)
         :setModel(cubeModel)
@@ -164,7 +164,7 @@ function SceneTest3D:onKeyDown(scancode, keyCode, repeated)
     elseif scancode == 'left ctrl' then
         self.camVelY = -self.camSpeed
     elseif scancode == 's' then
-        self.camVelZ = self.camSpeed 
+        self.camVelZ = self.camSpeed
     elseif scancode == 'd' then
         self.camVelX = self.camSpeed
     elseif scancode == 'space' then

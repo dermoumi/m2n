@@ -25,16 +25,22 @@
     For more information, please refer to <http://unlicense.org>
 --]]
 
-local Window      = require 'window'
-local Matrix      = require 'util.matrix'
-local Entity3D    = require 'graphics.entity3d'
-local Camera      = require 'graphics._camera'
+local class        = require 'class'
+local Graphics     = require 'graphics'
+local Window       = require 'window'
+local Matrix       = require 'util.matrix'
+local Entity3D     = require 'graphics.entity3d'
+local Renderbuffer = require 'graphics.renderbuffer'
 
-local Camera3D = Camera:subclass('graphics.camera3d')
+local Camera3D = class 'graphics.camera3d'
 Camera3D:include(Entity3D)
+
+local ffi = require 'ffi'
+local C   = ffi.C
 
 function Camera3D:initialize(a, b, c, d, e, f)
     Entity3D.initialize(self)
+    self:setViewport()
     if e then
         self:setOrtho(a, b, c, d, e, f)
     else
@@ -44,7 +50,8 @@ end
 
 function Camera3D:_invalidate()
     Entity3D._invalidate(self)
-    Camera._invalidate(self)
+    self._projection = nil
+    self._invProjection = nil
 
     return self
 end
@@ -81,6 +88,32 @@ function Camera3D:setOrtho(left, right, bottom, top, near, far)
     end
 end
 
+function Camera3D:setViewport(left, top, width, height)
+    if not left then
+        left, top, width, height = 0, 0, Window.size()
+    elseif not width then
+        left, top, width, height = 0, 0, left, top
+    end
+
+    self._vpX, self._vpY, self._vpW, self._vpH = left, top, width, height
+
+    return self
+end
+
+function Camera3D:setRenderbuffer(rb)
+    self._rb = rb
+
+    return self
+end
+
+function Camera3D:viewport()
+    return self._vpX, self._vpY, self._vpW, self._vpH
+end
+
+function Camera3D:renderbuffer()
+    return self._rb
+end
+
 function Camera3D:view()
     return self._left, self._right, self._bottom, self._top, self._near, self._far
 end
@@ -99,6 +132,36 @@ function Camera3D:projection()
     end
 
     return self._projection
+end
+
+function Camera3D:invProjection()
+    if not self._invProjection then
+        self._invProjection = self:projection():inverse()
+    end
+
+    return self._invProjection
+end
+
+function Camera3D:clear(r, g, b, a, depth, col0, col1, col2, col3, clearDepth)
+    self:apply()
+
+    -- Make sure the values are valid
+    if r == nil then r, g, b = 0, 0, 0 end
+    if col0 == nil then col0, col1, col2, col3 = true, true, true, true end
+    if clearDepth == nil then clearDepth = true end
+
+    C.nxRendererClear(
+        r, g, b, a or 0, depth or 1.0, col0, col1, col2, col3, clearDepth
+    )
+
+    return self
+end
+
+function Camera3D:apply()
+    C.nxRendererSetViewport(self._vpX, self._vpY, self._vpW, self._vpH)
+    Renderbuffer.bind(self._rb)
+
+    return self
 end
 
 function Camera3D:_draw()

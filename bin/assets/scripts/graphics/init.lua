@@ -275,7 +275,7 @@ function Renderer.getCapabilities(cap)
         caps.occQueriesSupported      = b[10]
         caps.timerQueriesSupported    = b[11]
     end
-    
+
     if not cap then
         local capsClone = {}
         for i, v in pairs(caps) do
@@ -427,7 +427,7 @@ function Renderer.blendMode()
     if C.nxRendererGetBlendMode(factors) then
         return true, fromBlendFactor[factors[0]], fromBlendFactor[factors[1]]
     end
-    
+
     return false
 end
 

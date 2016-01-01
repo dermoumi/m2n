@@ -25,15 +25,27 @@
     For more information, please refer to <http://unlicense.org>
 --]]
 
-local Graphics    = require 'graphics'
-local Matrix      = require 'util.matrix'
-local Window      = require 'window'
-local Camera      = require 'graphics._camera'
+local Graphics     = require 'graphics'
+local Renderbuffer = require 'graphics.renderbuffer'
+local Matrix       = require 'util.matrix'
+local Window       = require 'window'
+local class        = require 'class'
 
-local Camera2D = Camera:subclass('graphics.camera2d')
+local Camera2D = class 'graphics.camera2d'
+
+local ffi = require 'ffi'
+local C   = ffi.C
 
 function Camera2D:initialize(x, y, width, height)
+    self:setViewport()
     self:reset(x, y, width, height)
+end
+
+function Camera2D:_invalidate()
+    self._projection = nil
+    self._invProjection = nil
+
+    return self
 end
 
 function Camera2D:setCenter(x, y)
@@ -91,6 +103,32 @@ function Camera2D:zoom(factor, factor2)
     self:setSize(w * factor, h * factor2)
 end
 
+function Camera2D:setViewport(left, top, width, height)
+    if not left then
+        left, top, width, height = 0, 0, Window.size()
+    elseif not width then
+        left, top, width, height = 0, 0, left, top
+    end
+
+    self._vpX, self._vpY, self._vpW, self._vpH = left, top, width, height
+
+    return self
+end
+
+function Camera2D:setRenderbuffer(rb)
+    self._rb = rb
+
+    return self
+end
+
+function Camera2D:viewport()
+    return self._vpX, self._vpY, self._vpW, self._vpH
+end
+
+function Camera2D:renderbuffer()
+    return self._rb
+end
+
 function Camera2D:projection()
     if not self._projection then
         -- Projection components
@@ -111,6 +149,14 @@ function Camera2D:projection()
     end
 
     return self._projection
+end
+
+function Camera2D:invProjection()
+    if not self._invProjection then
+        self._invProjection = self:projection():inverse()
+    end
+
+    return self._invProjection
 end
 
 function Camera2D:draw(drawable, context)
@@ -135,11 +181,29 @@ function Camera2D:fillFsQuad(r, g, b, a, blendMode)
     return self
 end
 
+function Camera2D:clear(r, g, b, a, depth, col0, col1, col2, col3, clearDepth)
+    self:apply()
+
+    -- Make sure the values are valid
+    if r == nil then r, g, b = 0, 0, 0 end
+    if col0 == nil then col0, col1, col2, col3 = true, true, true, true end
+    if clearDepth == nil then clearDepth = true end
+
+    C.nxRendererClear(
+        r, g, b, a or 0, depth or 1.0, col0, col1, col2, col3, clearDepth
+    )
+
+    return self
+end
+
 function Camera2D:apply()
-    Camera.apply(self)
+    C.nxRendererSetViewport(self._vpX, self._vpY, self._vpW, self._vpH)
+    Renderbuffer.bind(self._rb)
 
     Graphics.enableDepthTest(false)
         .enableDepthMask(false)
+
+    return self
 end
 
 return Camera2D
