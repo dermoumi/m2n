@@ -66,9 +66,16 @@ function Quaternion.static.fromAxisAngle(x, y, z, rad)
 end
 
 ------------------------------------------------------------
+function Quaternion.static.combine(quat1, quat2)
+    return Quaternion:new(quat1):combine(quat2)
+end
+
+------------------------------------------------------------
 function Quaternion:initialize(x, y, z, w)
     if not x then
         self.x, self.y, self.z, self.w = 0, 0, 0, 0
+    elseif not y then
+        self.x, self.y, self.z, self.w = x.x, x.y, x.z, x.w
     elseif w then
         self.x, self.y, self.z, self.w = x, y, z, w
     else
@@ -104,11 +111,6 @@ function Quaternion:angles()
     return math.atan2(2 * (wx+yz), 1 - 2 * (xx+yy)),
         math.asin(2 * (wy-xz)),
         math.atan2(2 * (wz+xy), 1 - 2 * (yy+zz))
-end
-
-------------------------------------------------------------
-function Quaternion:clone()
-    return Quaternion:new(self.x, self.y, self.z, self.w)
 end
 
 ------------------------------------------------------------

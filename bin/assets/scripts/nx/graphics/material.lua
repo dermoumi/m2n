@@ -40,25 +40,6 @@ function Material:initialize(context)
 end
 
 ------------------------------------------------------------
-function Material:clone()
-    local material = Material:new()
-
-    for i, texture in pairs(self._textures) do
-        material._textures[i] = texture
-    end
-
-    for uniform, values in pairs(self._uniforms) do
-        material._uniforms[uniform] = values
-    end
-
-    material._shader = self._shader
-    material._colR, material._colG, material._colB, material._colA =
-        self._colR, self._colG, self._colB, self._colA
-
-    return material
-end
-
-------------------------------------------------------------
 function Material:setShader(shader)
     self._shader = shader or Graphics.defaultShader(3)
 

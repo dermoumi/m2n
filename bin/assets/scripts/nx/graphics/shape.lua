@@ -86,18 +86,6 @@ function Shape:initialize()
 end
 
 ------------------------------------------------------------
-function Shape:clone()
-    local shape = Shape:new()
-
-    shape._vertexBuffer, shape._vertexCount = self._vertexBuffer, self._vertexCount
-    shape._indexBuffer, shape._indexCount = self._indexBuffer, self._indexCount
-    shape._texture = self._texture
-    shape._shader = self._shader
-
-    return shape
-end
-
-------------------------------------------------------------
 function Shape:setTexture(texture)
     self._texture = texture
 

@@ -100,11 +100,7 @@ end
 
 ------------------------------------------------------------
 function Entity3D:setRotation(x, y, z, w)
-    if not y then
-        self._quat = x:clone()
-    else
-        self._quat = Quaternion:new(x, y, z, w)
-    end
+    self._quat = Quaternion:new(x, y, z, w)
 
     return self:_invalidate()
 end
@@ -123,11 +119,7 @@ end
 
 ------------------------------------------------------------
 function Entity3D:rotate(x, y, z, w)
-    if not y then
-        self._quat:combine(x)
-    else
-        self._quat:combine(Quaternion:new(x, y, z, w))
-    end
+    self._quat:combine(not y and x or Quaternion:new(x, y, z, w))
 
     return self:_invalidate()
 end
@@ -149,7 +141,7 @@ end
 ------------------------------------------------------------
 function Entity3D:quaternion(absolute)
     if absolute and self._parent then
-        return self._parent:quaternion(true):clone():combine(self._quat)
+        return Quaternion.combine(self._parent:quaternion(true), self._quat)
     end
 
     return self._quat
