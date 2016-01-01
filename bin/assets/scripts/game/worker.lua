@@ -26,8 +26,8 @@
 --]]----------------------------------------------------------------------------
 
 local ffi    = require 'ffi'
-local class  = require 'nx.class'
-local Thread = require 'nx.system.thread'
+local class  = require 'class'
+local Thread = require 'system.thread'
 
 local Worker = class 'Worker'
 

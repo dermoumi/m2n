@@ -25,10 +25,10 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-local class    = require 'nx.class'
+local class    = require 'class'
 local Cache    = require 'game.cache'
 local Worker   = require 'game.worker'
-local Camera2D = require 'nx.graphics.camera2d'
+local Camera2D = require 'graphics.camera2d'
 
 local Scene = class 'scene'
 

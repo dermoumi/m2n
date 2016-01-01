@@ -25,74 +25,58 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-local Cache = {}
-
 local Log = require 'util.log'
 
-------------------------------------------------------------
-local items = {}
+local Filesystem = {}
 
 ------------------------------------------------------------
-function Cache.get(id, loadFunc, addCount)
-    local item = items[id]
+local ffi = require 'ffi'
+local C = ffi.C
 
-    -- If item does not exist, try to load it using loadFunc
-    if not item then
-        -- If no load func, abandon
-        if not loadFunc then
-            return nil, 'Invalid loading function'
+ffi.cdef [[
+    const char* nxFsGetError();
+
+    char** nxFsEnumerateFiles(const char*);
+    void nxFsFreeList(char**);
+    bool nxFsIsFile(const char*);
+    bool nxFsIsDirectory(const char*);
+]]
+
+------------------------------------------------------------
+local function getFsError()
+    return ffi.string(C.nxFsGetError())
+end
+
+------------------------------------------------------------
+function Filesystem.enumerateFiles(path)
+    local fileList = {}
+
+    -- Retrieve files as C list
+    local files = C.nxFsEnumerateFiles(path)
+    if files == nil then
+        Log.warning('Could not enumerate files in "' .. path .. '": ' .. getFsError())
+    else
+        -- Convert it to a lua table
+        while files[#fileList] ~= nil do
+            fileList[#fileList + 1] = ffi.string(files[#fileList])
         end
 
-        -- Try to load the object
-        local newObj, err = loadFunc()
-        if not newObj then
-            return nil, err or 'An error occurred while loading "' .. id .. '"'
-        end
-
-        -- Add the new object to the cache
-        item = Cache.add(id, newObj)
+        -- Free the C list
+        C.nxFsFreeList(files)
     end
 
-    -- If requested, increment the load count of the item
-    if addCount then
-        item.loadCount = item.loadCount + 1
-    end
-
-    -- Return the item's object
-    return item.obj
+    return fileList
 end
 
 ------------------------------------------------------------
-function Cache.release(id)
-    local item = items[id]
-    if not item then return end
-
-    -- Decrement load count
-    item.loadCount = item.loadCount - 1
-
-    -- If load count reaches zero, remove item from list
-    if item.loadCount <= 0 then
-        Log.info('Removing from cache: ' .. id)
-
-        items[id] = nil
-
-        -- If object can be released, do that
-        if item.obj.release then item.obj:release() end
-    end
+function Filesystem.isDirectory(path)
+    return C.nxFsIsDirectory(path)
 end
 
 ------------------------------------------------------------
-function Cache.add(id, newObj)
-    Log.info('Adding to cache: ' .. id)
-
-    local item = {
-        loadCount = 0,
-        obj = newObj
-    }
-
-    items[id] = item
-    return item
+function Filesystem.isFile(path)
+    return C.nxFsIsFile(path)
 end
 
-------------------------------------------------------------
-return Cache
+--------------------------------------------------------------------------------
+return Filesystem

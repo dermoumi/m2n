@@ -25,74 +25,26 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-local Cache = {}
+local System = require 'system'
+local class  = require 'class'
+local ffi    = require 'ffi'
 
-local Log = require 'util.log'
+local Timer = class 'system.timer'
 
 ------------------------------------------------------------
-local items = {}
-
-------------------------------------------------------------
-function Cache.get(id, loadFunc, addCount)
-    local item = items[id]
-
-    -- If item does not exist, try to load it using loadFunc
-    if not item then
-        -- If no load func, abandon
-        if not loadFunc then
-            return nil, 'Invalid loading function'
-        end
-
-        -- Try to load the object
-        local newObj, err = loadFunc()
-        if not newObj then
-            return nil, err or 'An error occurred while loading "' .. id .. '"'
-        end
-
-        -- Add the new object to the cache
-        item = Cache.add(id, newObj)
-    end
-
-    -- If requested, increment the load count of the item
-    if addCount then
-        item.loadCount = item.loadCount + 1
-    end
-
-    -- Return the item's object
-    return item.obj
+function Timer:initialize()
+    self._cdata = ffi.new('double[1]', {System.getTime()})
 end
 
 ------------------------------------------------------------
-function Cache.release(id)
-    local item = items[id]
-    if not item then return end
-
-    -- Decrement load count
-    item.loadCount = item.loadCount - 1
-
-    -- If load count reaches zero, remove item from list
-    if item.loadCount <= 0 then
-        Log.info('Removing from cache: ' .. id)
-
-        items[id] = nil
-
-        -- If object can be released, do that
-        if item.obj.release then item.obj:release() end
-    end
+function Timer:elapsedTime()
+    return System.getTime() - self._cdata[0]
 end
 
 ------------------------------------------------------------
-function Cache.add(id, newObj)
-    Log.info('Adding to cache: ' .. id)
-
-    local item = {
-        loadCount = 0,
-        obj = newObj
-    }
-
-    items[id] = item
-    return item
+function Timer:reset()
+    self._cdata[0] = System.getTime()
 end
 
 ------------------------------------------------------------
-return Cache
+return Timer

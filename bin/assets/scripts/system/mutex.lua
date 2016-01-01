@@ -25,74 +25,51 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-local Cache = {}
+local class = require 'class'
 
-local Log = require 'util.log'
-
-------------------------------------------------------------
-local items = {}
+local Mutex = class 'system.mutex'
 
 ------------------------------------------------------------
-function Cache.get(id, loadFunc, addCount)
-    local item = items[id]
+local ffi = require 'ffi'
+local C = ffi.C
 
-    -- If item does not exist, try to load it using loadFunc
-    if not item then
-        -- If no load func, abandon
-        if not loadFunc then
-            return nil, 'Invalid loading function'
-        end
+ffi.cdef [[
+    typedef struct NxMutex NxMutex;
 
-        -- Try to load the object
-        local newObj, err = loadFunc()
-        if not newObj then
-            return nil, err or 'An error occurred while loading "' .. id .. '"'
-        end
+    NxMutex* nxMutexCreate();
+    void nxMutexRelease(NxMutex*);
+    bool nxMutexTryLock(NxMutex*);
+    void nxMutexLock(NxMutex*);
+    void nxMutexUnlock(NxMutex*);
+]]
 
-        -- Add the new object to the cache
-        item = Cache.add(id, newObj)
-    end
-
-    -- If requested, increment the load count of the item
-    if addCount then
-        item.loadCount = item.loadCount + 1
-    end
-
-    -- Return the item's object
-    return item.obj
+------------------------------------------------------------
+function Mutex:initialize()
+    self._cdata = ffi.gc(C.nxMutexCreate(), C.nxMutexRelease)
 end
 
 ------------------------------------------------------------
-function Cache.release(id)
-    local item = items[id]
-    if not item then return end
+function Mutex:tryLock()
+    if self._cdata == nil then return end
 
-    -- Decrement load count
-    item.loadCount = item.loadCount - 1
-
-    -- If load count reaches zero, remove item from list
-    if item.loadCount <= 0 then
-        Log.info('Removing from cache: ' .. id)
-
-        items[id] = nil
-
-        -- If object can be released, do that
-        if item.obj.release then item.obj:release() end
-    end
+    return C.nxMutexTryLock(self._cdata)
 end
 
 ------------------------------------------------------------
-function Cache.add(id, newObj)
-    Log.info('Adding to cache: ' .. id)
+function Mutex:lock()
+    if self._cdata == nil then return self end
 
-    local item = {
-        loadCount = 0,
-        obj = newObj
-    }
-
-    items[id] = item
-    return item
+    C.nxMutexLock(self._cdata)
+    return self
 end
 
 ------------------------------------------------------------
-return Cache
+function Mutex:unlock()
+    if self._cdata == nil then return self end
+
+    C.nxMutexUnlock(self._cdata)
+    return self
+end
+
+------------------------------------------------------------
+return Mutex

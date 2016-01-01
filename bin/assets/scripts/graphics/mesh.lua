@@ -25,74 +25,43 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-local Cache = {}
+local class       = require 'class'
+local Graphics    = require 'graphics'
 
-local Log = require 'util.log'
-
-------------------------------------------------------------
-local items = {}
+local Mesh = class 'graphics.mesh'
 
 ------------------------------------------------------------
-function Cache.get(id, loadFunc, addCount)
-    local item = items[id]
+local ffi = require 'ffi'
+local C = ffi.C
 
-    -- If item does not exist, try to load it using loadFunc
-    if not item then
-        -- If no load func, abandon
-        if not loadFunc then
-            return nil, 'Invalid loading function'
+------------------------------------------------------------
+function Mesh:initialize(material, start, count)
+    self._material, self._start, self._count = material, start, count
+end
+
+------------------------------------------------------------
+function Mesh:setMaterial(material)
+    self._material = material
+
+    return self
+end
+
+------------------------------------------------------------
+function Mesh:material()
+    return self._material
+end
+
+------------------------------------------------------------
+function Mesh:_draw(projMat, transMat, context, indexed)
+    if self._material and self._material._context == context then
+        self._material:_apply(projMat, transMat)
+        if indexed then
+            C.nxRendererDrawIndexed(4, self._start, self._count)
+        else
+            C.nxRendererDraw(4, self._start, self._count)
         end
-
-        -- Try to load the object
-        local newObj, err = loadFunc()
-        if not newObj then
-            return nil, err or 'An error occurred while loading "' .. id .. '"'
-        end
-
-        -- Add the new object to the cache
-        item = Cache.add(id, newObj)
-    end
-
-    -- If requested, increment the load count of the item
-    if addCount then
-        item.loadCount = item.loadCount + 1
-    end
-
-    -- Return the item's object
-    return item.obj
-end
-
-------------------------------------------------------------
-function Cache.release(id)
-    local item = items[id]
-    if not item then return end
-
-    -- Decrement load count
-    item.loadCount = item.loadCount - 1
-
-    -- If load count reaches zero, remove item from list
-    if item.loadCount <= 0 then
-        Log.info('Removing from cache: ' .. id)
-
-        items[id] = nil
-
-        -- If object can be released, do that
-        if item.obj.release then item.obj:release() end
     end
 end
 
 ------------------------------------------------------------
-function Cache.add(id, newObj)
-    Log.info('Adding to cache: ' .. id)
-
-    local item = {
-        loadCount = 0,
-        obj = newObj
-    }
-
-    items[id] = item
-    return item
-end
-
-------------------------------------------------------------
-return Cache
+return Mesh

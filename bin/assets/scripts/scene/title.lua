@@ -25,10 +25,10 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-local Log      = require 'nx.util.log'
-local Mouse    = require 'nx.window.mouse'
-local Graphics = require 'nx.graphics'
-local Window   = require 'nx.window'
+local Log      = require 'util.log'
+local Mouse    = require 'window.mouse'
+local Graphics = require 'graphics'
+local Window   = require 'window'
 local Scene    = require 'scene'
 
 local SceneTitle = Scene:subclass('scene.title')
@@ -48,11 +48,11 @@ function SceneTitle:initialize(firstRun)
         })
     end
     
-    self:worker():addFile('nx.graphics.image', 'assets/pasrien.png')
-    self:worker():addFile('nx.graphics.image', 'assets/cursor.png')
-    self:worker():addFile('nx.audio.source', 'assets/test.wav')
+    self:worker():addFile('graphics.image', 'assets/pasrien.png')
+    self:worker():addFile('graphics.image', 'assets/cursor.png')
+    self:worker():addFile('audio.source', 'assets/test.wav')
 
-    self.musicSource = require('nx.audio.source'):new()
+    self.musicSource = require('audio.source'):new()
     self:worker():addTask(function(music)
         music:open('assets/undersodiumbulb.ogg')
     end, self.musicSource)
@@ -60,22 +60,22 @@ end
 
 ------------------------------------------------------------
 function SceneTitle:load()
-    self.text = require('nx.graphics.text')
+    self.text = require('graphics.text')
         :new('', require 'game.font', 14)
         :setPosition(10, 10)
 
-    self.sprite = require('nx.graphics.sprite')
+    self.sprite = require('graphics.sprite')
         :new(self:cache('assets/pasrien.png'))
         :setPosition(100, 100)
         -- :addChild(self.text)
 
-    self.voiceGroup = require('nx.audio.voicegroup'):new()
-    self.echoFilter = require('nx.audio.echofilter'):new()
+    self.voiceGroup = require('audio.voicegroup'):new()
+    self.echoFilter = require('audio.echofilter'):new()
         :setParams(.5, .5)
 
-    self.voiceGroup = require('nx.audio.voicegroup'):new()
+    self.voiceGroup = require('audio.voicegroup'):new()
 
-    self.audiobus = require('nx.audio.bus'):new()
+    self.audiobus = require('audio.bus'):new()
         -- :setFilter(self.echoFilter)
     self.audiobus:play()
 

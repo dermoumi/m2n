@@ -25,74 +25,57 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-local Cache = {}
+local Config = require 'config'
+local Font   = require 'graphics.font'
 
-local Log = require 'util.log'
-
-------------------------------------------------------------
-local items = {}
+local VectorFont = Font:subclass('graphics.vectorfont')
 
 ------------------------------------------------------------
-function Cache.get(id, loadFunc, addCount)
-    local item = items[id]
+local ffi = require 'ffi'
+local C = ffi.C
 
-    -- If item does not exist, try to load it using loadFunc
-    if not item then
-        -- If no load func, abandon
-        if not loadFunc then
-            return nil, 'Invalid loading function'
-        end
+ffi.cdef [[
+    NxFont* nxVectorFontNew();
+    bool nxVectorFontOpenFromFile(NxFont*, const char*);
+    bool nxVectorFontOpenFromMemory(NxFont*, const void*, size_t);
+    bool nxVectorFontOpenFromHandle(NxFont*, PHYSFS_File*);
+    const char* nxVectorFontFamilyName(const NxFont*);
+]]
 
-        -- Try to load the object
-        local newObj, err = loadFunc()
-        if not newObj then
-            return nil, err or 'An error occurred while loading "' .. id .. '"'
-        end
+------------------------------------------------------------
+function VectorFont:initialize(a, b)
+    local handle = C.nxVectorFontNew()
+    self._cdata = ffi.gc(handle, C.nxFontRelease)
 
-        -- Add the new object to the cache
-        item = Cache.add(id, newObj)
-    end
-
-    -- If requested, increment the load count of the item
-    if addCount then
-        item.loadCount = item.loadCount + 1
-    end
-
-    -- Return the item's object
-    return item.obj
+    -- If given an argument, pass it to :open()
+    if a then self:open(a, b) end
 end
 
 ------------------------------------------------------------
-function Cache.release(id)
-    local item = items[id]
-    if not item then return end
+function VectorFont:open(a, b)
+    local ok
 
-    -- Decrement load count
-    item.loadCount = item.loadCount - 1
-
-    -- If load count reaches zero, remove item from list
-    if item.loadCount <= 0 then
-        Log.info('Removing from cache: ' .. id)
-
-        items[id] = nil
-
-        -- If object can be released, do that
-        if item.obj.release then item.obj:release() end
+    if type(b) == 'number' then
+        ok = C.nxVectorFontOpenFromMemory(self._cdata, a, b)
+    elseif type(a) == 'string' then
+        ok = C.nxVectorFontOpenFromFile(self._cdata, a)
+    else
+        ok = C.nxVectorFontOpenFromHandle(self._cdata, a._cdata)
     end
+
+    if not ok then
+        C.nxVectorFontOpenFromFile(self._cdata, Config.defaultVectorFont)
+    end
+
+    return self
 end
 
 ------------------------------------------------------------
-function Cache.add(id, newObj)
-    Log.info('Adding to cache: ' .. id)
+function VectorFont:familyName()
+    if self._cdata == nil then return '' end
 
-    local item = {
-        loadCount = 0,
-        obj = newObj
-    }
-
-    items[id] = item
-    return item
+    return ffi.string(C.nxVectorFontFamilyName(self._cdata))
 end
 
 ------------------------------------------------------------
-return Cache
+return VectorFont

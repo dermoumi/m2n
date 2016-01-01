@@ -25,7 +25,7 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-local Log = require 'nx.util.log'
+local Log = require 'util.log'
 
 local noFpsLimit
 
@@ -40,12 +40,12 @@ for i, v in ipairs(arg) do
 end
 
 ------------------------------------------------------------
-local System   = require 'nx.system'
-local LuaVM    = require 'nx.system.luavm'
-local Events   = require 'nx.window.events'
-local Graphics = require 'nx.graphics'
-local Window   = require 'nx.window'
-local Audio    = require 'nx.audio'
+local System   = require 'system'
+local LuaVM    = require 'system.luavm'
+local Events   = require 'window.events'
+local Graphics = require 'graphics'
+local Window   = require 'window'
+local Audio    = require 'audio'
 local Scene    = require 'scene'
 
 -- Load settings (in VM sandbox)

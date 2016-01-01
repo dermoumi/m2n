@@ -25,7 +25,7 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-local Text     = require 'nx.graphics.text'
+local Text     = require 'graphics.text'
 local GameFont = require 'game.font'
 local Scene    = require 'scene'
 

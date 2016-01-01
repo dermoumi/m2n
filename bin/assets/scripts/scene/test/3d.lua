@@ -25,31 +25,31 @@
     For more information, please refer to <http://unlicense.org>
 --]]----------------------------------------------------------------------------
 
-local Keyboard  = require 'nx.window.keyboard'
-local Mouse     = require 'nx.window.mouse'
-local Window    = require 'nx.window'
-local Geometry  = require 'nx.graphics.geometry'
-local ModelNode = require 'nx.graphics.modelnode'
-local Model     = require 'nx.graphics.model'
-local Material  = require 'nx.graphics.material'
-local Entity3D  = require 'nx.graphics.entity3d'
+local Keyboard  = require 'window.keyboard'
+local Mouse     = require 'window.mouse'
+local Window    = require 'window'
+local Geometry  = require 'graphics.geometry'
+local ModelNode = require 'graphics.modelnode'
+local Model     = require 'graphics.model'
+local Material  = require 'graphics.material'
+local Entity3D  = require 'graphics.entity3d'
 local Scene     = require 'scene'
 
 local SceneTest3D = Scene:subclass('scene.test.3d')
 
-local Node = require('nx.class')('node')
+local Node = require('class')('node')
 Node:include(Entity3D)
 
 --------------------------------------------------------
 function SceneTest3D:load()
-    self.text = require('nx.graphics.text')
+    self.text = require('graphics.text')
         :new('', require 'game.font', 14)
         :setPosition(10, 10)
 
     self.player = Node:new()
         -- :setPosition(0, 0, 3)
 
-    self.camera = require('nx.graphics.camera3d'):new()
+    self.camera = require('graphics.camera3d'):new()
         :setParent(self.player)
         -- :setRotation(0, 0, math.pi / 4)
         -- :setScaling(2, 2, 2)
@@ -143,7 +143,7 @@ end
 
 ------------------------------------------------------------
 function SceneTest3D:render()
-    require('nx.graphics')
+    require('graphics')
         .setDepthFunc('lequal')
         .enableDepthTest(true)
         .enableDepthMask(true)
