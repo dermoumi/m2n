@@ -219,7 +219,7 @@ function Entity2D:matrix(absolute)
     if absolute then
         if not self._absMatrix then
             self._absMatrix = self._parent
-                and self._parent:matrix(true):clone():combine(self._matrix)
+                and Matrix.fastMult43(self._parent:matrix(true), self._matrix)
                 or  self._matrix
         end
 

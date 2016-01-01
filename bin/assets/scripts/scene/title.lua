@@ -62,7 +62,6 @@ end
 function SceneTitle:load()
     self.text = require('nx.graphics.text')
         :new('', require 'game.font', 14)
-        :setColor(255, 128, 0)
         :setPosition(10, 10)
 
     self.sprite = require('nx.graphics.sprite')

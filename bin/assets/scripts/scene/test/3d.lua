@@ -42,6 +42,10 @@ Node:include(Entity3D)
 
 --------------------------------------------------------
 function SceneTest3D:load()
+    self.text = require('nx.graphics.text')
+        :new('', require 'game.font', 14)
+        :setPosition(10, 10)
+
     self.player = Node:new()
         -- :setPosition(0, 0, 3)
 
@@ -126,6 +130,8 @@ end
 
 ------------------------------------------------------------
 function SceneTest3D:update(dt)
+    self.text:setString('Current FPS: %i', Window.currentFPS())
+
     -- self.subMesh:rotate(0, 0, math.pi * dt / 2)
     self.subMesh:rotate(0, math.pi * dt / 2, 0)
 
@@ -146,6 +152,8 @@ function SceneTest3D:render()
     self.camera:clear(200, 200, 200)
 
     self.camera:draw(self.mesh)
+
+    self:view():draw(self.text)
 end
 
 ------------------------------------------------------------

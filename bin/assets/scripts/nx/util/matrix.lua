@@ -159,28 +159,47 @@ function Matrix.static.fromOrtho(left, right, bottom, top, near, far)
 end
 
 ------------------------------------------------------------
-function Matrix:initialize()
-    self._cdata = ffi.new('float[16]', {
+function Matrix.static.fastMult43(mat1, mat2)
+    local mat = Matrix:new()
+    local m, m1, m2 = mat._cdata, mat1._cdata, mat2._cdata
+
+    local a00, a01, a02, a03 = m1[0],  m1[1],  m1[2],  m1[3]
+    local a10, a11, a12, a13 = m1[4],  m1[5],  m1[6],  m1[7]
+    local a20, a21, a22, a23 = m1[8],  m1[9],  m1[10], m1[11]
+    local a30, a31, a32, a33 = m1[12], m1[13], m1[14], m1[15]
+
+    -- Cache only the current line of the second matrix
+    local b0, b1, b2, b3 = m2[0], m2[1], m2[2], m2[3]
+    m[0]  = b0*a00 + b1*a10 + b2*a20
+    m[1]  = b0*a01 + b1*a11 + b2*a21
+    m[2]  = b0*a02 + b1*a12 + b2*a22
+
+    b0, b1, b2, b3 = m2[4], m2[5], m2[6], m2[7]
+    m[4]  = b0*a00 + b1*a10 + b2*a20
+    m[5]  = b0*a01 + b1*a11 + b2*a21
+    m[6]  = b0*a02 + b1*a12 + b2*a22
+
+    b0, b1, b2, b3 = m2[8], m2[9], m2[10], m2[11]
+    m[8]  = b0*a00 + b1*a10 + b2*a20
+    m[9]  = b0*a01 + b1*a11 + b2*a21
+    m[10] = b0*a02 + b1*a12 + b2*a22
+
+    b0, b1, b2, b3 = m2[12], m2[13], m2[14], m2[15]
+    m[12] = b0*a00 + b1*a10 + b2*a20 + b3*a30
+    m[13] = b0*a01 + b1*a11 + b2*a21 + b3*a31
+    m[14] = b0*a02 + b1*a12 + b2*a22 + b3*a32
+
+    return mat
+end
+
+------------------------------------------------------------
+function Matrix:initialize(mat)
+    self._cdata = ffi.new('float[16]', mat and mat._cdata or {
         1, 0, 0, 0,
         0, 1, 0, 0,
         0, 0, 1, 0,
         0, 0, 0, 1
     })
-end
-
-------------------------------------------------------------
-function Matrix:clone()
-    local mat = Matrix:allocate()
-    local m   = self._cdata
-
-    mat._cdata = ffi.new('float[16]', {
-        m[0],  m[1],  m[2],  m[3],
-        m[4],  m[5],  m[6],  m[7],
-        m[8],  m[9],  m[10], m[11],
-        m[12], m[13], m[14], m[15]
-    })
-
-    return mat
 end
 
 ------------------------------------------------------------
@@ -192,7 +211,7 @@ function Matrix:combine(mat)
     local a20, a21, a22, a23 = m1[8],  m1[9],  m1[10], m1[11]
     local a30, a31, a32, a33 = m1[12], m1[13], m1[14], m1[15]
 
-    -- Cache only the currnt line of the second matrix
+    -- Cache only the current line of the second matrix
     local b0, b1, b2, b3 = m2[0], m2[1], m2[2], m2[3]
     m1[0]  = b0*a00 + b1*a10 + b2*a20 + b3*a30
     m1[1]  = b0*a01 + b1*a11 + b2*a21 + b3*a31
