@@ -27,11 +27,15 @@
 
 local Log = require 'nx.util.log'
 
+local noFpsLimit
+
 -- Handle application arguments
 for i, v in ipairs(arg) do
     if v == '--version' then
         Log.info('Monsters of Second Night v0.0')
         return 0
+    elseif v == '--nolimit' then
+        noFpsLimit = true
     end
 end
 
@@ -75,7 +79,7 @@ end
 -- Handling FPS
 local totalTime, fixedFrameTime = 0, 1/30
 Window.setFramerateLimit(
-    System.platform('android', 'ios') and 1/30 or 1/60
+    not noFpsLimit and (System.platform('android', 'ios') and 1/30 or 1/60)
 )
 
 -- Startup scene
