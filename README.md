@@ -12,7 +12,7 @@ On linux requires developement libraries for `luaJIT`, `sdl2`, `freetype2` and `
     make config=release -C build
 
 ### Visual studio
-    
+
     premake5 vs2013
 
 or
@@ -22,7 +22,7 @@ or
 Generated project files will be available in the `build` directory
 
 ### Android
-Create a local.properties file with the following content:
+In the `android` directory, create a `local.properties` file with the following content (see `local.properties.template`):
 
     sdk.dir=/path/to/your/android/sdk
     ndk.dir=/path/to/your/android/ndk
