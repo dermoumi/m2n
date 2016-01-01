@@ -28,6 +28,7 @@
 local Keyboard  = require 'window.keyboard'
 local Mouse     = require 'window.mouse'
 local Window    = require 'window'
+local Graphics  = require 'graphics'
 local Geometry  = require 'graphics.geometry'
 local ModelNode = require 'graphics.modelnode'
 local Model     = require 'graphics.model'
@@ -35,10 +36,9 @@ local Material  = require 'graphics.material'
 local Entity3D  = require 'graphics.entity3d'
 local Scene     = require 'scene'
 
-local SceneTest3D = Scene:subclass('scene.test.3d')
+local SceneTest3D = Scene:subclass 'scene.test.3d'
 
-local Node = require('class')('node')
-Node:include(Entity3D)
+local Node = Entity3D:subclass 'node'
 
 function SceneTest3D:load()
     self.text = require('graphics.text')
@@ -139,16 +139,16 @@ function SceneTest3D:update(dt)
 end
 
 function SceneTest3D:render()
-    require('graphics')
-        .setDepthFunc('lequal')
+    Graphics.setDepthFunc('lequal')
         .enableDepthTest(true)
         .enableDepthMask(true)
-        -- .setFillMode('wireframe')
+        .setFillMode('wireframe')
 
     self.camera:clear(200, 200, 200)
 
     self.camera:draw(self.mesh)
 
+    Graphics.setFillMode('solid')
     self:view():draw(self.text)
 end
 

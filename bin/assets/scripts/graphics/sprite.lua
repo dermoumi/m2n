@@ -29,10 +29,8 @@ local Graphics    = require 'graphics'
 local Arraybuffer = require 'graphics.arraybuffer'
 local Texture2D   = require 'graphics.texture2d'
 local Entity2D    = require 'graphics.entity2d'
-local class       = require 'class'
 
-local Sprite = class 'graphics.sprite'
-Sprite:include(Entity2D)
+local Sprite = Entity2D:subclass 'graphics.sprite'
 
 local ffi = require 'ffi'
 local C = ffi.C

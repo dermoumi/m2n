@@ -26,10 +26,8 @@
 --]]
 
 local Entity3D = require 'graphics.entity3d'
-local class    = require 'class'
 
-local ModelNode = class 'graphics.modelnode'
-ModelNode:include(Entity3D)
+local ModelNode = Entity3D:subclass 'graphics.modelnode'
 
 function ModelNode:initialize(model)
     Entity3D.initialize(self)

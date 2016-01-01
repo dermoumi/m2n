@@ -25,13 +25,11 @@
     For more information, please refer to <http://unlicense.org>
 --]]
 
-local class       = require 'class'
 local Graphics    = require 'graphics'
 local Arraybuffer = require 'graphics.arraybuffer'
 local Entity2D    = require 'graphics.entity2d'
 
-local Shape = class 'graphics.shape'
-Shape:include(Entity2D)
+local Shape = Entity2D:subclass 'graphics.shape'
 
 local ffi = require 'ffi'
 local C = ffi.C
@@ -90,7 +88,7 @@ function Shape:setVertexData(primitive, hasColor, a, b, ...)
     if type(a) == 'table' then
         self._primitive  = toPrimitive[primitive] or 0
         self._hasColor   = hasColor
-        
+
         local structName, valueCount, vertexSize = vertexStruct(hasColor)
         self._vertexSize = vertexSize
 

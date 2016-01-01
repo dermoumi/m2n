@@ -25,15 +25,13 @@
     For more information, please refer to <http://unlicense.org>
 --]]
 
-local class       = require 'class'
 local Unicode     = require 'util.unicode'
 local Graphics    = require 'graphics'
 local Arraybuffer = require 'graphics.arraybuffer'
 local Texture     = require 'graphics.texture'
 local Entity2D    = require 'graphics.entity2d'
 
-local Text = class 'graphics.text'
-Text:include(Entity2D)
+local Text = Entity2D:subclass 'graphics.text'
 
 local ffi = require 'ffi'
 local C = ffi.C
@@ -195,13 +193,13 @@ end
 function Text:_render(camera)
     if self._cdata ~= nil and self._font and self._font._cdata ~= nil then
         local shader = self._shader or Text._defaultShader()
-    
+
         shader:bind()
         shader:setUniform('uProjMat', camera:projection())
         shader:setUniform('uTransMat', self:matrix(true))
         shader:setUniform('uColor', self:color(true, true))
         shader:setSampler('uTexture', 0)
-        
+
         local bufferIDs = C.nxTextArraybufferIDs(self._cdata, bufCountPtr)
         for i = 0, bufCountPtr[0] - 1 do
             local bufferID = bufferIDs[i];

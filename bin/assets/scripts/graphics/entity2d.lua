@@ -27,8 +27,9 @@
 
 local Graphics = require 'graphics'
 local Matrix   = require 'util.matrix'
+local class    = require 'class'
 
-local Entity2D = {}
+local Entity2D = class 'graphics.entity2d'
 
 function Entity2D:initialize()
     self._posX,    self._posY    = 0, 0

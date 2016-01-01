@@ -25,15 +25,13 @@
     For more information, please refer to <http://unlicense.org>
 --]]
 
-local class        = require 'class'
 local Graphics     = require 'graphics'
 local Window       = require 'window'
 local Matrix       = require 'util.matrix'
 local Entity3D     = require 'graphics.entity3d'
 local Renderbuffer = require 'graphics.renderbuffer'
 
-local Camera3D = class 'graphics.camera3d'
-Camera3D:include(Entity3D)
+local Camera3D = Entity3D:subclass 'graphics.camera3d'
 
 local ffi = require 'ffi'
 local C   = ffi.C

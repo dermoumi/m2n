@@ -27,8 +27,9 @@
 
 local Matrix     = require 'util.matrix'
 local Quaternion = require 'util.quaternion'
+local class      = require 'class'
 
-local Entity3D = {}
+local Entity3D = class 'graphics.entity3d'
 
 function Entity3D:initialize()
     self._posX, self._posY, self._posZ = 0, 0, 0
