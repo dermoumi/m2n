@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,46 +23,35 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #include "../config.hpp"
 
 #include <mutex>
 
-//----------------------------------------------------------
-// Declarations
-//----------------------------------------------------------
 using NxMutex = std::mutex;
 
-//----------------------------------------------------------
-// Exported functions
-//----------------------------------------------------------
 NX_EXPORT NxMutex* nxMutexCreate()
 {
     return new std::mutex();
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxMutexRelease(NxMutex* mutex)
 {
     delete mutex;
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxMutexLock(NxMutex* mutex)
 {
     mutex->lock();
 }
 
-//----------------------------------------------------------
 NX_EXPORT bool nxMutexTryLock(NxMutex* mutex)
 {
     return mutex->try_lock();
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxMutexUnlock(NxMutex* mutex)
 {
     mutex->unlock();
 }
-
-//==============================================================================

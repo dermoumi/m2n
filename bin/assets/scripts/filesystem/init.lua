@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,13 +23,12 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local Log = require 'util.log'
 
 local Filesystem = {}
 
-------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
@@ -42,12 +41,10 @@ ffi.cdef [[
     bool nxFsIsDirectory(const char*);
 ]]
 
-------------------------------------------------------------
 local function getFsError()
     return ffi.string(C.nxFsGetError())
 end
 
-------------------------------------------------------------
 function Filesystem.enumerateFiles(path)
     local fileList = {}
 
@@ -68,15 +65,12 @@ function Filesystem.enumerateFiles(path)
     return fileList
 end
 
-------------------------------------------------------------
 function Filesystem.isDirectory(path)
     return C.nxFsIsDirectory(path)
 end
 
-------------------------------------------------------------
 function Filesystem.isFile(path)
     return C.nxFsIsFile(path)
 end
 
---------------------------------------------------------------------------------
 return Filesystem

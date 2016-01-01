@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,14 +23,13 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local class    = require 'class'
 local Graphics = require 'graphics'
 
 local Material = class 'graphics.material'
 
-------------------------------------------------------------
 function Material:initialize(context)
     self._context = context or 'ambient'
     self._textures = {}
@@ -39,21 +38,18 @@ function Material:initialize(context)
     self._colR, self._colG, self._colB, self._colA = 1, 1, 1, 1
 end
 
-------------------------------------------------------------
 function Material:setShader(shader)
     self._shader = shader or Graphics.defaultShader(3)
 
     return self
 end
 
-------------------------------------------------------------
 function Material:setTexture(texture, slot)
     self._textures[slot or 'uTexture'] = texture
 
     return self
 end
 
-------------------------------------------------------------
 function Material:setColor(r, g, b, a)
     self._colR = r/255
     self._colG = g/255
@@ -63,41 +59,34 @@ function Material:setColor(r, g, b, a)
     return self
 end
 
-------------------------------------------------------------
 function Material:setContext(context)
     self._context = context
 
     return self
 end
 
-------------------------------------------------------------
 function Material:setUniform(name, a, b, c, d)
     self._uniforms[name] = {a, b, c, d}
 
     return self
 end
 
-------------------------------------------------------------
 function Material:shader()
     return self._shader
 end
 
-------------------------------------------------------------
 function Material:texture(slot)
     return self._textures[slot or 'uTexture']
 end
 
-------------------------------------------------------------
 function Material:color()
     return self._colR*255, self._colG*255, self._colB*255, self._colA*255
 end
 
-------------------------------------------------------------
 function Material:context()
     return self._context
 end
 
-------------------------------------------------------------
 function Material:_apply(projMat, transMat)
     self._shader:bind()
         :setUniform('uProjMat', projMat)
@@ -121,5 +110,4 @@ function Material:_apply(projMat, transMat)
     end
 end
 
-------------------------------------------------------------
 return Material

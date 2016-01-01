@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,7 +23,7 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local Text     = require 'graphics.text'
 local GameFont = require 'game.font'
@@ -31,7 +31,6 @@ local Scene    = require 'scene'
 
 local SceneLoad = Scene:subclass('scene._load')
 
-------------------------------------------------------------
 function SceneLoad:initialize(scene)
     self.nextScene = scene
     self.worker    = scene.__worker
@@ -61,7 +60,6 @@ function SceneLoad:initialize(scene)
     self.message = params.message or 'LOADING %i%%'
 end
 
-------------------------------------------------------------
 function SceneLoad:load()
     self.worker:start()
 
@@ -81,7 +79,6 @@ function SceneLoad:load()
     self:performTransition()
 end
 
-------------------------------------------------------------
 function SceneLoad:update(dt)
     -- Calculate fading percent if there's any ongoing fading
     if self:isOpening() then
@@ -100,7 +97,6 @@ function SceneLoad:update(dt)
         )
 end
 
-------------------------------------------------------------
 function SceneLoad:render()
     -- Draw overlay quad only if there's a scene *currently* rendering behind
     if self.opaque then
@@ -112,19 +108,16 @@ function SceneLoad:render()
     self:view():draw(self.text)
 end
 
-------------------------------------------------------------
 function SceneLoad:renderTransition(time, isOpening)
     if not isOpening then
         Scene.renderTransition(self, time, isOpening)
     end
 end
 
-------------------------------------------------------------
 function SceneLoad:transitionColor()
     return self.colR, self.colG, self.colB, self.colA
 end
 
-------------------------------------------------------------
 function SceneLoad:check()
     local loaded, failed, total = self.worker:progress()
 
@@ -146,15 +139,12 @@ function SceneLoad:check()
     end
 end
 
-------------------------------------------------------------
 function SceneLoad:updateParent()
     return true
 end
 
-------------------------------------------------------------
 function SceneLoad:renderParent()
     return not self.opaque
 end
 
-------------------------------------------------------------
 return SceneLoad

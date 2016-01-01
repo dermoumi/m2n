@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,57 +23,48 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local AudioSource = require 'audio.source'
 
 local AudioBus = AudioSource:subclass('audio.bus')
 
-------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
-------------------------------------------------------------
 function AudioBus:initialize()
     self._cdata = ffi.gc(C.nxAudioBusCreate(), C.nxAudioSourceRelease)
     self._type = 'bus'
 end
 
-------------------------------------------------------------
 function AudioBus:load()
     -- no op
     return self
 end
 
-------------------------------------------------------------
 function AudioBus:open()
     -- no op
     return self
 end
 
-------------------------------------------------------------
 function AudioBus:setChannels(channelCount)
     C.nxAudioBusSetChannels(self._cdata, channelCount)
 
     return self
 end
 
-------------------------------------------------------------
 function AudioBus:enableVisualization(enable)
     C.nxAudioBusEnableVisualization(self._cdata, enable)
 
     return self
 end
 
-------------------------------------------------------------
 function AudioBus:calcFFTData()
     return C.nxAudioBusCalcFFT(self._cdata)
 end
 
-------------------------------------------------------------
 function AudioBus:currentWaveData()
     return C.nxAudioBusCurrentWaveData(self._cdata)
 end
 
-------------------------------------------------------------
 return AudioBus

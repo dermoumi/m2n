@@ -1858,7 +1858,7 @@ LJFOLDF(merge_eqne_snew_kgc)
   return NEXTFOLD;
 }
 
-/* -- Loads --------------------------------------------------------------- */
+/* -- Loads ----- */
 
 /* Loads cannot be folded or passed on to CSE in general.
 ** Alias analysis is needed to check for forwarding opportunities.
@@ -2153,7 +2153,7 @@ LJFOLD(CNEW any any)
 LJFOLD(XSNEW any any)
 LJFOLDX(lj_ir_emit)
 
-/* ------------------------------------------------------------------------ */
+/* -------------- */
 
 /* Every entry in the generated hash table is a 32 bit pattern:
 **
@@ -2167,7 +2167,7 @@ LJFOLDX(lj_ir_emit)
 
 #include "lj_folddef.h"
 
-/* ------------------------------------------------------------------------ */
+/* -------------- */
 
 /* Fold IR instruction. */
 TRef LJ_FASTCALL lj_opt_fold(jit_State *J)
@@ -2284,7 +2284,7 @@ TRef LJ_FASTCALL lj_opt_cselim(jit_State *J, IRRef lim)
   return lj_ir_emit(J);
 }
 
-/* ------------------------------------------------------------------------ */
+/* -------------- */
 
 #undef IR
 #undef fins

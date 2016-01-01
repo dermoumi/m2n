@@ -1,16 +1,16 @@
-----------------------------------------------------------------------------
+------------------
 -- LuaJIT PPC disassembler module.
 --
 -- Copyright (C) 2005-2014 Mike Pall. All rights reserved.
 -- Released under the MIT/X license. See Copyright Notice in luajit.h
-----------------------------------------------------------------------------
+------------------
 -- This is a helper module used by the LuaJIT machine code dumper module.
 --
 -- It disassembles all common, non-privileged 32/64 bit PowerPC instructions
 -- plus the e500 SPE instructions and some Cell/Xenon extensions.
 --
 -- NYI: VMX, VMX128
-------------------------------------------------------------------------------
+--------------------
 
 local type = type
 local sub, byte, format = string.sub, string.byte, string.format
@@ -20,9 +20,9 @@ local bit = require("bit")
 local band, bor, tohex = bit.band, bit.bor, bit.tohex
 local lshift, rshift, arshift = bit.lshift, bit.rshift, bit.arshift
 
-------------------------------------------------------------------------------
+--------------------
 -- Primary and extended opcode maps
-------------------------------------------------------------------------------
+--------------------
 
 local map_crops = {
   shift = 1, mask = 1023,
@@ -372,7 +372,7 @@ local map_pri = {
   false,	false,		map_std,	map_fpd,
 }
 
-------------------------------------------------------------------------------
+--------------------
 
 local map_gpr = {
   [0] = "r0", "sp", "r2", "r3", "r4", "r5", "r6", "r7",
@@ -392,7 +392,7 @@ local function condfmt(cond)
   end
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Output a nicely formatted line with an opcode and operands.
 local function putop(ctx, text, operands)
@@ -547,7 +547,7 @@ local function disass_ins(ctx)
   return putop(ctx, name, operands)
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Disassemble a block of code.
 local function disass_block(ctx, ofs, len)

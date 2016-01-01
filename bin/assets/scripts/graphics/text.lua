@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,7 +23,7 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local class       = require 'class'
 local Unicode     = require 'util.unicode'
@@ -35,7 +35,6 @@ local Entity2D    = require 'graphics.entity2d'
 local Text = class 'graphics.text'
 Text:include(Entity2D)
 
-------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
@@ -56,7 +55,6 @@ ffi.cdef [[
     uint32_t* nxTextArraybufferIDs(const NxText*, uint32_t*);
 ]]
 
-------------------------------------------------------------
 local bufCountPtr, vertCountPtr = ffi.new('uint32_t[1]'), ffi.new('uint32_t[1]')
 
 local toStyle = {
@@ -67,17 +65,14 @@ local toStyle = {
     strikethrough = 8
 }
 
-------------------------------------------------------------
 function Text.static._defaultShader()
     return Graphics.defaultShader(1)
 end
 
-------------------------------------------------------------
 function Text.static._vertexLayout()
     return Graphics.vertexLayout(1)
 end
 
-------------------------------------------------------------
 function Text:initialize(str, font, charSize)
     Entity2D.initialize(self)
 
@@ -91,7 +86,6 @@ function Text:initialize(str, font, charSize)
     self._vertices = Arraybuffer:new()
 end
 
-------------------------------------------------------------
 function Text:release()
     if self._cdata == 0 then return end
 
@@ -99,7 +93,6 @@ function Text:release()
     self._cdata = nil
 end
 
-------------------------------------------------------------
 function Text:setString(str, arg, ...)
     if type(str) == 'string' then
         if arg then str = str:format(arg, ...) end
@@ -124,7 +117,6 @@ function Text:setString(str, arg, ...)
     return self
 end
 
-------------------------------------------------------------
 function Text:setFont(font)
     self._font = font
     if font then C.nxTextSetFont(self._cdata, font._cdata) end
@@ -132,7 +124,6 @@ function Text:setFont(font)
     return self
 end
 
-------------------------------------------------------------
 function Text:setSize(size)
     self._charSize = size
     C.nxTextSetCharacterSize(self._cdata, size)
@@ -140,7 +131,6 @@ function Text:setSize(size)
     return self
 end
 
-------------------------------------------------------------
 function Text:setStyle(style1, style2, ...)
     self._style = {style1, style2, ...}
 
@@ -160,7 +150,6 @@ function Text:setStyle(style1, style2, ...)
     return self
 end
 
-------------------------------------------------------------
 function Text:string(u32)
     if not self._string and not self._u32string then return '' end
 
@@ -177,22 +166,18 @@ function Text:string(u32)
     end
 end
 
-------------------------------------------------------------
 function Text:font()
     return self._font
 end
 
-------------------------------------------------------------
 function Text:size()
     return self._charSize
 end
 
-------------------------------------------------------------
 function Text:style()
     return unpack(self._style)
 end
 
-------------------------------------------------------------
 function Text:characterPosition(index)
     local posPtr = ffi.new('float[2]')
     C.nxTextCharacterPosition(self._cdata, index, posPtr)
@@ -200,7 +185,6 @@ function Text:characterPosition(index)
     return posPtr[0], posPtr[1]
 end
 
-------------------------------------------------------------
 function Text:bounds()
     local boundsPtr = ffi.new('float[4]')
     C.nxTextBounds(self._cdata, boundsPtr)
@@ -208,7 +192,6 @@ function Text:bounds()
     return boundsPtr[0], boundsPtr[1], boundsPtr[2], boundsPtr[3]
 end
 
-------------------------------------------------------------
 function Text:_render(camera)
     if self._cdata ~= nil and self._font and self._font._cdata ~= nil then
         local shader = self._shader or Text._defaultShader()
@@ -239,5 +222,4 @@ function Text:_render(camera)
     end
 end
 
-------------------------------------------------------------
 return Text

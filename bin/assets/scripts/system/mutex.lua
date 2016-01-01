@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,13 +23,12 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local class = require 'class'
 
 local Mutex = class 'system.mutex'
 
-------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
@@ -43,19 +42,16 @@ ffi.cdef [[
     void nxMutexUnlock(NxMutex*);
 ]]
 
-------------------------------------------------------------
 function Mutex:initialize()
     self._cdata = ffi.gc(C.nxMutexCreate(), C.nxMutexRelease)
 end
 
-------------------------------------------------------------
 function Mutex:tryLock()
     if self._cdata == nil then return end
 
     return C.nxMutexTryLock(self._cdata)
 end
 
-------------------------------------------------------------
 function Mutex:lock()
     if self._cdata == nil then return self end
 
@@ -63,7 +59,6 @@ function Mutex:lock()
     return self
 end
 
-------------------------------------------------------------
 function Mutex:unlock()
     if self._cdata == nil then return self end
 
@@ -71,5 +66,4 @@ function Mutex:unlock()
     return self
 end
 
-------------------------------------------------------------
 return Mutex

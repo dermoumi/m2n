@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,11 +23,10 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local Nx = {}
 
-------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 ffi.cdef [[
@@ -37,22 +36,19 @@ ffi.cdef [[
     const char* nxSysGetPlatform();
 ]]
 
--- Constants -----------------------------------------------
+-- Constants
 local platform = ffi.string(C.nxSysGetPlatform()):lower()
 
-------------------------------------------------------------
 function Nx.sleep(t)
     C.nxSysSleep(t)
 
     return Nx
 end
 
-------------------------------------------------------------
 function Nx.getTime()
     return C.nxSysGetTime()
 end
 
-------------------------------------------------------------
 function Nx.platform(a, b, ...)
     if not a then return platform end
     if not b then return platform == a end
@@ -64,5 +60,4 @@ function Nx.platform(a, b, ...)
     return false
 end
 
-------------------------------------------------------------
 return Nx

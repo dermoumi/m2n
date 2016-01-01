@@ -22,7 +22,7 @@ void LJ_FASTCALL lj_func_freeproto(global_State *g, GCproto *pt)
   lj_mem_free(g, pt, pt->sizept);
 }
 
-/* -- Upvalues ------------------------------------------------------------ */
+/* -- Upvalues -- */
 
 static void unlinkuv(GCupval *uv)
 {

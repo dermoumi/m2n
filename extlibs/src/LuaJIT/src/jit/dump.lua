@@ -1,9 +1,9 @@
-----------------------------------------------------------------------------
+------------------
 -- LuaJIT compiler dump module.
 --
 -- Copyright (C) 2005-2014 Mike Pall. All rights reserved.
 -- Released under the MIT license. See Copyright Notice in luajit.h
-----------------------------------------------------------------------------
+------------------
 --
 -- This module can be used to debug the JIT compiler itself. It dumps the
 -- code representations and structures used in various compiler stages.
@@ -51,7 +51,7 @@
 -- You probably want to use less -R to enjoy viewing ANSI-colored text from
 -- a pipe or a file. Add this to your ~/.bashrc: export LESS="-R"
 --
-------------------------------------------------------------------------------
+--------------------
 
 -- Cache some library functions and objects.
 local jit = require("jit")
@@ -75,7 +75,7 @@ local bcline, disass
 -- Active flag, output file handle and dump mode.
 local active, out, dumpmode
 
-------------------------------------------------------------------------------
+--------------------
 
 local symtabmt = { __index = false }
 local symtab = {}
@@ -151,7 +151,7 @@ local function dump_mcode(tr)
   end
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 local irtype_text = {
   [0] = "nil",
@@ -521,7 +521,7 @@ local function dump_ir(tr, dumpsnap, dumpreg)
   end
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 local recprefix = ""
 local recdepth = 0
@@ -593,7 +593,7 @@ local function dump_record(tr, func, pc, depth, callee)
   end
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Dump taken trace exits.
 local function dump_texit(tr, ex, ngpr, nfpr, ...)
@@ -625,7 +625,7 @@ local function dump_texit(tr, ex, ngpr, nfpr, ...)
   end
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Detach dump handlers.
 local function dumpoff()

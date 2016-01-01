@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,43 +23,34 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #include "../config.hpp"
 #include "../graphics/vectorfont.hpp"
 
-//----------------------------------------------------------
-// Declarations
-//----------------------------------------------------------
 using NxFont = Font;
 struct PHYSFS_File;
 
-//----------------------------------------------------------
-// Exported functions
-//----------------------------------------------------------
 NX_EXPORT NxFont* nxVectorFontNew()
 {
     return new VectorFont();
 }
 
-//----------------------------------------------------------
 NX_EXPORT bool nxVectorFontOpenFromFile(NxFont* font, const char* filename)
 {
     return static_cast<VectorFont*>(font)->open(filename);
 }
 
-//----------------------------------------------------------
 NX_EXPORT bool nxVectorFontOpenFromMemory(NxFont* font, const void* buffer, size_t size)
 {
     return static_cast<VectorFont*>(font)->open(buffer, size);
 }
 
-//----------------------------------------------------------
 NX_EXPORT bool nxVectorFontOpenFromHandle(NxFont* font, PHYSFS_File* file)
 {
     return static_cast<VectorFont*>(font)->open(file);
 }
 
-//----------------------------------------------------------
 NX_EXPORT const char* nxVectorFontFamilyName(const NxFont* font)
 {
     return static_cast<const VectorFont*>(font)->info().family.data();

@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,7 +23,7 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local Entity3D = require 'graphics.entity3d'
 local class    = require 'class'
@@ -31,29 +31,24 @@ local class    = require 'class'
 local ModelNode = class 'graphics.modelnode'
 ModelNode:include(Entity3D)
 
-------------------------------------------------------------
 function ModelNode:initialize(model)
     Entity3D.initialize(self)
     self:setModel(model)
 end
 
-------------------------------------------------------------
 function ModelNode:setModel(model)
     self._model = model
     return self
 end
 
-------------------------------------------------------------
 function ModelNode:model()
     return self._model
 end
 
-------------------------------------------------------------
 function ModelNode:_render(camera, context)
     if self._model then
         self._model:_draw(camera:projection(), self:matrix(true), context)
     end
 end
 
-------------------------------------------------------------
 return ModelNode

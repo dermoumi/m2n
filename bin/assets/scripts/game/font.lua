@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
  This is free and unencumbered software released into the public domain.
 
  Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,14 +23,13 @@
  OTHER DEALINGS IN THE SOFTWARE.
 
  For more information, please refer to <http://unlicense.org>
- --]]----------------------------------------------------------------------------
+ --]]
 
 local VectorFont = require 'graphics.vectorfont'
 local FontStack  = require 'graphics.fontstack'
 local Log        = require 'util.log'
 local GameCache  = require 'game.cache'
 
-------------------------------------------------------------
 local stack = FontStack:new()
 
 local fonts = {

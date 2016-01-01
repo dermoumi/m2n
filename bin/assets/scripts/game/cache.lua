@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,16 +23,14 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local Cache = {}
 
 local Log = require 'util.log'
 
-------------------------------------------------------------
 local items = {}
 
-------------------------------------------------------------
 function Cache.get(id, loadFunc, addCount)
     local item = items[id]
 
@@ -62,7 +60,6 @@ function Cache.get(id, loadFunc, addCount)
     return item.obj
 end
 
-------------------------------------------------------------
 function Cache.release(id)
     local item = items[id]
     if not item then return end
@@ -81,7 +78,6 @@ function Cache.release(id)
     end
 end
 
-------------------------------------------------------------
 function Cache.add(id, newObj)
     Log.info('Adding to cache: ' .. id)
 
@@ -94,5 +90,4 @@ function Cache.add(id, newObj)
     return item
 end
 
-------------------------------------------------------------
 return Cache

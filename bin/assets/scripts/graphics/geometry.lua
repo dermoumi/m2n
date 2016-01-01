@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,7 +23,7 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local Graphics    = require 'graphics'
 local Arraybuffer = require 'graphics.arraybuffer'
@@ -31,7 +31,6 @@ local class       = require 'class'
 
 local Geometry = class 'graphics.geometry'
 
-------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
@@ -41,12 +40,10 @@ ffi.cdef [[
     } NxMeshVertexPosCoords;
 ]]
 
-------------------------------------------------------------
 local vertexSize, vertexLayout =
     ffi.sizeof('NxMeshVertexPosCoords'),
     Graphics.vertexLayout(3)
 
-------------------------------------------------------------
 function Geometry:setVertexData(a, b, ...)
     if b then a = {a, b, ...} end
     if type(a) == 'table' then
@@ -74,7 +71,6 @@ function Geometry:setVertexData(a, b, ...)
     return self
 end
 
-------------------------------------------------------------
 function Geometry:setIndexData(a, b, ...)
     if b then a = {a, b, ...} end
     if type(a) == 'table' then
@@ -89,17 +85,14 @@ function Geometry:setIndexData(a, b, ...)
     return self
 end
 
-------------------------------------------------------------
 function Geometry:vertexCount()
     return self._vertexBuffer and self._vertexCount or 0
 end
 
-------------------------------------------------------------
 function Geometry:indexCount()
     return self._indexBuffer and self._indexBuffer or 0
 end
 
-------------------------------------------------------------
 function Geometry:_apply()
     if self._vertexBuffer then
         Arraybuffer.setVertexbuffer(self._vertexBuffer, 0, 0, vertexSize)
@@ -111,5 +104,4 @@ function Geometry:_apply()
     return false
 end
 
-------------------------------------------------------------
 return Geometry

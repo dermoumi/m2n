@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,7 +23,7 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local Keyboard = require 'window.keyboard'
 local Mouse    = require 'window.mouse'
@@ -33,7 +33,6 @@ local Window   = require 'window'
 
 local Events = {}
 
-------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
@@ -82,7 +81,6 @@ ffi.cdef [[
     NxEventType nxEventPoll(NxEvent*);
 ]]
 
-------------------------------------------------------------
 local function nextEvent(func)
     local evType, evPtr = nil, ffi.new('NxEvent[1]')
     repeat
@@ -160,19 +158,16 @@ local function nextEvent(func)
     end
 end
 
-------------------------------------------------------------
 function Events.wait()
     return function(t, i)
         return nextEvent(C.nxEventWait)
     end
 end
 
-------------------------------------------------------------
 function Events.poll()
     return function(t, i)
         return nextEvent(C.nxEventPoll)
     end
 end
 
-------------------------------------------------------------
 return Events

@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,7 +23,7 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local ffi    = require 'ffi'
 local class  = require 'class'
@@ -31,10 +31,8 @@ local Thread = require 'system.thread'
 
 local Worker = class 'Worker'
 
-------------------------------------------------------------
 local loaderFunc = {}
 
-------------------------------------------------------------
 local function genericTaskFunc(loadedCount, func, ...)
     loadedCount = require('ffi').cast('uint32_t*', loadedCount)
     if not func(...) then
@@ -44,7 +42,6 @@ local function genericTaskFunc(loadedCount, func, ...)
     end
 end
 
-------------------------------------------------------------
 local function genericLoadingFunc(loaderFunc, obj, filename, loadedCount)
     loadedCount = require('ffi').cast('uint32_t*', loadedCount)
     if not loaderFunc(obj, filename) then
@@ -54,31 +51,26 @@ local function genericLoadingFunc(loaderFunc, obj, filename, loadedCount)
     end
 end
 
-------------------------------------------------------------
 local function callLoadFunc(obj, id)
     obj:load(id)
     return true
 end
 
-------------------------------------------------------------
 local function returnFalseFunc()
     return false
 end
 
-------------------------------------------------------------
 function Worker.static.registerFunc(objType, func)
     loaderFunc[objType] = func
     return Worker
 end
 
-------------------------------------------------------------
 function Worker:initialize()
     self._tasks = {}
     self._taskCount = 0
     self._loadedCount = ffi.new('uint32_t[2]')
 end
 
-------------------------------------------------------------
 function Worker:addFile(objType, id)
     local Cache = require('game.cache')
 
@@ -104,7 +96,6 @@ function Worker:addFile(objType, id)
     Cache.add(id, obj)
 end
 
-------------------------------------------------------------
 function Worker:addTask(taskFunc, ...)
     self:checkCount()
     self._taskCount = self._taskCount + 1
@@ -112,7 +103,6 @@ function Worker:addTask(taskFunc, ...)
     self._tasks[#self._tasks+1] = {genericTaskFunc, self._loadedCount, taskFunc, ...}
 end
 
-------------------------------------------------------------
 function Worker:start()
     -- Make a thread for each task, and detach it...
     for i, task in ipairs(self._tasks) do
@@ -124,17 +114,14 @@ function Worker:start()
     self._shouldReset = true
 end
 
-------------------------------------------------------------
 function Worker:progress()
     return tonumber(self._loadedCount[0]), tonumber(self._loadedCount[1]), self._taskCount
 end
 
-------------------------------------------------------------
 function Worker:taskCount()
     return self._taskCount
 end
 
-------------------------------------------------------------
 function Worker:checkCount()
     if self._shouldReset then
         self._loadedCount[0] = 0
@@ -143,5 +130,4 @@ function Worker:checkCount()
     end
 end
 
-------------------------------------------------------------
 return Worker

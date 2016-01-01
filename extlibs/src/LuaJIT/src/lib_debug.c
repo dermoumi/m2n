@@ -19,7 +19,7 @@
 #include "lj_debug.h"
 #include "lj_lib.h"
 
-/* ------------------------------------------------------------------------ */
+/* -------------- */
 
 #define LJLIB_MODULE_debug
 
@@ -65,7 +65,7 @@ LJLIB_CF(debug_setfenv)
   return 1;
 }
 
-/* ------------------------------------------------------------------------ */
+/* -------------- */
 
 static void settabss(lua_State *L, const char *i, const char *v)
 {
@@ -281,7 +281,7 @@ LJLIB_CF(debug_setuservalue)
 }
 #endif
 
-/* ------------------------------------------------------------------------ */
+/* -------------- */
 
 static const char KEY_HOOK = 'h';
 
@@ -357,7 +357,7 @@ LJLIB_CF(debug_gethook)
   return 3;
 }
 
-/* ------------------------------------------------------------------------ */
+/* -------------- */
 
 LJLIB_CF(debug_debug)
 {
@@ -376,7 +376,7 @@ LJLIB_CF(debug_debug)
   }
 }
 
-/* ------------------------------------------------------------------------ */
+/* -------------- */
 
 #define LEVELS1	12	/* size of the first part of the stack */
 #define LEVELS2	10	/* size of the second part of the stack */
@@ -393,7 +393,7 @@ LJLIB_CF(debug_traceback)
   return 1;
 }
 
-/* ------------------------------------------------------------------------ */
+/* -------------- */
 
 #include "lj_libdef.h"
 

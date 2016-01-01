@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,14 +23,13 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local class = require 'class'
 local Log   = require 'util.log'
 
 local LuaVM = class 'system.luavm'
 
-------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
@@ -42,18 +41,18 @@ ffi.cdef [[
 
     lua_State* luaL_newstate();
     void lua_close(lua_State*);
-    
+
     int lua_gettop(lua_State*);
     void lua_settop(lua_State*, int);
 
     void lua_createtable(lua_State*, int, int);
     int lua_next(lua_State*, int);
-    
+
     void lua_getfield(lua_State*, int, const char*);
     void lua_rawset(lua_State*, int);
-    
+
     int lua_pcall(lua_State*, int, int, int);
-    
+
     void lua_pushnil(lua_State*);
     void lua_pushnumber(lua_State*, double);
     void lua_pushstring(lua_State*, const char*);
@@ -71,7 +70,7 @@ ffi.cdef [[
     int lua_type(lua_State*, int);
 ]]
 
--- Helpers -------------------------------------------------
+-- Helpers
 local pushers = {}
 local retrievers = {}
 
@@ -260,7 +259,6 @@ retrievers = {
     ['function'] = funcRetriever
 }
 
-------------------------------------------------------------
 function LuaVM:initialize()
     local handle = C.luaL_newstate()
     if handle == nil then
@@ -278,7 +276,6 @@ function LuaVM:initialize()
     end
 end
 
-------------------------------------------------------------
 function LuaVM:release()
     if self._cdata == nil then return end
 
@@ -286,19 +283,16 @@ function LuaVM:release()
     self._cdata = nil
 end
 
-------------------------------------------------------------
 function LuaVM:isOpen()
     return self._cdata ~= nil
 end
 
-------------------------------------------------------------
 function LuaVM:getTop()
     if self._cdata == nil then return 0 end
 
     return C.lua_gettop(self._cdata)
 end
 
-------------------------------------------------------------
 function LuaVM:setTop(index)
     if self._cdata ~= nil then
         -- There's a reseved slot in the stack for the debug function
@@ -308,7 +302,7 @@ function LuaVM:setTop(index)
     return self
 end
 
--- Pushes values into the stack ----------------------------
+-- Pushes values into the stack
 function LuaVM:push(...)
     if self._cdata == nil then return 0 end
 
@@ -328,7 +322,7 @@ function LuaVM:push(...)
 
         local pushFunc = pushers[typename]
         if not pushFunc then
-            error('Cannot push value to LuaVM: type ' .. typename .. 
+            error('Cannot push value to LuaVM: type ' .. typename ..
                 'is not supported. Aborting')
         end
 
@@ -338,7 +332,7 @@ function LuaVM:push(...)
     return argc
 end
 
--- popped values are returned if returnValues is true ------
+-- popped values are returned if returnValues is true
 function LuaVM:pop(count, returnValues)
     if self._cdata == nil then return end
 
@@ -388,7 +382,6 @@ function LuaVM:pcall(func, ...)
     return C.lua_gettop(self._cdata) - top
 end
 
-------------------------------------------------------------
 function LuaVM:call(func, ...)
     local argCount, err = self:pcall(func, ...)
     if not argCount then error(err) end
@@ -396,5 +389,4 @@ function LuaVM:call(func, ...)
     return self:pop(argCount, true)
 end
 
-------------------------------------------------------------
 return LuaVM

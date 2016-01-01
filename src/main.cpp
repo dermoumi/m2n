@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,7 +23,8 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #include "config.hpp"
 
 #include "system/filesystem.hpp"
@@ -43,23 +44,20 @@
 
 extern "C" void nxWindowClose();
 
-//----------------------------------------------------------
 void SDLRelease()
 {
     nxWindowClose();
     SDL_Quit();
 }
 
-//----------------------------------------------------------
 int fatalError(const std::string& message, int retval = 1)
 {
     Log::fatal(message);
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", message.data(), nullptr);
-    
+
     return retval;
 }
 
-//----------------------------------------------------------
 int main(int argc, char* argv[])
 {
     // Initialize SDL
@@ -96,7 +94,6 @@ int main(int argc, char* argv[])
         if (!Filesystem::mountAssetsDir("/assets", false)) {
             return fatalError("Cannot access assets directory");
         }
-
     #else
         Log::info("Mounting root filesystem for reading: /");
         if (!Filesystem::mountDir("/", "/sysroot", false)) {
@@ -118,7 +115,6 @@ int main(int argc, char* argv[])
             !Filesystem::mountArchive("assets.zip", "/assets", false)) {
             return fatalError("Cannot access assets directory");
         }
-
     #endif
 
     // A simple separator
@@ -137,18 +133,15 @@ int main(int argc, char* argv[])
 
     // Run the lua code
     int retval;
-    {
-        LuaVM lua;
+    LuaVM lua;
 
-        if (!lua.initialize(argc, argv)) {
-            return fatalError(lua.getErrorMessage());
-        }
+    if (!lua.initialize(argc, argv)) {
+        return fatalError(lua.getErrorMessage());
+    }
 
-        if (!lua.runCode("boot.lua", "return require 'main'", retval)) {
-            return fatalError(lua.getErrorMessage());
-        }
+    if (!lua.runCode("boot.lua", "return require 'main'", retval)) {
+        return fatalError(lua.getErrorMessage());
     }
 
     return retval;
 }
-//==============================================================================

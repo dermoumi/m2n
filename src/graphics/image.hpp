@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,21 +23,18 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #pragma once
 #include "../config.hpp"
 
 #include <string>
 #include <vector>
 
-//==========================================================
 // Declarations
-//==========================================================
 struct PHYSFS_File;
 
-//==========================================================
 // A class to load and handle images
-//==========================================================
 class Image
 {
 public:
@@ -62,7 +59,7 @@ public:
     void setPixel(unsigned int x, unsigned int y, uint8_t r, uint8_t g, uint8_t b, uint8_t a);
     void getPixel(unsigned int x, unsigned int y, uint8_t* r, uint8_t* g, uint8_t* b,
         uint8_t* a) const;
-    
+
     const uint8_t* getPixelsPtr() const;
     void flipHorizontally();
     void flipVertically();
@@ -72,5 +69,3 @@ private:
     unsigned int mHeight;
     std::vector<uint8_t> mPixels;
 };
-
-//==============================================================================

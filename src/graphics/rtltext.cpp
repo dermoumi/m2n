@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,7 +23,8 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #include "rtltext.hpp"
 #include "renderdevice.hpp"
 
@@ -31,7 +32,6 @@
 #include <cmath>
 #include <set>
 
-//----------------------------------------------------------
 static bool isHarakat(uint32_t haraka)
 {
     static std::set<uint32_t> harakat {
@@ -55,7 +55,6 @@ static bool isHarakat(uint32_t haraka)
     return harakat.find(haraka) != harakat.end();
 }
 
-//----------------------------------------------------------
 void RtlText::ensureGeometryUpdate() const
 {
     // If geometry is already up-to-date, do nothing
@@ -280,5 +279,5 @@ void RtlText::ensureGeometryUpdate() const
         mVertices[it.first].buffer = RenderDevice::instance().createVertexBuffer(
             it.second.size() * sizeof(float), it.second.data()
         );
-    }   
+    }
 }

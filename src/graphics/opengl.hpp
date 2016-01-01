@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,12 +23,12 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #pragma once
 #include "../config.hpp"
 
 #if !defined(NX_OPENGL_ES)
-//------------------------------------------------------------------------------
 
 // Check for OpenGL inclusion
 #if defined(__glew_h__) || defined(__GLEW_H__)
@@ -84,9 +84,7 @@
     #define GLAPI extern
 #endif
 
-//----------------------------------------------------------
 // Defining missing defines
-//----------------------------------------------------------
 #if !defined(GL_MAJOR_VERSION)
     #define GL_MAJOR_VERSION 0x821B
 #endif
@@ -98,10 +96,8 @@
 #if !defined(GL_MULTISAMPLE)
     #define GL_MULTISAMPLE 0x809D
 #endif
-    
-//----------------------------------------------------------
+
 // Capabilities
-//----------------------------------------------------------
 namespace glExt
 {
     extern bool EXT_framebuffer_object;
@@ -116,16 +112,11 @@ namespace glExt
     extern int  majorVersion, minorVersion;
 }
 
-//----------------------------------------------------------
 // Initialization function
-//----------------------------------------------------------
 bool initOpenGLExtensions();
 
-//----------------------------------------------------------
 // OpenGL 2.1 Functionality that has not been deprecated by GL3
-//----------------------------------------------------------
-
-//- GL 1.1 -------------------------------------------------
+// GL 1.1
 #ifndef GL_VERSION_1_1
     #define GL_VERSION_1_1 1
 
@@ -439,7 +430,7 @@ bool initOpenGLExtensions();
     }  // extern "C"
 #endif  // GL_VERSION_1_1
 
-//- GL 1.2 -------------------------------------------------
+// GL 1.2
 #ifndef GL_VERSION_1_2
     #define GL_VERSION_1_2 1
 
@@ -496,7 +487,7 @@ bool initOpenGLExtensions();
     GLAPI PFNGLCOPYTEXSUBIMAGE3DPROC glCopyTexSubImage3D;
 #endif  // GL_VERSION_1_2
 
-//- GL 1.3 -------------------------------------------------
+// GL 1.3
 #ifndef GL_VERSION_1_3
     #define GL_VERSION_1_3 1
 
@@ -581,7 +572,7 @@ bool initOpenGLExtensions();
     GLAPI PFNGLGETCOMPRESSEDTEXIMAGEPROC glGetCompressedTexImage;
 #endif // GL 1.3
 
-//- GL 1.4 -------------------------------------------------
+// GL 1.4
 #ifndef GL_VERSION_1_4
     #define GL_VERSION_1_4 1
 
@@ -622,7 +613,7 @@ bool initOpenGLExtensions();
     GLAPI PFNGLPOINTPARAMETERIVPROC glPointParameteriv;
 #endif  // GL_VERSION_1_4
 
-//- GL 1.5 -------------------------------------------------
+// GL 1.5
 #ifndef GL_VERSION_1_5
     #define GL_VERSION_1_5 1
 
@@ -910,7 +901,7 @@ bool initOpenGLExtensions();
     GLAPI PFNGLVERTEXATTRIBPOINTERPROC glVertexAttribPointer;
 #endif  // GL_VERSION_2_0
 
-//- GL 2.1 -------------------------------------------------
+// GL 2.1
 #ifndef GL_VERSION_2_1
     #define GL_VERSION_2_1 1
 
@@ -946,7 +937,7 @@ bool initOpenGLExtensions();
     GLAPI PFNGLUNIFORMMATRIX4X3FVPROC glUniformMatrix4x3fv;
 #endif  // GL_VERSION_2_1
 
-//- GL 3.0 -------------------------------------------------
+// GL 3.0
 #ifndef GL_VERSION_3_0
     #define GL_VERSION_3_0
     #define GL_NUM_EXTENSIONS                   0x821D
@@ -955,11 +946,8 @@ bool initOpenGLExtensions();
     GLAPI PFNGLGETSTRINGIPROC glGetStringi;
 #endif // GL_VERSION_3_0
 
-//----------------------------------------------------------
 // Extensions
-//----------------------------------------------------------
-
-//- EXT_framebuffer_object ---------------------------------
+// EXT_framebuffer_object
 #ifndef GL_EXT_framebuffer_object
     #define GL_EXT_framebuffer_object 1
 
@@ -1053,8 +1041,7 @@ bool initOpenGLExtensions();
     GLAPI PFNGLGENERATEMIPMAPEXTPROC glGenerateMipmapEXT;
 #endif
 
-
-//- EXT_texture_filter_anisotropic -------------------------
+// EXT_texture_filter_anisotropic
 #ifndef GL_EXT_texture_filter_anisotropic
     #define GL_EXT_texture_filter_anisotropic 1
 
@@ -1062,8 +1049,7 @@ bool initOpenGLExtensions();
     #define GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT   0x84FF
 #endif
 
-
-//- EXT_texture_compression_s3tc ---------------------------
+// EXT_texture_compression_s3tc
 #ifndef GL_EXT_texture_compression_s3tc
     #define GL_EXT_texture_compression_s3tc 1
 
@@ -1073,7 +1059,7 @@ bool initOpenGLExtensions();
     #define GL_COMPRESSED_RGBA_S3TC_DXT5_EXT    0x83F3
 #endif
 
-//- EXT_texture_sRGB ---------------------------------------
+// EXT_texture_sRGB
 #ifndef GL_EXT_texture_sRGB
     #define GL_EXT_texture_sRGB 1
 
@@ -1095,7 +1081,7 @@ bool initOpenGLExtensions();
     #define GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT  0x8C4F
 #endif
 
-//- ARB_texture_float --------------------------------------
+// ARB_texture_float
 #ifndef GL_ARB_texture_float
     #define GL_ARB_texture_float 1
 
@@ -1121,7 +1107,7 @@ bool initOpenGLExtensions();
     //#define GL_LUMINANCE_ALPHA16F_ARB           0x881F
 #endif
 
-//- EXT_framebuffer_blit -----------------------------------
+// EXT_framebuffer_blit
 #ifndef GL_EXT_framebuffer_blit
     #define GL_EXT_framebuffer_blit 1
 
@@ -1135,7 +1121,7 @@ bool initOpenGLExtensions();
     GLAPI PFNGLBLITFRAMEBUFFEREXTPROC glBlitFramebufferEXT;
 #endif
 
-//- EXT_framebuffer_multisample ----------------------------
+// EXT_framebuffer_multisample
 #ifndef GL_EXT_framebuffer_multisample
     #define GL_EXT_framebuffer_multisample 1
 
@@ -1148,7 +1134,7 @@ bool initOpenGLExtensions();
     GLAPI PFNGLRENDERBUFFERSTORAGEMULTISAMPLEEXTPROC glRenderbufferStorageMultisampleEXT;
 #endif
 
-//- ARB_timer_query ----------------------------------------
+// ARB_timer_query
 #ifndef GL_ARB_timer_query
     #define GL_ARB_timer_query 1
 
@@ -1158,11 +1144,9 @@ bool initOpenGLExtensions();
     typedef void (APIENTRY* PFNGLQUERYCOUNTERPROC) (GLuint id, GLenum target);
     typedef void (APIENTRY* PFNGLGETQUERYOBJECTI64VPROC) (GLuint id, GLenum pname, GLint64 *params);
     typedef void (APIENTRY* PFNGLGETQUERYOBJECTUI64VPROC) (GLuint id, GLenum pname, GLuint64 *params);
-    GLAPI PFNGLQUERYCOUNTERPROC glQueryCounter; 
+    GLAPI PFNGLQUERYCOUNTERPROC glQueryCounter;
     GLAPI PFNGLGETQUERYOBJECTI64VPROC glGetQueryObjecti64v;
     GLAPI PFNGLGETQUERYOBJECTUI64VPROC glGetQueryObjectui64v;
 #endif
 
-//------------------------------------------------------------------------------
 #endif
-//==============================================================================

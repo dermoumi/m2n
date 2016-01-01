@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,30 +23,23 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #include "../config.hpp"
 #include "../graphics/fontstack.hpp"
 
-//----------------------------------------------------------
-// Declarations
-//----------------------------------------------------------
 using NxFont      = Font;
 
-//----------------------------------------------------------
-// Exported functions
-//----------------------------------------------------------
 NX_EXPORT NxFont* nxFontStackNew()
 {
     return new FontStack();
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxFontStackAddFont(NxFont* stack, const NxFont* font, bool prepend)
 {
     static_cast<FontStack*>(stack)->addFont(*font, prepend);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxFontStackAddStack(NxFont* stack, const NxFont* other, bool prepend)
 {
     static_cast<FontStack*>(stack)->addFont(*static_cast<const FontStack*>(other), prepend);

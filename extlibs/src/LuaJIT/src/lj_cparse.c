@@ -27,7 +27,7 @@
 ** If in doubt, please check the input against your favorite C compiler.
 */
 
-/* -- C lexer ------------------------------------------------------------- */
+/* -- C lexer --- */
 
 /* C lexer token names. */
 static const char *const ctoknames[] = {
@@ -340,7 +340,7 @@ static LJ_NOINLINE CPToken cp_next(CPState *cp)
   return (cp->tok = cp_next_(cp));
 }
 
-/* -- C parser ------------------------------------------------------------ */
+/* -- C parser -- */
 
 /* Namespaces for resolving identifiers. */
 #define CPNS_DEFAULT \
@@ -1839,7 +1839,7 @@ static void cp_decl_single(CPState *cp)
 
 #undef H_
 
-/* ------------------------------------------------------------------------ */
+/* -------------- */
 
 /* Protected callback for C parser. */
 static TValue *cpcparser(lua_State *L, lua_CFunction dummy, void *ud)

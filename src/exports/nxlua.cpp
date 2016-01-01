@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,26 +23,21 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #include "../config.hpp"
 #include "../system/luavm.hpp"
 
 #include <luajit/lua.hpp>
 #include <string>
 
-//----------------------------------------------------------
-// Exported functions
-//----------------------------------------------------------
 NX_EXPORT bool nxLuaLoadNxLibs(lua_State* state)
 {
     return LuaVM::loadNxLibs(state);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void* nxLuaToCdata(lua_State* state, int index)
 {
     auto ptr = lua_topointer(state, index);
     return reinterpret_cast<void*>(*reinterpret_cast<const uintptr_t*>(ptr));
 }
-
-//==============================================================================

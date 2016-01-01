@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,13 +23,12 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local AudioVoice = require 'audio._voice'
 
 local VoiceGroup = AudioVoice:subclass('audio.voicegroup')
 
-------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
@@ -44,23 +43,19 @@ ffi.cdef [[
     bool nxAudioVoiceIsEmpty(NxVoiceGroup*);
 ]]
 
-------------------------------------------------------------
 function VoiceGroup:initialize()
     local handle = C.nxAudioVoiceNewGroup()
     self._cdata = ffi.gc(handle, C.nxAudioVoiceDestroyGroup)
 end
 
-------------------------------------------------------------
 function VoiceGroup:_handle()
     return self._cdata.handle
 end
 
-------------------------------------------------------------
 function VoiceGroup:isGroup()
     return true
 end
 
-------------------------------------------------------------
 function VoiceGroup:add(voice)
     if self._cdata ~= nil then
         C.nxAudioVoiceAddToGroup(self._cdata, voice:_handle())
@@ -69,12 +64,10 @@ function VoiceGroup:add(voice)
     return self
 end
 
-------------------------------------------------------------
 function VoiceGroup:empty()
     if self._cdata == nil then return true end
     
     return C.nxAudioVoiceIsEmpty(self._cdata)
 end
 
-------------------------------------------------------------
 return VoiceGroup

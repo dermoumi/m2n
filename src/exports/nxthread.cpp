@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,7 +23,8 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #include "../config.hpp"
 #include "../system/thread.hpp"
 
@@ -34,10 +35,6 @@
     #include <jni.h>
     #include <SDL2/SDL.h>
 #endif
-
-//----------------------------------------------------------
-// Locals
-//----------------------------------------------------------
 
 struct NxThreadObj
 {
@@ -71,34 +68,28 @@ static void threadCallback(NxThreadObj* thread)
     }
 }
 
-//----------------------------------------------------------
-// Exported functions
-//----------------------------------------------------------
 NX_EXPORT NxThreadObj* nxThreadCreate(lua_State* state)
 {
     auto threadObj = new NxThreadObj();
     threadObj->state     = state;
-    
+
     return threadObj;
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxThreadRelease(NxThreadObj* threadObj)
 {
     delete threadObj;
 }
 
-//----------------------------------------------------------
 NX_EXPORT bool nxThreadWait(NxThreadObj* threadObj)
 {
     threadObj->ownsState = false;
     threadObj->handle = std::thread(threadCallback, threadObj);
     threadObj->handle.join();
-    
+
     return threadObj->succeeded;
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxThreadDetach(NxThreadObj* threadObj)
 {
     threadObj->ownsState = true;
@@ -106,10 +97,7 @@ NX_EXPORT void nxThreadDetach(NxThreadObj* threadObj)
     threadObj->handle.detach();
 }
 
-//----------------------------------------------------------
 NX_EXPORT bool nxThreadIsMain()
 {
     return Thread::isMain();
 }
-
-//==============================================================================

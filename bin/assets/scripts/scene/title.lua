@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,7 +23,7 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local Log      = require 'util.log'
 local Mouse    = require 'window.mouse'
@@ -33,7 +33,6 @@ local Scene    = require 'scene'
 
 local SceneTitle = Scene:subclass('scene.title')
 
-------------------------------------------------------------
 function SceneTitle:initialize(firstRun)
     if firstRun then
         local caps = Graphics.getCapabilities()
@@ -58,7 +57,6 @@ function SceneTitle:initialize(firstRun)
     end, self.musicSource)
 end
 
-------------------------------------------------------------
 function SceneTitle:load()
     self.text = require('graphics.text')
         :new('', require 'game.font', 14)
@@ -91,12 +89,10 @@ function SceneTitle:load()
     Mouse.setCursor(self:cache('assets/cursor.png'), 4, 4)
 end
 
-------------------------------------------------------------
 function SceneTitle:update(dt)
     self.text:setString('Current FPS: %i', Window.currentFPS())
 end
 
-------------------------------------------------------------
 function SceneTitle:render()
     self:view():clear()
 
@@ -105,7 +101,6 @@ function SceneTitle:render()
         :draw(self.sprite:setPosition(600, 100))
 end
 
-------------------------------------------------------------
 function SceneTitle:onKeyDown(scancode, keyCode, repeated)
     if scancode == '2' then
         self:performTransition(Scene.push, 'scene.test.3d')
@@ -132,10 +127,8 @@ function SceneTitle:onKeyDown(scancode, keyCode, repeated)
     end
 end
 
-------------------------------------------------------------
 function SceneTitle:release()
     self.audiobus:stop()
 end
 
-------------------------------------------------------------
 return SceneTitle

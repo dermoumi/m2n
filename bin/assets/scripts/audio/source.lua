@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,14 +23,13 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local class      = require 'class'
 local AudioVoice = require 'audio._voice'
 
 local AudioSource = class 'audio.source'
 
-------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
@@ -77,7 +76,6 @@ ffi.cdef [[
     double nxAudioSourceStreamLength(NxAudioSource*);
 ]]
 
-------------------------------------------------------------
 local toAttenuationModel = {
     none        = 0,
     inverse     = 1,
@@ -86,19 +84,16 @@ local toAttenuationModel = {
 }
 AudioSource.static._toAttenuationModel = toAttenuationModel;
 
-------------------------------------------------------------
 function AudioSource:initialize()
     self._cdata = ffi.gc(C.nxAudioSourceCreate(), C.nxAudioSourceRelease)
 end
 
-------------------------------------------------------------
 function AudioSource:release()
     C.nxAudioSourceRelease(ffi.gc(self._cdata, nil))
     self._cdata = nil
     self._type = nil
 end
 
-------------------------------------------------------------
 function AudioSource:open(a, b)
     if b then
         C.nxAudioSourceOpenMemory(self._cdata, a, b)
@@ -110,7 +105,6 @@ function AudioSource:open(a, b)
     return self
 end
 
-------------------------------------------------------------
 function AudioSource:load(a, b)
     if b then
         C.nxAudioSourceLoadMemory(self._cdata, a, b)
@@ -122,7 +116,6 @@ function AudioSource:load(a, b)
     return self
 end
 
-------------------------------------------------------------
 function AudioSource:length()
     if self._type == 'stream' then
         return C.nxAudioSourceStreamLength(self._cdata)
@@ -133,19 +126,16 @@ function AudioSource:length()
     end
 end
 
-------------------------------------------------------------
 function AudioSource:type()
     return self._type
 end
 
-------------------------------------------------------------
 function AudioSource:play(volume, pan, paused)
     local handle = C.nxAudioPlay(self._cdata, volume or -1, pan or 0, not not paused)
 
     return AudioVoice:new(handle)
 end
 
-------------------------------------------------------------
 function AudioSource:playClocked(interval, volume, pan)
     local handle = C.nxAudioPlayClocked(
         self._cdata, interval, volume or -1, pan or 0, not not paused
@@ -154,7 +144,6 @@ function AudioSource:playClocked(interval, volume, pan)
     return AudioVoice:new(handle)
 end
 
-------------------------------------------------------------
 function AudioSource:play3d(x, y, z, velX, velY, velZ, volume, paused)
     local handle = C.nxAudioPlay3d(
         self._cdata, x, y, z, velX or 1, velY or 1, velZ or 1, volume or -1, not not paused
@@ -163,7 +152,6 @@ function AudioSource:play3d(x, y, z, velX, velY, velZ, volume, paused)
     return AudioVoice:new(handle)
 end
 
-------------------------------------------------------------
 function AudioSource:play3dClocked(interval, x, y, z, velX, velY, velZ, volume)
     local handle = C.nxAudioPlay3dClocked(
         self._cdata, interval, x, y, z, velX or 0, velY or 0, velZ or 0, volume or -1
@@ -172,7 +160,6 @@ function AudioSource:play3dClocked(interval, x, y, z, velX, velY, velZ, volume)
     return AudioVoice:new(handle)
 end
 
-------------------------------------------------------------
 function AudioSource:playThrough(bus, volume, pan, paused)
     local handle = C.nxAudioSourcePlayThrough(
         self._cdata, bus._cdata, volume or -1, pan or 0, not not paused
@@ -181,7 +168,6 @@ function AudioSource:playThrough(bus, volume, pan, paused)
     return AudioVoice:new(handle)
 end
 
-------------------------------------------------------------
 function AudioSource:playClockedThrough(bus, interval, volume, pan)
     local handle = C.nxAudioSourcePlayClockedThrough(
         self._cdata, bus._cdata, interval, volume or -1, pan or 0
@@ -190,7 +176,6 @@ function AudioSource:playClockedThrough(bus, interval, volume, pan)
     return AudioVoice:new(handle)
 end
 
-------------------------------------------------------------
 function AudioSource:play3dThrough(bus, x, y, z, velX, velY, velZ, volume, paused)
     local handle = C.nxAudioSourcePlay3dThrough(
         self._cdata, bus._cdata, x, y, z, velX or 0, velY or 0, velZ or 0, volume or -1,
@@ -200,7 +185,6 @@ function AudioSource:play3dThrough(bus, x, y, z, velX, velY, velZ, volume, pause
     return AudioVoice:new(handle)
 end
 
-------------------------------------------------------------
 function AudioSource:play3dClockedThrough(bus, interval, x, y, z, velX, velY, velZ, volume)
     local handle = C.nxAudioSourcePlay3dClockedThrough(
         self._cdata, bus._cdata, interval, x, y, z, velX or 0, velY or 0, velZ or 0, volume or -1
@@ -209,77 +193,66 @@ function AudioSource:play3dClockedThrough(bus, interval, x, y, z, velX, velY, ve
     return AudioVoice:new(handle)
 end
 
-------------------------------------------------------------
 function AudioSource:setVolume(volume)
     C.nxAudioSetVolume(self._cdata, volume)
 
     return self
 end
 
-------------------------------------------------------------
 function AudioSource:setLooping(looping)
     C.nxAudioSetLooping(self._cdata, looping)
 
     return self
 end
 
-------------------------------------------------------------
 function AudioSource:setSingleInstance(singleInstance)
     C.nxAudioSetSingleInstance(self._cdata, singleInstance)
 
     return self
 end
 
-------------------------------------------------------------
 function AudioSource:stop()
     C.nxAudioSourceStop(self._cdata)
 
     return self
 end
 
-------------------------------------------------------------
 function AudioSource:setInaudibleBehavior(ticks, kill)
     C.nxAudioSetInaudibleBehavior(self._cdata, ticks, kill)
 
     return self
 end
 
-------------------------------------------------------------
 function AudioSource:set3dMinMaxDistance(min, max)
     C.nxAudioSet3dMinMaxDistance(self._cdata, min, max)
 
     return self
 end
 
-------------------------------------------------------------
 function AudioSource:set3dAttenuation(model, rolloffFactor)
     C.nxAudioSet3dAttenuation(self._cdata, toAttenuationModel[model] or 0, rolloffFactor)
 
     return self
 end
 
-------------------------------------------------------------
 function AudioSource:set3dDopplerFactor(factor)
     C.nxAudioSet3dDopplerFactor(self._cdata, factor)
 
     return self
 end
 
-------------------------------------------------------------
 function AudioSource:set3dListenerRelative(enable)
     C.nxAudioSet3dListenerRelative(self._cdata, enable)
 
     return self
 end
 
-------------------------------------------------------------
 function AudioSource:set3dDistanceDelay(enabled)
     C.nxAudioSet3dDistanceDelay(self._cdata, enabled)
 
     return self
 end
 
-------------------------------------------------------------
 function AudioSource:setFilter(filter, id)
     if filter then filter = filter._cdata end
     C.nxAudioSourceSetFilter(self._cdata, filter, id or 0)
@@ -287,5 +260,4 @@ function AudioSource:setFilter(filter, id)
     return self
 end
 
-------------------------------------------------------------
 return AudioSource

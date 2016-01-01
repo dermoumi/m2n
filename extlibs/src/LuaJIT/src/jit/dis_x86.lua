@@ -1,9 +1,9 @@
-----------------------------------------------------------------------------
+------------------
 -- LuaJIT x86/x64 disassembler module.
 --
 -- Copyright (C) 2005-2014 Mike Pall. All rights reserved.
 -- Released under the MIT license. See Copyright Notice in luajit.h
-----------------------------------------------------------------------------
+------------------
 -- This is a helper module used by the LuaJIT machine code dumper module.
 --
 -- Sending small code snippets to an external disassembler and mixing the
@@ -22,7 +22,7 @@
 -- * The (useless) a16 prefix, 3DNow and pre-586 opcodes are unsupported.
 -- * No attempt at optimization has been made -- it's fast enough for my needs.
 -- * The public API may change when more architectures are added.
-------------------------------------------------------------------------------
+--------------------
 
 local type = type
 local sub, byte, format = string.sub, string.byte, string.format
@@ -336,7 +336,7 @@ local map_opcgroup = {
   prefetcht = { "prefetchnta", "prefetcht0", "prefetcht1", "prefetcht2" },
 }
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Maps for register names.
 local map_regs = {
@@ -368,7 +368,7 @@ local map_sz2prefix = {
   F = "dword", G = "qword", -- No need for sizes/register names for these two.
 }
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Output a nicely formatted line with an opcode and operands.
 local function putop(ctx, text, operands)
@@ -764,7 +764,7 @@ map_act = {
   end,
 }
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Disassemble a block of code.
 local function disass_block(ctx, ofs, len)

@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,11 +23,11 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #include "shader.hpp"
 #include "renderdevice.hpp"
 
-//----------------------------------------------------------
 Shader::~Shader()
 {
     if (mHandle) {
@@ -35,7 +35,6 @@ Shader::~Shader()
     }
 }
 
-//----------------------------------------------------------
 bool Shader::load(const char* vertexShader, const char* fragmentShader)
 {
     if (mHandle) RenderDevice::instance().destroyShader(mHandle);
@@ -44,7 +43,6 @@ bool Shader::load(const char* vertexShader, const char* fragmentShader)
     return mHandle != 0;
 }
 
-//----------------------------------------------------------
 void Shader::setUniform(int location, uint8_t type, float* data)
 {
     auto prevShader = RenderDevice::instance().getCurrentShader();
@@ -57,7 +55,6 @@ void Shader::setUniform(int location, uint8_t type, float* data)
     if (prevShader != mHandle) RenderDevice::instance().bindShader(prevShader);
 }
 
-//----------------------------------------------------------
 void Shader::setSampler(int location, uint8_t unit)
 {
     auto prevShader = RenderDevice::instance().getCurrentShader();
@@ -68,37 +65,31 @@ void Shader::setSampler(int location, uint8_t unit)
     if (prevShader != mHandle) RenderDevice::instance().bindShader(prevShader);
 }
 
-//----------------------------------------------------------
 int Shader::uniformLocation(const char* name) const
 {
     return RenderDevice::instance().getShaderConstLoc(mHandle, name);
 }
 
-//----------------------------------------------------------
 int Shader::samplerLocation(const char* name) const
 {
     return RenderDevice::instance().getShaderSamplerLoc(mHandle, name);
 }
 
-//----------------------------------------------------------
 const char* Shader::log()
 {
     return RenderDevice::instance().getShaderLog().data();
 }
 
-//----------------------------------------------------------
 void Shader::bind(const Shader* shader)
 {
     RenderDevice::instance().bindShader(shader ? shader->mHandle : 0);
 }
 
-//----------------------------------------------------------
 const char* Shader::defaultVSCode()
 {
     return RenderDevice::instance().getDefaultVSCode();
 }
 
-//----------------------------------------------------------
 const char* Shader::defaultFSCode()
 {
     return RenderDevice::instance().getDefaultFSCode();

@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,7 +23,7 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local class        = require 'class'
 local Graphics     = require 'graphics'
@@ -33,11 +33,9 @@ local Matrix       = require 'util.matrix'
 
 local Camera = class 'graphics._camera'
 
-------------------------------------------------------------
 local ffi = require 'ffi'
 local C   = ffi.C
 
-------------------------------------------------------------
 function Camera:_invalidate()
     self._projection = nil
     self._invProjection = nil
@@ -45,7 +43,6 @@ function Camera:_invalidate()
     return self
 end
 
-------------------------------------------------------------
 function Camera:setViewport(left, top, width, height)
     self._vpX = left
     self._vpY = top
@@ -55,7 +52,6 @@ function Camera:setViewport(left, top, width, height)
     return self
 end
 
-------------------------------------------------------------
 function Camera:setRenderbuffer(rb)
     self._rb = rb
     self._updated = false
@@ -63,7 +59,6 @@ function Camera:setRenderbuffer(rb)
     return self
 end
 
-------------------------------------------------------------
 function Camera:viewport()
     if self._vpX then
         return self._vpX, self._vpY, self._vpW, self._vpH
@@ -74,17 +69,14 @@ function Camera:viewport()
     end
 end
 
-------------------------------------------------------------
 function Camera:renderbuffer()
     return self._rb
 end
 
-------------------------------------------------------------
 function Camera:projection()
     return Matrix:new()
 end
 
-------------------------------------------------------------
 function Camera:invProjection()
     if not self._invProjection then
         self._invProjection = self:projection():inverse()
@@ -93,7 +85,6 @@ function Camera:invProjection()
     return self._invProjection
 end
 
-------------------------------------------------------------
 function Camera:clear(r, g, b, a, depth, col0, col1, col2, col3, clearDepth)
     self:apply()
 
@@ -109,7 +100,6 @@ function Camera:clear(r, g, b, a, depth, col0, col1, col2, col3, clearDepth)
     return self
 end
 
-------------------------------------------------------------
 function Camera:apply()
     -- Setup viewport
     C.nxRendererSetViewport(self:viewport())
@@ -123,5 +113,4 @@ function Camera:apply()
     return self
 end
 
-------------------------------------------------------------
 return Camera

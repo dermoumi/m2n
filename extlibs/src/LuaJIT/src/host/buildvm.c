@@ -33,7 +33,7 @@
 #include <io.h>
 #endif
 
-/* ------------------------------------------------------------------------ */
+/* -------------- */
 
 /* DynASM glue definitions. */
 #define Dst		ctx
@@ -49,7 +49,7 @@ static int collect_reloc(BuildCtx *ctx, uint8_t *addr, int idx, int type);
 #define DASM_EXTERN(ctx, addr, idx, type) \
   collect_reloc(ctx, addr, idx, type)
 
-/* ------------------------------------------------------------------------ */
+/* -------------- */
 
 /* Avoid trouble if cross-compiling for an x86 target. Speed doesn't matter. */
 #define DASM_ALIGNED_WRITES	1
@@ -72,7 +72,7 @@ static int collect_reloc(BuildCtx *ctx, uint8_t *addr, int idx, int type);
 /* Embed generated architecture-specific backend. */
 #include "buildvm_arch.h"
 
-/* ------------------------------------------------------------------------ */
+/* -------------- */
 
 void owrite(BuildCtx *ctx, const void *ptr, size_t sz)
 {
@@ -83,7 +83,7 @@ void owrite(BuildCtx *ctx, const void *ptr, size_t sz)
   }
 }
 
-/* ------------------------------------------------------------------------ */
+/* -------------- */
 
 /* Emit code as raw bytes. Only used for DynASM debugging. */
 static void emit_raw(BuildCtx *ctx)

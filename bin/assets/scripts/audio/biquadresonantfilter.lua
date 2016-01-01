@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,17 +23,15 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local AudioFilter = require 'audio._filter'
 
 local AudioBiquadResonantFilter = AudioFilter:subclass('audio.biquadresonantfilter')
 
-------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
-------------------------------------------------------------
 local toFilterType = {
     [0] = 'none',
     [1] = 'lowpass',
@@ -41,13 +39,11 @@ local toFilterType = {
     [3] = 'bandpass'
 }
 
-------------------------------------------------------------
 function AudioBiquadResonantFilter:initialize()
     local handle = C.nxAudioFilterBiquadResonantCreate()
     self._cdata = ffi.gc(handle, C.nxAudioFilterRelease)
 end
 
-------------------------------------------------------------
 function AudioBiquadResonantFilter:setParams(filterType, samplerate, frequency, resonance)
     if self._cdata ~= nil then
         C.nxAudioFilterBiquadResonantSetParams(
@@ -58,5 +54,4 @@ function AudioBiquadResonantFilter:setParams(filterType, samplerate, frequency, 
     return self
 end
 
-------------------------------------------------------------
 return AudioBiquadResonantFilter

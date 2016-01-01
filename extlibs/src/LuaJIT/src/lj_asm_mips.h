@@ -221,7 +221,7 @@ static void asm_fusexref(ASMState *as, MIPSIns mi, Reg rt, IRRef ref,
   emit_hsi(as, mi, rt, base, ofs);
 }
 
-/* -- Calls --------------------------------------------------------------- */
+/* -- Calls ----- */
 
 /* Generate a call to a C function. */
 static void asm_gencall(ASMState *as, const CCallInfo *ci, IRRef *args)
@@ -384,7 +384,7 @@ static void asm_callround(ASMState *as, IRIns *ir, IRCallID id)
   ra_leftov(as, REGARG_FIRSTFPR, ir->op1);
 }
 
-/* -- Returns ------------------------------------------------------------- */
+/* -- Returns --- */
 
 /* Return to lower frame. Guard that it goes to the right spot. */
 static void asm_retf(ASMState *as, IRIns *ir)

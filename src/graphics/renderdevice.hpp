@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,7 +23,8 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #pragma once
 #include "../config.hpp"
 
@@ -31,9 +32,7 @@
 #include <vector>
 #include <string>
 
-//==========================================================
 // Container for different objects used by the device
-//==========================================================
 template <class T>
 class RDIObjects
 {
@@ -73,7 +72,7 @@ public:
             static T invalidObj;
             return invalidObj;
         }
-        
+
         return mObjects[handle - 1];
     }
 
@@ -82,9 +81,7 @@ private:
     std::vector<uint32_t> mFreeList;
 };
 
-//==========================================================
 // Base class for Render Devices
-//==========================================================
 class RenderDevice
 {
 public:
@@ -357,5 +354,3 @@ public:
         bool* texFloat, bool* texDepth, bool* texSS, bool* tex3d, bool* texNPOT, bool* texSRGB,
         bool* rtms, bool* occQuery, bool* timerQuery) const = 0;
 };
-
-//==============================================================================

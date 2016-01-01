@@ -1,9 +1,9 @@
-------------------------------------------------------------------------------
+--------------------
 -- DynASM PPC module.
 --
 -- Copyright (C) 2005-2014 Mike Pall. All rights reserved.
 -- See dynasm.lua for full copyright notice.
-------------------------------------------------------------------------------
+--------------------
 
 -- Module information:
 local _info = {
@@ -61,7 +61,7 @@ local actargs = { 0 }
 -- Current number of section buffer positions for dasm_put().
 local secpos = 1
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Dump action names and numbers.
 local function dumpactions(out)
@@ -84,7 +84,7 @@ local function writeactions(out, name)
   assert(out:write("0x", tohex(actlist[nn]), "\n};\n\n"))
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Add word to action list.
 local function wputxw(n)
@@ -128,7 +128,7 @@ local function wputpos(pos, n)
   actlist[pos] = n
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Global label name -> global label number. With auto assignment on 1st use.
 local next_global = 20
@@ -174,7 +174,7 @@ local function writeglobalnames(out, name)
   out:write("  (const char *)0\n};\n")
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Extern label name -> extern label number. With auto assignment on 1st use.
 local next_extern = 0
@@ -207,7 +207,7 @@ local function writeexternnames(out, name)
   out:write("  (const char *)0\n};\n")
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Arch-specific maps.
 local map_archdef = { sp = "r1" } -- Ext. register name -> int. name.
@@ -226,7 +226,7 @@ local map_cond = {
   ge = 4, le = 5, ne = 6, ns = 7,
 }
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Template strings for PPC instructions.
 local map_op = {
@@ -855,7 +855,7 @@ for cond,c in pairs(map_cond) do
   map_op[b1.."ctrl_1"] = tohex(0x4c800421 + c1).."-X"
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 local function parse_gpr(expr)
   local tname, ovreg = match(expr, "^([%w_]+):(r[1-3]?[0-9])$")
@@ -1008,7 +1008,7 @@ local function parse_label(label, def)
   werror("bad label `"..label.."'")
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Handle opcodes defined with template strings.
 map_op[".template__"] = function(params, template, nparams)
@@ -1082,7 +1082,7 @@ map_op[".template__"] = function(params, template, nparams)
   wputpos(pos, op)
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Pseudo-opcode to mark the position where the action list is to be emitted.
 map_op[".actionlist_1"] = function(params)
@@ -1112,7 +1112,7 @@ map_op[".externnames_1"] = function(params)
   wline(function(out) writeexternnames(out, name) end)
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Label pseudo-opcode (converted from trailing colon form).
 map_op[".label_1"] = function(params)
@@ -1123,7 +1123,7 @@ map_op[".label_1"] = function(params)
   waction("LABEL_"..mode, n, s, 1)
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Pseudo-opcodes for data storage.
 map_op[".long_*"] = function(params)
@@ -1156,7 +1156,7 @@ map_op[".align_1"] = function(params)
   werror("bad alignment")
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Pseudo-opcode for (primitive) type definitions (map to C types).
 map_op[".type_3"] = function(params, nparams)
@@ -1199,7 +1199,7 @@ local function dumptypes(out, lvl)
   out:write("\n")
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Set the current section.
 function _M.section(num)
@@ -1207,7 +1207,7 @@ function _M.section(num)
   wflush(true) -- SECTION is a terminal action.
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Dump architecture description.
 function _M.dumparch(out)
@@ -1223,7 +1223,7 @@ function _M.dumpdef(out, lvl)
   dumpexterns(out, lvl)
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Pass callbacks from/to the DynASM core.
 function _M.passcb(wl, we, wf, ww)
@@ -1245,5 +1245,5 @@ end
 
 return _M
 
-------------------------------------------------------------------------------
+--------------------
 

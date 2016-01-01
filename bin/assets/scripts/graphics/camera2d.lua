@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,7 +23,7 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local Graphics    = require 'graphics'
 local Matrix      = require 'util.matrix'
@@ -32,12 +32,10 @@ local Camera      = require 'graphics._camera'
 
 local Camera2D = Camera:subclass('graphics.camera2d')
 
-------------------------------------------------------------
 function Camera2D:initialize(x, y, width, height)
     self:reset(x, y, width, height)
 end
 
-------------------------------------------------------------
 function Camera2D:setCenter(x, y)
     self._centerX = x
     self._centerY = y
@@ -45,7 +43,6 @@ function Camera2D:setCenter(x, y)
     return self:_invalidate()
 end
 
-------------------------------------------------------------
 function Camera2D:setSize(width, height)
     self._width = width
     self._height = height
@@ -53,7 +50,6 @@ function Camera2D:setSize(width, height)
     return self:_invalidate()
 end
 
-------------------------------------------------------------
 function Camera2D:setRotation(rad)
     self._rotation = rad % (math.pi * 2)
     if self._rotation < 0 then self._rotation = self._rotation + math.pi * 2 end
@@ -61,7 +57,6 @@ function Camera2D:setRotation(rad)
     return self:_invalidate()
 end
 
-------------------------------------------------------------
 function Camera2D:reset(x, y, width, height)
     local winWidth, winHeight = Window:size()
 
@@ -79,28 +74,23 @@ function Camera2D:reset(x, y, width, height)
     return self:_invalidate()
 end
 
-------------------------------------------------------------
 function Camera2D:center()
     return self._centerX, self._centerY
 end
 
-------------------------------------------------------------
 function Camera2D:size()
     return self._width, self._height
 end
 
-------------------------------------------------------------
 function Camera2D:rotation()
     return self._rotation
 end
 
-------------------------------------------------------------
 function Camera2D:zoom(factor, factor2)
     local w, h = self:size()
     self:setSize(w * factor, h * factor2)
 end
 
-------------------------------------------------------------
 function Camera2D:projection()
     if not self._projection then
         -- Projection components
@@ -123,7 +113,6 @@ function Camera2D:projection()
     return self._projection
 end
 
-------------------------------------------------------------
 function Camera2D:draw(drawable, context)
     self:apply()
 
@@ -132,7 +121,6 @@ function Camera2D:draw(drawable, context)
     return self
 end
 
-------------------------------------------------------------
 function Camera2D:drawFsQuad(texture, width, height)
     self:apply()
     Graphics.drawFsQuad(texture, width, height)
@@ -140,7 +128,6 @@ function Camera2D:drawFsQuad(texture, width, height)
     return self
 end
 
-------------------------------------------------------------
 function Camera2D:fillFsQuad(r, g, b, a, blendMode)
     self:apply()
     Graphics.fillFsQuad(r, g, b, a, blendMode)
@@ -148,7 +135,6 @@ function Camera2D:fillFsQuad(r, g, b, a, blendMode)
     return self
 end
 
-------------------------------------------------------------
 function Camera2D:apply()
     Camera.apply(self)
 
@@ -156,5 +142,4 @@ function Camera2D:apply()
         .enableDepthMask(false)
 end
 
-------------------------------------------------------------
 return Camera2D

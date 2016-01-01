@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,7 +23,7 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local class    = require 'class'
 local Cache    = require 'game.cache'
@@ -32,7 +32,7 @@ local Camera2D = require 'graphics.camera2d'
 
 local Scene = class 'scene'
 
--- Local variables -----------------------------------------
+-- Local variables
 local sceneStack, lastScene = {}, nil
 
 -- Mapping events to their respective functions
@@ -66,7 +66,6 @@ local eventMapping = {
     filedrop          = 'onFileDrop'
 }
 
-------------------------------------------------------------
 local function addScene(scene, ...)
     if type(scene) == 'string' then
         scene = require(scene):new(...)
@@ -83,7 +82,6 @@ local function addScene(scene, ...)
     scene:__load()
 end
 
-------------------------------------------------------------
 local function dropScene()
     lastScene = sceneStack[#sceneStack]
     lastScene:__release()
@@ -91,17 +89,14 @@ local function dropScene()
     sceneStack[#sceneStack] = nil
 end
 
-------------------------------------------------------------
 function Scene.static.currentScene()
     return sceneStack[#sceneStack]
 end
 
-------------------------------------------------------------
 function Scene.static.lastScene()
     return lastScene
 end
 
-------------------------------------------------------------
 function Scene.static.goTo(scene, ...)
     lastScene = Scene.currentScene()
 
@@ -113,14 +108,12 @@ function Scene.static.goTo(scene, ...)
     addScene(scene, ...)
 end
 
-------------------------------------------------------------
 function Scene.static.push(scene, ...)
     lastScene = Scene.currentScene()
 
     addScene(scene, ...)
 end
 
-------------------------------------------------------------
 function Scene.static.back(...)
     dropScene()
 
@@ -129,14 +122,12 @@ function Scene.static.back(...)
     end
 end
 
-------------------------------------------------------------
 function Scene.static.replace(scene, ...)
     dropScene()
 
     addScene(scene, ...)
 end
 
-------------------------------------------------------------
 function Scene:__load()
     self.parent = sceneStack[#sceneStack-1]
 
@@ -149,7 +140,6 @@ function Scene:__load()
     end
 end
 
-------------------------------------------------------------
 function Scene:__update(dt)
     if self.parent and self:updateParent() then
         self.parent:__update(dt)
@@ -162,7 +152,6 @@ function Scene:__update(dt)
     self:update(dt)
 end
 
-------------------------------------------------------------
 function Scene:__fixedUpdate(dt)
     if self.parent and self:updateParent() then
         self.parent:__fixedUpdate(dt)
@@ -171,7 +160,6 @@ function Scene:__fixedUpdate(dt)
     self:fixedUpdate(dt)
 end
 
-------------------------------------------------------------
 function Scene:__render()
     if self.parent and self:renderParent() then
         self.parent:__render()
@@ -184,7 +172,6 @@ function Scene:__render()
     end
 end
 
-------------------------------------------------------------
 function Scene:__release()
     -- Call the scene's release method
     self:release()
@@ -197,7 +184,6 @@ function Scene:__release()
     end
 end
 
-------------------------------------------------------------
 function Scene:__onEvent(e, a, b, c, d)
     if not self:isTransitioning() then
         if self:onEvent(e, a, b, c, d) == false then
@@ -210,23 +196,19 @@ function Scene:__onEvent(e, a, b, c, d)
     return true
 end
 
-------------------------------------------------------------
 function Scene:worker()
     if not self.__worker then self.__worker = Worker:new() end
     return self.__worker
 end
 
-------------------------------------------------------------
 function Scene:setPreloadParams(table)
     self.__preloadParams = table
 end
 
-------------------------------------------------------------
 function Scene:isLoading()
     return self.__isLoading
 end
 
-------------------------------------------------------------
 function Scene:performTransition(callback, arg)
     if self ~= Scene.currentScene() then
         Scene.currentScene():performTransition(callback, arg)
@@ -244,7 +226,6 @@ function Scene:performTransition(callback, arg)
     end
 end
 
-------------------------------------------------------------
 function Scene:updateTransition(dt)
     local duration = self:transitionDuration()
     self.__transTime = math.min(duration, self.__transTime + dt)
@@ -259,7 +240,6 @@ function Scene:updateTransition(dt)
     end
 end
 
-------------------------------------------------------------
 function Scene:renderTransition(time, opening)
     local r, g, b, a = self:transitionColor()
 
@@ -269,32 +249,26 @@ function Scene:renderTransition(time, opening)
     self:view():fillFsQuad(r, g, b, a)
 end
 
-------------------------------------------------------------
 function Scene:transitionColor()
     return 0, 0, 0, 255
 end
 
-------------------------------------------------------------
 function Scene:transitionDuration()
     return .2
 end
 
-------------------------------------------------------------
 function Scene:isTransitioning()
     return self.__transTime
 end
 
-------------------------------------------------------------
 function Scene:isOpening()
     return self:isTransitioning() and self.__opening
 end
 
-------------------------------------------------------------
 function Scene:isClosing()
     return self:isTransitioning() and not self.__opening
 end
 
-------------------------------------------------------------
 function Scene:cache(id, loaderFunc)
     -- Make local cache table if there isn't any
     self.__cache = self.__cache or {}
@@ -312,7 +286,6 @@ function Scene:cache(id, loaderFunc)
     return obj
 end
 
-------------------------------------------------------------
 function Scene:view()
     if not self.__view then
         self.__view = Camera2D:new()
@@ -321,27 +294,22 @@ function Scene:view()
     return self.__view
 end
 
-------------------------------------------------------------
 function Scene:load()
     -- Nothing to do
 end
 
-------------------------------------------------------------
 function Scene:update(dt)
     -- Nothing to do
 end
 
-------------------------------------------------------------
 function Scene:fixedUpdate(dt)
     -- Nothing to do
 end
 
-------------------------------------------------------------
 function Scene:render()
     -- Nothing to do
 end
 
-------------------------------------------------------------
 function Scene:back(...)
     if Scene.lastScene() and Scene.lastScene():isTransitioning() then
         self:performTransition()
@@ -350,152 +318,122 @@ function Scene:back(...)
     end
 end
 
-------------------------------------------------------------
 function Scene:release()
     -- Nothing to do
 end
 
-------------------------------------------------------------
 function Scene:onQuit()
     -- Nothing to do
 end
 
-------------------------------------------------------------
 function Scene:onFocus(hasFocus)
     -- Nothing to do
 end
 
-------------------------------------------------------------
 function Scene:onVisible(isVisible)
     -- Nothing to do
 end
 
-------------------------------------------------------------
 function Scene:onResize(w, h)
     self:view():reset(0, 0, w, h)
 end
 
-------------------------------------------------------------
 function Scene:onTextInput(text)
     -- Nothing to do
 end
 
-------------------------------------------------------------
 function Scene:onTextEdit(text, start, length)
     -- Nothing to do
 end
 
-------------------------------------------------------------
 function Scene:onMouseFocus(hasFocus)
     -- Nothing to do
 end
 
-------------------------------------------------------------
 function Scene:onKeyDown(scancode, keysym, repeated)
     -- Nothing to do
 end
 
-------------------------------------------------------------
 function Scene:onKeyUp(scancode, keysym)
     -- Nothing to do
 end
 
-------------------------------------------------------------
 function Scene:onMouseMotion(x, y, xRel, yRel)
     -- Nothing to do
 end
 
-------------------------------------------------------------
 function Scene:onMouseDown(x, y, button)
     -- Nothing to do
 end
 
-------------------------------------------------------------
 function Scene:onMouseUp(x, y, button)
     -- Nothing to do
 end
 
-------------------------------------------------------------
 function Scene:onWheelScroll(x, y)
     -- Nothing to do
 end
 
-------------------------------------------------------------
 function Scene:onJoyAxisMotion(which, axis, value)
     -- Nothing to do
 end
 
-------------------------------------------------------------
 function Scene:onJoyBallMotion(which, ball, xrel, yrel)
     -- Nothing to do
 end
 
-------------------------------------------------------------
 function Scene:onJoyHatMotion(which, hat, value)
     -- Nothing to do
 end
 
-------------------------------------------------------------
 function Scene:onJoyButtonDown(which, button)
     -- Nothing to do
 end
 
-------------------------------------------------------------
 function Scene:onJoyButtonUp(which, button)
     -- Nothing to do
 end
 
-------------------------------------------------------------
 function Scene:onJoyConnect(which, isConnected)
     -- Nothing to do
 end
 
-------------------------------------------------------------
 function Scene:onGamepadMotion(which, axis, value)
     -- Nothing to do
 end
 
-------------------------------------------------------------
 function Scene:onGamepadButtonDown(which, button)
     -- Nothing to do
 end
 
-------------------------------------------------------------
 function Scene:onGamepadButtonUp(which, button)
     -- Nothing to do
 end
 
-------------------------------------------------------------
 function Scene:onGamepadConnect(which, isConnected)
     -- Nothing to do
 end
 
-------------------------------------------------------------
 function Scene:onGamepadRemap(which)
     -- Nothing to do
 end
 
-------------------------------------------------------------
 function Scene:onTouchDown(finger, x, y)
     -- Nothing to do
 end
 
-------------------------------------------------------------
 function Scene:onTouchUp(finger, x, y)
     -- Nothing to do
 end
 
-------------------------------------------------------------
 function Scene:onTouchMotion(finger, x, y)
     -- Nothing to do
 end
 
-------------------------------------------------------------
 function Scene:onFileDrop(file)
     -- Nothing to do
 end
 
-------------------------------------------------------------
 function Scene:onEvent(e, a, b, c, d)
     local event = eventMapping[e]
     if not event then return true end
@@ -503,20 +441,16 @@ function Scene:onEvent(e, a, b, c, d)
     return self[event](self, a, b, c, d)
 end
 
-------------------------------------------------------------
 function Scene:processParent()
     return false
 end
 
-------------------------------------------------------------
 function Scene:updateParent()
     return self:processParent()
 end
 
-------------------------------------------------------------
 function Scene:renderParent()
     return self:processParent()
 end
 
-------------------------------------------------------------
 return Scene

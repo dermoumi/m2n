@@ -308,7 +308,7 @@ LUA_API void LUAJIT_VERSION_SYM(void)
 {
 }
 
-/* -- Hooks --------------------------------------------------------------- */
+/* -- Hooks ----- */
 
 /* This function can be called asynchronously (e.g. during a signal). */
 LUA_API int lua_sethook(lua_State *L, lua_Hook func, int mask, int count)

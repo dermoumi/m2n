@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,17 +23,15 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #include "renderdevicegles2.hpp"
 
 #if defined(NX_OPENGL_ES)
-//------------------------------------------------------------------------------
 #include "../system/log.hpp"
 #include "opengles2.hpp"
 
-//==========================================================
 // Locals
-//==========================================================
 static const char* defaultShaderVS =
     "uniform mat4 viewProjMat;\n"
     "uniform mat4 worldMat;\n"
@@ -61,7 +59,6 @@ static GLenum toPrimType[]     = {
 
 static std::string shaderLog;
 
-//----------------------------------------------------------
 bool RenderDeviceGLES2::initialize()
 {
     bool failed {false};
@@ -77,7 +74,7 @@ bool RenderDeviceGLES2::initialize()
         Log::error("Could not find all required OpenGL function entry points");
         failed = true;
     }
-    
+
     // Check that OpenGL 2.0 is available
     if (glExt::majorVersion * 10 + glExt::minorVersion < 21) {
         Log::error("OpenGL ES 2.1 is not available");
@@ -137,20 +134,18 @@ bool RenderDeviceGLES2::initialize()
     mActiveVertexAttribsMask = 0u;
 
     mDepthFormat = GL_DEPTH_COMPONENT16;
-    
+
     initStates();
     resetStates();
 
     return true;
 }
 
-//----------------------------------------------------------
 void RenderDeviceGLES2::initStates()
 {
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 }
 
-//----------------------------------------------------------
 void RenderDeviceGLES2::resetStates()
 {
     mCurVertexLayout = 1;                     mNewVertexLayout = 0;
@@ -171,7 +166,6 @@ void RenderDeviceGLES2::resetStates()
     glBindFramebuffer(GL_FRAMEBUFFER, mDefaultFBO);
 }
 
-//----------------------------------------------------------
 bool RenderDeviceGLES2::commitStates(uint32_t filter)
 {
     uint32_t mask = mPendingMask & filter;
@@ -233,7 +227,7 @@ bool RenderDeviceGLES2::commitStates(uint32_t filter)
                     }
                 }
             }
-            
+
             mPendingMask &= ~Textures;
         }
 
@@ -244,7 +238,7 @@ bool RenderDeviceGLES2::commitStates(uint32_t filter)
                 mVertexBufUpdated
             ) {
                 if (!applyVertexLayout()) return false;
-                    
+
                 mCurVertexLayout  = mNewVertexLayout;
                 mPrevShaderID     = mCurShaderID;
                 mVertexBufUpdated = false;
@@ -257,7 +251,6 @@ bool RenderDeviceGLES2::commitStates(uint32_t filter)
     return true;
 }
 
-//----------------------------------------------------------
 void RenderDeviceGLES2::clear(uint32_t flags, const float* color, float depth)
 {
     if (mCurRenderBuffer != 0) {
@@ -290,7 +283,6 @@ void RenderDeviceGLES2::clear(uint32_t flags, const float* color, float depth)
     }
 }
 
-//----------------------------------------------------------
 void RenderDeviceGLES2::draw(PrimType primType, uint32_t firstVert, uint32_t vertCount)
 {
     if (commitStates()) {
@@ -298,7 +290,6 @@ void RenderDeviceGLES2::draw(PrimType primType, uint32_t firstVert, uint32_t ver
     }
 }
 
-//----------------------------------------------------------
 void RenderDeviceGLES2::drawIndexed(PrimType primType, uint32_t firstIndex, uint32_t indexCount)
 {
     if (commitStates()) {
@@ -308,12 +299,11 @@ void RenderDeviceGLES2::drawIndexed(PrimType primType, uint32_t firstIndex, uint
     }
 }
 
-//----------------------------------------------------------
 uint32_t RenderDeviceGLES2::registerVertexLayout(uint8_t numAttribs,
     const VertexLayoutAttrib* attribs)
 {
     if (mNumVertexLayouts == MaxNumVertexLayouts) return 0;
-    
+
     mVertexLayouts[mNumVertexLayouts].numAttribs = numAttribs;
     for (uint8_t i = 0; i < numAttribs; ++i) {
         mVertexLayouts[mNumVertexLayouts].attribs[i] = attribs[i];
@@ -322,7 +312,6 @@ uint32_t RenderDeviceGLES2::registerVertexLayout(uint8_t numAttribs,
     return ++mNumVertexLayouts;
 }
 
-//----------------------------------------------------------
 uint32_t RenderDeviceGLES2::createTexture(TextureType type, int width, int height,
     unsigned int depth, TextureFormat format, bool hasMips, bool genMips, bool sRGB)
 {
@@ -422,7 +411,7 @@ uint32_t RenderDeviceGLES2::createTexture(TextureType type, int width, int heigh
 
     int lastTexture;
     glGetIntegerv(toTexBinding[tex.type], &lastTexture);
-    
+
     glBindTexture(tex.type, tex.glObj);
 
     tex.samplerState = 0;
@@ -439,7 +428,6 @@ uint32_t RenderDeviceGLES2::createTexture(TextureType type, int width, int heigh
     return mTextures.add(tex);
 }
 
-//----------------------------------------------------------
 void RenderDeviceGLES2::uploadTextureData(uint32_t texObj, int slice, int mipLevel,
     const void* pixels)
 {
@@ -458,7 +446,7 @@ void RenderDeviceGLES2::uploadTextureData(uint32_t texObj, int slice, int mipLev
 
     int lastTexture;
     glGetIntegerv(toTexBinding[tex.type], &lastTexture);
-    
+
     glBindTexture(tex.type, tex.glObj);
 
     switch (format) {
@@ -487,7 +475,7 @@ void RenderDeviceGLES2::uploadTextureData(uint32_t texObj, int slice, int mipLev
                 calcTextureSize(format, width, height, 1), pixels);
         }
         else {
-            glTexImage2D(target, mipLevel, tex.glFmt, width, height, 0, inputFormat, inputType, 
+            glTexImage2D(target, mipLevel, tex.glFmt, width, height, 0, inputFormat, inputType,
                 pixels);
         }
     }
@@ -512,7 +500,6 @@ void RenderDeviceGLES2::uploadTextureData(uint32_t texObj, int slice, int mipLev
     glBindTexture(tex.type, lastTexture);
 }
 
-//----------------------------------------------------------
 void RenderDeviceGLES2::uploadTextureSubData(uint32_t texObj, int slice, int mipLevel,
     unsigned int x, unsigned int y, unsigned int z, unsigned int width, unsigned int height,
     unsigned int depth, const void* pixels)
@@ -534,7 +521,7 @@ void RenderDeviceGLES2::uploadTextureSubData(uint32_t texObj, int slice, int mip
 
     int lastTexture;
     glGetIntegerv(toTexBinding[tex.type], &lastTexture);
-    
+
     glBindTexture(tex.type, tex.glObj);
 
     int inputFormat = GL_RGBA;
@@ -585,7 +572,6 @@ void RenderDeviceGLES2::uploadTextureSubData(uint32_t texObj, int slice, int mip
     glBindTexture(tex.type, lastTexture);
 }
 
-//----------------------------------------------------------
 void RenderDeviceGLES2::destroyTexture(uint32_t texObj)
 {
     if (texObj == 0) return;
@@ -596,7 +582,6 @@ void RenderDeviceGLES2::destroyTexture(uint32_t texObj)
     mTextures.remove(texObj);
 }
 
-//----------------------------------------------------------
 bool RenderDeviceGLES2::getTextureData(uint32_t texObj, int slice, int mipLevel, void* buffer)
 {
     const auto& tex = mTextures.getRef(texObj);
@@ -606,13 +591,13 @@ bool RenderDeviceGLES2::getTextureData(uint32_t texObj, int slice, int mipLevel,
         return false;
     }
 
-    int target = (tex.type == GL_TEXTURE_CUBE_MAP) ? 
+    int target = (tex.type == GL_TEXTURE_CUBE_MAP) ?
         GL_TEXTURE_CUBE_MAP_POSITIVE_X + slice : GL_TEXTURE_2D;
 
     GLuint fb {0u};
     glGenFramebuffers(1, &fb);
     if (!fb) return false;
-    
+
     GLint prevFb;
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prevFb);
 
@@ -625,13 +610,11 @@ bool RenderDeviceGLES2::getTextureData(uint32_t texObj, int slice, int mipLevel,
     return false;
 }
 
-//----------------------------------------------------------
 uint32_t RenderDeviceGLES2::getTextureMemory() const
 {
     return mTextureMemory;
 }
 
-//----------------------------------------------------------
 uint32_t RenderDeviceGLES2::createShader(const char* vertexShaderSrc, const char* fragmentShaderSrc)
 {
     // Compile and link shader
@@ -685,7 +668,6 @@ uint32_t RenderDeviceGLES2::createShader(const char* vertexShaderSrc, const char
     return mShaders.add(shader, true);
 }
 
-//----------------------------------------------------------
 void RenderDeviceGLES2::destroyShader(uint32_t shaderID)
 {
     if (shaderID == 0) return;
@@ -694,7 +676,6 @@ void RenderDeviceGLES2::destroyShader(uint32_t shaderID)
     mShaders.remove(shaderID);
 }
 
-//----------------------------------------------------------
 void RenderDeviceGLES2::bindShader(uint32_t shaderID)
 {
     if (shaderID == 0) {
@@ -709,27 +690,23 @@ void RenderDeviceGLES2::bindShader(uint32_t shaderID)
     mPendingMask |= VertexLayouts;
 }
 
-//----------------------------------------------------------
 const std::string& RenderDeviceGLES2::getShaderLog()
 {
     return shaderLog;
 }
 
-//----------------------------------------------------------
 int RenderDeviceGLES2::getShaderConstLoc(uint32_t shaderID, const char* name)
 {
     RDIShader& shader = mShaders.getRef(shaderID);
     return glGetUniformLocation(shader.oglProgramObj, name);
 }
 
-//----------------------------------------------------------
 int RenderDeviceGLES2::getShaderSamplerLoc(uint32_t shaderID, const char* name)
 {
     RDIShader& shader = mShaders.getRef(shaderID);
     return glGetUniformLocation(shader.oglProgramObj, name);
 }
 
-//----------------------------------------------------------
 void RenderDeviceGLES2::setShaderConst(int loc, ShaderConstType type, float* values, uint32_t count)
 {
     switch(type) {
@@ -754,36 +731,31 @@ void RenderDeviceGLES2::setShaderConst(int loc, ShaderConstType type, float* val
     }
 }
 
-//----------------------------------------------------------
 void RenderDeviceGLES2::setShaderSampler(int loc, uint32_t texUnit)
 {
     glUniform1i(loc, (int)texUnit);
 }
 
-//----------------------------------------------------------
 const char* RenderDeviceGLES2::getDefaultVSCode()
-{   
+{
     return defaultShaderVS;
 }
 
-//----------------------------------------------------------
 const char* RenderDeviceGLES2::getDefaultFSCode()
 {
     return defaultShaderFS;
 }
 
-//----------------------------------------------------------
 uint32_t RenderDeviceGLES2::getCurrentShader() const
 {
     return mCurShaderID;
 }
 
-//----------------------------------------------------------
 void RenderDeviceGLES2::beginRendering()
 {
-    // Get the currently bound frame buffer object. 
+    // Get the currently bound frame buffer object.
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &mDefaultFBO);
-    
+
     mCurVertexLayout = 1;                     mNewVertexLayout = 0;
     mCurIndexBuffer = 1;                      mNewIndexBuffer = 0;
     mCurRasterState.hash = 0xFFFFFFFFu;       mNewRasterState.hash = 0u;
@@ -799,13 +771,11 @@ void RenderDeviceGLES2::beginRendering()
     glBindFramebuffer(GL_FRAMEBUFFER, mDefaultFBO);
 }
 
-//----------------------------------------------------------
 void RenderDeviceGLES2::finishRendering()
 {
     // Nothing to do
 }
 
-//----------------------------------------------------------
 uint32_t RenderDeviceGLES2::createVertexBuffer(uint32_t size, const void* data)
 {
     RDIBuffer buf;
@@ -821,7 +791,6 @@ uint32_t RenderDeviceGLES2::createVertexBuffer(uint32_t size, const void* data)
     return mBuffers.add(buf);
 }
 
-//----------------------------------------------------------
 uint32_t RenderDeviceGLES2::createIndexBuffer(uint32_t size, const void* data)
 {
     RDIBuffer buf;
@@ -837,7 +806,6 @@ uint32_t RenderDeviceGLES2::createIndexBuffer(uint32_t size, const void* data)
     return mBuffers.add(buf);
 }
 
-//----------------------------------------------------------
 void RenderDeviceGLES2::destroyBuffer(uint32_t buffer)
 {
     if (buffer == 0) return;
@@ -849,7 +817,6 @@ void RenderDeviceGLES2::destroyBuffer(uint32_t buffer)
     mBuffers.remove(buffer);
 }
 
-//----------------------------------------------------------
 bool RenderDeviceGLES2::updateBufferData(uint32_t buffer, uint32_t offset, uint32_t size,
     const void* data)
 {
@@ -868,13 +835,11 @@ bool RenderDeviceGLES2::updateBufferData(uint32_t buffer, uint32_t offset, uint3
     return true;
 }
 
-//----------------------------------------------------------
 uint32_t RenderDeviceGLES2::getBufferMemory() const
 {
     return mBufferMemory;
 }
 
-//----------------------------------------------------------
 uint32_t RenderDeviceGLES2::createRenderBuffer(uint32_t width, uint32_t height,
     TextureFormat format, bool depth, uint32_t numColBufs, uint32_t samples)
 {
@@ -1034,7 +999,6 @@ uint32_t RenderDeviceGLES2::createRenderBuffer(uint32_t width, uint32_t height,
     return rbObj;
 }
 
-//----------------------------------------------------------
 void RenderDeviceGLES2::destroyRenderBuffer(uint32_t rbObj)
 {
     auto& rb = mRenderBuffers.getRef(rbObj);
@@ -1059,18 +1023,16 @@ void RenderDeviceGLES2::destroyRenderBuffer(uint32_t rbObj)
     mRenderBuffers.remove(rbObj);
 }
 
-//----------------------------------------------------------
 uint32_t RenderDeviceGLES2::getRenderBufferTexture(uint32_t rbObj, uint32_t bufIndex)
 {
     auto& rb = mRenderBuffers.getRef(rbObj);
 
     if (bufIndex < static_cast<uint32_t>(mMaxColBuffers)) return rb.colTexs[bufIndex];
     if (bufIndex == 32) return rb.depthTex;
-    
+
     return 0;
 }
 
-//----------------------------------------------------------
 void RenderDeviceGLES2::setRenderBuffer(uint32_t rbObj)
 {
     // Resolve reneder buffer if necessary
@@ -1110,7 +1072,6 @@ void RenderDeviceGLES2::setRenderBuffer(uint32_t rbObj)
     }
 }
 
-//----------------------------------------------------------
 void RenderDeviceGLES2::getRenderBufferSize(uint32_t rbObj, int* width, int* height)
 {
     if (rbObj == 0) {
@@ -1125,7 +1086,6 @@ void RenderDeviceGLES2::getRenderBufferSize(uint32_t rbObj, int* width, int* hei
     }
 }
 
-//----------------------------------------------------------
 bool RenderDeviceGLES2::getRenderBufferData(uint32_t rbObj, int bufIndex, int* width, int* height,
     int* compCount, void* dataBuffer, int bufferSize)
 {
@@ -1192,7 +1152,6 @@ bool RenderDeviceGLES2::getRenderBufferData(uint32_t rbObj, int bufIndex, int* w
     return retVal;
 }
 
-//----------------------------------------------------------
 void RenderDeviceGLES2::setViewport(int x, int y, int width, int height)
 {
     mVpX      = x;
@@ -1203,7 +1162,6 @@ void RenderDeviceGLES2::setViewport(int x, int y, int width, int height)
     mPendingMask |= Viewport;
 }
 
-//----------------------------------------------------------
 void RenderDeviceGLES2::setScissorRect(int x, int y, int width, int height)
 {
     mScX      = x;
@@ -1214,7 +1172,6 @@ void RenderDeviceGLES2::setScissorRect(int x, int y, int width, int height)
     mPendingMask |= Scissor;
 }
 
-//----------------------------------------------------------
 void RenderDeviceGLES2::setIndexBuffer(uint32_t bufObj, IndexFormat format)
 {
     mIndexFormat = toIndexFormat[format];
@@ -1222,7 +1179,6 @@ void RenderDeviceGLES2::setIndexBuffer(uint32_t bufObj, IndexFormat format)
     mPendingMask |= IndexBuffer;
 }
 
-//----------------------------------------------------------
 void RenderDeviceGLES2::setVertexBuffer(uint32_t slot, uint32_t vbObj, uint32_t offset,
     uint32_t stride)
 {
@@ -1234,97 +1190,82 @@ void RenderDeviceGLES2::setVertexBuffer(uint32_t slot, uint32_t vbObj, uint32_t 
     mPendingMask |= VertexLayouts;
 }
 
-//----------------------------------------------------------
 void RenderDeviceGLES2::setVertexLayout(uint32_t vlObj)
 {
     mNewVertexLayout = vlObj;
 }
 
-//----------------------------------------------------------
 void RenderDeviceGLES2::setTexture(uint32_t slot, uint32_t texObj, uint16_t samplerState)
 {
     mTexSlots[slot] = {texObj, samplerState};
     mPendingMask |= Textures;
 }
 
-//----------------------------------------------------------
 void RenderDeviceGLES2::setColorWriteMask(bool enabled)
 {
     mNewRasterState.renderTargetWriteMask = enabled;
 }
 
-//----------------------------------------------------------
 bool RenderDeviceGLES2::getColorWriteMask() const
 {
     return mNewRasterState.renderTargetWriteMask;
 }
 
-//----------------------------------------------------------
 void RenderDeviceGLES2::setFillMode(FillMode fillMode)
 {
     mNewRasterState.fillMode = fillMode;
     mPendingMask |= RenderStates;
 }
 
-//----------------------------------------------------------
 RenderDevice::FillMode RenderDeviceGLES2::getFillMode() const
 {
     return static_cast<FillMode>(mNewRasterState.fillMode);
 }
 
-//----------------------------------------------------------
 void RenderDeviceGLES2::setCullMode(CullMode cullMode)
 {
     mNewRasterState.cullMode = cullMode;
     mPendingMask |= RenderStates;
 }
 
-//----------------------------------------------------------
 RenderDevice::CullMode RenderDeviceGLES2::getCullMode() const
 {
     return static_cast<CullMode>(mNewRasterState.cullMode);
 }
 
-//----------------------------------------------------------
 void RenderDeviceGLES2::setScissorTest(bool enabled)
 {
     mNewRasterState.scissorEnable = enabled;
     mPendingMask |= RenderStates;
 }
 
-//----------------------------------------------------------
 bool RenderDeviceGLES2::getScissorTest() const
 {
     return mNewRasterState.scissorEnable;
 }
 
-//----------------------------------------------------------
 void RenderDeviceGLES2::setMultisampling(bool enabled)
 {
     mNewRasterState.multisampleEnable = enabled;
     mPendingMask |= RenderStates;
 }
 
-//----------------------------------------------------------
 bool RenderDeviceGLES2::getMultisampling() const
 {
     return mNewRasterState.multisampleEnable;
 }
 
-//----------------------------------------------------------
 void RenderDeviceGLES2::setAlphaToCoverage(bool enabled)
 {
     mNewBlendState.alphaToCoverageEnable = enabled;
     mPendingMask |= RenderStates;
 }
 
-//----------------------------------------------------------
 bool RenderDeviceGLES2::getAlphaToCoverage() const
 {
     return mNewBlendState.alphaToCoverageEnable;
 }
 
-//----------------------------------------------------------
 void RenderDeviceGLES2::setBlendMode(bool enabled, BlendFunc src, BlendFunc dst)
 {
     mNewBlendState.blendEnable = enabled;
@@ -1334,7 +1275,6 @@ void RenderDeviceGLES2::setBlendMode(bool enabled, BlendFunc src, BlendFunc dst)
     mPendingMask |= RenderStates;
 }
 
-//----------------------------------------------------------
 bool RenderDeviceGLES2::getBlendMode(BlendFunc& src, BlendFunc& dst) const
 {
     src = static_cast<BlendFunc>(mNewBlendState.srcBlendFunc);
@@ -1342,52 +1282,44 @@ bool RenderDeviceGLES2::getBlendMode(BlendFunc& src, BlendFunc& dst) const
     return mNewBlendState.blendEnable;
 }
 
-//----------------------------------------------------------
 void RenderDeviceGLES2::setDepthMask(bool enabled)
 {
     mNewDepthStencilState.depthWriteMask = enabled;
     mPendingMask |= RenderStates;
 }
 
-//----------------------------------------------------------
 bool RenderDeviceGLES2::getDepthMask() const
 {
     return mNewDepthStencilState.depthWriteMask;
 }
 
-//----------------------------------------------------------
 void RenderDeviceGLES2::setDepthTest(bool enabled)
 {
     mNewDepthStencilState.depthEnable = enabled;
     mPendingMask |= RenderStates;
 }
 
-//----------------------------------------------------------
 bool RenderDeviceGLES2::getDepthTest() const
 {
     return mNewDepthStencilState.depthEnable;
 }
 
-//----------------------------------------------------------
 void RenderDeviceGLES2::setDepthFunc(DepthFunc depthFunc)
 {
     mNewDepthStencilState.depthFunc = depthFunc;
     mPendingMask |= RenderStates;
 }
 
-//----------------------------------------------------------
 RenderDevice::DepthFunc RenderDeviceGLES2::getDepthFunc() const
 {
     return static_cast<DepthFunc>(mNewDepthStencilState.depthFunc);
 }
 
-//----------------------------------------------------------
 void RenderDeviceGLES2::sync()
 {
     glFinish();
 }
 
-//----------------------------------------------------------
 void RenderDeviceGLES2::getCapabilities(uint32_t* maxTexUnits, uint32_t* maxTexSize,
         uint32_t* maxCubTexSize, uint32_t* maxColBufs, bool* dxt, bool* pvrtci, bool* etc1,
         bool* texFloat, bool* texDepth, bool* texSS, bool* tex3D, bool* texNPOT, bool* texSRGB,
@@ -1411,7 +1343,6 @@ void RenderDeviceGLES2::getCapabilities(uint32_t* maxTexUnits, uint32_t* maxTexS
     if (timerQuery)    *timerQuery    = mTimerQuerySupported;
 }
 
-//----------------------------------------------------------
 uint32_t RenderDeviceGLES2::createShaderProgram(const char* vertexShaderSrc,
     const char* fragmentShaderSrc)
 {
@@ -1472,7 +1403,6 @@ uint32_t RenderDeviceGLES2::createShaderProgram(const char* vertexShaderSrc,
     return program;
 }
 
-//----------------------------------------------------------
 bool RenderDeviceGLES2::linkShaderProgram(uint32_t programObj)
 {
     int infoLogLength {0};
@@ -1498,7 +1428,6 @@ bool RenderDeviceGLES2::linkShaderProgram(uint32_t programObj)
     return true;
 }
 
-//----------------------------------------------------------
 bool RenderDeviceGLES2::applyVertexLayout()
 {
     if (mNewVertexLayout != 0) {
@@ -1548,7 +1477,6 @@ bool RenderDeviceGLES2::applyVertexLayout()
     return true;
 }
 
-//----------------------------------------------------------
 void RenderDeviceGLES2::applySamplerState(RDITexture& tex)
 {
     thread_local const uint32_t magFilters[] = {GL_LINEAR, GL_LINEAR, GL_NEAREST};
@@ -1598,7 +1526,6 @@ void RenderDeviceGLES2::applySamplerState(RDITexture& tex)
     }
 }
 
-//----------------------------------------------------------
 void RenderDeviceGLES2::applyRenderStates()
 {
     // Rasterizer state
@@ -1701,7 +1628,6 @@ void RenderDeviceGLES2::applyRenderStates()
     }
 }
 
-//----------------------------------------------------------
 void RenderDeviceGLES2::resolveRenderBuffer(uint32_t rbObj)
 {
     auto& rb = mRenderBuffers.getRef(rbObj);
@@ -1743,7 +1669,4 @@ void RenderDeviceGLES2::resolveRenderBuffer(uint32_t rbObj)
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER_ANGLE, mDefaultFBO);
 }
 
-
-//------------------------------------------------------------------------------
 #endif
-//==============================================================================

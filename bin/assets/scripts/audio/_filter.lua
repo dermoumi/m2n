@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,13 +23,12 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local class = require 'class'
 
 local AudioFilter = class 'audio._filter'
 
-------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
@@ -51,12 +50,10 @@ ffi.cdef [[
     void nxAudioFilterBassboostSetParams(NxAudioFilter*, float);
 ]]
 
-------------------------------------------------------------
 function AudioFilter:release()
     if self._cdata == nil then return end
     C.nxAudioFilterRelease(ffi.gc(self._cdata, nil))
     self._cdata = nil
 end
 
-------------------------------------------------------------
 return AudioFilter

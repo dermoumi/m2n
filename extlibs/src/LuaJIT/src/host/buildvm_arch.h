@@ -1098,7 +1098,7 @@ static const char *const extnames[] = {
 };
 #line 16 "vm_x86.dasc"
 //|
-//|//-----------------------------------------------------------------------
+//|-----------
 //|
 //|.if P64
 //|.define X64, 1
@@ -1228,7 +1228,7 @@ static const char *const extnames[] = {
 #line 119 "vm_x86.dasc"
 //|
 //|// Stack layout while in interpreter. Must match with lj_frame.h.
-//|//-----------------------------------------------------------------------
+//|-----------
 //|.if not X64		// x86 stack layout.
 //|
 //|.define CFRAME_SPACE,	aword*7			// Delta for esp (see <--).
@@ -1248,22 +1248,22 @@ static const char *const extnames[] = {
 //|.define SAVE_NRES,	aword [esp+aword*14]
 //|.define SAVE_CFRAME,	aword [esp+aword*13]
 //|.define SAVE_L,	aword [esp+aword*12]
-//|//----- 16 byte aligned, ^^^ arguments from C caller
+//|--- 16 byte aligned, ^^^ arguments from C caller
 //|.define SAVE_RET,	aword [esp+aword*11]	//<-- esp entering interpreter.
 //|.define SAVE_R4,	aword [esp+aword*10]
 //|.define SAVE_R3,	aword [esp+aword*9]
 //|.define SAVE_R2,	aword [esp+aword*8]
-//|//----- 16 byte aligned
+//|--- 16 byte aligned
 //|.define SAVE_R1,	aword [esp+aword*7]	//<-- esp after register saves.
 //|.define SAVE_PC,	aword [esp+aword*6]
 //|.define TMP2,		aword [esp+aword*5]
 //|.define TMP1,		aword [esp+aword*4]
-//|//----- 16 byte aligned
+//|--- 16 byte aligned
 //|.define ARG4,		aword [esp+aword*3]
 //|.define ARG3,		aword [esp+aword*2]
 //|.define ARG2,		aword [esp+aword*1]
 //|.define ARG1,		aword [esp]		//<-- esp while in interpreter.
-//|//----- 16 byte aligned, ^^^ arguments for C callee
+//|--- 16 byte aligned, ^^^ arguments for C callee
 //|
 //|// FPARGx overlaps ARGx and ARG(x+1) on x86.
 //|.define FPARG3,	qword [esp+qword*1]
@@ -1283,7 +1283,7 @@ static const char *const extnames[] = {
 //|.define INARG_CP_UD,	SAVE_NRES
 //|.define INARG_CP_FUNC,	SAVE_CFRAME
 //|
-//|//-----------------------------------------------------------------------
+//|-----------
 //|.elif X64WIN		// x64/Windows stack layout
 //|
 //|.define CFRAME_SPACE,	aword*5			// Delta for rsp (see <--).
@@ -1306,7 +1306,7 @@ static const char *const extnames[] = {
 //|.define SAVE_NRES,	dword [rsp+dword*22]
 //|.define TMP2,		dword [rsp+dword*21]
 //|.define TMP1,		dword [rsp+dword*20]
-//|//----- 16 byte aligned, ^^^ 32 byte register save area, owned by interpreter
+//|--- 16 byte aligned, ^^^ 32 byte register save area, owned by interpreter
 //|.define SAVE_RET,	aword [rsp+aword*9]	//<-- rsp entering interpreter.
 //|.define SAVE_R4,	aword [rsp+aword*8]
 //|.define SAVE_R3,	aword [rsp+aword*7]
@@ -1317,7 +1317,7 @@ static const char *const extnames[] = {
 //|.define CSAVE_3,	aword [rsp+aword*2]
 //|.define CSAVE_2,	aword [rsp+aword*1]
 //|.define CSAVE_1,	aword [rsp]		//<-- rsp while in interpreter.
-//|//----- 16 byte aligned, ^^^ 32 byte register save area, owned by callee
+//|--- 16 byte aligned, ^^^ 32 byte register save area, owned by callee
 //|
 //|// TMPQ overlaps TMP1/TMP2. MULTRES overlaps TMP2 (and TMPQ).
 //|.define TMPQ,		qword [rsp+aword*10]
@@ -1326,7 +1326,7 @@ static const char *const extnames[] = {
 //|.define ARG5d,		dword [rsp+aword*4]
 //|.define TMP3,		ARG5d
 //|
-//|//-----------------------------------------------------------------------
+//|-----------
 //|.else			// x64/POSIX stack layout
 //|
 //|.define CFRAME_SPACE,	aword*5			// Delta for rsp (see <--).
@@ -1342,7 +1342,7 @@ static const char *const extnames[] = {
 //|  pop r14; pop r15; pop rbx; pop rbp
 //|.endmacro
 //|
-//|//----- 16 byte aligned,
+//|--- 16 byte aligned,
 //|.define SAVE_RET,	aword [rsp+aword*9]	//<-- rsp entering interpreter.
 //|.define SAVE_R4,	aword [rsp+aword*8]
 //|.define SAVE_R3,	aword [rsp+aword*7]
@@ -1356,7 +1356,7 @@ static const char *const extnames[] = {
 //|.define TMPa,		aword [rsp+aword*1]
 //|.define TMP2,		dword [rsp+dword*1]
 //|.define TMP1,		dword [rsp]		//<-- rsp while in interpreter.
-//|//----- 16 byte aligned
+//|--- 16 byte aligned
 //|
 //|// TMPQ overlaps TMP1/TMP2. MULTRES overlaps TMP2 (and TMPQ).
 //|.define TMPQ,		qword [rsp]
@@ -1365,7 +1365,7 @@ static const char *const extnames[] = {
 //|
 //|.endif
 //|
-//|//-----------------------------------------------------------------------
+//|-----------
 //|
 //|// Instruction headers.
 //|.macro ins_A; .endmacro
@@ -1429,7 +1429,7 @@ static const char *const extnames[] = {
 //|  ins_callt
 //|.endmacro
 //|
-//|//-----------------------------------------------------------------------
+//|-----------
 //|
 //|// Macros to test operand types.
 //|.macro checktp, reg, tp;  cmp dword [BASE+reg*8+4], tp; .endmacro
@@ -1527,7 +1527,7 @@ static const char *const extnames[] = {
 //|  mov tab->gclist, reg
 //|.endmacro
 //|
-//|//-----------------------------------------------------------------------
+//|-----------
 
 /* Generate subroutines used by opcodes and other parts of the VM. */
 /* The .code_sub section should be last to help static branch prediction. */
@@ -1537,9 +1537,9 @@ static void build_subroutines(BuildCtx *ctx)
   dasm_put(Dst, 0);
 #line 427 "vm_x86.dasc"
   //|
-  //|//-----------------------------------------------------------------------
-  //|//-- Return handling ----------------------------------------------------
-  //|//-----------------------------------------------------------------------
+  //|-----------
+  //| Return handling ----------------------------------------------------
+  //|-----------
   //|
   //|->vm_returnp:
   //|  test PC, FRAME_P
@@ -1693,9 +1693,9 @@ static void build_subroutines(BuildCtx *ctx)
   //|  set_vmstate INTERP
   //|  jmp ->vm_returnc			// Increments RD/MULTRES and returns.
   //|
-  //|//-----------------------------------------------------------------------
-  //|//-- Grow stack for calls -----------------------------------------------
-  //|//-----------------------------------------------------------------------
+  //|-----------
+  //| Grow stack for calls -----------------------------------------------
+  //|-----------
   //|
   //|->vm_growstack_c:			// Grow stack for C function.
   //|  mov FCARG2, LUA_MINSTACK
@@ -1730,9 +1730,9 @@ static void build_subroutines(BuildCtx *ctx)
   //|  // BASE = new base, RB = LFUNC, RD = nargs+1
   //|  ins_callt				// Just retry the call.
   //|
-  //|//-----------------------------------------------------------------------
-  //|//-- Entry points into the assembler VM ---------------------------------
-  //|//-----------------------------------------------------------------------
+  //|-----------
+  //| Entry points into the assembler VM ---------------------------------
+  //|-----------
   //|
   //|->vm_resume:				// Setup C frame and resume thread.
   //|  // (lua_State *L, TValue *base, int nres1 = 0, ptrdiff_t ef = 0)
@@ -1885,11 +1885,11 @@ static void build_subroutines(BuildCtx *ctx)
   //|  mov PC, FRAME_CP
   //|  jmp <2				// Else continue with the call.
   //|
-  //|//-----------------------------------------------------------------------
-  //|//-- Metamethod handling ------------------------------------------------
-  //|//-----------------------------------------------------------------------
+  //|-----------
+  //| Metamethod handling ------------------------------------------------
+  //|-----------
   //|
-  //|//-- Continuation dispatch ----------------------------------------------
+  //| Continuation dispatch ----------------------------------------------
   //|
   //|->cont_dispatch:
   //|  // BASE = meta base, RA = resultofs, RD = nresults+1 (also in MULTRES)
@@ -1965,7 +1965,7 @@ static void build_subroutines(BuildCtx *ctx)
   //|.endif
   //|  jmp ->BC_CAT_Z
   //|
-  //|//-- Table indexing metamethods -----------------------------------------
+  //| Table indexing metamethods -----------------------------------------
   //|
   //|->vmeta_tgets:
   //|  mov TMP1, RC			// RC = GCstr *
@@ -2046,7 +2046,7 @@ static void build_subroutines(BuildCtx *ctx)
   //|  mov NARGS:RD, 2+1			// 2 args for func(t, k).
   //|  jmp ->vm_call_dispatch_f
   //|
-  //|//-----------------------------------------------------------------------
+  //|-----------
   //|
   //|->vmeta_tsets:
   //|  mov TMP1, RC			// RC = GCstr *
@@ -2139,7 +2139,7 @@ static void build_subroutines(BuildCtx *ctx)
   //|  mov NARGS:RD, 3+1			// 3 args for func(t, k, v).
   //|  jmp ->vm_call_dispatch_f
   //|
-  //|//-- Comparison metamethods ---------------------------------------------
+  //| Comparison metamethods ---------------------------------------------
   //|
   //|->vmeta_comp:
   //|.if X64
@@ -2235,7 +2235,7 @@ static void build_subroutines(BuildCtx *ctx)
   //|  jmp <3
   //|.endif
   //|
-  //|//-- Arithmetic metamethods ---------------------------------------------
+  //| Arithmetic metamethods ---------------------------------------------
   //|
   //|->vmeta_arith_vno:
   //|.if DUALNUM
@@ -2343,7 +2343,7 @@ static void build_subroutines(BuildCtx *ctx)
 #line 1200 "vm_x86.dasc"
 #endif
   //|
-  //|//-- Call metamethod ----------------------------------------------------
+  //| Call metamethod ----------------------------------------------------
   //|
   //|->vmeta_call_ra:
   //|  lea RA, [BASE+RA*8+8]
@@ -2379,7 +2379,7 @@ static void build_subroutines(BuildCtx *ctx)
   //|  mov BASE, RA
   //|  ins_call				// Otherwise call resolved metamethod.
   //|
-  //|//-- Argument coercion for 'for' statement ------------------------------
+  //| Argument coercion for 'for' statement ------------------------------
   //|
   //|->vmeta_for:
   //|  mov L:RB, SAVE_L
@@ -2399,9 +2399,9 @@ static void build_subroutines(BuildCtx *ctx)
   //|  jmp aword [DISPATCH+OP*4+GG_DISP2STATIC]	// Retry FORI or JFORI.
   //|.endif
   //|
-  //|//-----------------------------------------------------------------------
-  //|//-- Fast functions -----------------------------------------------------
-  //|//-----------------------------------------------------------------------
+  //|-----------
+  //| Fast functions -----------------------------------------------------
+  //|-----------
   //|
   //|.macro .ffunc, name
   //|->ff_ .. name:
@@ -2473,7 +2473,7 @@ static void build_subroutines(BuildCtx *ctx)
   //|1:
   //|.endmacro
   //|
-  //|//-- Base library: checks -----------------------------------------------
+  //| Base library: checks -----------------------------------------------
   //|
   //|.ffunc_1 assert
   //|  mov RB, [BASE+4]
@@ -2532,7 +2532,7 @@ static void build_subroutines(BuildCtx *ctx)
 #line 1385 "vm_x86.dasc"
   //|.endif
   //|
-  //|//-- Base library: getters and setters ---------------------------------
+  //| Base library: getters and setters ---------------------------------
   //|
   //|.ffunc_1 getmetatable
   //|  mov RB, [BASE+4]
@@ -2651,7 +2651,7 @@ static void build_subroutines(BuildCtx *ctx)
   //|.endif
   //|  jmp ->fff_res1
   //|
-  //|//-- Base library: conversions ------------------------------------------
+  //| Base library: conversions ------------------------------------------
   //|
   //|.ffunc tonumber
   //|  // Only handles the number case inline (without a base argument).
@@ -2706,7 +2706,7 @@ static void build_subroutines(BuildCtx *ctx)
   //|  mov BASE, L:RB->base
   //|  jmp <2
   //|
-  //|//-- Base library: iterators -------------------------------------------
+  //| Base library: iterators -------------------------------------------
   //|
   //|.ffunc_1 next
   //|  je >2				// Missing 2nd arg?
@@ -2876,7 +2876,7 @@ static void build_subroutines(BuildCtx *ctx)
   //|  mov RD, 1+3
   //|  jmp ->fff_res
   //|
-  //|//-- Base library: catch errors ----------------------------------------
+  //| Base library: catch errors ----------------------------------------
   //|
   //|.ffunc_1 pcall
   //|  lea RA, [BASE+8]
@@ -2905,7 +2905,7 @@ static void build_subroutines(BuildCtx *ctx)
   //|  mov PC, 16+FRAME_PCALL
   //|  jmp <1
   //|
-  //|//-- Coroutine library --------------------------------------------------
+  //| Coroutine library --------------------------------------------------
   //|
   //|.macro coroutine_resume_wrap, resume
   //|.if resume
@@ -3107,7 +3107,7 @@ static void build_subroutines(BuildCtx *ctx)
   //|  mov byte L:RB->status, al
   //|  jmp ->vm_leave_unw
   //|
-  //|//-- Math library -------------------------------------------------------
+  //| Math library -------------------------------------------------------
   //|
   //|.if not DUALNUM
   //|->fff_resi:  // Dummy.
@@ -3504,7 +3504,7 @@ static void build_subroutines(BuildCtx *ctx)
   //|  fpop; jmp ->fff_fallback
   //|.endif
   //|
-  //|//-- String library -----------------------------------------------------
+  //| String library -----------------------------------------------------
   //|
   //|.ffunc_1 string_len
   //|  cmp dword [BASE+4], LJ_TSTR;  jne ->fff_fallback
@@ -3782,7 +3782,7 @@ static void build_subroutines(BuildCtx *ctx)
   dasm_put(Dst, 5462, 1+1, DISPATCH_GL(gc.total), DISPATCH_GL(gc.threshold), LJ_TSTR, Dt5(->len), DISPATCH_GL(tmpbuf.sz), sizeof(GCstr), DISPATCH_GL(tmpbuf.buf));
 #line 2545 "vm_x86.dasc"
   //|
-  //|//-- Table library ------------------------------------------------------
+  //| Table library ------------------------------------------------------
   //|
   //|.ffunc_1 table_getn
   //|  cmp dword [BASE+4], LJ_TTAB;  jne ->fff_fallback
@@ -3799,7 +3799,7 @@ static void build_subroutines(BuildCtx *ctx)
   //|  mov ARG1, RD; fild ARG1; jmp ->fff_resn
   //|.endif
   //|
-  //|//-- Bit library --------------------------------------------------------
+  //| Bit library --------------------------------------------------------
   //|
   //|.define TOBIT_BIAS, 0x59c00000	// 2^52 + 2^51 (float, not double!).
   //|
@@ -3967,7 +3967,7 @@ static void build_subroutines(BuildCtx *ctx)
 #line 2713 "vm_x86.dasc"
   //|.ffunc_bit_sh bit_ror, ror
   //|
-  //|//-----------------------------------------------------------------------
+  //|-----------
   //|
   //|->fff_fallback_2:
   //|  mov NARGS:RD, 1+2			// Other args are ignored, anyway.
@@ -4054,9 +4054,9 @@ static void build_subroutines(BuildCtx *ctx)
   //|  push RBa				// Restore return address.
   //|  ret
   //|
-  //|//-----------------------------------------------------------------------
-  //|//-- Special dispatch targets -------------------------------------------
-  //|//-----------------------------------------------------------------------
+  //|-----------
+  //| Special dispatch targets -------------------------------------------
+  //|-----------
   //|
   //|->vm_record:				// Dispatch target for recording phase.
   //|.if JIT
@@ -4172,9 +4172,9 @@ static void build_subroutines(BuildCtx *ctx)
   //|  add NARGS:RD, 1
   //|  jmp RBa
   //|
-  //|//-----------------------------------------------------------------------
-  //|//-- Trace exit handler -------------------------------------------------
-  //|//-----------------------------------------------------------------------
+  //|-----------
+  //| Trace exit handler -------------------------------------------------
+  //|-----------
   //|
   //|// Called from an exit stub with the exit number on the stack.
   //|// The 16 bit exit number is stored with two (sign-extended) push imm8.
@@ -4317,9 +4317,9 @@ static void build_subroutines(BuildCtx *ctx)
   //|  call extern lj_err_throw@8		// (lua_State *L, int errcode)
   //|.endif
   //|
-  //|//-----------------------------------------------------------------------
-  //|//-- Math helper functions ----------------------------------------------
-  //|//-----------------------------------------------------------------------
+  //|-----------
+  //| Math helper functions ----------------------------------------------
+  //|-----------
   //|
   //|// FP value rounding. Called by math.floor/math.ceil fast functions
   //|// and from JIT code.
@@ -4924,9 +4924,9 @@ static void build_subroutines(BuildCtx *ctx)
   //|
   //|.endif
   //|
-  //|//-----------------------------------------------------------------------
-  //|//-- Miscellaneous functions --------------------------------------------
-  //|//-----------------------------------------------------------------------
+  //|-----------
+  //| Miscellaneous functions --------------------------------------------
+  //|-----------
   //|
   //|// int lj_vm_cpuid(uint32_t f, uint32_t res[4])
   //|->vm_cpuid:
@@ -4969,9 +4969,9 @@ static void build_subroutines(BuildCtx *ctx)
   //|  ret
   //|.endif
   //|
-  //|//-----------------------------------------------------------------------
-  //|//-- Assertions ---------------------------------------------------------
-  //|//-----------------------------------------------------------------------
+  //|-----------
+  //| Assertions ---------------------------------------------------------
+  //|-----------
   //|
   //|->assert_bad_for_arg_type:
   dasm_put(Dst, 8536);
@@ -4983,9 +4983,9 @@ static void build_subroutines(BuildCtx *ctx)
 #endif
   //|  int3
   //|
-  //|//-----------------------------------------------------------------------
-  //|//-- FFI helper functions -----------------------------------------------
-  //|//-----------------------------------------------------------------------
+  //|-----------
+  //| FFI helper functions -----------------------------------------------
+  //|-----------
   //|
   //|// Handler for callback functions. Callback slot number in ah/al.
   //|->vm_ffi_callback:
@@ -5191,7 +5191,7 @@ static void build_subroutines(BuildCtx *ctx)
   //|.endif
   //|// Note: vm_ffi_call must be the last function in this object file!
   //|
-  //|//-----------------------------------------------------------------------
+  //|-----------
   dasm_put(Dst, 8883, DtF(->gpr[0]), DtF(->gpr[1]), DtF(->gpr[2]), DtF(->gpr[3]), DtF(->fpr[0]), DtF(->fpr[1]), DtF(->fpr[2]), DtF(->fpr[3]), DtF(->func), DtF(->gpr[0]), DtF(->fpr[0]));
 #line 3892 "vm_x86.dasc"
 }
@@ -7795,7 +7795,7 @@ static void build_ins(BuildCtx *ctx, BCOp op, int defop)
 #line 6052 "vm_x86.dasc"
     break;
 
-  /* ---------------------------------------------------------------------- */
+  /* ------------ */
 
   default:
     fprintf(stderr, "Error: undefined opcode BC_%s\n", bc_names[op]);

@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,7 +23,7 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local Keyboard  = require 'window.keyboard'
 local Mouse     = require 'window.mouse'
@@ -40,7 +40,6 @@ local SceneTest3D = Scene:subclass('scene.test.3d')
 local Node = require('class')('node')
 Node:include(Entity3D)
 
---------------------------------------------------------
 function SceneTest3D:load()
     self.text = require('graphics.text')
         :new('', require 'game.font', 14)
@@ -123,12 +122,10 @@ function SceneTest3D:load()
     Mouse.setRelativeMode(true)
 end
 
-------------------------------------------------------------
 function SceneTest3D:release()
     Mouse.setRelativeMode(self.prevMouseMode)
 end
 
-------------------------------------------------------------
 function SceneTest3D:update(dt)
     self.text:setString('Current FPS: %i', Window.currentFPS())
 
@@ -141,7 +138,6 @@ function SceneTest3D:update(dt)
     end
 end
 
-------------------------------------------------------------
 function SceneTest3D:render()
     require('graphics')
         .setDepthFunc('lequal')
@@ -156,7 +152,6 @@ function SceneTest3D:render()
     self:view():draw(self.text)
 end
 
-------------------------------------------------------------
 function SceneTest3D:onKeyDown(scancode, keyCode, repeated)
     if repeated then return end
 
@@ -177,7 +172,6 @@ function SceneTest3D:onKeyDown(scancode, keyCode, repeated)
     end
 end
 
-------------------------------------------------------------
 function SceneTest3D:onKeyUp(scancode, keyCode)
     if scancode == 'a' then
         self.camVelX = Keyboard.scancodeDown('d') and self.camSpeed or 0
@@ -194,16 +188,13 @@ function SceneTest3D:onKeyUp(scancode, keyCode)
     end
 end
 
-------------------------------------------------------------
 function SceneTest3D:onMouseMotion(x, y, xRel, yRel)
     self.player:rotate(0, -xRel * self.camSensitivity, 0)
     self.camera:rotate(-yRel * self.camSensitivity, 0, 0)
 end
 
-------------------------------------------------------------
 function SceneTest3D:updateParent()
     return self.parent and self.parent.class.name == 'scene.title'
 end
 
-------------------------------------------------------------
 return SceneTest3D

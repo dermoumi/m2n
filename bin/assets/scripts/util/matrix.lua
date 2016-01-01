@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,7 +23,7 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local ffi        = require 'ffi'
 local class      = require 'class'
@@ -31,10 +31,8 @@ local Quaternion = require 'util.quaternion'
 
 local Matrix = class 'util.matrix'
 
-------------------------------------------------------------
 local EPSILON = 0.000001
 
-------------------------------------------------------------
 function Matrix.static.fromTranslation(x, y, z)
     local mat = Matrix:new()
     local m   = mat._cdata
@@ -46,7 +44,6 @@ function Matrix.static.fromTranslation(x, y, z)
     return mat
 end
 
-------------------------------------------------------------
 function Matrix.static.fromScaling(x, y, z)
     local mat = Matrix:new()
     local m   = mat._cdata
@@ -58,7 +55,6 @@ function Matrix.static.fromScaling(x, y, z)
     return mat
 end
 
-------------------------------------------------------------
 function Matrix.static.fromQuaternion(x, y, z, w)
     -- Get quaternion
     if not y then
@@ -87,12 +83,10 @@ function Matrix.static.fromQuaternion(x, y, z, w)
     return mat
 end
 
-------------------------------------------------------------
 function Matrix.static.fromRotation(x, y, z)
     return Matrix.fromQuaternion(Quaternion:new(x, y, z))
 end
 
-------------------------------------------------------------
 function Matrix.static.fromTransformation(quat, posX, posY, posZ, sx, sy, sz)
     local x, y, z, w = quat.x, quat.y, quat.z, quat.w
 
@@ -121,7 +115,6 @@ function Matrix.static.fromTransformation(quat, posX, posY, posZ, sx, sy, sz)
     return mat
 end
 
-------------------------------------------------------------
 function Matrix.static.fromFrustum(left, right, bottom, top, near, far)
     local mat = Matrix:new()
     local m   = mat._cdata
@@ -143,7 +136,6 @@ function Matrix.static.fromFrustum(left, right, bottom, top, near, far)
     return mat
 end
 
-------------------------------------------------------------
 function Matrix.static.fromOrtho(left, right, bottom, top, near, far)
     local mat = Matrix:new()
     local m   = mat._cdata
@@ -158,7 +150,6 @@ function Matrix.static.fromOrtho(left, right, bottom, top, near, far)
     return mat
 end
 
-------------------------------------------------------------
 function Matrix.static.fastMult43(mat1, mat2)
     local mat = Matrix:new()
     local m, m1, m2 = mat._cdata, mat1._cdata, mat2._cdata
@@ -192,7 +183,6 @@ function Matrix.static.fastMult43(mat1, mat2)
     return mat
 end
 
-------------------------------------------------------------
 function Matrix:initialize(mat)
     self._cdata = ffi.new('float[16]', mat and mat._cdata or {
         1, 0, 0, 0,
@@ -202,7 +192,6 @@ function Matrix:initialize(mat)
     })
 end
 
-------------------------------------------------------------
 function Matrix:combine(mat)
     local m1, m2 = self._cdata, mat._cdata
 
@@ -239,7 +228,6 @@ function Matrix:combine(mat)
     return self
 end
 
-------------------------------------------------------------
 function Matrix:inverse()
     local m = self._cdata
 
@@ -287,7 +275,6 @@ function Matrix:inverse()
     return mat
 end
 
-------------------------------------------------------------
 function Matrix:apply(x, y, z)
     local m = self._cdata
 
@@ -301,10 +288,8 @@ function Matrix:apply(x, y, z)
     return outX, outY, outZ
 end
 
-------------------------------------------------------------
 function Matrix:data()
     return self._cdata
 end
 
-------------------------------------------------------------
 return Matrix

@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,14 +23,13 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local Matrix     = require 'util.matrix'
 local Quaternion = require 'util.quaternion'
 
 local Entity3D = {}
 
-------------------------------------------------------------
 function Entity3D:initialize()
     self._posX, self._posY, self._posZ = 0, 0, 0
     self._scaleX, self._scaleY, self._scaleZ = 1, 1, 1
@@ -39,7 +38,6 @@ function Entity3D:initialize()
     self._children = {}
 end
 
-------------------------------------------------------------
 function Entity3D:_invalidate()
     self._matrix = nil
 
@@ -53,14 +51,12 @@ function Entity3D:_invalidate()
     return self
 end
 
-------------------------------------------------------------
 function Entity3D:setParent(parent)
     parent:addChild(self)
 
     return self
 end
 
-------------------------------------------------------------
 function Entity3D:addChild(child)
     if child._parent ~= self then
         if child._parent then
@@ -76,7 +72,6 @@ function Entity3D:addChild(child)
     return self
 end
 
-------------------------------------------------------------
 function Entity3D:removeChild(child)
     child._parent = nil
     child._absMatrix = nil
@@ -91,45 +86,38 @@ function Entity3D:removeChild(child)
     return self
 end
 
-------------------------------------------------------------
 function Entity3D:setPosition(x, y, z)
     self._posX, self._posY, self._posZ = x, y, z
 
     return self:_invalidate()
 end
 
-------------------------------------------------------------
 function Entity3D:setRotation(x, y, z, w)
     self._quat = Quaternion:new(x, y, z, w)
 
     return self:_invalidate()
 end
 
-------------------------------------------------------------
 function Entity3D:setScaling(x, y, z)
     self._scaleX, self._scaleY, self._scaleZ = x, y, z
 
     return self:_invalidate()
 end
 
-------------------------------------------------------------
 function Entity3D:move(x, y, z)
     return self:setPosition(self._posX + x, self._posY + y, self._posZ + z)
 end
 
-------------------------------------------------------------
 function Entity3D:rotate(x, y, z, w)
     self._quat:combine(not y and x or Quaternion:new(x, y, z, w))
 
     return self:_invalidate()
 end
 
-------------------------------------------------------------
 function Entity3D:scale(x, y, z)
     return self:setScale(self._scaleX * x, self._scaleY * y, self._scaleZ * z)
 end
 
-------------------------------------------------------------
 function Entity3D:position(absolute)
     if absolute and self._parent then
         return self._parent:matrix(true):apply(self._posX, self._posY, self._posZ)
@@ -138,7 +126,6 @@ function Entity3D:position(absolute)
     return self._posX, self._posY, self._posZ
 end
 
-------------------------------------------------------------
 function Entity3D:quaternion(absolute)
     if absolute and self._parent then
         return Quaternion.combine(self._parent:quaternion(true), self._quat)
@@ -147,12 +134,10 @@ function Entity3D:quaternion(absolute)
     return self._quat
 end
 
-------------------------------------------------------------
 function Entity3D:rotation(absolute)
     return self:quaternion(absolute):angles()
 end
 
-------------------------------------------------------------
 function Entity3D:scaling(absolute)
     if absolute and self._parent then
         local x, y, z = self._parent:scaling(true)
@@ -162,7 +147,6 @@ function Entity3D:scaling(absolute)
     return self._scaleX, self._scaleY, self._scaleZ
 end
 
-------------------------------------------------------------
 function Entity3D:matrix(absolute)
     -- Calculate relative transformation
     if not self._matrix then
@@ -186,12 +170,10 @@ function Entity3D:matrix(absolute)
     end
 end
 
-------------------------------------------------------------
 function Entity3D:_render(camera, context)
     -- Nothing to do
 end
 
-------------------------------------------------------------
 function Entity3D:_draw(camera, context)
     self:_render(camera, context)
 
@@ -200,5 +182,4 @@ function Entity3D:_draw(camera, context)
     end
 end
 
-------------------------------------------------------------
 return Entity3D

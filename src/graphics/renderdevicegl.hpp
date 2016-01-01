@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,17 +23,15 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #pragma once
 #include "../config.hpp"
 
 #if !defined(NX_OPENGL_ES)
-//------------------------------------------------------------------------------
 #include "renderdevice.hpp"
 
-//==========================================================
 // OpenGL implementation of RenderDevice
-//==========================================================
 class RenderDeviceGL : public RenderDevice
 {
 public:
@@ -125,13 +123,13 @@ public:
     DepthFunc getDepthFunc() const;
 
     void sync();
-    
+
     // Capabilities
     void getCapabilities(uint32_t* maxTexUnits, uint32_t* maxTexSize,
         uint32_t* maxCubTexSize, uint32_t* maxColBufs, bool* dxt, bool* pvrtci, bool* etc1,
         bool* texFloat, bool* texDepth, bool* texSS, bool* tex3d, bool* texNPOT, bool* texSRGB,
         bool* rtms, bool* occQuery, bool* timerQuery) const;
-    
+
 private:
     constexpr static uint32_t MaxNumVertexLayouts = 16;
 
@@ -313,6 +311,4 @@ private:
     bool mTimerQuerySupported {false};
 };
 
-//------------------------------------------------------------------------------
 #endif
-//==============================================================================

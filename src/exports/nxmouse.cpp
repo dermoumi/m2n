@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,31 +23,22 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #include "../config.hpp"
 #include "../system/log.hpp"
 
 #include <SDL2/SDL.h>
 
-//----------------------------------------------------------
-// Locals
-//----------------------------------------------------------
 // static bool grabbed = false;
 
-//----------------------------------------------------------
-// Declarations
-//----------------------------------------------------------
 extern "C" SDL_Window* nxWindowGet();
 
-//----------------------------------------------------------
-// Exported functions
-//----------------------------------------------------------
 NX_EXPORT bool nxMouseVisible(int toggle)
 {
     return SDL_ShowCursor(toggle) == 1;
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxMouseSetSystemCursor(int type)
 {
     static SDL_Cursor* cursor;
@@ -61,12 +52,11 @@ NX_EXPORT void nxMouseSetSystemCursor(int type)
     SDL_SetCursor(cursor);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxMouseSetImageCursor(const void* data, int width, int height, int originX,
     int originY)
 {
     uint32_t rmask, gmask, bmask, amask;
- 
+
     #if SDL_BYTEORDER == SDL_BIG_ENDIAN
         rmask = 0xff000000;
         gmask = 0x00ff0000;
@@ -78,17 +68,17 @@ NX_EXPORT void nxMouseSetImageCursor(const void* data, int width, int height, in
         bmask = 0x00ff0000;
         amask = 0xff000000;
     #endif
- 
+
     static SDL_Surface* surface;
     surface = SDL_CreateRGBSurfaceFrom(
         const_cast<void*>(data), width, height, 32, width * 4, rmask, gmask, bmask, amask
     );
-    
+
     if (!surface) {
         Log::error("Cursor surface creation failde: %s", SDL_GetError());
         return;
     }
- 
+
     static SDL_Cursor* cursor;
     cursor = SDL_CreateColorCursor(surface, originX, originY);
     // SDL_FreeSurface(surface);
@@ -96,7 +86,6 @@ NX_EXPORT void nxMouseSetImageCursor(const void* data, int width, int height, in
     SDL_SetCursor(cursor);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxMouseSetPosition(int x, int y, bool global)
 {
     if (global) {
@@ -108,7 +97,6 @@ NX_EXPORT void nxMouseSetPosition(int x, int y, bool global)
     }
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxMouseGetPosition(int* pos, bool global)
 {
     if (SDL_GetRelativeMouseMode()) {
@@ -123,25 +111,21 @@ NX_EXPORT void nxMouseGetPosition(int* pos, bool global)
     }
 }
 
-//----------------------------------------------------------
 NX_EXPORT bool nxMouseSetRelativeMode(bool enabled)
 {
     return SDL_SetRelativeMouseMode(static_cast<SDL_bool>(enabled)) == 0;
 }
 
-//----------------------------------------------------------
 NX_EXPORT bool nxMouseGetRelativeMode()
 {
     return SDL_GetRelativeMouseMode() == SDL_TRUE;
 }
 
-//----------------------------------------------------------
 NX_EXPORT bool nxMouseIsButtonDown(int button)
 {
     return SDL_GetMouseState(nullptr, nullptr) & SDL_BUTTON(button);
 }
 
-//----------------------------------------------------------
 NX_EXPORT bool nxMouseSetGrab(bool /*enabled*/)
 {
     // Upgrade to SDL 2.0.4?
@@ -153,12 +137,9 @@ NX_EXPORT bool nxMouseSetGrab(bool /*enabled*/)
     return false;
 }
 
-//----------------------------------------------------------
 NX_EXPORT bool nxMouseIsGrabbed()
 {
     // Upgrade to SDL 2.0.4?
     // return grabbed;
     return false;
 }
-
-//==============================================================================

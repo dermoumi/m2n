@@ -4,13 +4,13 @@
 */
 
 /*
-+--------------------------------------------------------------------------+
++----------------+
 | WARNING: Compiling the amalgamation needs a lot of virtual memory        |
 | (around 300 MB with GCC 4.x)! If you don't have enough physical memory   |
 | your machine will start swapping to disk and the compile will not finish |
 | within a reasonable amount of time.                                      |
 | So either compile on a bigger machine or use the non-amalgamated build.  |
-+--------------------------------------------------------------------------+
++----------------+
 */
 
 #define ljamalg_c

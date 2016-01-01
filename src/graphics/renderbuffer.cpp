@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,11 +23,11 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #include "renderbuffer.hpp"
 #include "renderdevice.hpp"
 
-//----------------------------------------------------------
 Renderbuffer::~Renderbuffer()
 {
     if (mHandle) {
@@ -35,7 +35,6 @@ Renderbuffer::~Renderbuffer()
     }
 }
 
-//----------------------------------------------------------
 uint8_t Renderbuffer::create(uint8_t format, uint16_t width, uint16_t height, bool depth,
     uint8_t colBufCount, uint8_t samples)
 {
@@ -61,7 +60,6 @@ uint8_t Renderbuffer::create(uint8_t format, uint16_t width, uint16_t height, bo
     return 0;
 }
 
-//----------------------------------------------------------
 Texture* Renderbuffer::texture(uint8_t bufIndex)
 {
     Texture* tex {nullptr};
@@ -71,7 +69,7 @@ Texture* Renderbuffer::texture(uint8_t bufIndex)
 
         if (!tex) {
             mTextures[5] = std::unique_ptr<Texture>(new Texture(
-                12, mFormat, RenderDevice::instance().getRenderBufferTexture(mHandle, 32), 
+                12, mFormat, RenderDevice::instance().getRenderBufferTexture(mHandle, 32),
                 mWidth, mHeight, 1, 0, true
             ));
             tex = mTextures[5].get();
@@ -82,7 +80,7 @@ Texture* Renderbuffer::texture(uint8_t bufIndex)
 
         if (!tex) {
             mTextures[bufIndex] = std::unique_ptr<Texture>(new Texture(
-                0, mFormat, RenderDevice::instance().getRenderBufferTexture(mHandle, bufIndex), 
+                0, mFormat, RenderDevice::instance().getRenderBufferTexture(mHandle, bufIndex),
                 mWidth, mHeight, 1, 0, true
             ));
             tex = mTextures[bufIndex].get();
@@ -92,20 +90,17 @@ Texture* Renderbuffer::texture(uint8_t bufIndex)
     return tex;
 }
 
-//----------------------------------------------------------
 void Renderbuffer::size(uint16_t& width, uint16_t& height) const
 {
     width = mWidth;
     height = mHeight;
 }
 
-//----------------------------------------------------------
 uint8_t Renderbuffer::texFormat() const
 {
     return mFormat;
 }
 
-//----------------------------------------------------------
 void Renderbuffer::bind(const Renderbuffer* buffer)
 {
     RenderDevice::instance().setRenderBuffer(buffer ? buffer->mHandle : 0);

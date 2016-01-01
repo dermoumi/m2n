@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,14 +23,13 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local System = require 'system'
 local Image  = require 'graphics.image'
 
 local Window = {}
 
-------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
@@ -65,7 +64,6 @@ ffi.cdef [[
     void nxWindowSetIcon(unsigned int, unsigned int, const uint8_t*);
 ]]
 
-------------------------------------------------------------
 local MsgBoxType = {
     ['error']   = 16,
     ['warning'] = 32,
@@ -91,7 +89,6 @@ for i, v in pairs(PosType) do
     ToPosType[v] = i
 end
 
-------------------------------------------------------------
 local windowWidth, windowHeight
 local drawableWidth, drawableHeight
 local hasFocus, hasMouseFocus
@@ -100,7 +97,6 @@ local lastTime
 local totalElapsedTime, frameCount, currentFPS, elapsedTime = 0, 0, 0, 0
 local originalFramerateLimit, framerateLimit = 0, 0
 
-------------------------------------------------------------
 local function drawableSize()
     local sizePtr = ffi.new('int[2]')
     C.nxWindowGetDrawableSize(sizePtr)
@@ -108,7 +104,6 @@ local function drawableSize()
     return tonumber(sizePtr[0]), tonumber(sizePtr[1])
 end
 
-------------------------------------------------------------
 local function checkFlags(flags)
     flags = flags or {}
 
@@ -134,7 +129,6 @@ local function checkFlags(flags)
     return flags
 end
 
-------------------------------------------------------------
 function Window.create(title, width, height, flags)
     flags = checkFlags(flags)
 
@@ -180,17 +174,14 @@ function Window.create(title, width, height, flags)
     -- hasMouseFocus = mX >= 0 and mY >= 0 and mX < width and mY < height
 end
 
-------------------------------------------------------------
 function Window.close()
     C.nxWindowClose()
 end
 
-------------------------------------------------------------
 function Window.isOpen()
     return (C.nxWindowGet() ~= nil)
 end
 
-------------------------------------------------------------
 function Window.display()
     C.nxWindowDisplay()
 
@@ -211,7 +202,6 @@ function Window.display()
     lastTime = currTime
 end
 
-------------------------------------------------------------
 function Window.setFramerateLimit(limit)
     framerateLimit = limit or 0
     originalFramerateLimit = framerateLimit
@@ -219,22 +209,18 @@ function Window.setFramerateLimit(limit)
     return Window
 end
 
-------------------------------------------------------------
 function Window.framerateLimit()
     return framerateLimit
 end
 
-------------------------------------------------------------
 function Window.currentFPS()
     return math.floor(currentFPS + .5)
 end
 
-------------------------------------------------------------
 function Window.frameTime()
     return elapsedTime
 end
 
-------------------------------------------------------------
 function Window.flags()
     local flags = {}
     local flagsPtr = ffi.new('int[14]')
@@ -260,12 +246,10 @@ function Window.flags()
     return flags
 end
 
-------------------------------------------------------------
 function Window.ensureContext()
     return C.nxWindowEnsureContext() ~= nil
 end
 
-------------------------------------------------------------
 function Window.size(drawableSize)
     if drawableSize then
         return drawableWidth, drawableHeight
@@ -274,38 +258,32 @@ function Window.size(drawableSize)
     return windowWidth, windowHeight
 end
 
-------------------------------------------------------------
 function Window.position()
     local posPtr = ffi.new('int[2]')
     C.nxWindowGetPosition(posPtr)
     return tonumber(posPtr[0]), tonumber(posPtr[1])
 end
 
-------------------------------------------------------------
 function Window.title()
     return ffi.string(C.nxWindowGetTitle())
 end
 
-------------------------------------------------------------
 function Window.setPosition(x, y)
     C.nxWindowSetPosition(x, y)
 
     return Window
 end
 
-------------------------------------------------------------
 function Window.setTitle(title)
     C.nxWindowSetTitle(title)
 
     return Window
 end
 
-------------------------------------------------------------
 function Window.displayCount()
     return C.nxWindowGetDisplayCount()
 end
 
-------------------------------------------------------------
 function Window.desktopSize(display)
     local sizePtr = ffi.new('int[2]')
     if not C.nxWindowGetDesktopSize(display or 1, sizePtr) then return end
@@ -313,7 +291,6 @@ function Window.desktopSize(display)
     return tonumber(sizePtr[0]), tonumber(sizePtr[1])
 end
 
-------------------------------------------------------------
 function Window.displayName(display)
     local name = C.nxWindowGetDisplayName(display or 1)
     if name == nil then return '' end
@@ -321,7 +298,6 @@ function Window.displayName(display)
     return ffi.string(name)
 end
 
-------------------------------------------------------------
 function Window.isFullscreen()
     local fs = C.nxWindowGetFullscreen()
     if fs == 2 then
@@ -333,22 +309,18 @@ function Window.isFullscreen()
     end
 end
 
-------------------------------------------------------------
 function Window.isVisible()
     return C.nxWindowGetVisible()
 end
 
-------------------------------------------------------------
 function Window.hasFocus()
     return hasFocus
 end
 
-------------------------------------------------------------
 function Window.hasMouseFocus()
     return hasMouseFocus
 end
 
-------------------------------------------------------------
 function Window.displayModes(display)
     local countPtr = ffi.new('size_t[1]')
     local modesPtr = C.nxWindowGetDisplayModes(display or 1, countPtr)
@@ -364,14 +336,12 @@ function Window.displayModes(display)
     return modes
 end
 
-------------------------------------------------------------
 function Window.minimize()
     C.nxWindowMinimize()
 
     return Window
 end
 
-------------------------------------------------------------
 function Window.showMessageBox(title, message, a, b, c)
     if type(a) == 'table' then
         if c == nil then c = true end
@@ -393,17 +363,14 @@ function Window.showMessageBox(title, message, a, b, c)
     end
 end
 
-------------------------------------------------------------
 function Window.toPixel(x, y)
     return x * drawableWidth / windowWidth, y * drawableHeight / windowHeight
 end
 
-------------------------------------------------------------
 function Window.fromPixel(x, y)
     return x * windowWidth / drawableWidth, y * windowHeight / drawableHeight
 end
 
-------------------------------------------------------------
 function Window.setIcon(icon)
     if type(icon) == 'string' then icon = Image:new(icon) end
 
@@ -412,7 +379,6 @@ function Window.setIcon(icon)
     return true
 end
 
-------------------------------------------------------------
 function Window.getIcon()
     local sizePtr = ffi.new('unsigned int[2]')
     local dataPtr = C.nxWindowGetIcon(sizePtr)
@@ -420,21 +386,17 @@ function Window.getIcon()
     return Image.create(tonumber(sizePtr[0]), tonumber(sizePtr[1]), dataPtr)
 end
 
-------------------------------------------------------------
 function Window.__resize(w, h)
     windowWidth,   windowHeight   = w, h
     drawableWidth, drawableHeight = drawableSize()
 end
 
-------------------------------------------------------------
 function Window.__focus(focus)
     hasFocus = focus
 end
 
-------------------------------------------------------------
 function Window.__mouseFocus(focus)
     hasMouseFocus = focus
 end
 
-------------------------------------------------------------
 return Window

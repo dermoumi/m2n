@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,11 +23,11 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #include "fontstack.hpp"
 #include "../system/log.hpp"
 
-//----------------------------------------------------------
 void FontStack::addFont(const Font& font, bool prepend)
 {
     if (prepend) {
@@ -38,7 +38,6 @@ void FontStack::addFont(const Font& font, bool prepend)
     }
 }
 
-//----------------------------------------------------------
 void FontStack::addFont(const FontStack& stack, bool prepend)
 {
     if (prepend) {
@@ -49,7 +48,6 @@ void FontStack::addFont(const FontStack& stack, bool prepend)
     }
 }
 
-//----------------------------------------------------------
 const Glyph& FontStack::glyph(uint32_t codePoint, uint32_t charSize, bool bold) const
 {
     uint32_t key = ((bold ? 1 : 0) << 31) | codePoint;
@@ -77,13 +75,12 @@ const Glyph& FontStack::glyph(uint32_t codePoint, uint32_t charSize, bool bold) 
     return mGlyphs[charSize].emplace(key, glyph).first->second;
 }
 
-//----------------------------------------------------------
 float FontStack::kerning(uint32_t first, uint32_t second, uint32_t charSize) const
 {
     // Make sure that both glyphs belong to the same font
     auto firstFontIndex  = (glyph(first, charSize, false).page >> 16) & 0xFFFFu;
     auto secondFontIndex = (glyph(second, charSize, false).page >> 16) & 0xFFFFu;
-    
+
     if (firstFontIndex == secondFontIndex) {
         return mFonts[firstFontIndex]->kerning(first, second, charSize);
     }
@@ -92,25 +89,22 @@ float FontStack::kerning(uint32_t first, uint32_t second, uint32_t charSize) con
     return 0.f;
 }
 
-//----------------------------------------------------------
 float FontStack::lineSpacing(uint32_t charSize) const
 {
     // Make sure there's at least one font
     if (mFonts.empty()) return 0;
-    
+
     return mFonts[0]->lineSpacing(charSize);
 }
 
-//----------------------------------------------------------
 float FontStack::underlinePosition(uint32_t charSize) const
 {
     // Make sure there's at least one font
     if (mFonts.empty()) return 0;
-    
+
     return mFonts[0]->underlinePosition(charSize);
 }
 
-//----------------------------------------------------------
 float FontStack::underlineThickness(uint32_t charSize) const
 {
     // Make sure there's at least one font
@@ -119,7 +113,6 @@ float FontStack::underlineThickness(uint32_t charSize) const
     return mFonts[0]->underlineThickness(charSize);
 }
 
-//----------------------------------------------------------
 const Texture* FontStack::texture(uint32_t charSize, uint32_t index) const
 {
     // Deduce font and texture indices

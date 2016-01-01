@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,23 +23,20 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local AudioFilter = require 'audio._filter'
 
 local AudioFlangerFilter = AudioFilter:subclass('audio.flangerfilter')
 
-------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
-------------------------------------------------------------
 function AudioFlangerFilter:initialize()
     local handle = C.nxAudioFilterFlangerCreate()
     self._cdata = ffi.gc(handle, C.nxAudioFilterRelease)
 end
 
-------------------------------------------------------------
 function AudioFlangerFilter:setParams(delay, freq)
     if self._cdata ~= nil then
         C.nxAudioFilterFlangerSetParams(self._cdata, delay, freq)
@@ -48,5 +45,4 @@ function AudioFlangerFilter:setParams(delay, freq)
     return self
 end
 
-------------------------------------------------------------
 return AudioFlangerFilter

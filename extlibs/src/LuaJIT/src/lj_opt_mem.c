@@ -907,7 +907,7 @@ int lj_opt_fwd_wasnonnil(jit_State *J, IROpT loadop, IRRef xref)
   return 0;  /* Nothing derived at all, previous value MAY be nil. */
 }
 
-/* ------------------------------------------------------------------------ */
+/* -------------- */
 
 #undef IR
 #undef fins

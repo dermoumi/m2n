@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,18 +23,17 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #include "luavm.hpp"
 
 #include <luajit/lua.hpp>
 
-//----------------------------------------------------------
 LuaVM::~LuaVM()
 {
     if (mState) lua_close(mState);
 }
 
-//----------------------------------------------------------
 bool LuaVM::initialize(int argc, char** argv)
 {
     if (mState) return true;
@@ -62,12 +61,11 @@ bool LuaVM::initialize(int argc, char** argv)
     // Reserve the first slot for the debug function
     lua_settop(state, 0);
     lua_getglobal(state, "NX_Debug");
-    
+
     mState = state;
     return true;
 }
 
-//----------------------------------------------------------
 bool LuaVM::runCode(const std::string& filename, const std::string& code, int& retval)
 {
     // Make sure we have a valid Lua state
@@ -99,13 +97,11 @@ bool LuaVM::runCode(const std::string& filename, const std::string& code, int& r
     }
 }
 
-//----------------------------------------------------------
 std::string LuaVM::getErrorMessage() const
 {
     return mErrorMessage;
 }
 
-//----------------------------------------------------------
 bool LuaVM::loadNxLibs(lua_State* state, std::string* err)
 {
     // Make sure we have a valid Lua state
@@ -139,7 +135,7 @@ bool LuaVM::loadNxLibs(lua_State* state, std::string* err)
     for (lib = lj_lib_load; lib->func; lib++) {
         lua_pushcfunction(state, lib->func);
         lua_pushstring(state, lib->name);
-        
+
         if (lua_pcall(state, 1, 0, 0) != 0) {
             if (err) *err = lua_tolstring(state, -1, nullptr);
             return false;
@@ -149,7 +145,7 @@ bool LuaVM::loadNxLibs(lua_State* state, std::string* err)
     luaL_findtable(
         state, LUA_REGISTRYINDEX, "_PRELOAD", sizeof(lj_lib_preload)/sizeof(lj_lib_preload[0])-1
     );
-    
+
     for (lib = lj_lib_preload; lib->func; lib++) {
         lua_pushcfunction(state, lib->func);
         lua_setfield(state, -2, lib->name);
@@ -172,5 +168,3 @@ bool LuaVM::loadNxLibs(lua_State* state, std::string* err)
 
     return true;
 }
-
-//==============================================================================

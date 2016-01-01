@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,7 +23,8 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #include "text.hpp"
 #include "renderdevice.hpp"
 #include "../system/unicode.hpp"
@@ -31,20 +32,17 @@
 #include <algorithm>
 #include <cmath>
 
-//----------------------------------------------------------
 void Text::setString(const std::string& str)
 {
     setString(Unicode::utf8To32(str));
 }
 
-//----------------------------------------------------------
 void Text::setString(const std::u32string& str)
 {
     mString = str;
     mNeedsUpdate = true;
 }
 
-//----------------------------------------------------------
 void Text::setFont(const Font& font)
 {
     if (mFont == &font) return;
@@ -53,7 +51,6 @@ void Text::setFont(const Font& font)
     mNeedsUpdate = true;
 }
 
-//----------------------------------------------------------
 void Text::setCharacterSize(uint32_t charSize)
 {
     if (mCharSize == charSize) return;
@@ -62,7 +59,6 @@ void Text::setCharacterSize(uint32_t charSize)
     mNeedsUpdate = true;
 }
 
-//----------------------------------------------------------
 void Text::setStyle(uint8_t style)
 {
     if (mStyle == style) return;
@@ -71,31 +67,26 @@ void Text::setStyle(uint8_t style)
     mNeedsUpdate = true;
 }
 
-//----------------------------------------------------------
 const std::u32string& Text::string() const
 {
     return mString;
 }
 
-//----------------------------------------------------------
 const Font* Text::font() const
 {
     return mFont;
 }
 
-//----------------------------------------------------------
 uint32_t Text::characterSize() const
 {
     return mCharSize;
 }
 
-//----------------------------------------------------------
 uint8_t Text::style() const
 {
     return mStyle;
 }
 
-//----------------------------------------------------------
 void Text::characterPosition(size_t index, float& x, float& y) const
 {
     // Initialize the positions to 0
@@ -133,7 +124,6 @@ void Text::characterPosition(size_t index, float& x, float& y) const
     }
 }
 
-//----------------------------------------------------------
 void Text::bounds(float& x, float& y, float& w, float& h) const
 {
     ensureGeometryUpdate();
@@ -143,7 +133,6 @@ void Text::bounds(float& x, float& y, float& w, float& h) const
     h = mBoundsH;
 }
 
-//----------------------------------------------------------
 uint32_t Text::arraybuffer(uint32_t& vertexCount, uint32_t index) const
 {
     ensureGeometryUpdate();
@@ -151,7 +140,6 @@ uint32_t Text::arraybuffer(uint32_t& vertexCount, uint32_t index) const
     return mVertices[index].buffer;
 }
 
-//----------------------------------------------------------
 uint32_t* Text::arraybufferIDs(uint32_t* count) const
 {
     ensureGeometryUpdate();
@@ -160,7 +148,6 @@ uint32_t* Text::arraybufferIDs(uint32_t* count) const
     return mBufferIDs.data();
 }
 
-//----------------------------------------------------------
 void Text::ensureGeometryUpdate() const
 {
     // If geometry is already up-to-date, do nothing

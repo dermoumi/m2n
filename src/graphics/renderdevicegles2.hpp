@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,17 +23,15 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #pragma once
 #include "../config.hpp"
 
 #if defined(NX_OPENGL_ES)
-//------------------------------------------------------------------------------
 #include "renderdevice.hpp"
 
-//==========================================================
 // OpenGL implementation of RenderDevice
-//==========================================================
 class RenderDeviceGLES2 : public RenderDevice
 {
 public:
@@ -313,6 +311,4 @@ private:
     bool mTimerQuerySupported {false};
 };
 
-//------------------------------------------------------------------------------
 #endif
-//==============================================================================

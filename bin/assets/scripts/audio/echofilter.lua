@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,23 +23,20 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local AudioFilter = require 'audio._filter'
 
 local AudioEchoFilter = AudioFilter:subclass('audio.echofilter')
 
-------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
-------------------------------------------------------------
 function AudioEchoFilter:initialize()
     local handle = C.nxAudioFilterEchoCreate()
     self._cdata = ffi.gc(handle, C.nxAudioFilterRelease)
 end
 
-------------------------------------------------------------
 function AudioEchoFilter:setParams(delay, decay, filter)
     if self._cdata ~= nil then
         C.nxAudioFilterEchoSetParams(self._cdata, delay, decay or 0.7, filter or 0)
@@ -48,5 +45,4 @@ function AudioEchoFilter:setParams(delay, decay, filter)
     return self
 end
 
-------------------------------------------------------------
 return AudioEchoFilter

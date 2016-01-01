@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,7 +23,8 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #include "../config.hpp"
 #include "../system/log.hpp"
 #include "../audio/audio.hpp"
@@ -32,14 +33,8 @@
 
 static bool initialized {false};
 
-//----------------------------------------------------------
-// Declarations
-//----------------------------------------------------------
 using NxAudioFilter = SoLoud::Filter;
 
-//----------------------------------------------------------
-// Exported functions
-//----------------------------------------------------------
 NX_EXPORT void nxAudioRelease()
 {
     if (!initialized) return;
@@ -47,114 +42,96 @@ NX_EXPORT void nxAudioRelease()
     Audio::instance().deinit();
 }
 
-//----------------------------------------------------------
 NX_EXPORT bool nxAudioInit()
 {
     if (initialized) nxAudioRelease();
-    
+
     Audio::instance().init();
 
     initialized = true;
     return true;
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxAudioStopAll()
 {
     Audio::instance().stopAll();
 }
 
-//----------------------------------------------------------
 NX_EXPORT uint32_t nxAudioActiveVoiceCount()
 {
     return Audio::instance().getActiveVoiceCount();
 }
 
-//----------------------------------------------------------
 NX_EXPORT uint32_t nxAudioVoiceCount()
 {
     return Audio::instance().getVoiceCount();
 }
 
-//----------------------------------------------------------
 NX_EXPORT float nxAudioPostClipScaler()
 {
     return Audio::instance().getPostClipScaler();
 }
 
-//----------------------------------------------------------
 NX_EXPORT float nxAudioGlobalVolume()
 {
     return Audio::instance().getGlobalVolume();
 }
 
-//----------------------------------------------------------
 NX_EXPORT uint32_t nxAudioMaxActiveVoiceCount()
 {
     return Audio::instance().getMaxActiveVoiceCount();
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxAudioSetMaxActiveVoiceCount(uint32_t voiceCount)
 {
     Audio::instance().setMaxActiveVoiceCount(voiceCount);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxAudioSetGlobalVolume(float volume)
 {
     Audio::instance().setGlobalVolume(volume);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxAudioPauseAll(bool pause)
 {
     Audio::instance().setPauseAll(pause);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxAudioFadeGlobalVolume(float to, double t)
 {
     Audio::instance().fadeGlobalVolume(to, t);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxAudioEnableVisualization(bool enabled)
 {
     Audio::instance().setVisualizationEnable(enabled);
 }
 
-//----------------------------------------------------------
 NX_EXPORT const float* nxAudioCalcFFTData()
 {
     return Audio::instance().calcFFT();
 }
 
-//----------------------------------------------------------
 NX_EXPORT const float* nxAudioCurrentWaveData()
 {
     return Audio::instance().getWave();
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxAudioUpdate3dAudio()
 {
     Audio::instance().update3dAudio();
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxAudioSet3dSoundSpeed(float speed)
 {
     Audio::instance().set3dSoundSpeed(speed);
 }
 
-//----------------------------------------------------------
 NX_EXPORT float nxAudio3dSoundSpeed()
 {
     return Audio::instance().get3dSoundSpeed();
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxAudioSet3dListenerParameters(float posX, float posY, float posZ, float atX,
     float atY, float atZ, float upX, float upY, float upZ, float velX, float velY, float velZ)
 {
@@ -162,31 +139,26 @@ NX_EXPORT void nxAudioSet3dListenerParameters(float posX, float posY, float posZ
         velX, velY, velZ);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxAudioSet3dListenerPosition(float posX, float posY, float posZ)
 {
     Audio::instance().set3dListenerPosition(posX, posY, posZ);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxAudioSet3dListenerAt(float atX, float atY, float atZ)
 {
     Audio::instance().set3dListenerAt(atX, atY, atZ);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxAudioSet3dListenerUp(float upX, float upY, float upZ)
 {
     Audio::instance().set3dListenerUp(upX, upY, upZ);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxAudioSet3dListenerVelocity(float velX, float velY, float velZ)
 {
     Audio::instance().set3dListenerVelocity(velX, velY, velZ);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxAudioSetGlobalFilter(NxAudioFilter* filter, uint32_t id)
 {
     Audio::instance().setGlobalFilter(id, filter);

@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,17 +23,16 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #pragma once
 #include "../config.hpp"
-    
+
 #include <string>
 
 struct lua_State;
 
-//==========================================================
 // A class to create and manage a standalone Lua VM
-//==========================================================
 class NX_HIDDEN LuaVM
 {
 public:
@@ -51,5 +50,3 @@ private:
     lua_State* mState {nullptr};
     std::string mErrorMessage;
 };
-
-//==============================================================================

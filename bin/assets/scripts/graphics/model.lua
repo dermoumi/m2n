@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,7 +23,7 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local Mesh     = require 'graphics.mesh'
 local Material = require 'graphics.material'
@@ -31,12 +31,10 @@ local class    = require 'class'
 
 local Model = class 'graphics.model'
 
-------------------------------------------------------------
 function Model:initialize()
     self._meshes = {}
 end
 
-------------------------------------------------------------
 function Model:addMesh(m, start, count)
     if start then m = Mesh:new(m or Material:new(), start, count) end
 
@@ -45,14 +43,12 @@ function Model:addMesh(m, start, count)
     return self
 end
 
-------------------------------------------------------------
 function Model:setGeometry(geometry)
     self._geometry = geometry
 
     return self
 end
 
-------------------------------------------------------------
 function Model:_draw(projMat, transMat, context)
     if #self._meshes > 0 and self._geometry and self._geometry:_apply() then
         local indexed = self._geometry._indexBuffer
@@ -62,5 +58,4 @@ function Model:_draw(projMat, transMat, context)
     end
 end
 
-------------------------------------------------------------
 return Model

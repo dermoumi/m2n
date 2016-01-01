@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,23 +23,20 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local AudioFilter = require 'audio._filter'
 
 local AudioBassboostFilter = AudioFilter:subclass('audio.bassboostfilter')
 
-------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
-------------------------------------------------------------
 function AudioBassboostFilter:initialize()
     local handle = C.nxAudioFilterBassboostCreate()
     self._cdata = ffi.gc(handle, C.nxAudioFilterRelease)
 end
 
-------------------------------------------------------------
 function AudioBassboostFilter:setParams(boost)
     if self._cdata ~= nil then
         C.nxAudioFilterBassboostSetParams(self._cdata, boost)
@@ -48,5 +45,4 @@ function AudioBassboostFilter:setParams(boost)
     return self
 end
 
-------------------------------------------------------------
 return AudioBassboostFilter

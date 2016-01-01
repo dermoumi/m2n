@@ -510,7 +510,7 @@ LJLIB_CF(io_type)
 
 #include "lj_libdef.h"
 
-/* ------------------------------------------------------------------------ */
+/* -------------- */
 
 static GCobj *io_std_new(lua_State *L, FILE *fp, const char *name)
 {

@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,7 +23,7 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local Log        = require 'util.log'
 local InputFile  = require 'filesystem.inputfile'
@@ -32,7 +32,6 @@ local Joystick   = require 'window.joystick'
 
 local Gamepad = {}
 
-------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
@@ -49,7 +48,7 @@ ffi.cdef [[
     const char* nxGamepadGetMappings();
 ]]
 
--- Constants -----------------------------------------------
+-- Constants
 local axes = {
     [0] = 'invalid',
     'leftx',
@@ -157,25 +156,21 @@ local mappingHat = {
 
 local gamepads = {}
 
-------------------------------------------------------------
 function Gamepad.isMapped(id)
     return gamepads[id] ~= nil
 end
 
-------------------------------------------------------------
 function Gamepad.isButtonDown(id, button)
     if not gamepads[id] or not buttons[button] then return false end
 
     return C.nxGamepadButtonDown(gamepads[id], buttons[button])
 end
 
-------------------------------------------------------------
 function Gamepad.getAxisPosition(id, axis)
     if not gamepads[id] or not axes[axis] then return 0 end
     return C.nxGamepadGetAxis(gamepads[id], axes[axis])
 end
 
-------------------------------------------------------------
 function Gamepad.loadMappings(mappings)
     -- Attempt to load from file
     local file = InputFile:new()
@@ -194,7 +189,6 @@ function Gamepad.loadMappings(mappings)
     return self
 end
 
-------------------------------------------------------------
 function Gamepad.saveMappings(filename)
     -- Attempt to save to file if filename is valid
     OutputFile:new()
@@ -208,7 +202,6 @@ function Gamepad.saveMappings(filename)
     return self
 end
 
-------------------------------------------------------------
 function Gamepad.setMapping(guid, mappings)
     -- Get the GUID if we're given the joystick ID
     if type(guid) == 'number' then
@@ -255,7 +248,6 @@ function Gamepad.setMapping(guid, mappings)
     return self
 end
 
-------------------------------------------------------------
 function Gamepad.getMapping(guid, raw)
     -- Get the GUID if we're given the joystick ID
     if type(guid) == 'number' then
@@ -308,7 +300,7 @@ function Gamepad.getMapping(guid, raw)
     return data
 end
 
--- Automatically called on gamepadconnect events -----------
+-- Automatically called on gamepadconnect events
 function Gamepad.__connectEvent(id, isConnected)
     if isConnected then
         gamepads[id] = ffi.gc(C.nxGamepadOpen(id), C.nxGamepadClose)
@@ -318,5 +310,4 @@ function Gamepad.__connectEvent(id, isConnected)
     end
 end
 
-------------------------------------------------------------
 return Gamepad

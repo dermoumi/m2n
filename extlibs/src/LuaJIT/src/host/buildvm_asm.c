@@ -6,7 +6,7 @@
 #include "buildvm.h"
 #include "lj_bc.h"
 
-/* ------------------------------------------------------------------------ */
+/* -------------- */
 
 #if LJ_TARGET_X86ORX64
 /* Emit bytes piecewise as assembler text. */
@@ -206,7 +206,7 @@ static void emit_asm_align(BuildCtx *ctx, int bits)
   }
 }
 
-/* ------------------------------------------------------------------------ */
+/* -------------- */
 
 /* Emit assembler source code. */
 void emit_asm(BuildCtx *ctx)

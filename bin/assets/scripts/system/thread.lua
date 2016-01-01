@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,7 +23,7 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local class = require 'class'
 local Log   = require 'util.log'
@@ -31,7 +31,6 @@ local LuaVM = require 'system.luavm'
 
 local Thread = class 'system.thread'
 
-------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
@@ -46,12 +45,10 @@ ffi.cdef [[
     bool nxThreadIsMain();
 ]]
 
-------------------------------------------------------------
 function Thread.static.isMain()
     return C.nxThreadIsMain()
 end
 
-------------------------------------------------------------
 function Thread:initialize(func, ...)
     self._vm = LuaVM:new()
     self._vm:push(func, ...)
@@ -66,7 +63,6 @@ function Thread:initialize(func, ...)
     self._cdata = ffi.gc(handle, C.nxThreadRelease)
 end
 
-------------------------------------------------------------
 function Thread:join()
     local ok = C.nxThreadWait(self._cdata)
     if ok then
@@ -78,17 +74,14 @@ function Thread:join()
     return nil, self._vm:pop(1, true)
 end
 
-------------------------------------------------------------
 function Thread:detach()
     C.nxThreadDetach(ffi.gc(self._cdata, nil))
     ffi.gc(self._vm._cdata, nil)
 end
 
-------------------------------------------------------------
 function Thread:release()
     if self._cdata == nil then return end
     C.nxThreadRelease(ffi.gc(self._cdata, nil))
 end
 
-------------------------------------------------------------
 return Thread

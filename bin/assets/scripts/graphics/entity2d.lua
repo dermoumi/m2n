@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,14 +23,13 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local Graphics = require 'graphics'
 local Matrix   = require 'util.matrix'
 
 local Entity2D = {}
 
-------------------------------------------------------------
 function Entity2D:initialize()
     self._posX,    self._posY    = 0, 0
     self._scaleX,  self._scaleY  = 1, 1
@@ -42,7 +41,6 @@ function Entity2D:initialize()
     self._children = {}
 end
 
-------------------------------------------------------------
 function Entity2D:_invalidate()
     self._matrix = nil
 
@@ -56,14 +54,12 @@ function Entity2D:_invalidate()
     return self
 end
 
-------------------------------------------------------------
 function Entity2D:setParent(parent)
     parent:addChild(self)
 
     return self
 end
 
-------------------------------------------------------------
 function Entity2D:addChild(child)
     if child._parent ~= self then
         if child._parent then
@@ -79,7 +75,6 @@ function Entity2D:addChild(child)
     return self
 end
 
-------------------------------------------------------------
 function Entity2D:removeChild(child)
     child._parent = nil
     child._absMatrix = nil
@@ -94,35 +89,30 @@ function Entity2D:removeChild(child)
     return self
 end
 
-------------------------------------------------------------
 function Entity2D:setPosition(x, y)
     self._posX, self._posY = x, y
 
     return self:_invalidate()
 end
 
-------------------------------------------------------------
 function Entity2D:setScaling(x, y)
     self._scaleX, self._scaleY = x, y
 
     return self:_invalidate()
 end
 
-------------------------------------------------------------
 function Entity2D:setRotation(rad)
     self._rotation = rad % (math.pi * 2)
 
     return self:_invalidate()
 end
 
-------------------------------------------------------------
 function Entity2D:setOrigin(x, y)
     self._originX, self._originY = x, y
 
     return self:_invalidate()
 end
 
-------------------------------------------------------------
 function Entity2D:setColor(r, g, b, a)
     self._colR = r/255
     self._colG = g/255
@@ -132,12 +122,10 @@ function Entity2D:setColor(r, g, b, a)
     return self
 end
 
-------------------------------------------------------------
 function Entity2D:setBlendMode(blendSrc, blendDst)
     self._blendSrc, self._blendDst = blendSrc, blendDst
 end
 
-------------------------------------------------------------
 function Entity2D:position(absolute)
     if absolute and self._parent then
         local x, y, z = self._parent:matrix(true):apply(self._posX, self._posY, 0)
@@ -147,7 +135,6 @@ function Entity2D:position(absolute)
     return self._posX, self._posY
 end
 
-------------------------------------------------------------
 function Entity2D:scaling()
     if absoulte and self._parent then
         local x, y = self._parent:scaling(true)
@@ -157,7 +144,6 @@ function Entity2D:scaling()
     return self._scaleX, self._scaleY
 end
 
-------------------------------------------------------------
 function Entity2D:rotation()
     if absolute and self._parent then
         local rot = self._parent:rotation(true)
@@ -167,7 +153,6 @@ function Entity2D:rotation()
     return self._rotation
 end
 
-------------------------------------------------------------
 function Entity2D:origin()
     if absolute and self._parent then
         local x, y, z = self._parent:matrix(true):apply(self._originX, self._originY, 0)
@@ -177,7 +162,6 @@ function Entity2D:origin()
     return self._originX, self._originY
 end
 
-------------------------------------------------------------
 function Entity2D:color(normalize, absolute)
     local r, g, b, a = self._colR, self._colG, self._colB, self._colA
 
@@ -193,12 +177,10 @@ function Entity2D:color(normalize, absolute)
     end
 end
 
-------------------------------------------------------------
 function Entity2D:blendMode()
     return self._blendSrc or 'alpha', self._blendDst
 end
 
-------------------------------------------------------------
 function Entity2D:matrix(absolute)
     if not self._matrix then
         local cos = math.cos(-self._rotation)
@@ -229,12 +211,10 @@ function Entity2D:matrix(absolute)
     end
 end
 
-------------------------------------------------------------
 function Entity2D:_render(camera, context)
     -- Nothing to do
 end
 
-------------------------------------------------------------
 function Entity2D:_draw(camera, context)
     Graphics.setBlendMode(self:blendMode())
 
@@ -245,5 +225,4 @@ function Entity2D:_draw(camera, context)
     end
 end
 
-------------------------------------------------------------
 return Entity2D

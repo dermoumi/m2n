@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,13 +23,12 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local BinaryFile = require 'filesystem._binaryfile'
 
 local OutputFile = BinaryFile:subclass('filesystem.outputfile')
 
-------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
@@ -56,12 +55,10 @@ ffi.cdef[[
     bool nxFsWriteString(PHYSFS_File*, const char*);
 ]]
 
-------------------------------------------------------------
 function OutputFile:initialize(filename)
     BinaryFile.initialize(self, filename)
 end
 
-------------------------------------------------------------
 function OutputFile:open(filename)
     -- If already open, close it
     if self:isOpen() then self:close() end
@@ -73,7 +70,6 @@ function OutputFile:open(filename)
     return self
 end
 
-------------------------------------------------------------
 function OutputFile:write(buffer, size)
     if self._cdata ~= nil then
         -- If no size supplied, assume size of buffer string
@@ -88,7 +84,6 @@ function OutputFile:write(buffer, size)
     return self
 end
 
-------------------------------------------------------------
 function OutputFile:writeS8(val)
     if self._cdata ~= nil and not C.nxFsWriteS8(self._cdata, val) then
         self:_throwError()
@@ -97,7 +92,6 @@ function OutputFile:writeS8(val)
     return self
 end
 
-------------------------------------------------------------
 function OutputFile:writeS16(val)
     if self._cdata ~= nil and not C.nxFsWriteS16(self._cdata, val) then
         self:_throwError()
@@ -106,7 +100,6 @@ function OutputFile:writeS16(val)
     return self
 end
 
-------------------------------------------------------------
 function OutputFile:writeS32(val)
     if self._cdata ~= nil and not C.nxFsWriteS32(self._cdata, val) then
         self:_throwError()
@@ -115,7 +108,6 @@ function OutputFile:writeS32(val)
     return self
 end
 
-------------------------------------------------------------
 function OutputFile:writeS64(val)
     if self._cdata ~= nil and not C.nxFsWriteS64(self._cdata, val) then
         self:_throwError()
@@ -124,7 +116,6 @@ function OutputFile:writeS64(val)
     return self
 end
 
-------------------------------------------------------------
 function OutputFile:writeU8(val)
     if self._cdata ~= nil and not C.nxFsWriteU8(self._cdata, val) then
         self:_throwError()
@@ -133,7 +124,6 @@ function OutputFile:writeU8(val)
     return self
 end
 
-------------------------------------------------------------
 function OutputFile:writeU16(val)
     if self._cdata ~= nil and not C.nxFsWriteU16(self._cdata, val) then
         self:_throwError()
@@ -142,7 +132,6 @@ function OutputFile:writeU16(val)
     return self
 end
 
-------------------------------------------------------------
 function OutputFile:writeU32(val)
     if self._cdata ~= nil and not C.nxFsWriteU32(self._cdata, val) then
         self:_throwError()
@@ -151,7 +140,6 @@ function OutputFile:writeU32(val)
     return self
 end
 
-------------------------------------------------------------
 function OutputFile:writeU64(val)
     if self._cdata ~= nil and not C.nxFsWriteU64(self._cdata, val) then
         self:_throwError()
@@ -160,7 +148,6 @@ function OutputFile:writeU64(val)
     return self
 end
 
-------------------------------------------------------------
 function OutputFile:writeFloat(val)
     if self._cdata ~= nil and not C.nxFsWriteFloat(self._cdata, val) then
         self:_throwError()
@@ -169,7 +156,6 @@ function OutputFile:writeFloat(val)
     return self
 end
 
-------------------------------------------------------------
 function OutputFile:writeDouble(val)
     if self._cdata ~= nil and not C.nxFsWriteDouble(self._cdata, val) then
         self:_throwError()
@@ -178,7 +164,6 @@ function OutputFile:writeDouble(val)
     return self
 end
 
-------------------------------------------------------------
 function OutputFile:writeString(str)
     if self._cdata ~= nil and not C.nxFsWriteString(self._cdata, str) then
         self:_throwError()
@@ -187,5 +172,4 @@ function OutputFile:writeString(str)
     return self
 end
 
-------------------------------------------------------------
 return OutputFile

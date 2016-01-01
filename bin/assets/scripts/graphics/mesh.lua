@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,35 +23,30 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local class       = require 'class'
 local Graphics    = require 'graphics'
 
 local Mesh = class 'graphics.mesh'
 
-------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
-------------------------------------------------------------
 function Mesh:initialize(material, start, count)
     self._material, self._start, self._count = material, start, count
 end
 
-------------------------------------------------------------
 function Mesh:setMaterial(material)
     self._material = material
 
     return self
 end
 
-------------------------------------------------------------
 function Mesh:material()
     return self._material
 end
 
-------------------------------------------------------------
 function Mesh:_draw(projMat, transMat, context, indexed)
     if self._material and self._material._context == context then
         self._material:_apply(projMat, transMat)
@@ -63,5 +58,4 @@ function Mesh:_draw(projMat, transMat, context, indexed)
     end
 end
 
-------------------------------------------------------------
 return Mesh

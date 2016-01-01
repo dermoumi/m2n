@@ -27,7 +27,7 @@
 #include "lj_char.h"
 #include "lj_lib.h"
 
-/* ------------------------------------------------------------------------ */
+/* -------------- */
 
 #define LJLIB_MODULE_string
 
@@ -140,7 +140,7 @@ LJLIB_ASM(string_reverse)
 LJLIB_ASM_(string_lower)
 LJLIB_ASM_(string_upper)
 
-/* ------------------------------------------------------------------------ */
+/* -------------- */
 
 static int writer_buf(lua_State *L, const void *p, size_t size, void *b)
 {
@@ -162,7 +162,7 @@ LJLIB_CF(string_dump)
   return 1;
 }
 
-/* ------------------------------------------------------------------------ */
+/* -------------- */
 
 /* macro to `unsign' a character */
 #define uchar(c)        ((unsigned char)(c))
@@ -696,7 +696,7 @@ LJLIB_CF(string_gsub)
   return 2;
 }
 
-/* ------------------------------------------------------------------------ */
+/* -------------- */
 
 /* maximum size of each formatted item (> len(format('%99.99f', -1e308))) */
 #define MAX_FMTITEM	512
@@ -916,7 +916,7 @@ LJLIB_CF(string_format)
   return 1;
 }
 
-/* ------------------------------------------------------------------------ */
+/* -------------- */
 
 #include "lj_libdef.h"
 

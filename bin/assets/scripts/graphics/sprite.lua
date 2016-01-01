@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,7 +23,7 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local Graphics    = require 'graphics'
 local Arraybuffer = require 'graphics.arraybuffer'
@@ -34,21 +34,17 @@ local class       = require 'class'
 local Sprite = class 'graphics.sprite'
 Sprite:include(Entity2D)
 
-------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
-------------------------------------------------------------
 function Sprite.static._defaultShader()
     return Graphics.defaultShader(1)
 end
 
-------------------------------------------------------------
 function Sprite.static._vertexLayout()
     return Graphics.vertexLayout(1)
 end
 
-------------------------------------------------------------
 function Sprite:initialize(texture, subX, subY, subW, subH, normalized)
     Entity2D.initialize(self)
 
@@ -62,7 +58,6 @@ function Sprite:initialize(texture, subX, subY, subW, subH, normalized)
     end
 end
 
-------------------------------------------------------------
 function Sprite:release()
     if self._vertexbuffer then
         self._vertexbuffer:release()
@@ -74,7 +69,6 @@ function Sprite:release()
     self._subX, self._subY, self._subW, self._subH = 0, 0, 0, 0
 end
 
-------------------------------------------------------------
 function Sprite:setTexture(texture, keepSubrect)
     if type(texture) == 'string' or texture.class.name == 'graphics.image' then
         -- Make a texture out of the image
@@ -95,7 +89,6 @@ function Sprite:setTexture(texture, keepSubrect)
     return self
 end
 
-------------------------------------------------------------
 function Sprite:setSubrect(subX, subY, subW, subH, normalized)
     self._subX = subX or 0
     self._subY = subY or 0
@@ -108,17 +101,14 @@ function Sprite:setSubrect(subX, subY, subW, subH, normalized)
     return self
 end
 
-------------------------------------------------------------
 function Sprite:texture()
     return self._texture
 end
 
-------------------------------------------------------------
 function Sprite:subrect()
     return self._subX, self._subY, self._subW, self._subH, self._normalized
 end
 
-------------------------------------------------------------
 function Sprite:size()
     if not self._texture then return 0, 0 end
     if self._normalized then
@@ -129,7 +119,6 @@ function Sprite:size()
     end
 end
 
-------------------------------------------------------------
 function Sprite:_render(camera)
     if not self._texture then return end
 
@@ -192,5 +181,4 @@ function Sprite:_render(camera)
     C.nxRendererDraw(5, 0, 4)
 end
 
-------------------------------------------------------------
 return Sprite

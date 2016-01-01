@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,7 +23,8 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #include "../config.hpp"
 
 #include <SDL2/SDL.h>
@@ -35,9 +36,6 @@
     #include <mmsystem.h>
 #endif
 
-//----------------------------------------------------------
-// Exported functions
-//----------------------------------------------------------
 NX_EXPORT void nxSysSleep(double s)
 {
     // Not all system tolerate negative sleep times
@@ -53,7 +51,7 @@ NX_EXPORT void nxSysSleep(double s)
         // Set the timer resolution to the minimum for the Sleep call
         timeBeginPeriod(tc.wPeriodMin);
     #endif
-        
+
     // Wait...
     const unsigned long time = s * 1000;
     std::this_thread::sleep_for(std::chrono::milliseconds(time));
@@ -64,14 +62,12 @@ NX_EXPORT void nxSysSleep(double s)
     #endif
 }
 
-//----------------------------------------------------------
 NX_EXPORT double nxSysGetTime()
 {
     auto t = std::chrono::high_resolution_clock::now().time_since_epoch();
     return std::chrono::duration_cast<std::chrono::milliseconds>(t).count() / 1000.0;
 }
 
-//----------------------------------------------------------
 NX_EXPORT const char* nxSysGetSDLError()
 {
     thread_local std::string errorMessage;
@@ -79,10 +75,7 @@ NX_EXPORT const char* nxSysGetSDLError()
     return errorMessage.data();
 }
 
-//----------------------------------------------------------
 NX_EXPORT const char* nxSysGetPlatform()
 {
     return SDL_GetPlatform();
 }
-
-//==============================================================================

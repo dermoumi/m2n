@@ -774,11 +774,11 @@ void SDL_JoystickGetGUIDString(SDL_JoystickGUID guid, char *pszGUID, int cbGUID)
 }
 
 
-/*-----------------------------------------------------------------------------
+/*-------------------
  * Purpose: Returns the 4 bit nibble for a hex character
  * Input  : c -
  * Output : unsigned char
- *-----------------------------------------------------------------------------*/
+ *-------------------*/
 static unsigned char nibble(char c)
 {
     if ((c >= '0') && (c <= '9')) {

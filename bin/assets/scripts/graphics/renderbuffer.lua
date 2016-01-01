@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,7 +23,7 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local class   = require 'class'
 local Config  = require 'config'
@@ -32,7 +32,6 @@ local Texture = require 'graphics.texture'
 
 local Renderbuffer = class 'graphics.renderbuffer'
 
-------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
@@ -50,7 +49,6 @@ ffi.cdef [[
     void nxRenderbufferBind(const NxRenderbuffer*);
 ]]
 
-------------------------------------------------------------
 function Renderbuffer.static.bind(buffer)
     if buffer then buffer = buffer._cdata end
     C.nxRenderbufferBind(buffer)
@@ -58,7 +56,6 @@ function Renderbuffer.static.bind(buffer)
     return Renderbuffer
 end
 
-------------------------------------------------------------
 function Renderbuffer:initialize(width, height, depth, samples, numColBufs)
     self._textures = {}
 
@@ -67,7 +64,6 @@ function Renderbuffer:initialize(width, height, depth, samples, numColBufs)
     end
 end
 
-------------------------------------------------------------
 function Renderbuffer:release()
     if not self._cdata then return end
 
@@ -76,7 +72,6 @@ function Renderbuffer:release()
     self._textures = {}
 end
 
-------------------------------------------------------------
 function Renderbuffer:bind()
     -- No cdata check as to allow debinding
     C.nxRenderbufferBind(self._cdata)
@@ -84,7 +79,6 @@ function Renderbuffer:bind()
     return self
 end
 
-------------------------------------------------------------
 function Renderbuffer:create(width, height, depth, samples, numColBufs)
     self:release()
 
@@ -108,7 +102,6 @@ function Renderbuffer:create(width, height, depth, samples, numColBufs)
     return self
 end
 
-------------------------------------------------------------
 function Renderbuffer:texture(bufIndex)
     if self._cdata == nil then return Texture:new() end
 
@@ -129,7 +122,6 @@ function Renderbuffer:texture(bufIndex)
     return texture
 end
 
-------------------------------------------------------------
 function Renderbuffer:size()
     local sizePtr = ffi.new('uint16_t[2]')
     C.nxRenderbufferSize(self._cdata, sizePtr)
@@ -137,5 +129,4 @@ function Renderbuffer:size()
     return tonumber(sizePtr[0]), tonumber(sizePtr[1])
 end
 
-------------------------------------------------------------
 return Renderbuffer

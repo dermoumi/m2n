@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,11 +23,11 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #include "../config.hpp"
 #include "../system/unicode.hpp"
 
-//----------------------------------------------------------
 NX_EXPORT const uint32_t* nxUnicodeUtf8To32(const char* str, uint32_t* size)
 {
     static std::u32string utf32;
@@ -36,7 +36,6 @@ NX_EXPORT const uint32_t* nxUnicodeUtf8To32(const char* str, uint32_t* size)
     return reinterpret_cast<const uint32_t*>(utf32.data());
 }
 
-//----------------------------------------------------------
 NX_EXPORT const char* nxUnicodeUtf32To8(const uint32_t* str, uint32_t* size)
 {
     static std::string utf8;

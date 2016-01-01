@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,7 +23,8 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #pragma once
 #include "../config.hpp"
 #include "font.hpp"
@@ -31,9 +32,7 @@
 #include <map>
 #include <vector>
 
-//==========================================================
 // A font stack
-//==========================================================
 class FontStack : public Font
 {
 public:
@@ -52,7 +51,7 @@ public:
 
 private:
     using GlyphTable = std::map<uint32_t, Glyph>;
-    
+
     std::vector<const Font*> mFonts;
     mutable std::map<uint32_t, GlyphTable> mGlyphs;
 };

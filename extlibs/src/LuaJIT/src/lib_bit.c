@@ -15,7 +15,7 @@
 #include "lj_str.h"
 #include "lj_lib.h"
 
-/* ------------------------------------------------------------------------ */
+/* -------------- */
 
 #define LJLIB_MODULE_bit
 
@@ -47,7 +47,7 @@ LJLIB_ASM(bit_band)		LJLIB_REC(bit_nary IR_BAND)
 LJLIB_ASM_(bit_bor)		LJLIB_REC(bit_nary IR_BOR)
 LJLIB_ASM_(bit_bxor)		LJLIB_REC(bit_nary IR_BXOR)
 
-/* ------------------------------------------------------------------------ */
+/* -------------- */
 
 LJLIB_CF(bit_tohex)
 {
@@ -62,7 +62,7 @@ LJLIB_CF(bit_tohex)
   return 1;
 }
 
-/* ------------------------------------------------------------------------ */
+/* -------------- */
 
 #include "lj_libdef.h"
 

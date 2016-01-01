@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,25 +23,19 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #include "../config.hpp"
 #include "../graphics/font.hpp"
 
-//----------------------------------------------------------
-// Declarations
-//----------------------------------------------------------
 using NxFont    = Font;
 using NxTexture = Texture;
 
-//----------------------------------------------------------
-// Exported functions
-//----------------------------------------------------------
 NX_EXPORT void nxFontRelease(NxFont* font)
 {
     delete font;
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxFontGlyph(const NxFont* font, uint32_t codePoint, uint32_t charSize,
     bool bold, double* values)
 {
@@ -59,32 +53,27 @@ NX_EXPORT void nxFontGlyph(const NxFont* font, uint32_t codePoint, uint32_t char
     values[10] = glyph.valid ? 1.0 : 0.0;
 }
 
-//----------------------------------------------------------
 NX_EXPORT float nxFontKerning(const NxFont* font, uint32_t first, uint32_t second,
     uint32_t charSize)
 {
     return font->kerning(first, second, charSize);
 }
 
-//----------------------------------------------------------
 NX_EXPORT float nxFontLineSpacing(const NxFont* font, uint32_t charSize)
 {
     return font->lineSpacing(charSize);
 }
 
-//----------------------------------------------------------
 NX_EXPORT float nxFontUnderlinePosition(const NxFont* font, uint32_t charSize)
 {
     return font->underlinePosition(charSize);
 }
 
-//----------------------------------------------------------
 NX_EXPORT float nxFontUnderlineThickness(const NxFont* font, uint32_t charSize)
 {
     return font->underlineThickness(charSize);
 }
 
-//----------------------------------------------------------
 NX_EXPORT const NxTexture* nxFontTexture(const NxFont* font, uint32_t charSize, uint32_t index)
 {
     return font->texture(charSize, index);

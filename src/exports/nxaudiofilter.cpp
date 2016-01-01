@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,7 +23,8 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #include "../config.hpp"
 #include "../audio/audio.hpp"
 
@@ -35,26 +36,18 @@
 #include <soloud/soloud_dcremovalfilter.h>
 #include <soloud/soloud_bassboostfilter.h>
 
-//----------------------------------------------------------
-// Declarations
-//----------------------------------------------------------
 using NxAudioFilter = SoLoud::Filter;
 
-//----------------------------------------------------------
-// Exported functions
-//----------------------------------------------------------
 NX_EXPORT void nxAudioFilterRelease(NxAudioFilter* filter)
 {
     delete filter;
 }
 
-//----------------------------------------------------------
 NX_EXPORT NxAudioFilter* nxAudioFilterBiquadResonantCreate()
 {
     return new SoLoud::BiquadResonantFilter();
 }
 
-//----------------------------------------------------------
 NX_EXPORT void NxAUdioFilterBiquadResonantSetParams(NxAudioFilter* filter, int type,
     float samplerate, float frequency, float resonance)
 {
@@ -63,62 +56,52 @@ NX_EXPORT void NxAUdioFilterBiquadResonantSetParams(NxAudioFilter* filter, int t
     );
 }
 
-//----------------------------------------------------------
 NX_EXPORT NxAudioFilter* nxAudioFilterEchoCreate()
 {
     return new SoLoud::EchoFilter();
 }
 
-//----------------------------------------------------------
-NX_EXPORT void nxAudioFilterEchoSetParams(NxAudioFilter* echo, float delay, float decay, 
+NX_EXPORT void nxAudioFilterEchoSetParams(NxAudioFilter* echo, float delay, float decay,
     float filter)
 {
     static_cast<SoLoud::EchoFilter*>(echo)->setParams(delay, decay, filter);
 }
 
-//----------------------------------------------------------
 NX_EXPORT NxAudioFilter* nxAudioFilterLofiCreate()
 {
     return new SoLoud::LofiFilter();
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxAudioFilterLofiSetParams(NxAudioFilter* lofi, float samplerate, float bitdepth)
 {
     static_cast<SoLoud::LofiFilter*>(lofi)->setParams(samplerate, bitdepth);
 }
 
-//----------------------------------------------------------
 NX_EXPORT NxAudioFilter* nxAudioFilterFlangerCreate()
 {
     return new SoLoud::FlangerFilter();
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxAudioFilterFlangerSetParams(NxAudioFilter* flanger, float delay, float freq)
 {
     static_cast<SoLoud::FlangerFilter*>(flanger)->setParams(delay, freq);
 }
 
-//----------------------------------------------------------
 NX_EXPORT NxAudioFilter* nxAudioFilterDcRemovalCreate()
 {
     return new SoLoud::DCRemovalFilter();
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxAudioFilterDcRemovalSetParams(NxAudioFilter* dcRemoval, float length)
 {
     static_cast<SoLoud::DCRemovalFilter*>(dcRemoval)->setParams(length);
 }
 
-//----------------------------------------------------------
 NX_EXPORT NxAudioFilter* nxAudioFilterBassboostCreate()
 {
     return new SoLoud::BassboostFilter();
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxAudioFilterBassboostSetParams(NxAudioFilter* bassboost, float boost)
 {
     static_cast<SoLoud::BassboostFilter*>(bassboost)->setParams(boost);
