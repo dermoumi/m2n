@@ -52,11 +52,7 @@ local Scene    = require 'scene'
 local vm = LuaVM:new()
 local argsCount = vm:pcall(function()
         local settings = loadfile('userdata/settings.lua')
-        if settings then
-            return settings()
-        else
-            return {}
-        end
+        return settings and settings() or {}
     end)
 local settings, err = vm:pop(argsCount, true)
 
@@ -78,9 +74,10 @@ end
 
 -- Handling FPS
 local totalTime, fixedFrameTime = 0, 1/30
-Window.setFramerateLimit(
-    not noFpsLimit and (System.platform('android', 'ios') and 1/30 or 1/60)
-)
+if not noFpsLimit then
+    local fpsLimit = System.platform('android', 'ios') and 1/30 or 1/60
+    Window.setFramerateLimit(fpsLimit)
+end
 
 -- Startup scene
 Scene.goTo('scene.title', true)

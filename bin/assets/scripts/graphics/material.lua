@@ -36,7 +36,7 @@ function Material:initialize(context)
     self._textures = {}
     self._uniforms = {}
     self._shader = Graphics.defaultShader(3)
-    self._colR, self._colG, self._colB, self._colA = 255, 255, 255, 255
+    self._colR, self._colG, self._colB, self._colA = 1, 1, 1, 1
 end
 
 ------------------------------------------------------------
@@ -55,7 +55,10 @@ end
 
 ------------------------------------------------------------
 function Material:setColor(r, g, b, a)
-    self._colR, self._colG, self._colB, self._colA = r, g, b, a or 255
+    self._colR = r/255
+    self._colG = g/255
+    self._colB = b/255
+    self._colA = a and a/255 or 1
 
     return self
 end
@@ -86,7 +89,7 @@ end
 
 ------------------------------------------------------------
 function Material:color()
-    return self._colR, self._colG, self._colB, self._colA
+    return self._colR*255, self._colG*255, self._colB*255, self._colA*255
 end
 
 ------------------------------------------------------------
@@ -99,7 +102,7 @@ function Material:_apply(projMat, transMat)
     self._shader:bind()
         :setUniform('uProjMat', projMat)
         :setUniform('uTransMat', transMat)
-        :setUniform('uColor', self._colR/255, self._colG/255, self._colB/255, self._colA/255)
+        :setUniform('uColor', self._colR, self._colG, self._colB, self._colA)
 
     for uniform, values in pairs(self._uniforms) do
         self._shader:setUniform(uniform, unpack(values))

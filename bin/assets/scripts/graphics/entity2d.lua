@@ -37,7 +37,7 @@ function Entity2D:initialize()
     self._originX, self._originY = 0, 0
     self._rotation = 0
 
-    self._colR, self._colG, self._colB, self._colA = 255, 255, 255, 255
+    self._colR, self._colG, self._colB, self._colA = 1, 1, 1, 1
 
     self._children = {}
 end
@@ -124,10 +124,10 @@ end
 
 ------------------------------------------------------------
 function Entity2D:setColor(r, g, b, a)
-    self._colR = r or 255
-    self._colG = g or 255
-    self._colB = b or 255
-    self._colA = a or 255
+    self._colR = r/255
+    self._colG = g/255
+    self._colB = b/255
+    self._colA = a and a/255 or 1
 
     return self
 end
@@ -187,10 +187,10 @@ function Entity2D:color(normalize, absolute)
     end
 
     if normalize then
-        return r/255, g/255, b/255, a/255
+        return r, g, b, a
+    else
+        return r*255, g*255, b*255, a*255
     end
-
-    return r, g, b, a
 end
 
 ------------------------------------------------------------
