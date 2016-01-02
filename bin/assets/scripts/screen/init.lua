@@ -30,10 +30,10 @@ local Cache    = require 'game.cache'
 local Worker   = require 'game.worker'
 local Camera2D = require 'graphics.camera2d'
 
-local Scene = class 'scene'
+local Screen = class 'screen'
 
 -- Local variables
-local sceneStack, lastScene = {}, nil
+local screenStack, lastScreen = {}, nil
 
 -- Mapping events to their respective functions
 local eventMapping = {
@@ -66,81 +66,81 @@ local eventMapping = {
     filedrop          = 'onFileDrop'
 }
 
-local function addScene(scene, ...)
-    if type(scene) == 'string' then
-        scene = require(scene):new(...)
+local function addScreen(screen, ...)
+    if type(screen) == 'string' then
+        screen = require(screen):new(...)
 
-        -- Check if this scene's worker contains any item that need preloading
-        if scene.__worker and scene.__worker:taskCount() > 0 then
+        -- Check if this screen's worker contains any item that need preloading
+        if screen.__worker and screen.__worker:taskCount() > 0 then
             -- Start preloading
-            Scene.push('scene._load', scene)
+            Screen.push('screen._load', screen)
             return
         end
     end
 
-    sceneStack[#sceneStack+1] = scene
-    scene:__load()
+    screenStack[#screenStack+1] = screen
+    screen:__load()
 end
 
-local function dropScene()
-    lastScene = sceneStack[#sceneStack]
-    lastScene:__release()
+local function dropScreen()
+    lastScreen = screenStack[#screenStack]
+    lastScreen:__release()
 
-    sceneStack[#sceneStack] = nil
+    screenStack[#screenStack] = nil
 end
 
-function Scene.static.currentScene()
-    return sceneStack[#sceneStack]
+function Screen.static.currentScreen()
+    return screenStack[#screenStack]
 end
 
-function Scene.static.lastScene()
-    return lastScene
+function Screen.static.lastScreen()
+    return lastScreen
 end
 
-function Scene.static.goTo(scene, ...)
-    lastScene = Scene.currentScene()
+function Screen.static.goTo(screen, ...)
+    lastScreen = Screen.currentScreen()
 
-    for i = #sceneStack, 1, -1 do
-        sceneStack[i]:__release()
-        sceneStack[i] = nil
+    for i = #screenStack, 1, -1 do
+        screenStack[i]:__release()
+        screenStack[i] = nil
     end
 
-    addScene(scene, ...)
+    addScreen(screen, ...)
 end
 
-function Scene.static.push(scene, ...)
-    lastScene = Scene.currentScene()
+function Screen.static.push(screen, ...)
+    lastScreen = Screen.currentScreen()
 
-    addScene(scene, ...)
+    addScreen(screen, ...)
 end
 
-function Scene.static.back(...)
-    dropScene()
+function Screen.static.back(...)
+    dropScreen()
 
-    if sceneStack[#sceneStack] then
-        sceneStack[#sceneStack]:back(...)
+    if screenStack[#screenStack] then
+        screenStack[#screenStack]:back(...)
     end
 end
 
-function Scene.static.replace(scene, ...)
-    dropScene()
+function Screen.static.replace(screen, ...)
+    dropScreen()
 
-    addScene(scene, ...)
+    addScreen(screen, ...)
 end
 
-function Scene:__load()
-    self.parent = sceneStack[#sceneStack-1]
+function Screen:__load()
+    self.parent = screenStack[#screenStack-1]
 
     self.__isLoading = true
     self:load()
     self.__isLoading = false
 
-    if not Scene.lastScene() or Scene.lastScene():isTransitioning() then
+    if not Screen.lastScreen() or Screen.lastScreen():isTransitioning() then
         self:performTransition()
     end
 end
 
-function Scene:__update(dt)
+function Screen:__update(dt)
     if self.parent and self:updateParent() then
         self.parent:__update(dt)
     end
@@ -152,7 +152,7 @@ function Scene:__update(dt)
     self:update(dt)
 end
 
-function Scene:__fixedUpdate(dt)
+function Screen:__fixedUpdate(dt)
     if self.parent and self:updateParent() then
         self.parent:__fixedUpdate(dt)
     end
@@ -160,7 +160,7 @@ function Scene:__fixedUpdate(dt)
     self:fixedUpdate(dt)
 end
 
-function Scene:__render()
+function Screen:__render()
     if self.parent and self:renderParent() then
         self.parent:__render()
     end
@@ -172,8 +172,8 @@ function Scene:__render()
     end
 end
 
-function Scene:__release()
-    -- Call the scene's release method
+function Screen:__release()
+    -- Call the screen's release method
     self:release()
 
     -- Release all cached elements
@@ -184,7 +184,7 @@ function Scene:__release()
     end
 end
 
-function Scene:__onEvent(e, a, b, c, d)
+function Screen:__onEvent(e, a, b, c, d)
     if not self:isTransitioning() then
         if self:onEvent(e, a, b, c, d) == false then
             return false
@@ -196,22 +196,22 @@ function Scene:__onEvent(e, a, b, c, d)
     return true
 end
 
-function Scene:worker()
+function Screen:worker()
     if not self.__worker then self.__worker = Worker:new() end
     return self.__worker
 end
 
-function Scene:setPreloadParams(table)
+function Screen:setPreloadParams(table)
     self.__preloadParams = table
 end
 
-function Scene:isLoading()
+function Screen:isLoading()
     return self.__isLoading
 end
 
-function Scene:performTransition(callback, arg)
-    if self ~= Scene.currentScene() then
-        Scene.currentScene():performTransition(callback, arg)
+function Screen:performTransition(callback, arg)
+    if self ~= Screen.currentScreen() then
+        Screen.currentScreen():performTransition(callback, arg)
     elseif not self:isTransitioning() then
         self.__transTime = 0
 
@@ -226,7 +226,7 @@ function Scene:performTransition(callback, arg)
     end
 end
 
-function Scene:updateTransition(dt)
+function Screen:updateTransition(dt)
     local duration = self:transitionDuration()
     self.__transTime = math.min(duration, self.__transTime + dt)
 
@@ -240,7 +240,7 @@ function Scene:updateTransition(dt)
     end
 end
 
-function Scene:renderTransition(time, opening)
+function Screen:renderTransition(time, opening)
     local r, g, b, a = self:transitionColor()
 
     a = a * (time / self:transitionDuration())
@@ -249,31 +249,31 @@ function Scene:renderTransition(time, opening)
     self:view():fillFsQuad(r, g, b, a)
 end
 
-function Scene:transitionColor()
+function Screen:transitionColor()
     return 0, 0, 0, 255
 end
 
-function Scene:transitionDuration()
+function Screen:transitionDuration()
     return .2
 end
 
-function Scene:isTransitioning()
+function Screen:isTransitioning()
     return self.__transTime
 end
 
-function Scene:isOpening()
+function Screen:isOpening()
     return self:isTransitioning() and self.__opening
 end
 
-function Scene:isClosing()
+function Screen:isClosing()
     return self:isTransitioning() and not self.__opening
 end
 
-function Scene:cache(id, loaderFunc)
+function Screen:cache(id, loaderFunc)
     -- Make local cache table if there isn't any
     self.__cache = self.__cache or {}
 
-    -- Attempt to load it from the scene's local cache
+    -- Attempt to load it from the screen's local cache
     local obj = self.__cache[id]
     if not obj then
         -- Not found, attempt to load it from game cache
@@ -286,7 +286,7 @@ function Scene:cache(id, loaderFunc)
     return obj
 end
 
-function Scene:view()
+function Screen:view()
     if not self.__view then
         self.__view = Camera2D:new()
     end
@@ -294,163 +294,163 @@ function Scene:view()
     return self.__view
 end
 
-function Scene:load()
+function Screen:load()
     -- Nothing to do
 end
 
-function Scene:update(dt)
+function Screen:update(dt)
     -- Nothing to do
 end
 
-function Scene:fixedUpdate(dt)
+function Screen:fixedUpdate(dt)
     -- Nothing to do
 end
 
-function Scene:render()
+function Screen:render()
     -- Nothing to do
 end
 
-function Scene:back(...)
-    if Scene.lastScene() and Scene.lastScene():isTransitioning() then
+function Screen:back(...)
+    if Screen.lastScreen() and Screen.lastScreen():isTransitioning() then
         self:performTransition()
     else
         self.__transTime = self:transitionDuration()
     end
 end
 
-function Scene:release()
+function Screen:release()
     -- Nothing to do
 end
 
-function Scene:onQuit()
+function Screen:onQuit()
     -- Nothing to do
 end
 
-function Scene:onFocus(hasFocus)
+function Screen:onFocus(hasFocus)
     -- Nothing to do
 end
 
-function Scene:onVisible(isVisible)
+function Screen:onVisible(isVisible)
     -- Nothing to do
 end
 
-function Scene:onResize(w, h)
+function Screen:onResize(w, h)
     self:view():reset(0, 0, w, h)
 end
 
-function Scene:onTextInput(text)
+function Screen:onTextInput(text)
     -- Nothing to do
 end
 
-function Scene:onTextEdit(text, start, length)
+function Screen:onTextEdit(text, start, length)
     -- Nothing to do
 end
 
-function Scene:onMouseFocus(hasFocus)
+function Screen:onMouseFocus(hasFocus)
     -- Nothing to do
 end
 
-function Scene:onKeyDown(scancode, keysym, repeated)
+function Screen:onKeyDown(scancode, keysym, repeated)
     -- Nothing to do
 end
 
-function Scene:onKeyUp(scancode, keysym)
+function Screen:onKeyUp(scancode, keysym)
     -- Nothing to do
 end
 
-function Scene:onMouseMotion(x, y, xRel, yRel)
+function Screen:onMouseMotion(x, y, xRel, yRel)
     -- Nothing to do
 end
 
-function Scene:onMouseDown(x, y, button)
+function Screen:onMouseDown(x, y, button)
     -- Nothing to do
 end
 
-function Scene:onMouseUp(x, y, button)
+function Screen:onMouseUp(x, y, button)
     -- Nothing to do
 end
 
-function Scene:onWheelScroll(x, y)
+function Screen:onWheelScroll(x, y)
     -- Nothing to do
 end
 
-function Scene:onJoyAxisMotion(which, axis, value)
+function Screen:onJoyAxisMotion(which, axis, value)
     -- Nothing to do
 end
 
-function Scene:onJoyBallMotion(which, ball, xrel, yrel)
+function Screen:onJoyBallMotion(which, ball, xrel, yrel)
     -- Nothing to do
 end
 
-function Scene:onJoyHatMotion(which, hat, value)
+function Screen:onJoyHatMotion(which, hat, value)
     -- Nothing to do
 end
 
-function Scene:onJoyButtonDown(which, button)
+function Screen:onJoyButtonDown(which, button)
     -- Nothing to do
 end
 
-function Scene:onJoyButtonUp(which, button)
+function Screen:onJoyButtonUp(which, button)
     -- Nothing to do
 end
 
-function Scene:onJoyConnect(which, isConnected)
+function Screen:onJoyConnect(which, isConnected)
     -- Nothing to do
 end
 
-function Scene:onGamepadMotion(which, axis, value)
+function Screen:onGamepadMotion(which, axis, value)
     -- Nothing to do
 end
 
-function Scene:onGamepadButtonDown(which, button)
+function Screen:onGamepadButtonDown(which, button)
     -- Nothing to do
 end
 
-function Scene:onGamepadButtonUp(which, button)
+function Screen:onGamepadButtonUp(which, button)
     -- Nothing to do
 end
 
-function Scene:onGamepadConnect(which, isConnected)
+function Screen:onGamepadConnect(which, isConnected)
     -- Nothing to do
 end
 
-function Scene:onGamepadRemap(which)
+function Screen:onGamepadRemap(which)
     -- Nothing to do
 end
 
-function Scene:onTouchDown(finger, x, y)
+function Screen:onTouchDown(finger, x, y)
     -- Nothing to do
 end
 
-function Scene:onTouchUp(finger, x, y)
+function Screen:onTouchUp(finger, x, y)
     -- Nothing to do
 end
 
-function Scene:onTouchMotion(finger, x, y)
+function Screen:onTouchMotion(finger, x, y)
     -- Nothing to do
 end
 
-function Scene:onFileDrop(file)
+function Screen:onFileDrop(file)
     -- Nothing to do
 end
 
-function Scene:onEvent(e, a, b, c, d)
+function Screen:onEvent(e, a, b, c, d)
     local event = eventMapping[e]
     if not event then return true end
 
     return self[event](self, a, b, c, d)
 end
 
-function Scene:processParent()
+function Screen:processParent()
     return false
 end
 
-function Scene:updateParent()
+function Screen:updateParent()
     return self:processParent()
 end
 
-function Scene:renderParent()
+function Screen:renderParent()
     return self:processParent()
 end
 
-return Scene
+return Screen

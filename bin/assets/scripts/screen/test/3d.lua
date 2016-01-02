@@ -34,13 +34,13 @@ local ModelEntity = require 'graphics.modelentity'
 local Model       = require 'graphics.model'
 local Material    = require 'graphics.material'
 local Entity3D    = require 'graphics.entity3d'
-local Scene       = require 'scene'
+local Screen      = require 'screen'
 
-local SceneTest3D = Scene:subclass 'scene.test.3d'
+local ScreenTest3D = Screen:subclass 'screen.test.3d'
 
 local Node = Entity3D:subclass 'node'
 
-function SceneTest3D:load()
+function ScreenTest3D:load()
     self.text = require('graphics.text')
         :new('', require 'game.font', 14)
         :setPosition(10, 10)
@@ -120,11 +120,11 @@ function SceneTest3D:load()
     Mouse.setRelativeMode(true)
 end
 
-function SceneTest3D:release()
+function ScreenTest3D:release()
     Mouse.setRelativeMode(self.prevMouseMode)
 end
 
-function SceneTest3D:update(dt)
+function ScreenTest3D:update(dt)
     self.text:setString('Current FPS: %i', Window.currentFPS())
 
     -- self.subMesh:rotate(0, 0, math.pi * dt / 2)
@@ -136,7 +136,7 @@ function SceneTest3D:update(dt)
     end
 end
 
-function SceneTest3D:render()
+function ScreenTest3D:render()
     Graphics.setDepthFunc('lequal')
         .enableDepthTest(true)
         .enableDepthMask(true)
@@ -150,11 +150,11 @@ function SceneTest3D:render()
     self:view():draw(self.text)
 end
 
-function SceneTest3D:onKeyDown(scancode, keyCode, repeated)
+function ScreenTest3D:onKeyDown(scancode, keyCode, repeated)
     if repeated then return end
 
     if scancode == '1' then
-        self:performTransition(Scene.back)
+        self:performTransition(Screen.back)
     elseif scancode == 'w' then
         self.camVelZ = -self.camSpeed
     elseif scancode == 'a' then
@@ -170,7 +170,7 @@ function SceneTest3D:onKeyDown(scancode, keyCode, repeated)
     end
 end
 
-function SceneTest3D:onKeyUp(scancode, keyCode)
+function ScreenTest3D:onKeyUp(scancode, keyCode)
     if scancode == 'a' then
         self.camVelX = Keyboard.scancodeDown('d') and self.camSpeed or 0
     elseif scancode == 'w' then
@@ -186,13 +186,13 @@ function SceneTest3D:onKeyUp(scancode, keyCode)
     end
 end
 
-function SceneTest3D:onMouseMotion(x, y, xRel, yRel)
+function ScreenTest3D:onMouseMotion(x, y, xRel, yRel)
     self.player:rotate(0, -xRel * self.camSensitivity, 0)
     self.camera:rotate(-yRel * self.camSensitivity, 0, 0)
 end
 
-function SceneTest3D:updateParent()
-    return self.parent and self.parent.class.name == 'scene.title'
+function ScreenTest3D:updateParent()
+    return self.parent and self.parent.class.name == 'screen.title'
 end
 
-return SceneTest3D
+return ScreenTest3D

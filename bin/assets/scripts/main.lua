@@ -45,7 +45,7 @@ local Events   = require 'window.events'
 local Graphics = require 'graphics'
 local Window   = require 'window'
 local Audio    = require 'audio'
-local Scene    = require 'scene'
+local Screen   = require 'screen'
 
 -- Load settings (in VM sandbox)
 local vm = LuaVM:new()
@@ -78,39 +78,39 @@ if not noFpsLimit then
     Window.setFramerateLimit(fpsLimit)
 end
 
--- Startup scene
-Scene.goTo('scene.title', true)
+-- Startup screen
+Screen.goTo('screen.title', true)
 
 -- Main loop
 while Window.isOpen() do
-    local scene = Scene.currentScene()
+    local screen = Screen.currentScreen()
 
     -- Process events
     for e, a, b, c, d in Events.poll() do
-        if e == 'quit' and scene:__onEvent('quit') then
+        if e == 'quit' and screen:__onEvent('quit') then
             Window.close()
             break
         else
-            scene:__onEvent(e, a, b, c, d)
-            if scene ~= Scene.currentScene() then goto continue end
+            screen:__onEvent(e, a, b, c, d)
+            if screen ~= Screen.currentScreen() then goto continue end
         end
     end
 
     -- Check that the window is still open
     if not Window.isOpen() then break end
 
-    scene:__update(Window.frameTime())
-    if scene ~= Scene.currentScene() then goto continue end
+    screen:__update(Window.frameTime())
+    if screen ~= Screen.currentScreen() then goto continue end
 
     totalTime = totalTime + Window.frameTime()
     for i = 1, totalTime / fixedFrameTime do
-        scene:__fixedUpdate(fixedFrameTime)
-        if scene ~= Scene.currentScene() then goto continue end
+        screen:__fixedUpdate(fixedFrameTime)
+        if screen ~= Screen.currentScreen() then goto continue end
     end
     totalTime = totalTime % fixedFrameTime
 
     Graphics.begin()
-    scene:__render()
+    screen:__render()
     Graphics.finish()
 
     Window.display()

@@ -29,11 +29,11 @@ local Log      = require 'util.log'
 local Mouse    = require 'window.mouse'
 local Graphics = require 'graphics'
 local Window   = require 'window'
-local Scene    = require 'scene'
+local Screen   = require 'screen'
 
-local SceneTitle = Scene:subclass('scene.title')
+local ScreenTitle = Screen:subclass('screen.title')
 
-function SceneTitle:initialize(firstRun)
+function ScreenTitle:initialize(firstRun)
     if firstRun then
         local caps = Graphics.getCapabilities()
 
@@ -46,7 +46,7 @@ function SceneTitle:initialize(firstRun)
             message = 'INITIALIZING %i%%'
         })
     end
-    
+
     self:worker():addFile('graphics.image', 'assets/pasrien.png')
     self:worker():addFile('graphics.image', 'assets/cursor.png')
     self:worker():addFile('audio.source', 'assets/test.wav')
@@ -57,7 +57,7 @@ function SceneTitle:initialize(firstRun)
     end, self.musicSource)
 end
 
-function SceneTitle:load()
+function ScreenTitle:load()
     self.text = require('graphics.text')
         :new('', require 'game.font', 14)
         :setPosition(10, 10)
@@ -89,11 +89,11 @@ function SceneTitle:load()
     Mouse.setCursor(self:cache('assets/cursor.png'), 4, 4)
 end
 
-function SceneTitle:update(dt)
+function ScreenTitle:update(dt)
     self.text:setString('Current FPS: %i', Window.currentFPS())
 end
 
-function SceneTitle:render()
+function ScreenTitle:render()
     self:view():clear()
 
     self:view():draw(self.text)
@@ -101,10 +101,9 @@ function SceneTitle:render()
         :draw(self.sprite:setPosition(600, 100))
 end
 
-function SceneTitle:onKeyDown(scancode, keyCode, repeated)
+function ScreenTitle:onKeyDown(scancode, keyCode, repeated)
     if scancode == '2' then
-        self:performTransition(Scene.push, 'scene.test.3d')
-        -- Scene.push('scene.test.3d')
+        self:performTransition(Screen.push, 'screen.test.3d')
     elseif scancode == 'f10' then
         Window.create('m2n-', 1280, 720, {})
     elseif scancode == 'f11' then
@@ -118,7 +117,7 @@ function SceneTitle:onKeyDown(scancode, keyCode, repeated)
             print('Lua usage: ' .. tostring(collectgarbage('count') * 1024))
         end
     elseif scancode == '\\' then
-        self:performTransition(Scene.goTo, 'scene.title')
+        self:performTransition(Screen.goTo, 'screen.title')
     elseif scancode == 'return' then
         print(Window.showMessageBox('test', 'helloworld!', {
             'ok',
@@ -127,8 +126,8 @@ function SceneTitle:onKeyDown(scancode, keyCode, repeated)
     end
 end
 
-function SceneTitle:release()
+function ScreenTitle:release()
     self.audiobus:stop()
 end
 
-return SceneTitle
+return ScreenTitle
