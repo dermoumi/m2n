@@ -60,7 +60,7 @@ function ScreenLoad:initialize(screen)
     self.message = params.message or 'LOADING %i%%'
 end
 
-function ScreenLoad:load()
+function ScreenLoad:entered()
     self.worker:start()
 
     self.currentPercent = 0

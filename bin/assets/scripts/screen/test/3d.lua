@@ -40,7 +40,7 @@ local ScreenTest3D = Screen:subclass 'screen.test.3d'
 
 local Node = Entity3D:subclass 'node'
 
-function ScreenTest3D:load()
+function ScreenTest3D:entered()
     self.text = require('graphics.text')
         :new('', require 'game.font', 14)
         :setPosition(10, 10)
@@ -120,7 +120,7 @@ function ScreenTest3D:load()
     Mouse.setRelativeMode(true)
 end
 
-function ScreenTest3D:release()
+function ScreenTest3D:left()
     Mouse.setRelativeMode(self.prevMouseMode)
 end
 
@@ -150,7 +150,7 @@ function ScreenTest3D:render()
     self:view():draw(self.text)
 end
 
-function ScreenTest3D:onKeyDown(scancode, keyCode, repeated)
+function ScreenTest3D:keydown(scancode, keyCode, repeated)
     if repeated then return end
 
     if scancode == '1' then
@@ -170,7 +170,7 @@ function ScreenTest3D:onKeyDown(scancode, keyCode, repeated)
     end
 end
 
-function ScreenTest3D:onKeyUp(scancode, keyCode)
+function ScreenTest3D:keyup(scancode, keyCode)
     if scancode == 'a' then
         self.camVelX = Keyboard.scancodeDown('d') and self.camSpeed or 0
     elseif scancode == 'w' then
@@ -186,7 +186,7 @@ function ScreenTest3D:onKeyUp(scancode, keyCode)
     end
 end
 
-function ScreenTest3D:onMouseMotion(x, y, xRel, yRel)
+function ScreenTest3D:mousemotion(x, y, xRel, yRel)
     self.player:rotate(0, -xRel * self.camSensitivity, 0)
     self.camera:rotate(-yRel * self.camSensitivity, 0, 0)
 end

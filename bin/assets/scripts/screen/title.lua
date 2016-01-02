@@ -57,7 +57,7 @@ function ScreenTitle:initialize(firstRun)
     end, self.musicSource)
 end
 
-function ScreenTitle:load()
+function ScreenTitle:entered()
     self.text = require('graphics.text')
         :new('', require 'game.font', 14)
         :setPosition(10, 10)
@@ -101,7 +101,7 @@ function ScreenTitle:render()
         :draw(self.sprite:setPosition(600, 100))
 end
 
-function ScreenTitle:onKeyDown(scancode, keyCode, repeated)
+function ScreenTitle:keydown(scancode, keyCode, repeated)
     if scancode == '2' then
         self:performTransition(Screen.push, 'screen.test.3d')
     elseif scancode == 'f10' then
@@ -126,7 +126,7 @@ function ScreenTitle:onKeyDown(scancode, keyCode, repeated)
     end
 end
 
-function ScreenTitle:release()
+function ScreenTitle:left()
     self.audiobus:stop()
 end
 

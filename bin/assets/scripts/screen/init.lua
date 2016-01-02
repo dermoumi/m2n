@@ -35,37 +35,6 @@ local Screen = class 'screen'
 -- Local variables
 local screenStack, lastScreen = {}, nil
 
--- Mapping events to their respective functions
-local eventMapping = {
-    focus             = 'onFocus',
-    visible           = 'onVisible',
-    resized           = 'onResize',
-    textinput         = 'onTextInput',
-    textedit          = 'onTextEdit',
-    keydown           = 'onKeyDown',
-    keyup             = 'onKeyUp',
-    mousefocus        = 'onMouseFocus',
-    mousemotion       = 'onMouseMotion',
-    mousedown         = 'onMouseDown',
-    mouseup           = 'onMouseUp',
-    wheelscroll       = 'onWheelScroll',
-    joyaxismotion     = 'onJoyAxisMotion',
-    joyballmotion     = 'onJoyBallMotion',
-    joyhatmotion      = 'onJoyHatMotion',
-    joybuttondown     = 'onJoyButtonDown',
-    joybuttonup       = 'onJoyButtonUp',
-    joyconnect        = 'onJoyConnect',
-    gamepadmotion     = 'onGamepadMotion',
-    gamepadbuttondown = 'onGamepadButtonDown',
-    gamepadbuttonup   = 'onGamepadButtonUp',
-    gamepadconnect    = 'onGamepadConnect',
-    gamepadremap      = 'onGamepadRemap',
-    touchdown         = 'onTouchDown',
-    touchup           = 'onTouchUp',
-    touchmotion       = 'onTouchMotion',
-    filedrop          = 'onFileDrop'
-}
-
 local function addScreen(screen, ...)
     if type(screen) == 'string' then
         screen = require(screen):new(...)
@@ -79,12 +48,12 @@ local function addScreen(screen, ...)
     end
 
     screenStack[#screenStack+1] = screen
-    screen:__load()
+    screen:__entered()
 end
 
 local function dropScreen()
     lastScreen = screenStack[#screenStack]
-    lastScreen:__release()
+    lastScreen:__left()
 
     screenStack[#screenStack] = nil
 end
@@ -118,7 +87,7 @@ function Screen.static.back(...)
     dropScreen()
 
     if screenStack[#screenStack] then
-        screenStack[#screenStack]:back(...)
+        screenStack[#screenStack]:returned(...)
     end
 end
 
@@ -128,11 +97,11 @@ function Screen.static.replace(screen, ...)
     addScreen(screen, ...)
 end
 
-function Screen:__load()
+function Screen:__entered()
     self.parent = screenStack[#screenStack-1]
 
     self.__isLoading = true
-    self:load()
+    self:entered()
     self.__isLoading = false
 
     if not Screen.lastScreen() or Screen.lastScreen():isTransitioning() then
@@ -172,9 +141,9 @@ function Screen:__render()
     end
 end
 
-function Screen:__release()
+function Screen:__left()
     -- Call the screen's release method
-    self:release()
+    self:left()
 
     -- Release all cached elements
     if self.__cache then
@@ -295,7 +264,7 @@ function Screen:view()
     return self.__view
 end
 
-function Screen:load()
+function Screen:entered()
     -- Nothing to do
 end
 
@@ -311,7 +280,7 @@ function Screen:render()
     -- Nothing to do
 end
 
-function Screen:back(...)
+function Screen:returned(...)
     if Screen.lastScreen() and Screen.lastScreen():isTransitioning() then
         self:performTransition()
     else
@@ -319,127 +288,15 @@ function Screen:back(...)
     end
 end
 
-function Screen:release()
-    -- Nothing to do
-end
-
-function Screen:onQuit()
-    -- Nothing to do
-end
-
-function Screen:onFocus(hasFocus)
-    -- Nothing to do
-end
-
-function Screen:onVisible(isVisible)
-    -- Nothing to do
-end
-
-function Screen:onResize(w, h)
-    self:view():reset(0, 0, w, h)
-end
-
-function Screen:onTextInput(text)
-    -- Nothing to do
-end
-
-function Screen:onTextEdit(text, start, length)
-    -- Nothing to do
-end
-
-function Screen:onMouseFocus(hasFocus)
-    -- Nothing to do
-end
-
-function Screen:onKeyDown(scancode, keysym, repeated)
-    -- Nothing to do
-end
-
-function Screen:onKeyUp(scancode, keysym)
-    -- Nothing to do
-end
-
-function Screen:onMouseMotion(x, y, xRel, yRel)
-    -- Nothing to do
-end
-
-function Screen:onMouseDown(x, y, button)
-    -- Nothing to do
-end
-
-function Screen:onMouseUp(x, y, button)
-    -- Nothing to do
-end
-
-function Screen:onWheelScroll(x, y)
-    -- Nothing to do
-end
-
-function Screen:onJoyAxisMotion(which, axis, value)
-    -- Nothing to do
-end
-
-function Screen:onJoyBallMotion(which, ball, xrel, yrel)
-    -- Nothing to do
-end
-
-function Screen:onJoyHatMotion(which, hat, value)
-    -- Nothing to do
-end
-
-function Screen:onJoyButtonDown(which, button)
-    -- Nothing to do
-end
-
-function Screen:onJoyButtonUp(which, button)
-    -- Nothing to do
-end
-
-function Screen:onJoyConnect(which, isConnected)
-    -- Nothing to do
-end
-
-function Screen:onGamepadMotion(which, axis, value)
-    -- Nothing to do
-end
-
-function Screen:onGamepadButtonDown(which, button)
-    -- Nothing to do
-end
-
-function Screen:onGamepadButtonUp(which, button)
-    -- Nothing to do
-end
-
-function Screen:onGamepadConnect(which, isConnected)
-    -- Nothing to do
-end
-
-function Screen:onGamepadRemap(which)
-    -- Nothing to do
-end
-
-function Screen:onTouchDown(finger, x, y)
-    -- Nothing to do
-end
-
-function Screen:onTouchUp(finger, x, y)
-    -- Nothing to do
-end
-
-function Screen:onTouchMotion(finger, x, y)
-    -- Nothing to do
-end
-
-function Screen:onFileDrop(file)
+function Screen:left()
     -- Nothing to do
 end
 
 function Screen:onEvent(e, a, b, c, d)
-    local event = eventMapping[e]
-    if not event then return true end
+    local eventFunc = self[e]
+    if not eventFunc then return true end
 
-    return self[event](self, a, b, c, d)
+    return eventFunc(self, a, b, c, d)
 end
 
 function Screen:processParent()
