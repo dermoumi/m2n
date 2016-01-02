@@ -25,16 +25,16 @@
     For more information, please refer to <http://unlicense.org>
 --]]
 
-local Keyboard  = require 'window.keyboard'
-local Mouse     = require 'window.mouse'
-local Window    = require 'window'
-local Graphics  = require 'graphics'
-local Geometry  = require 'graphics.geometry'
-local ModelNode = require 'graphics.modelnode'
-local Model     = require 'graphics.model'
-local Material  = require 'graphics.material'
-local Entity3D  = require 'graphics.entity3d'
-local Scene     = require 'scene'
+local Keyboard    = require 'window.keyboard'
+local Mouse       = require 'window.mouse'
+local Window      = require 'window'
+local Graphics    = require 'graphics'
+local Geometry    = require 'graphics.geometry'
+local ModelEntity = require 'graphics.modelentity'
+local Model       = require 'graphics.model'
+local Material    = require 'graphics.material'
+local Entity3D    = require 'graphics.entity3d'
+local Scene       = require 'scene'
 
 local SceneTest3D = Scene:subclass 'scene.test.3d'
 
@@ -48,8 +48,8 @@ function SceneTest3D:load()
     self.player = Node:new()
         -- :setPosition(0, 0, 3)
 
-    self.camera = require('graphics.camera3d'):new()
-        :setParent(self.player)
+    self.camera = require('graphics.camera3d'):new('maincamera')
+        :attachTo(self.player)
         -- :setRotation(0, 0, math.pi / 4)
         -- :setScaling(2, 2, 2)
         -- :lookAt(0, 0, 0)
@@ -105,13 +105,11 @@ function SceneTest3D:load()
         :setGeometry(cubeGeom)
         :addMesh(solidOrangeMat, 0, cubeGeom:vertexCount())
 
-    self.mesh = ModelNode:new()
-        :setModel(orangeCubeModel)
+    self.mesh = ModelEntity:new('orangecube', orangeCubeModel)
         :setPosition(0, 0, -3)
 
-    self.subMesh = ModelNode:new()
-        :setParent(self.mesh)
-        :setModel(cubeModel)
+    self.subMesh = ModelEntity:new('whitecube', cubeModel)
+        :attachTo(self.mesh)
         :setPosition(0, 1, 0)
         :setScaling(.5, .5, .5)
 

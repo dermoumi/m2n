@@ -31,37 +31,38 @@ local class      = require 'class'
 
 local Entity3D = class 'graphics.entity3d'
 
-function Entity3D:initialize()
+function Entity3D:initialize(name)
     self._posX, self._posY, self._posZ = 0, 0, 0
     self._scaleX, self._scaleY, self._scaleZ = 1, 1, 1
     self._quat = Quaternion:new(0, 0, 0)
+    self._name = name or ''
 
     self._children = {}
 end
 
-function Entity3D:_invalidate()
+function Entity3D:_markDirty()
     self._matrix = nil
 
     if self._absMatrix then
         self._absMatrix = nil
         for i, child in pairs(self._children) do
-            child:_invalidate()
+            child:_markDirty()
         end
     end
 
     return self
 end
 
-function Entity3D:setParent(parent)
-    parent:addChild(self)
+function Entity3D:attachTo(parent)
+    parent:attach(self)
 
     return self
 end
 
-function Entity3D:addChild(child)
+function Entity3D:attach(child)
     if child._parent ~= self then
         if child._parent then
-            child._parent:removeChild(child)
+            child._parent:detach(child)
         end
 
         child._parent = self
@@ -73,7 +74,7 @@ function Entity3D:addChild(child)
     return self
 end
 
-function Entity3D:removeChild(child)
+function Entity3D:detach(child)
     child._parent = nil
     child._absMatrix = nil
 
@@ -87,22 +88,47 @@ function Entity3D:removeChild(child)
     return self
 end
 
+function Entity3D:canAttach(entity)
+    return true
+end
+
+function Entity3D:setName(name)
+    self._name = name
+    return self
+end
+
+function Entity3D:name()
+    return self._name
+end
+
+function Entity3D:type()
+    return ''
+end
+
+function Entity3D:boundingBox()
+    return 0, 0, 0, 0, 0, 0
+end
+
+function Entity3D:lodLevel()
+    return 0
+end
+
 function Entity3D:setPosition(x, y, z)
     self._posX, self._posY, self._posZ = x, y, z
 
-    return self:_invalidate()
+    return self:_markDirty()
 end
 
 function Entity3D:setRotation(x, y, z, w)
     self._quat = Quaternion:new(x, y, z, w)
 
-    return self:_invalidate()
+    return self:_markDirty()
 end
 
 function Entity3D:setScaling(x, y, z)
     self._scaleX, self._scaleY, self._scaleZ = x, y, z
 
-    return self:_invalidate()
+    return self:_markDirty()
 end
 
 function Entity3D:move(x, y, z)
@@ -112,7 +138,7 @@ end
 function Entity3D:rotate(x, y, z, w)
     self._quat:combine(not y and x or Quaternion:new(x, y, z, w))
 
-    return self:_invalidate()
+    return self:_markDirty()
 end
 
 function Entity3D:scale(x, y, z)

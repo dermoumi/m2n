@@ -41,7 +41,7 @@ function Camera2D:initialize(x, y, width, height)
     self:reset(x, y, width, height)
 end
 
-function Camera2D:_invalidate()
+function Camera2D:_markDirty()
     self._projection = nil
     self._invProjection = nil
 
@@ -52,21 +52,21 @@ function Camera2D:setCenter(x, y)
     self._centerX = x
     self._centerY = y
 
-    return self:_invalidate()
+    return self:_markDirty()
 end
 
 function Camera2D:setSize(width, height)
     self._width = width
     self._height = height
 
-    return self:_invalidate()
+    return self:_markDirty()
 end
 
 function Camera2D:setRotation(rad)
     self._rotation = rad % (math.pi * 2)
     if self._rotation < 0 then self._rotation = self._rotation + math.pi * 2 end
 
-    return self:_invalidate()
+    return self:_markDirty()
 end
 
 function Camera2D:reset(x, y, width, height)
@@ -83,7 +83,7 @@ function Camera2D:reset(x, y, width, height)
     self._height   = height
     self._rotation = 0
 
-    return self:_invalidate()
+    return self:_markDirty()
 end
 
 function Camera2D:center()

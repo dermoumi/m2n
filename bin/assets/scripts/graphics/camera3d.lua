@@ -36,9 +36,10 @@ local Camera3D = Entity3D:subclass 'graphics.camera3d'
 local ffi = require 'ffi'
 local C   = ffi.C
 
-function Camera3D:initialize(a, b, c, d, e, f)
-    Entity3D.initialize(self)
+function Camera3D:initialize(name, a, b, c, d, e, f)
+    Entity3D.initialize(self, name)
     self:setViewport()
+
     if e then
         self:setOrtho(a, b, c, d, e, f)
     else
@@ -46,8 +47,12 @@ function Camera3D:initialize(a, b, c, d, e, f)
     end
 end
 
-function Camera3D:_invalidate()
-    Entity3D._invalidate(self)
+function Camera3D:type()
+    return 'camera'
+end
+
+function Camera3D:_markDirty()
+    Entity3D._markDirty(self)
     self._projection = nil
     self._invProjection = nil
 
@@ -58,7 +63,7 @@ function Camera3D:setView(left, right, bottom, top, near, far)
     self._left, self._right, self._bottom, self._top, self._near, self._far =
         left, right, bottom, top, near, far
 
-    return self:_invalidate()
+    return self:_markDirty()
 end
 
 function Camera3D:setPerspective(fov, aspect, near, far)

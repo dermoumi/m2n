@@ -27,26 +27,30 @@
 
 local Entity3D = require 'graphics.entity3d'
 
-local ModelNode = Entity3D:subclass 'graphics.modelnode'
+local ModelEntity = Entity3D:subclass 'graphics.modelentity'
 
-function ModelNode:initialize(model)
-    Entity3D.initialize(self)
+function ModelEntity:initialize(name, model)
+    Entity3D.initialize(self, name)
     self:setModel(model)
 end
 
-function ModelNode:setModel(model)
+function ModelEntity:type()
+    return 'model'
+end
+
+function ModelEntity:setModel(model)
     self._model = model
     return self
 end
 
-function ModelNode:model()
+function ModelEntity:model()
     return self._model
 end
 
-function ModelNode:_render(camera, context)
+function ModelEntity:_render(camera, context)
     if self._model then
         self._model:_draw(camera:projection(), self:matrix(true), context)
     end
 end
 
-return ModelNode
+return ModelEntity

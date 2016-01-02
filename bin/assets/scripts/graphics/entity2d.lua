@@ -42,7 +42,7 @@ function Entity2D:initialize()
     self._children = {}
 end
 
-function Entity2D:_invalidate()
+function Entity2D:_markDirty()
     self._matrix = nil
 
     if self._absMatrix then
@@ -93,25 +93,25 @@ end
 function Entity2D:setPosition(x, y)
     self._posX, self._posY = x, y
 
-    return self:_invalidate()
+    return self:_markDirty()
 end
 
 function Entity2D:setScaling(x, y)
     self._scaleX, self._scaleY = x, y
 
-    return self:_invalidate()
+    return self:_markDirty()
 end
 
 function Entity2D:setRotation(rad)
     self._rotation = rad % (math.pi * 2)
 
-    return self:_invalidate()
+    return self:_markDirty()
 end
 
 function Entity2D:setOrigin(x, y)
     self._originX, self._originY = x, y
 
-    return self:_invalidate()
+    return self:_markDirty()
 end
 
 function Entity2D:setColor(r, g, b, a)
