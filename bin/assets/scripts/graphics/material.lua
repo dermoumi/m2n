@@ -87,7 +87,9 @@ function Material:context()
     return self._context
 end
 
-function Material:_apply(projMat, transMat)
+function Material:_apply(projMat, transMat, context)
+    if context and context ~= self._context then return false end
+
     self._shader:bind()
         :setUniform('uProjMat', projMat)
         :setUniform('uTransMat', transMat)
@@ -108,6 +110,8 @@ function Material:_apply(projMat, transMat)
         Graphics.defaultTexture():bind(0)
         self._shader:setSampler('uTexture', 0)
     end
+
+    return true
 end
 
 return Material

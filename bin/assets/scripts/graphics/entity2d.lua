@@ -47,47 +47,50 @@ function Entity2D:_markDirty()
 
     if self._absMatrix then
         self._absMatrix = nil
-        for i, child in pairs(self._children) do
-            child._absMatrix = nil
+        for child in pairs(self._children) do
+            child:_markDirty()
         end
     end
 
     return self
 end
 
-function Entity2D:setParent(parent)
-    parent:addChild(self)
+function Entity2D:attachTo(entity)
+    entity:attach(self)
 
     return self
 end
 
-function Entity2D:addChild(child)
-    if child._parent ~= self then
-        if child._parent then
-            child._parent:removeChild(child)
-        end
+function Entity2D:attach(entity)
+    if entity._parent ~= self and self:canAttach(entity) then
+        entity:detach()
 
-        child._parent = self
-        child._absMatrix = nil
+        entity._parent = self
+        entity._absMatrix = nil
 
-        self._children[#self._children+1] = child
+        self._children[entity] = true
     end
 
     return self
 end
 
-function Entity2D:removeChild(child)
-    child._parent = nil
-    child._absMatrix = nil
+function Entity2D:detach()
+    if self._parent then
+        self._parent._children[self] = nil
 
-    for i, v in pairs(self._children) do
-        if v == child then
-            self._children[i] = nil
-            break
-        end
+        self._parent = nil
+        self._absMatrix = nil
     end
 
     return self
+end
+
+function Entity2D:canAttach(entity)
+    return true
+end
+
+function Entity2D:type()
+    return ''
 end
 
 function Entity2D:setPosition(x, y)
@@ -221,8 +224,8 @@ function Entity2D:_draw(camera, context)
 
     self:_render(camera, context)
 
-    for i, v in pairs(self._children) do
-        camera:draw(v)
+    for child in pairs(self._children) do
+        camera:draw(child, context)
     end
 end
 

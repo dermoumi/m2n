@@ -167,14 +167,10 @@ function Camera3D:apply()
     return self
 end
 
-function Camera3D:_draw()
-    -- Nullifier override / Nothing to do
-end
-
 function Camera3D:draw(drawable, context)
     self:apply()
 
-    drawable:_draw(self, context or 'ambient')
+    drawable:_draw(self, context)
 
     return self
 end

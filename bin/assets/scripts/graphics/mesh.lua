@@ -48,8 +48,7 @@ function Mesh:material()
 end
 
 function Mesh:_draw(projMat, transMat, context, indexed)
-    if self._material and self._material._context == context then
-        self._material:_apply(projMat, transMat)
+    if self._material and self._material:_apply(projMat, transMat, context) then
         if indexed then
             C.nxRendererDrawIndexed(4, self._start, self._count)
         else
