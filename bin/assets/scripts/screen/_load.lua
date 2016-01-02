@@ -134,7 +134,7 @@ function ScreenLoad:check()
             self:performTransition(Screen.replace, self.nextScreen)
         end
 
-        self.nextScreen:performTransition()
+        -- self.nextScreen:performTransition()
         return true
     end
 end

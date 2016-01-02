@@ -56,8 +56,8 @@ local argsCount = vm:pcall(function()
 local settings, err = vm:pop(argsCount, true)
 
 -- Create window
-Window.create("m2n", 1280, 720, settings.graphics or {
-    vsync = false
+Window.create("m2n", 1280, 720, {
+    vsync = true
 })
 
 -- Initialize renderer
@@ -113,9 +113,12 @@ while Window.isOpen() do
     screen:__render()
     Graphics.finish()
 
+    ::continue::
     Window.display()
 
-    ::continue::
+    if screen ~= Screen.currentScreen() then
+        Window.resetFrameTime()
+    end
 end
 
 Audio.release()

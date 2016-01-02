@@ -218,25 +218,26 @@ function Screen:performTransition(callback, arg)
         if callback then
             -- Has a callback, assume it's a fade out transition
             self.__opening = false
-            self.__transCb, self.__transCbArg = callback, arg
+            self.__transCb = arg and function() callback(arg) end or callback
         else
             self.__opening = true
-            self.__transCb, self.__transCbArg = nil, nil
+            self.__transCb = nil
         end
     end
 end
 
 function Screen:updateTransition(dt)
     local duration = self:transitionDuration()
-    self.__transTime = math.min(duration, self.__transTime + dt)
 
     if self.__transTime >= duration then
         if self.__transCb then
-            self.__transCb(self.__transCbArg)
-            self.__transCb, self.__transCbArg = nil, nil
+            self.__transCb()
+            self.__transCb = nil
         end
 
         self.__transTime = nil
+    else
+        self.__transTime = math.min(duration, self.__transTime + dt)
     end
 end
 
