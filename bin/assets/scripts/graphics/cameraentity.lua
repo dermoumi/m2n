@@ -28,16 +28,16 @@
 local Graphics     = require 'graphics'
 local Window       = require 'window'
 local Matrix       = require 'util.matrix'
-local Entity3D     = require 'graphics.entity3d'
+local SceneEntity  = require 'graphics.sceneentity'
 local Renderbuffer = require 'graphics.renderbuffer'
 
-local Camera3D = Entity3D:subclass 'graphics.camera3d'
+local CameraEntity = SceneEntity:subclass 'graphics.cameraentity'
 
 local ffi = require 'ffi'
 local C   = ffi.C
 
-function Camera3D:initialize(name, a, b, c, d, e, f)
-    Entity3D.initialize(self, name)
+function CameraEntity:initialize(a, b, c, d, e, f)
+    SceneEntity.initialize(self, 'camera')
     self:setViewport()
 
     if e then
@@ -47,26 +47,22 @@ function Camera3D:initialize(name, a, b, c, d, e, f)
     end
 end
 
-function Camera3D:type()
-    return 'camera'
-end
-
-function Camera3D:_markDirty()
-    Entity3D._markDirty(self)
+function CameraEntity:_markDirty()
+    SceneEntity._markDirty(self)
     self._projection = nil
     self._invProjection = nil
 
     return self
 end
 
-function Camera3D:setView(left, right, bottom, top, near, far)
+function CameraEntity:setView(left, right, bottom, top, near, far)
     self._left, self._right, self._bottom, self._top, self._near, self._far =
         left, right, bottom, top, near, far
 
     return self:_markDirty()
 end
 
-function Camera3D:setPerspective(fov, aspect, near, far)
+function CameraEntity:setPerspective(fov, aspect, near, far)
     fov, near, far = fov or 70, near or 1, far or -100
     if not aspect then
         local w, h = Window.size()
@@ -80,7 +76,7 @@ function Camera3D:setPerspective(fov, aspect, near, far)
     return self:setView(-xmax, xmax, -ymax, ymax, near, far)
 end
 
-function Camera3D:setOrtho(left, right, bottom, top, near, far)
+function CameraEntity:setOrtho(left, right, bottom, top, near, far)
     self._fov, self._aspect, self._perspective = nil, nil, false
 
     if left then
@@ -91,7 +87,7 @@ function Camera3D:setOrtho(left, right, bottom, top, near, far)
     end
 end
 
-function Camera3D:setViewport(left, top, width, height)
+function CameraEntity:setViewport(left, top, width, height)
     if not left then
         left, top, width, height = 0, 0, Window.size()
     elseif not width then
@@ -103,29 +99,29 @@ function Camera3D:setViewport(left, top, width, height)
     return self
 end
 
-function Camera3D:setRenderbuffer(rb)
+function CameraEntity:setRenderbuffer(rb)
     self._rb = rb
 
     return self
 end
 
-function Camera3D:viewport()
+function CameraEntity:viewport()
     return self._vpX, self._vpY, self._vpW, self._vpH
 end
 
-function Camera3D:renderbuffer()
+function CameraEntity:renderbuffer()
     return self._rb
 end
 
-function Camera3D:view()
+function CameraEntity:view()
     return self._left, self._right, self._bottom, self._top, self._near, self._far
 end
 
-function Camera3D:isPerspective()
+function CameraEntity:isPerspective()
     return self._perspective, self._fov, self._aspect, self._near, self._far
 end
 
-function Camera3D:projection()
+function CameraEntity:projection()
     if not self._projection then
         local func = self._perspective and Matrix.fromFrustum or Matrix.fromOrtho
         self._projection = func(
@@ -137,7 +133,7 @@ function Camera3D:projection()
     return self._projection
 end
 
-function Camera3D:invProjection()
+function CameraEntity:invProjection()
     if not self._invProjection then
         self._invProjection = self:projection():inverse()
     end
@@ -145,7 +141,7 @@ function Camera3D:invProjection()
     return self._invProjection
 end
 
-function Camera3D:clear(r, g, b, a, depth, col0, col1, col2, col3, clearDepth)
+function CameraEntity:clear(r, g, b, a, depth, col0, col1, col2, col3, clearDepth)
     self:apply()
 
     -- Make sure the values are valid
@@ -160,14 +156,14 @@ function Camera3D:clear(r, g, b, a, depth, col0, col1, col2, col3, clearDepth)
     return self
 end
 
-function Camera3D:apply()
+function CameraEntity:apply()
     C.nxRendererSetViewport(self._vpX, self._vpY, self._vpW, self._vpH)
     Renderbuffer.bind(self._rb)
 
     return self
 end
 
-function Camera3D:draw(drawable, context)
+function CameraEntity:draw(drawable, context)
     self:apply()
 
     drawable:_draw(self, context)
@@ -175,4 +171,4 @@ function Camera3D:draw(drawable, context)
     return self
 end
 
-return Camera3D
+return CameraEntity

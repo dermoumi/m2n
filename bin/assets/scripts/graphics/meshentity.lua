@@ -25,17 +25,24 @@
     For more information, please refer to <http://unlicense.org>
 --]]
 
-local SceneObject = require 'graphics.sceneobject'
+local Entity3D = require 'graphics.entity3d'
 
-local Model = SceneObject:subclass 'graphics.model'
+local MeshEntity = Entity3D:subclass 'graphics.meshentity'
 
-function Model:initialize()
-    SceneObject.initialize(self, 'model')
+function MeshEntity:initialize()
+    Entity3D.initialize(self, 'mesh')
 end
 
-function Model:makeEntity(entity)
-    entity = entity or require('graphics.modelentity'):new()
-    return SceneObject.makeEntity(self, entity)
+function MeshEntity:canAttach()
+    return false
 end
 
-return Model
+function MeshEntity:setMesh(mesh)
+    return mesh:makeEntity(self)
+end
+
+function MeshEntity:_draw()
+    -- Nothing to do
+end
+
+return MeshEntity

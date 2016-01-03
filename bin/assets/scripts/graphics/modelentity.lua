@@ -25,31 +25,49 @@
     For more information, please refer to <http://unlicense.org>
 --]]
 
-local Entity3D = require 'graphics.entity3d'
+local ffi         = require 'ffi'
+local Graphics    = require 'graphics'
+local SceneEntity = require 'graphics.sceneentity'
 
-local ModelEntity = Entity3D:subclass 'graphics.modelentity'
+local ModelEntity = SceneEntity:subclass 'graphics.modelentity'
 
-function ModelEntity:initialize(name, model)
-    Entity3D.initialize(self, name)
-    self:setModel(model)
-end
-
-function ModelEntity:type()
-    return 'model'
+function ModelEntity:initialize(model)
+    SceneEntity.initialize(self, 'model')
+    self.meshes = {}
+    if model then self:setModel(model) end
 end
 
 function ModelEntity:setModel(model)
-    self._model = model
-    return self
+    return model:makeEntity(self)
 end
 
-function ModelEntity:model()
-    return self._model
+function ModelEntity:attached(node)
+    SceneEntity.attached(self, node)
+    if node.type == 'mesh' then
+        local table = self.meshes[node.geometry]
+        if not table then
+            table = {}
+            self.meshes[node.geometry] = table
+        end
+
+        table[#table+1] = node
+    end
 end
 
 function ModelEntity:_render(camera, context)
-    if self._model then
-        self._model:_draw(camera:projection(), self:matrix(true), context)
+    local proj, renderFunc = camera:projection(), nil
+    for geometry, meshTable in pairs(self.meshes) do
+        if geometry:_apply() then
+            renderFunc = geometry._indexBuffer
+                and ffi.C.nxRendererDrawIndexed
+                or ffi.C.nxRendererDraw
+
+            for i, mesh in pairs(meshTable) do
+                if mesh.material and mesh.material:_apply(proj, mesh:matrix(true), context) then
+                    renderFunc(4, mesh.start, mesh.count)
+                end
+            end
+        end
     end
 end
 

@@ -27,19 +27,19 @@
 
 local Graphics = require 'graphics'
 local Matrix   = require 'util.matrix'
-local class    = require 'class'
+local Node     = require 'graphics.node'
 
-local Entity2D = class 'graphics.entity2d'
+local Entity2D = Node:subclass 'graphics.entity2d'
 
 function Entity2D:initialize()
+    Node.initialize(self)
+
     self._posX,    self._posY    = 0, 0
     self._scaleX,  self._scaleY  = 1, 1
     self._originX, self._originY = 0, 0
     self._rotation = 0
 
     self._colR, self._colG, self._colB, self._colA = 1, 1, 1, 1
-
-    self._children = {}
 end
 
 function Entity2D:_markDirty()
@@ -47,7 +47,7 @@ function Entity2D:_markDirty()
 
     if self._absMatrix then
         self._absMatrix = nil
-        for child in pairs(self._children) do
+        for name, child in pairs(self.children) do
             child:_markDirty()
         end
     end
@@ -55,42 +55,12 @@ function Entity2D:_markDirty()
     return self
 end
 
-function Entity2D:attachTo(entity)
-    entity:attach(self)
-
-    return self
+function Entity2D:attachedTo(node)
+    self._absMatrix = nil
 end
 
-function Entity2D:attach(entity)
-    if entity._parent ~= self and self:canAttach(entity) then
-        entity:detach()
-
-        entity._parent = self
-        entity._absMatrix = nil
-
-        self._children[entity] = true
-    end
-
-    return self
-end
-
-function Entity2D:detach()
-    if self._parent then
-        self._parent._children[self] = nil
-
-        self._parent = nil
-        self._absMatrix = nil
-    end
-
-    return self
-end
-
-function Entity2D:canAttach(entity)
-    return true
-end
-
-function Entity2D:type()
-    return ''
+function Entity2D:detachedFrom(node)
+    self._absMatrix = nil
 end
 
 function Entity2D:setPosition(x, y)
@@ -131,8 +101,8 @@ function Entity2D:setBlendMode(blendSrc, blendDst)
 end
 
 function Entity2D:position(absolute)
-    if absolute and self._parent then
-        local x, y, z = self._parent:matrix(true):apply(self._posX, self._posY, 0)
+    if absolute and self.parent then
+        local x, y, z = self.parent:matrix(true):apply(self._posX, self._posY, 0)
         return x, y
     end
 
@@ -140,8 +110,8 @@ function Entity2D:position(absolute)
 end
 
 function Entity2D:scaling()
-    if absoulte and self._parent then
-        local x, y = self._parent:scaling(true)
+    if absoulte and self.parent then
+        local x, y = self.parent:scaling(true)
         return self._scaleX * x, self._scaleY * y
     end
 
@@ -149,8 +119,8 @@ function Entity2D:scaling()
 end
 
 function Entity2D:rotation()
-    if absolute and self._parent then
-        local rot = self._parent:rotation(true)
+    if absolute and self.parent then
+        local rot = self.parent:rotation(true)
         return self._rotation + rot
     end
 
@@ -158,8 +128,8 @@ function Entity2D:rotation()
 end
 
 function Entity2D:origin()
-    if absolute and self._parent then
-        local x, y, z = self._parent:matrix(true):apply(self._originX, self._originY, 0)
+    if absolute and self.parent then
+        local x, y, z = self.parent:matrix(true):apply(self._originX, self._originY, 0)
         return x, y
     end
 
@@ -169,8 +139,8 @@ end
 function Entity2D:color(normalize, absolute)
     local r, g, b, a = self._colR, self._colG, self._colB, self._colA
 
-    if absolute and self._parent then
-        local pR, pG, pB, pA = self._parent:color(true, true)
+    if absolute and self.parent then
+        local pR, pG, pB, pA = self.parent:color(true, true)
         r, g, b, a = r * pR, g * pG, b * pB, a * pA
     end
 
@@ -204,8 +174,8 @@ function Entity2D:matrix(absolute)
 
     if absolute then
         if not self._absMatrix then
-            self._absMatrix = self._parent
-                and Matrix.fastMult43(self._parent:matrix(true), self._matrix)
+            self._absMatrix = self.parent
+                and Matrix.fastMult43(self.parent:matrix(true), self._matrix)
                 or  self._matrix
         end
 
@@ -224,7 +194,7 @@ function Entity2D:_draw(camera, context)
 
     self:_render(camera, context)
 
-    for child in pairs(self._children) do
+    for name, child in pairs(self.children) do
         camera:draw(child, context)
     end
 end

@@ -61,11 +61,12 @@ function ScreenTitle:entered()
     self.text = require('graphics.text')
         :new('', require 'game.font', 14)
         :setPosition(10, 10)
+        :setColor(255, 128, 0)
 
     self.sprite = require('graphics.sprite')
         :new(self:cache('assets/pasrien.png'))
         :setPosition(100, 100)
-        -- :addChild(self.text)
+        :attach('text', self.text)
 
     self.voiceGroup = require('audio.voicegroup'):new()
     self.echoFilter = require('audio.echofilter'):new()

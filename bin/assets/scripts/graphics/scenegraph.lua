@@ -27,15 +27,15 @@
 
 local SceneObject = require 'graphics.sceneobject'
 
-local Model = SceneObject:subclass 'graphics.model'
+local SceneGraph = SceneObject:subclass 'graphics.scenegraph'
 
-function Model:initialize()
-    SceneObject.initialize(self, 'model')
+function SceneGraph:initialize()
+    SceneObject.initialize(self, 'scene')
 end
 
-function Model:makeEntity(entity)
-    entity = entity or require('graphics.modelentity'):new()
+function SceneGraph:makeEntity(entity)
+    local entity = entity or require('graphics.sceneentity'):new()
     return SceneObject.makeEntity(self, entity)
 end
 
-return Model
+return SceneGraph

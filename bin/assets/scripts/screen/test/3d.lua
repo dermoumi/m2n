@@ -35,21 +35,21 @@ local Model       = require 'graphics.model'
 local Material    = require 'graphics.material'
 local Entity3D    = require 'graphics.entity3d'
 local Screen      = require 'screen'
+local SceneEntity = require 'graphics.sceneentity'
+local Mesh        = require 'graphics.mesh'
 
 local ScreenTest3D = Screen:subclass 'screen.test.3d'
-
-local Node = Entity3D:subclass 'node'
 
 function ScreenTest3D:entered()
     self.text = require('graphics.text')
         :new('', require 'game.font', 14)
         :setPosition(10, 10)
 
-    self.player = Node:new()
+    self.player = SceneEntity:new()
         -- :setPosition(0, 0, 3)
 
-    self.camera = require('graphics.camera3d'):new('maincamera')
-        :attachTo(self.player)
+    self.camera = require('graphics.cameraentity'):new()
+        :attachTo('MainCamera', self.player)
         -- :setRotation(0, 0, math.pi / 4)
         -- :setScaling(2, 2, 2)
         -- :lookAt(0, 0, 0)
@@ -94,24 +94,27 @@ function ScreenTest3D:entered()
              1,-1, 1, 0, 0
         )
 
+    local cubesModel = Model:new()
+
     local solidOrangeMat = Material:new()
         :setColor(255, 128, 0)
 
-    local cubeModel = Model:new()
+    Mesh:new()
         :setGeometry(cubeGeom)
-        :addMesh(nil, 0, cubeGeom:vertexCount())
+        :setMaterial(solidOrangeMat)
+        :attachTo('OrangeCube', cubesModel)
 
-    local orangeCubeModel = Model:new()
+    Mesh:new()
         :setGeometry(cubeGeom)
-        :addMesh(solidOrangeMat, 0, cubeGeom:vertexCount())
+        :setMaterial(Material:new())
+        :setTransformation(0, 1, 0, 0, 0, 0, .5, .5, .5)
+        :attachTo('WhiteCube', cubesModel)
 
-    self.mesh = ModelEntity:new('orangecube', orangeCubeModel)
+    self.cube = ModelEntity:new(cubesModel)
         :setPosition(0, 0, -3)
 
-    self.subMesh = ModelEntity:new('whitecube', cubeModel)
-        :attachTo(self.mesh)
-        :setPosition(0, 1, 0)
-        :setScaling(.5, .5, .5)
+    self.subCube = self.cube:resolveName('WhiteCube')
+    -- print(self.subCube)
 
     self.camVelX, self.camVelY, self.camVelZ, self.camSpeed = 0, 0, 0, 3
     self.camSensitivity = 0.001
@@ -128,7 +131,7 @@ function ScreenTest3D:update(dt)
     self.text:setString('Current FPS: %i', Window.currentFPS())
 
     -- self.subMesh:rotate(0, 0, math.pi * dt / 2)
-    self.subMesh:rotate(0, math.pi * dt / 2, 0)
+    self.subCube:rotate(0, math.pi * dt / 2, 0)
 
     if self.camVelX ~= 0 or self.camVelY ~= 0 or self.camVelZ ~= 0 then
         local q = self.player:quaternion()
@@ -140,13 +143,13 @@ function ScreenTest3D:render()
     Graphics.setDepthFunc('lequal')
         .enableDepthTest(true)
         .enableDepthMask(true)
-        .setFillMode('wireframe')
+        -- .setFillMode('wireframe')
 
     self.camera:clear(200, 200, 200)
 
-    self.camera:draw(self.mesh)
+    self.camera:draw(self.cube)
 
-    Graphics.setFillMode('solid')
+    -- Graphics.setFillMode('solid')
     self:view():draw(self.text)
 end
 

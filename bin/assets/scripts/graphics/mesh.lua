@@ -25,36 +25,39 @@
     For more information, please refer to <http://unlicense.org>
 --]]
 
-local class       = require 'class'
-local Graphics    = require 'graphics'
+local Material    = require 'graphics.material'
+local SceneObject = require 'graphics.sceneobject'
 
-local Mesh = class 'graphics.mesh'
+local Mesh = SceneObject:subclass 'graphics.mesh'
 
-local ffi = require 'ffi'
-local C = ffi.C
-
-function Mesh:initialize(material, start, count)
-    self._material, self._start, self._count = material, start, count
+function Mesh:initialize()
+    SceneObject.initialize(self, 'mesh')
 end
 
-function Mesh:setMaterial(material)
-    self._material = material
+function Mesh:setGeometry(geom, start, count)
+    self.geometry = geom
+    self.start = start or 0
+    self.count = count or (geom._indexBuffer and geom:indexCount() or geom:vertexCount())
 
     return self
 end
 
-function Mesh:material()
-    return self._material
+function Mesh:setMaterial(material)
+    self.material = material
+    return self
 end
 
-function Mesh:_draw(projMat, transMat, context, indexed)
-    if self._material and self._material:_apply(projMat, transMat, context) then
-        if indexed then
-            C.nxRendererDrawIndexed(4, self._start, self._count)
-        else
-            C.nxRendererDraw(4, self._start, self._count)
-        end
-    end
+function Mesh:makeEntity(entity)
+    entity = entity or require('graphics.meshentity'):new()
+
+    entity.geometry, entity.start, entity.count, entity.material =
+        self.geometry, self.start, self.count, self.material
+
+    return SceneObject.makeEntity(self, entity)
+end
+
+function Mesh:canAttach()
+    return false
 end
 
 return Mesh

@@ -25,17 +25,38 @@
     For more information, please refer to <http://unlicense.org>
 --]]
 
-local SceneObject = require 'graphics.sceneobject'
+local Node = require 'graphics.node'
 
-local Model = SceneObject:subclass 'graphics.model'
+local SceneObject = Node:subclass 'graphics.sceneobject'
 
-function Model:initialize()
-    SceneObject.initialize(self, 'model')
+function SceneObject:initialize(type)
+    Node.initialize(self)
+
+    self.tx, self.ty, self.tz = 0, 0, 0
+    self.rx, self.ry, self.rz = 0, 0, 0
+    self.sx, self.sy, self.sz = 1, 1, 1
+
+    self.type = type
 end
 
-function Model:makeEntity(entity)
-    entity = entity or require('graphics.modelentity'):new()
-    return SceneObject.makeEntity(self, entity)
+function SceneObject:setTransformation(tx, ty, tz, rx, ry, rz, sx, sy, sz)
+    self.tx, self.ty, self.tz = tx, ty, tz
+    self.rx, self.ry, self.rz = rx, ry, rz
+    self.sx, self.sy, self.sz = sx, sy, sz
+
+    return self
 end
 
-return Model
+function SceneObject:makeEntity(entity)
+    entity:setPosition(self.tx, self.ty, self.tz)
+        :setRotation(self.rx, self.ry, self.rz)
+        :setScaling(self.sx, self.sy, self.sy)
+
+    for name, child in pairs(self.children) do
+        entity:attach(name, child:makeEntity())
+    end
+
+    return entity
+end
+
+return SceneObject
