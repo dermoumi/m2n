@@ -116,7 +116,7 @@ function ScreenTest3D:entered()
     self.subCube = self.cube:resolveName('WhiteCube')
     -- print(self.subCube)
 
-    self.camVelX, self.camVelY, self.camVelZ, self.camSpeed = 0, 0, 0, 3
+    self.camVelX, self.camVelY, self.camVelZ, self.camSpeed = 0, 0, 0, 4
     self.camSensitivity = 0.001
 
     self.prevMouseMode = Mouse.isRelativeMode()
@@ -137,19 +137,43 @@ function ScreenTest3D:update(dt)
         local q = self.player:quaternion()
         self.player:move(q:apply(self.camVelX * dt, self.camVelY * dt, self.camVelZ * dt))
     end
+
+    if self.lockOn then
+        local Quaternion = require 'util.quaternion'
+        local tx, ty, tz = self.cube:position(true)
+        local px, py, pz = self.player:position(true)
+
+        local x, y, z = tx - px, 0, tz - pz
+        local len = x*x + z*z
+        if len ~= 0 then
+            len = math.sqrt(len)
+            x, z = x/len, z/len
+        end
+
+        self.player:setRotation(Quaternion.fromToRotation(0, 0, -1, x, 0, z))
+
+        x, y, z = 0, ty-py, -math.sqrt((tx-px)*(tx-px) + (tz-pz)*(tz-pz))
+        len = y*y + z*z
+        if len ~= 0 then
+            len = math.sqrt(len)
+            y, z = y/len, z/len
+        end
+
+        self.camera:setRotation(Quaternion.fromToRotation(0, 0, -1, x, y, z))
+    end
 end
 
 function ScreenTest3D:render()
     Graphics.setDepthFunc('lequal')
         .enableDepthTest(true)
         .enableDepthMask(true)
-        .setFillMode('wireframe')
+        -- .setFillMode('wireframe')
 
     self.camera:clear(200, 200, 200)
 
     self.camera:draw(self.cube)
 
-    Graphics.setFillMode('solid')
+    -- Graphics.setFillMode('solid')
     self:view():draw(self.text)
 end
 
@@ -170,6 +194,8 @@ function ScreenTest3D:keydown(scancode, keyCode, repeated)
         self.camVelX = self.camSpeed
     elseif scancode == 'space' then
         self.camVelY = self.camSpeed
+    elseif scancode == 'tab' then
+        self.lockOn = not self.lockOn
     end
 end
 
