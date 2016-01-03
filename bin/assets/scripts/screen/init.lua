@@ -70,7 +70,7 @@ function Screen.static.goTo(screen, ...)
     lastScreen = Screen.currentScreen()
 
     for i = #screenStack, 1, -1 do
-        screenStack[i]:__release()
+        screenStack[i]:__left()
         screenStack[i] = nil
     end
 

@@ -143,13 +143,13 @@ function ScreenTest3D:render()
     Graphics.setDepthFunc('lequal')
         .enableDepthTest(true)
         .enableDepthMask(true)
-        -- .setFillMode('wireframe')
+        .setFillMode('wireframe')
 
     self.camera:clear(200, 200, 200)
 
     self.camera:draw(self.cube)
 
-    -- Graphics.setFillMode('solid')
+    Graphics.setFillMode('solid')
     self:view():draw(self.text)
 end
 

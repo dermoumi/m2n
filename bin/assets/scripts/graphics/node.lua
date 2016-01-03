@@ -94,7 +94,7 @@ end
 
 function Node:resolveName(name)
     local currNode = self
-    for nodeName in string.gmatch(name, '.+') do
+    for nodeName in string.gmatch(name, '[^%.]+') do
         currNode = currNode.children[nodeName]
         if not currNode then return nil end
     end
