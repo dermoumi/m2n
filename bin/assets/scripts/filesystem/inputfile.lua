@@ -69,7 +69,7 @@ function InputFile:open(filename)
     return self
 end
 
-function InputFile:read(size, asCdata)
+function InputFile:read(size)
     if self._cdata == nil then return '', 0 end
 
     -- If size is invalid, read all
@@ -80,8 +80,6 @@ function InputFile:read(size, asCdata)
 
     local ok = C.nxFsRead(self._cdata, buffer, size, readBytesPtr)
     if not ok then return self:_throwError('', 0) end
-
-    if not asCdata then buffer = ffi.string(buffer, readBytesPtr[0]) end
 
     return buffer, tonumber(readBytesPtr[0])
 end
