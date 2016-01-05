@@ -147,7 +147,7 @@ function Screen:__left()
 
     -- Release all cached elements
     if self.__cache then
-        for i, v in pairs(self.__cache) do
+        for i in pairs(self.__cache) do
             Cache.release(i)
         end
     end
@@ -244,16 +244,33 @@ function Screen:cache(id, loaderFunc)
     self.__cache = self.__cache or {}
 
     -- Attempt to load it from the screen's local cache
-    local obj = self.__cache[id]
-    if not obj then
+    local item = self.__cache[id]
+    if not item then
         -- Not found, attempt to load it from game cache
         obj, err = Cache.get(id, loaderFunc, true)
         if not obj then return nil, err end
 
-        self.__cache[id] = obj
+        item = {
+            obj = obj,
+            count = 1
+        }
+        self.__cache[id] = item
     end
 
-    return obj
+    item.count = item.count + 1
+    return item.obj
+end
+
+function Screen:uncache(id)
+    if not self.__cache then return end
+
+    local item = self.__cache[id]
+    if item then
+        item.count = item.count - 1
+        if item.count <= 0 then
+            Cache.release(id)
+        end
+    end
 end
 
 function Screen:view()
