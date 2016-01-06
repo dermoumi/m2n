@@ -98,8 +98,16 @@ local function toCPointer(cdata)
     return ffi.new(ct .. '[1]', {cdata}), ct .. '   *', true
 end
 
+-- Defined later on
+local nxClassPusher
+
 -- Pushes the table t into the lua_State s
 local function tablePusher(s, t)
+    if type(t) == 'table' and t.class and t.class.name then
+        nxClassPusher(s, t)
+        return
+    end
+
     C.lua_createtable(s, #t, 0)
     local top = C.lua_gettop(s)
 
@@ -136,7 +144,7 @@ local function funcPusher(s, f)
 end
 
 -- Pushes the object into the lua_State s
-local function nxClassPusher(s, o)
+nxClassPusher = function(s, o)
     local table = {}
 
     for i, v in pairs(o) do
@@ -315,10 +323,6 @@ function LuaVM:push(...)
     for i = 1, argc do
         local val = args[i]
         local typename = type(val)
-
-        if typename == 'table' and val.class and val.class.name then
-            typename = 'nxclass'
-        end
 
         local pushFunc = pushers[typename]
         if not pushFunc then
