@@ -30,6 +30,7 @@ local Mouse    = require 'window.mouse'
 local Graphics = require 'graphics'
 local Window   = require 'window'
 local Screen   = require 'screen'
+local GameFont = require 'game.font'
 
 local ScreenTitle = Screen:subclass('screen.title')
 
@@ -61,7 +62,7 @@ end
 
 function ScreenTitle:entered()
     self.text = require('graphics.text')
-        :new('', require 'game.font', 14)
+        :new('', GameFont, 14)
         :setPosition(10, 10)
         :setColor(255, 128, 0)
 

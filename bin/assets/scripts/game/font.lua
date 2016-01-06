@@ -27,7 +27,7 @@
 
 local FontStack  = require 'graphics.fontstack'
 local VectorFont = require 'graphics.vectorfont'
-local Cache  = require 'game.cache'
+local Cache      = require 'game.cache'
 
 local stack = FontStack:new()
 
@@ -41,5 +41,7 @@ for i, v in ipairs(fonts) do
     local font = Cache.get(v)
     stack:addFont(font)
 end
+
+Cache.wait()
 
 return stack

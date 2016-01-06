@@ -27,7 +27,7 @@
 
 
 local ffi    = require 'ffi'
-local Log = require 'util.log'
+local Log    = require 'util.log'
 local Thread = require 'system.thread'
 
 local Cache = {}
@@ -189,7 +189,13 @@ function Cache.iteration()
         end
     end
 
-    return Cache.progress()
+    return Cache
+end
+
+function Cache.wait()
+    while Cache.hasTasks() do
+        Cache.iteration()
+    end
 end
 
 function Cache.get(screen, id, peek)
