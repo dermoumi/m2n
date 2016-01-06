@@ -62,7 +62,7 @@ local function addLoadingTask(screen, id)
     end
 
     local name = id:sub(#type+2)
-    local task = objClass.factory(name)
+    local task = objClass.factory(name, type)
     task.id = id
     task.obj = task.obj or objClass:new()
     task.stagePtr = ffi.new('uint32_t[1]', 1)
@@ -152,10 +152,12 @@ function Cache.iteration()
                     task.obj.__wk_status = 'ready'
                     loadingTasks[i] = nil
                     finishedTasks = finishedTasks + 1
+                    Log.info('Loaded: ' .. task.id)
 
                     -- Remove temporary depndencies
                     for dep, temporary in pairs(task.deps) do
                         if temporary then
+                            finishedTasks = finishedTasks - 1
                             if task.screen then
                                 task.screen:uncache(dep)
                             else

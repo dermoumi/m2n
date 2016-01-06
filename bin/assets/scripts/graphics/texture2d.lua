@@ -30,6 +30,24 @@ local Texture = require 'graphics.texture'
 
 local Texture2D = Texture:subclass('graphics.texture2d')
 
+function Texture2D.static.factory(filename, type)
+    local depImage = 'image:' .. filename
+    return {
+        deps = {
+            [depImage] = true
+        },
+        funcs = {
+            {
+                proc = function(texture, filename, image)
+                    texture:load(image)
+                end,
+                threaded = 'gpu',
+                deps = {depImage}
+            }
+        }
+    }
+end
+
 function Texture2D:initialize(a, b, c, d)
     Texture.initialize(self)
 

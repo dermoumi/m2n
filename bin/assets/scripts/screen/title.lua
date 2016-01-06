@@ -48,7 +48,7 @@ function ScreenTitle:initialize(firstRun)
         })
     end
 
-    self.image = self:cache('image:assets/pasrien.png')
+    self.texture = self:cache('tex2d:assets/pasrien.png')
 
     -- self:worker():addFile('graphics.image', 'assets/pasrien.png')
     -- self:worker():addFile('graphics.image', 'assets/cursor.png')
@@ -67,7 +67,7 @@ function ScreenTitle:entered()
         :setColor(255, 128, 0)
 
     self.sprite = require('graphics.sprite')
-        :new(self.image)
+        :new(self.texture)
         :setPosition(100, 100)
         -- :attach('text', self.text)
 
