@@ -30,22 +30,12 @@ local Texture = require 'graphics.texture'
 
 local Texture2D = Texture:subclass('graphics.texture2d')
 
-function Texture2D.static.factory(filename)
-    local depImage = 'image:' .. filename
-    return {
-        deps = {
-            [depImage] = true
-        },
-        funcs = {
-            {
-                proc = function(texture, filename, image)
-                    texture:load(image)
-                end,
-                threaded = 'gpu',
-                deps = {depImage}
-            }
-        }
-    }
+function Texture2D.static.factory(task, filename)
+    local imgID = 'image:' .. filename
+    task:addDependency(imgID, true)
+        :addTask('gpu', function(texture, filename, image)
+                texture:load(image)
+            end, {imgID})
 end
 
 function Texture2D:initialize(a, b, c, d)

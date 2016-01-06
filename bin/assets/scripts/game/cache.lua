@@ -29,6 +29,7 @@
 local ffi    = require 'ffi'
 local Log    = require 'util.log'
 local Thread = require 'system.thread'
+local class  = require 'class'
 
 local Cache = {}
 local items = {}
@@ -37,13 +38,52 @@ local registeredTypes = {}
 local totalTasks, finishedTasks, failedTasks = 0, 0, 0
 local loadingTasks = {}
 
+local Task = class '_cacheclass'
+
+function Task:initialize(id, name, objClass, screen)
+    self.id = id
+    self.obj = objClass:new()
+    self.stagePtr = ffi.new('uint32_t[1]', 1)
+    self.lastStage = 0
+    self.screen = screen
+    self.depsAdded = false
+    self.name = name
+    self.reusable = true
+    self.deps = {}
+    self.tasks = {}
+end
+
+function Task:addTask(threaded, func, deps)
+    if type(threaded) == 'function' then
+        threaded, func, deps = false, threaded, func
+    end
+
+    self.tasks[#self.tasks+1] = {
+        func = func,
+        threaded = threaded,
+        deps = deps
+    }
+
+    return self
+end
+
+function Task:setReusable(reusable)
+    self.reusable = reusable
+    return self
+end
+
+function Task:addDependency(id, temporary)
+    self.deps[id] = not not temporary
+    return self
+end
+
 local function loadFunc(stagePtr, proc, obj, name, deps, params)
     -- If there are no dependencies, move params to theirs slots instead
     if #deps == 0 then
         deps, params = params, {}
     end
 
-    if proc(obj, name, unpack(deps), unpack(params)) == false then
+    if proc(obj, name, unpack(deps)) == false then
         stagePtr[0] = 0
     else
         stagePtr[0] = stagePtr[0] + 1
@@ -67,16 +107,8 @@ local function addLoadingTask(screen, id)
     end
 
     local name = id:sub(#type+2)
-    local task = objClass.factory(name, type)
-    task.id = id
-    task.obj = task.obj or objClass:new()
-    task.stagePtr = ffi.new('uint32_t[1]', 1)
-    task.lastStage = 0
-    task.screen = screen
-    task.depsAdded = false
-    task.deps = task.deps or {}
-    task.name = task.name or name
-    task.reusable = task.reusable == nil or task.reusable
+    local task = Task:new(id, name, objClass, screen)
+    objClass.factory(task, name, type)
 
     loadingTasks[table.maxn(loadingTasks)+1] = task
     return task.obj, task.reusable
@@ -152,7 +184,7 @@ function Cache.iteration()
                 local stage = task.stagePtr[0]
                 task.lastStage = stage
 
-                if stage > #task.funcs then
+                if stage > #task.tasks then
                     -- Task is done, remove it froom ongoing tasks
                     task.obj.__wk_status = 'ready'
                     loadingTasks[i] = nil
@@ -171,25 +203,25 @@ function Cache.iteration()
                         end
                     end
                 else
-                    local func = task.funcs[stage]
+                    local subTask = task.tasks[stage]
                     local deps = {}
-                    if func.deps and #func.deps > 0 then
-                        for i, dep in ipairs(func.deps) do
+                    if subTask.deps and #subTask.deps > 0 then
+                        for i, dep in ipairs(subTask.deps) do
                             deps[#deps+1] = cache(task.screen, dep, true)
                         end
                     end
-                    func.params = func.params or {}
+                    subTask.params = subTask.params or {}
 
                     -- TODO: Re-implement gpu-multithreading (on non-android devices)
-                    if func.threaded and func.threaded ~= 'gpu' then
+                    if subTask.threaded and subTask.threaded ~= 'gpu' then
                         Thread:new(
-                            loadFunc, task.stagePtr, func.proc, task.obj, task.name,
-                            deps, func.params
+                            loadFunc, task.stagePtr, subTask.func, task.obj, task.name,
+                            deps, subTask.params
                         ):detach()
                     else
                         loadFunc(
-                            task.stagePtr, func.proc, task.obj, task.name,
-                            deps, func.params
+                            task.stagePtr, subTask.func, task.obj, task.name,
+                            deps, subTask.params
                         )
                     end
                 end

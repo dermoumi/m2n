@@ -84,24 +84,26 @@ local toAttenuationModel = {
 }
 AudioSource.static._toAttenuationModel = toAttenuationModel;
 
-function AudioSource.static.factory(filename, type)
+function AudioSource.static.factory(task, filename, type)
     local stream = (type == 'music')
-    return {
-        reusable = not stream,
-        funcs = {
-            {
-                proc = function(source, filename, stream)
-                    if stream then
-                        source:open(filename)
-                    else
-                        source:load(filename)
-                    end
-                end,
-                threaded = true,
-                params = {stream}
-            }
-        }
-    }
+    -- task:setReusable(not stream)
+    --     :addTask(true, function(source, filename, stream)
+    --         if stream then
+    --             source:open(filename)
+    --         else
+    --             source:load(filename)
+    --         end
+    --     end, {stream})
+    if stream then
+        task:setReusable(false)
+            :addTask(true, function(source, filename)
+                source:open(filename)
+            end)
+    else
+        task:addTask(true, function(source, filename)
+                source:load(filename)
+            end)
+    end
 end
 
 function AudioSource:initialize()
