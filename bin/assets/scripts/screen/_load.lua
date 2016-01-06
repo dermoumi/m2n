@@ -132,7 +132,7 @@ function ScreenLoad:check()
         self.text:setString(self.message, self.currentPercent)
     end
 
-    if loaded == total then
+    if loaded >= total then
         if self:isLoading() then
             Screen.replace(self.nextScreen)
         else

@@ -209,7 +209,6 @@ function Cache.get(screen, id, peek)
 
     -- If item does not exist, try to load it using loadFunc
     if not item then
-        print(screen, id, peek)
         items[id] = item
         local obj, reusable = addLoadingTask(screen, id)
         if reusable then

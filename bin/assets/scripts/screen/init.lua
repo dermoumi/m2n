@@ -246,7 +246,7 @@ function Screen:cache(id, peek)
         if reusable then
             item = {
                 obj = obj,
-                count = 1
+                count = 0
             }
             self.__cache[id] = item
         else
