@@ -82,6 +82,7 @@ end
 require('game.cache')
     .registerType('image', 'graphics.image')
     .registerType('vectorfont', 'graphics.vectorfont')
+    .registerType('fontstack', 'graphics.fontstack')
 
 -- Startup screen
 Screen.goTo('screen.title', true)

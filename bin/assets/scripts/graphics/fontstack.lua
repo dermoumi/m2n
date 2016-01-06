@@ -40,6 +40,37 @@ ffi.cdef [[
     void nxFontStackAddStack(NxFont*, const NxFont*, bool);
 ]]
 
+function FontStack.static.factory(filename)
+    local fonts = loadfile(filename)
+    if fonts then 
+        fonts = fonts()
+    else
+        return {
+            funcs = {proc = function() return false end}
+        }
+    end
+
+    local dependencies = {}
+    for i, font in ipairs(fonts) do
+        dependencies[font] = false
+    end
+
+    return {
+        deps = dependencies,
+        funcs = {
+            {
+                proc = function(fontStack, filename, ...)
+                    for i, font in ipairs({...}) do
+                        fontStack:addFont(font)
+                    end
+                end,
+                threaded = false,
+                deps = fonts
+            }
+        }
+    }
+end
+
 function FontStack:initialize()
     local handle = C.nxFontStackNew()
     self._cdata = ffi.gc(handle, C.nxFontRelease)

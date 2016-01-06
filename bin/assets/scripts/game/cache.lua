@@ -124,7 +124,7 @@ function Cache.iteration()
             -- Check how many dependencies haave successfully loaded
             local ready = true
             for dependency in pairs(task.deps) do
-                local item = cache(task.screen, dep, true)
+                local item = cache(task.screen, dependency, true)
 
                 local status = not item and 'failed' or item.__wk_status
                 if status == 'failed' then
@@ -207,6 +207,7 @@ function Cache.get(screen, id, peek)
 
     -- If item does not exist, try to load it using loadFunc
     if not item then
+        print(screen, id, peek)
         items[id] = item
         local obj, reusable = addLoadingTask(screen, id)
         if reusable then

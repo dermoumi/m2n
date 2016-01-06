@@ -25,23 +25,8 @@
  For more information, please refer to <http://unlicense.org>
  --]]
 
-local FontStack  = require 'graphics.fontstack'
-local VectorFont = require 'graphics.vectorfont'
-local Cache      = require 'game.cache'
-
-local stack = FontStack:new()
-
-local fonts = {
-    'vectorfont:assets/fonts/01-Asap-Regular.otf',
-    'vectorfont:assets/fonts/02-mplus-1c-regular.ttf',
-    'vectorfont:assets/fonts/03-koodak.ttf'
-}
-
-for i, v in ipairs(fonts) do
-    local font = Cache.get(v)
-    stack:addFont(font)
-end
+local Cache = require 'game.cache'
+local stack = Cache.get('fontstack:assets/fonts/defaultstack.lua')
 
 Cache.wait()
-
 return stack
