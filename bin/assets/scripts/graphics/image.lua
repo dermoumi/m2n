@@ -60,7 +60,7 @@ local function isCArray(a)
 end
 
 function Image.static.factory(task, filename)
-    task:addTask(function(image, filename)
+    task:addTask(true, function(image, filename)
             image:load(filename)
         end)
 end

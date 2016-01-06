@@ -53,6 +53,7 @@ function Task:initialize(id, name, objClass, screen)
     self.deps = {}
     self.newDeps = {}
     self.tasks = {}
+    self.params = {}
     self.vm = LuaVM:new()
 end
 
@@ -74,10 +75,30 @@ function Task:setReusable(reusable)
     return self
 end
 
+function Task:addParam(...)
+    local params = {...}
+    local count, paramCount = table.maxn(params), table.maxn(self.params)
+    
+    for i = 1, count do
+        local param = params[i]
+        if type(param) == 'string' and param:match('.:.') then
+            local temporary = false
+            if param:match('^#.') then
+                temporary = true
+                param = param:sub(2)
+            end
+            self:addDependency(param, temporary)
+        end
+        self.params[paramCount+i] = param
+    end
+
+    return self
+end
+
 function Task:addDependency(id, temporary)
     if id:match('^#.') then
         temporary = true
-        id = id.sub(2)
+        id = id:sub(2)
     end
 
     self.deps[id] = not not temporary
@@ -216,13 +237,9 @@ function Cache.iteration()
                     local params = {}
                     local depsChanged = false
 
-                    if stage == 1 then
-                        -- First entry, add tasks params to vm
-                        for entry in pairs(task.deps) do
-                            params[#params+1] = cache(task.screen, entry, true)
-                        end
-                    elseif subTask.entries then
-                        for i, entry in ipairs(subTask.entries) do
+                    local entries = (stage == 1) and task.params or subTask.entries
+                    if entries then
+                        for i, entry in ipairs(entries) do
                             if type(entry) == 'string' and entry:match('.:.') then
                                 params[#params+1] = cache(task.screen, entry, true)
                             elseif not depsChanged then

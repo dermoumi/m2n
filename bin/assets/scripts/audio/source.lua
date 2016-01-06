@@ -82,19 +82,10 @@ local toAttenuationModel = {
     linear      = 2,
     exponential = 3
 }
-AudioSource.static._toAttenuationModel = toAttenuationModel;
+AudioSource.static._toAttenuationModel = toAttenuationModel
 
 function AudioSource.static.factory(task, filename, type)
-    local stream = (type == 'music')
-    -- task:setReusable(not stream)
-    --     :addTask(true, function(source, filename, stream)
-    --         if stream then
-    --             source:open(filename)
-    --         else
-    --             source:load(filename)
-    --         end
-    --     end, {stream})
-    if stream then
+    if type == 'music' then
         task:setReusable(false)
             :addTask(true, function(source, filename)
                 source:open(filename)
