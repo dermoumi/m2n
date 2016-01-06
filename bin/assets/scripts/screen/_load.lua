@@ -27,13 +27,13 @@
 
 local Text     = require 'graphics.text'
 local GameFont = require 'game.font'
+local Worker   = require 'game.worker'
 local Screen   = require 'screen'
 
 local ScreenLoad = Screen:subclass('screen._load')
 
 function ScreenLoad:initialize(screen)
     self.nextScreen = screen
-    self.worker    = screen.__worker
 
     local params = screen.__preloadParams or {}
 
@@ -61,7 +61,7 @@ function ScreenLoad:initialize(screen)
 end
 
 function ScreenLoad:entered()
-    self.worker:start()
+    Worker.prepare()
 
     self.currentPercent = 0
 
@@ -80,6 +80,8 @@ function ScreenLoad:entered()
 end
 
 function ScreenLoad:update(dt)
+    Worker.iteration()
+
     -- Calculate fading percent if there's any ongoing fading
     if self:isOpening() then
         self.fadePercent = self.__transTime / self:transitionDuration()
@@ -119,15 +121,15 @@ function ScreenLoad:transitionColor()
 end
 
 function ScreenLoad:check()
-    local loaded, failed, total = self.worker:progress()
+    local total, loaded, failed = Worker.progress()
 
-    local percent = total ~= 0 and math.floor(100 * (loaded + failed) / total + 0.5) or 100
+    local percent = total ~= 0 and math.floor(100 * loaded / total + 0.5) or 100
     if self.currentPercent <= percent then
         self.currentPercent = math.min(self.currentPercent + 1, percent)
         self.text:setString(self.message, self.currentPercent)
     end
 
-    if loaded + failed == total then
+    if loaded == total then
         if self:isLoading() then
             Screen.replace(self.nextScreen)
         else

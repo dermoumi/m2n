@@ -29,105 +29,193 @@ local ffi    = require 'ffi'
 local class  = require 'class'
 local Thread = require 'system.thread'
 
-local Worker = class 'Worker'
+local Worker = {}
+local registeredTypes = {}
+local totalTasks, finishedTasks, failedTasks = 0, 0, 0
+local loadingTasks, generalTasks = {}, {}
 
-local loaderFunc = {}
-
-local function genericTaskFunc(loadedCount, func, ...)
-    loadedCount = require('ffi').cast('uint32_t*', loadedCount)
-    if not func(...) then
-        loadedCount[1] = loadedCount[1] + 1
+local function loadFunc(stagePtr, proc, obj, name, deps, params)
+    if proc(obj, name, unpack(deps), params and unpack(params)) then
+        stagePtr[0] = stagePtr + 1
     else
-        loadedCount[0] = loadedCount[0] + 1
+        stagePtr[0] = 0
     end
 end
 
-local function genericLoadingFunc(loaderFunc, obj, filename, loadedCount)
-    loadedCount = require('ffi').cast('uint32_t*', loadedCount)
-    if not loaderFunc(obj, filename) then
-        loadedCount[1] = loadedCount[1] + 1
-    else
-        loadedCount[0] = loadedCount[0] + 1
+function Worker.registerType(type, factoryFunc)
+    registeredTypes[type] = factoryFunc
+end
+
+function Worker.prepare()
+    totalTasks, finishedTasks, failedTasks = 0, 0, 0
+    for i in pairs(loadingTasks) do
+        totalTasks = totalTasks + 1
+    end
+    for i in pairs(generalTasks) do
+        totalTasks = totalTasks + 1
     end
 end
 
-local function callLoadFunc(obj, id)
-    obj:load(id)
-    return true
+function Worker.progress()
+    return totalTasks, finishedTasks, failedTasks
 end
 
-local function returnFalseFunc()
+function Worker.hasTasks()
+    for i in pairs(loadingTasks) do
+        return true
+    end
+    for i in pairs(generalTasks) do
+        return true
+    end
     return false
 end
 
-function Worker.static.registerFunc(objType, func)
-    loaderFunc[objType] = func
-    return Worker
-end
-
-function Worker:initialize()
-    self._tasks = {}
-    self._taskCount = 0
-    self._loadedCount = ffi.new('uint32_t[2]')
-end
-
-function Worker:addFile(objType, id)
-    local Cache = require('game.cache')
-
-    -- Check if already loaded in the cache
-    local obj = Cache.get(id)
-    if obj then return end
-
-    -- Not loaded. Check if loader function is valid
-    obj = require(objType):new()
-    local func = loaderFunc[objType]
-    if not func then
-        -- No registered loading func, if obj has a :load() method, use it. Otherwise, abort.
-        func = (type(obj.load) == 'function') and callLoadFunc or returnFalseFunc
-        loaderFunc[objType] = func
+function Worker.addLoadingTask(screen, id)
+    -- Check if task already exists
+    for i, task in pairs(loadingTasks) do
+        if task.id == id then
+            return task.obj, task.reusable
+        end
     end
 
-    -- Valid, push a new task to load it
-    self:checkCount()
-    self._taskCount = self._taskCount + 1
+    -- Does not exists, add it the task list
+    local type = id:match('[^:]+')
 
-    self._tasks[#self._tasks+1] = {genericLoadingFunc, func, obj, id, self._loadedCount}
-
-    Cache.add(id, obj)
-end
-
-function Worker:addTask(taskFunc, ...)
-    self:checkCount()
-    self._taskCount = self._taskCount + 1
-    
-    self._tasks[#self._tasks+1] = {genericTaskFunc, self._loadedCount, taskFunc, ...}
-end
-
-function Worker:start()
-    -- Make a thread for each task, and detach it...
-    for i, task in ipairs(self._tasks) do
-        Thread:new(unpack(task, 1, table.maxn(task))):detach()
+    local factoryFunc = registeredTypes[type]
+    if not factoryFunc then
+        error('Attempting to load object of unregistered type "' .. type .. '"')
     end
 
-    -- Clear tasks
-    self._tasks = {}
-    self._shouldReset = true
+    local name = id:sub(#type+2)
+    local task = factoryFunc(name)
+    task.id = id
+    task.stagePtr = ffi.new('uint32_t[1]', 1)
+    task.lastStage = 0
+    task.screen = screen
+    task.depsAdded = false
+    task.deps = task.deps or {}
+    task.name = task.name or name
+    task.reusable = task.reusable == nil or task.reusable
+
+    loadingTasks[table.maxn(loadingTasks)+1] = task
+    return task.obj, task.reusable
 end
 
-function Worker:progress()
-    return tonumber(self._loadedCount[0]), tonumber(self._loadedCount[1]), self._taskCount
-end
+function Worker.iteration()
+    -- Reverse iterate because the latter are less likely to be waiting
+    -- for dependencies to load
+    for i = table.maxn(loadingTasks), 1, -1 do
+        local task = loadingTasks[i]
+        if task then
+            -- Cache func
+            local cache = task.screen and task.screen.cache or require('game.cache').get
 
-function Worker:taskCount()
-    return self._taskCount
-end
+            -- Add dependencies
+            if not task.depsAdded then
+                task.depsAdded = true
 
-function Worker:checkCount()
-    if self._shouldReset then
-        self._loadedCount[0] = 0
-        self._loadedCount[1] = 0
-        self._taskCount = 0
+                for dep in pairs(task.deps) do
+                    cache(task.screen, dep)
+                end
+            end
+
+            -- Check how many dependencies haave successfully loaded
+            local ready = true
+            for dependency in pairs(task.deps) do
+                local item = cache(task.screen, dep, true)
+
+                local status = not item and 'failed' or item.__wk_status
+                if status == 'failed' then
+                    task.stagePtr[0] = 0
+                    break
+                elseif status ~= 'ready' then
+                    ready = false
+                    break
+                end
+            end
+
+            if task.stagePtr[0] == 0 then
+                -- Failed
+                task.obj.__wk_status = 'failed'
+                loadingTasks[i] = nil
+                failedTasks = failedTasks + 1
+                finishedTasks = finishedTasks + 1
+            elseif task.stagePtr[0] ~= task.lastStage and ready then
+                -- If the stage number has changed between last time and now
+                local stage = task.stagePtr[0]
+                task.lastStage = stage
+
+                if stage > #task.funcs then
+                    -- Task is done, remove it froom ongoing tasks
+                    task.obj.__wk_status = 'ready'
+                    loadingTasks[i] = nil
+                    finishedTasks = finishedTasks + 1
+
+                    -- Remove temporary depndencies
+                    for dep, temporary in pairs(task.deps) do
+                        if temporary then
+                            if task.screen then
+                                task.screen:uncache(dep)
+                            else
+                                Cache.release(dep)
+                            end
+                        end
+                    end
+                else
+                    local func = task.funcs[stage]
+                    local deps = {}
+                    if func.deps and #func.deps > 0 then
+                        for i, dep in ipairs(func.deps) do
+                            deps[#deps+1] = cache(task.screen, dep, true)
+                        end
+                    end
+
+                    -- TODO: Re-implement gpu-multithreading (on non-android devices)
+                    if func.threaded and func.threaded ~= 'gpu' then
+                        Thread:new(
+                            loadFunc, task.stagePtr, func.proc, task.obj, task.name,
+                            deps, func.params
+                        ):detach()
+                    else
+                        loadFunc(
+                            task.stagePtr, func.proc, task.obj, task.name,
+                            deps, func.params
+                        )
+                    end
+                end
+            end
+        end
     end
+
+    return Worker.progress()
 end
+
+Worker.registerType('image', function(filename)
+    return {
+        obj = require('graphics.image'):new(),
+        funcs = {
+            {
+                proc = function(image, filename)
+                    image:load(filename)
+                end,
+                threaded = true
+            }
+        }
+    }
+end)
+
+Worker.registerType('vectorfont', function(filename)
+    return {
+        obj = require('graphics.vectorfont'):new(),
+        funcs = {
+            {
+                proc = function(font, filename)
+                    font:open(filename)
+                end,
+                threaded = false
+            }
+        }
+    }
+end)
 
 return Worker

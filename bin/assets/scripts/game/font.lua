@@ -25,23 +25,21 @@
  For more information, please refer to <http://unlicense.org>
  --]]
 
-local VectorFont = require 'graphics.vectorfont'
 local FontStack  = require 'graphics.fontstack'
-local Log        = require 'util.log'
-local GameCache  = require 'game.cache'
+local VectorFont = require 'graphics.vectorfont'
+local Cache  = require 'game.cache'
 
 local stack = FontStack:new()
 
 local fonts = {
-    'assets/fonts/01-Asap-Regular.otf',
-    'assets/fonts/02-mplus-1c-regular.ttf',
-    'assets/fonts/03-koodak.ttf'
+    'vectorfont:assets/fonts/01-Asap-Regular.otf',
+    'vectorfont:assets/fonts/02-mplus-1c-regular.ttf',
+    'vectorfont:assets/fonts/03-koodak.ttf'
 }
 
 for i, v in ipairs(fonts) do
-    stack:addFont(
-        GameCache.get(v, function() return VectorFont:new(v) end, true)
-    )
+    local font = Cache.get(v)
+    stack:addFont(font)
 end
 
 return stack

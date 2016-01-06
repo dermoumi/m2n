@@ -26,7 +26,6 @@
 */
 
 #include "fontstack.hpp"
-#include "../system/log.hpp"
 
 void FontStack::addFont(const Font& font, bool prepend)
 {

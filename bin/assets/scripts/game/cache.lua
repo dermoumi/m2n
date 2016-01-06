@@ -25,39 +25,44 @@
     For more information, please refer to <http://unlicense.org>
 --]]
 
-local Cache = {}
 
 local Log = require 'util.log'
+local Worker = require 'game.worker'
 
+local Cache = {}
 local items = {}
 
-function Cache.get(id, loadFunc, addCount)
+function Cache.get(screen, id, peek)
+    if type(screen) == 'string' then
+        screen, id, peek = nil, screen, id
+    end
+
     local item = items[id]
 
     -- If item does not exist, try to load it using loadFunc
     if not item then
-        -- If no load func, abandon
-        if not loadFunc then
-            return nil, 'Invalid loading function'
-        end
+        items[id] = item
+        local obj, reusable = Worker.addLoadingTask(screen, id)
+        if reusable then
+            Log.info('Adding to global cache: ' .. id)
+            item = {
+                count = 0,
+                obj = obj
+            }
 
-        -- Try to load the object
-        local newObj, err = loadFunc()
-        if not newObj then
-            return nil, err or 'An error occurred while loading "' .. id .. '"'
+            items[id] = item
+        else
+            return obj, false
         end
-
-        -- Add the new object to the cache
-        item = Cache.add(id, newObj)
     end
 
     -- If requested, increment the load count of the item
-    if addCount then
-        item.loadCount = item.loadCount + 1
+    if not peek then
+        item.count = item.count + 1
     end
 
     -- Return the item's object
-    return item.obj
+    return item.obj, true
 end
 
 function Cache.release(id)
@@ -65,29 +70,17 @@ function Cache.release(id)
     if not item then return end
 
     -- Decrement load count
-    item.loadCount = item.loadCount - 1
+    item.count = item.count - 1
 
     -- If load count reaches zero, remove item from list
-    if item.loadCount <= 0 then
-        Log.info('Removing from cache: ' .. id)
+    if item.count <= 0 then
+        Log.info('Removing from global cache: ' .. id)
 
         items[id] = nil
 
         -- If object can be released, do that
         if item.obj.release then item.obj:release() end
     end
-end
-
-function Cache.add(id, newObj)
-    Log.info('Adding to cache: ' .. id)
-
-    local item = {
-        loadCount = 0,
-        obj = newObj
-    }
-
-    items[id] = item
-    return item
 end
 
 return Cache

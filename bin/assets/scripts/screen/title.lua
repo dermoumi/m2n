@@ -47,14 +47,16 @@ function ScreenTitle:initialize(firstRun)
         })
     end
 
-    self:worker():addFile('graphics.image', 'assets/pasrien.png')
-    self:worker():addFile('graphics.image', 'assets/cursor.png')
-    self:worker():addFile('audio.source', 'assets/test.wav')
+    self.image = self:cache('image:assets/pasrien.png')
 
-    self.musicSource = require('audio.source'):new()
-    self:worker():addTask(function(music)
-        music:open('assets/undersodiumbulb.ogg')
-    end, self.musicSource)
+    -- self:worker():addFile('graphics.image', 'assets/pasrien.png')
+    -- self:worker():addFile('graphics.image', 'assets/cursor.png')
+    -- self:worker():addFile('audio.source', 'assets/test.wav')
+
+    -- self.musicSource = require('audio.source'):new()
+    -- self:worker():addTask(function(music)
+    --     music:open('assets/undersodiumbulb.ogg')
+    -- end, self.musicSource)
 end
 
 function ScreenTitle:entered()
@@ -64,30 +66,30 @@ function ScreenTitle:entered()
         :setColor(255, 128, 0)
 
     self.sprite = require('graphics.sprite')
-        :new(self:cache('assets/pasrien.png'))
+        :new(self.image)
         :setPosition(100, 100)
-        :attach('text', self.text)
+        -- :attach('text', self.text)
 
-    self.voiceGroup = require('audio.voicegroup'):new()
-    self.echoFilter = require('audio.echofilter'):new()
-        :setParams(.5, .5)
+    -- self.voiceGroup = require('audio.voicegroup'):new()
+    -- self.echoFilter = require('audio.echofilter'):new()
+    --     :setParams(.5, .5)
 
-    self.voiceGroup = require('audio.voicegroup'):new()
+    -- self.voiceGroup = require('audio.voicegroup'):new()
 
-    self.audiobus = require('audio.bus'):new()
-        -- :setFilter(self.echoFilter)
-    self.audiobus:play()
+    -- self.audiobus = require('audio.bus'):new()
+    --     -- :setFilter(self.echoFilter)
+    -- self.audiobus:play()
 
-    self.soundSource = self:cache('assets/test.wav')
-        :setLooping(true)
-    self.voiceGroup:add(self.soundSource:playThrough(self.audiobus, -1, 0, true))
+    -- self.soundSource = self:cache('assets/test.wav')
+    --     :setLooping(true)
+    -- self.voiceGroup:add(self.soundSource:playThrough(self.audiobus, -1, 0, true))
 
-    self.musicSource:setVolume(.1)
-    self.voiceGroup:add(self.musicSource:playThrough(self.audiobus, -1, 0, true))
+    -- self.musicSource:setVolume(.1)
+    -- self.voiceGroup:add(self.musicSource:playThrough(self.audiobus, -1, 0, true))
 
-    self.voiceGroup:pause(false)
+    -- self.voiceGroup:pause(false)
 
-    Mouse.setCursor(self:cache('assets/cursor.png'), 4, 4)
+    -- Mouse.setCursor(self:cache('assets/cursor.png'), 4, 4)
 end
 
 function ScreenTitle:update(dt)
@@ -128,7 +130,7 @@ function ScreenTitle:keydown(scancode, keyCode, repeated)
 end
 
 function ScreenTitle:left()
-    self.audiobus:stop()
+    -- self.audiobus:stop()
 end
 
 return ScreenTitle

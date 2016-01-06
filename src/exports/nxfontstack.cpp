@@ -28,7 +28,7 @@
 #include "../config.hpp"
 #include "../graphics/fontstack.hpp"
 
-using NxFont      = Font;
+using NxFont = Font;
 
 NX_EXPORT NxFont* nxFontStackNew()
 {

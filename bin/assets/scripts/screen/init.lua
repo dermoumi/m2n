@@ -40,7 +40,7 @@ local function addScreen(screen, ...)
         screen = require(screen):new(...)
 
         -- Check if this screen's worker contains any item that need preloading
-        if screen.__worker and screen.__worker:taskCount() > 0 then
+        if Worker.hasTasks() and screen.class.name ~= 'screen._load' then
             -- Start preloading
             Screen.push('screen._load', screen)
             return
@@ -165,11 +165,6 @@ function Screen:__onEvent(e, a, b, c, d)
     return true
 end
 
-function Screen:worker()
-    if not self.__worker then self.__worker = Worker:new() end
-    return self.__worker
-end
-
 function Screen:setPreloadParams(table)
     self.__preloadParams = table
 end
@@ -239,7 +234,7 @@ function Screen:isClosing()
     return self:isTransitioning() and not self.__opening
 end
 
-function Screen:cache(id, loaderFunc)
+function Screen:cache(id, peek)
     -- Make local cache table if there isn't any
     self.__cache = self.__cache or {}
 
@@ -247,18 +242,24 @@ function Screen:cache(id, loaderFunc)
     local item = self.__cache[id]
     if not item then
         -- Not found, attempt to load it from game cache
-        obj, err = Cache.get(id, loaderFunc, true)
-        if not obj then return nil, err end
+        obj, reusable = Cache.get(self, id, peek)
 
-        item = {
-            obj = obj,
-            count = 1
-        }
-        self.__cache[id] = item
+        if reusable then
+            item = {
+                obj = obj,
+                count = 1
+            }
+            self.__cache[id] = item
+        else
+            return obj, false
+        end
     end
 
-    item.count = item.count + 1
-    return item.obj
+    if not peek then
+        item.count = item.count + 1
+    end
+
+    return item.obj, true
 end
 
 function Screen:uncache(id)
