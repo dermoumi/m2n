@@ -27,7 +27,6 @@
 
 local class    = require 'class'
 local Cache    = require 'game.cache'
-local Worker   = require 'game.worker'
 local Camera2D = require 'graphics.camera2d'
 
 local Screen = class 'screen'
@@ -39,8 +38,8 @@ local function addScreen(screen, ...)
     if type(screen) == 'string' then
         screen = require(screen):new(...)
 
-        -- Check if this screen's worker contains any item that need preloading
-        if Worker.hasTasks() and screen.class.name ~= 'screen._load' then
+        -- Check if the cache contains any item that need preloading
+        if Cache.hasTasks() and screen.class.name ~= 'screen._load' then
             -- Start preloading
             Screen.push('screen._load', screen)
             return

@@ -26,11 +26,166 @@
 --]]
 
 
+local ffi    = require 'ffi'
 local Log = require 'util.log'
-local Worker = require 'game.worker'
+local Thread = require 'system.thread'
 
 local Cache = {}
 local items = {}
+
+local registeredTypes = {}
+local totalTasks, finishedTasks, failedTasks = 0, 0, 0
+local loadingTasks = {}
+
+local function loadFunc(stagePtr, proc, obj, name, deps, params)
+    if proc(obj, name, unpack(deps), params and unpack(params)) then
+        stagePtr[0] = stagePtr + 1
+    else
+        stagePtr[0] = 0
+    end
+end
+
+local function addLoadingTask(screen, id)
+    -- Check if task already exists
+    for i, task in pairs(loadingTasks) do
+        if task.id == id then
+            return task.obj, task.reusable
+        end
+    end
+
+    -- Does not exists, add it the task list
+    local type = id:match('[^:]+')
+
+    local factoryFunc = registeredTypes[type]
+    if not factoryFunc then
+        error('Attempting to load object of unregistered type "' .. type .. '"')
+    end
+
+    local name = id:sub(#type+2)
+    local task = factoryFunc(name)
+    task.id = id
+    task.stagePtr = ffi.new('uint32_t[1]', 1)
+    task.lastStage = 0
+    task.screen = screen
+    task.depsAdded = false
+    task.deps = task.deps or {}
+    task.name = task.name or name
+    task.reusable = task.reusable == nil or task.reusable
+
+    loadingTasks[table.maxn(loadingTasks)+1] = task
+    return task.obj, task.reusable
+end
+
+function Cache.registerType(type, factoryFunc)
+    registeredTypes[type] = factoryFunc
+end
+
+function Cache.prepare()
+    totalTasks, finishedTasks, failedTasks = 0, 0, 0
+    for i in pairs(loadingTasks) do
+        totalTasks = totalTasks + 1
+    end
+end
+
+function Cache.progress()
+    return totalTasks, finishedTasks, failedTasks
+end
+
+function Cache.hasTasks()
+    for i in pairs(loadingTasks) do
+        return true
+    end
+    return false
+end
+
+function Cache.iteration()
+    -- Reverse iterate because the latter are less likely to be waiting
+    -- for dependencies to load
+    for i = table.maxn(loadingTasks), 1, -1 do
+        local task = loadingTasks[i]
+        if task then
+            -- Cache func
+            local cache = task.screen and task.screen.cache or Cache.get
+
+            -- Add dependencies
+            if not task.depsAdded then
+                task.depsAdded = true
+
+                for dep in pairs(task.deps) do
+                    cache(task.screen, dep)
+                end
+            end
+
+            -- Check how many dependencies haave successfully loaded
+            local ready = true
+            for dependency in pairs(task.deps) do
+                local item = cache(task.screen, dep, true)
+
+                local status = not item and 'failed' or item.__wk_status
+                if status == 'failed' then
+                    task.stagePtr[0] = 0
+                    break
+                elseif status ~= 'ready' then
+                    ready = false
+                    break
+                end
+            end
+
+            if task.stagePtr[0] == 0 then
+                -- Failed
+                task.obj.__wk_status = 'failed'
+                loadingTasks[i] = nil
+                failedTasks = failedTasks + 1
+                finishedTasks = finishedTasks + 1
+            elseif task.stagePtr[0] ~= task.lastStage and ready then
+                -- If the stage number has changed between last time and now
+                local stage = task.stagePtr[0]
+                task.lastStage = stage
+
+                if stage > #task.funcs then
+                    -- Task is done, remove it froom ongoing tasks
+                    task.obj.__wk_status = 'ready'
+                    loadingTasks[i] = nil
+                    finishedTasks = finishedTasks + 1
+
+                    -- Remove temporary depndencies
+                    for dep, temporary in pairs(task.deps) do
+                        if temporary then
+                            if task.screen then
+                                task.screen:uncache(dep)
+                            else
+                                Cache.release(dep)
+                            end
+                        end
+                    end
+                else
+                    local func = task.funcs[stage]
+                    local deps = {}
+                    if func.deps and #func.deps > 0 then
+                        for i, dep in ipairs(func.deps) do
+                            deps[#deps+1] = cache(task.screen, dep, true)
+                        end
+                    end
+
+                    -- TODO: Re-implement gpu-multithreading (on non-android devices)
+                    if func.threaded and func.threaded ~= 'gpu' then
+                        Thread:new(
+                            loadFunc, task.stagePtr, func.proc, task.obj, task.name,
+                            deps, func.params
+                        ):detach()
+                    else
+                        loadFunc(
+                            task.stagePtr, func.proc, task.obj, task.name,
+                            deps, func.params
+                        )
+                    end
+                end
+            end
+        end
+    end
+
+    return Cache.progress()
+end
 
 function Cache.get(screen, id, peek)
     if type(screen) == 'string' then
@@ -42,7 +197,7 @@ function Cache.get(screen, id, peek)
     -- If item does not exist, try to load it using loadFunc
     if not item then
         items[id] = item
-        local obj, reusable = Worker.addLoadingTask(screen, id)
+        local obj, reusable = addLoadingTask(screen, id)
         if reusable then
             Log.info('Adding to global cache: ' .. id)
             item = {

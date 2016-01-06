@@ -25,8 +25,9 @@
     For more information, please refer to <http://unlicense.org>
 --]]
 
-local Config   = require 'config'
 local class    = require 'class'
+local Config   = require 'config'
+local Log      = require 'util.log'
 local Graphics = require 'graphics'
 local Image    = require 'graphics.image'
 

@@ -27,7 +27,7 @@
 
 local Text     = require 'graphics.text'
 local GameFont = require 'game.font'
-local Worker   = require 'game.worker'
+local Cache    = require 'game.cache'
 local Screen   = require 'screen'
 
 local ScreenLoad = Screen:subclass('screen._load')
@@ -61,7 +61,7 @@ function ScreenLoad:initialize(screen)
 end
 
 function ScreenLoad:entered()
-    Worker.prepare()
+    Cache.prepare()
 
     self.currentPercent = 0
 
@@ -71,7 +71,10 @@ function ScreenLoad:entered()
         :setSize(20)
         :setColor(self.messageColR, self.messageColG, self.messageColB, self.messageColA)
 
-    if self:check() then return end
+    if self:check() then
+        print('done?')
+        return
+    end
 
     local lastScreen = Screen.lastScreen()
     self.opaque = not lastSCene or lastScreen:isLoading() or lastScreen:isTransitioning()
@@ -80,7 +83,7 @@ function ScreenLoad:entered()
 end
 
 function ScreenLoad:update(dt)
-    Worker.iteration()
+    Cache.iteration()
 
     -- Calculate fading percent if there's any ongoing fading
     if self:isOpening() then
@@ -121,7 +124,7 @@ function ScreenLoad:transitionColor()
 end
 
 function ScreenLoad:check()
-    local total, loaded, failed = Worker.progress()
+    local total, loaded, failed = Cache.progress()
 
     local percent = total ~= 0 and math.floor(100 * loaded / total + 0.5) or 100
     if self.currentPercent <= percent then

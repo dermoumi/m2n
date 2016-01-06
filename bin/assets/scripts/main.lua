@@ -78,6 +78,35 @@ if not noFpsLimit then
     Window.setFramerateLimit(fpsLimit)
 end
 
+local Cache = require 'game.cache'
+Cache.registerType('image', function(filename)
+    return {
+        obj = require('graphics.image'):new(),
+        funcs = {
+            {
+                proc = function(image, filename)
+                    image:load(filename)
+                end,
+                threaded = false
+            }
+        }
+    }
+end)
+
+Cache.registerType('vectorfont', function(filename)
+    return {
+        obj = require('graphics.vectorfont'):new(),
+        funcs = {
+            {
+                proc = function(font, filename)
+                    font:open(filename)
+                end,
+                threaded = false
+            }
+        }
+    }
+end)
+
 -- Startup screen
 Screen.goTo('screen.title', true)
 
