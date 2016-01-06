@@ -29,6 +29,7 @@
 local ffi    = require 'ffi'
 local Log    = require 'util.log'
 local Thread = require 'system.thread'
+local LuaVM  = require 'system.luavm'
 local class  = require 'class'
 
 local Cache = {}
@@ -50,7 +51,9 @@ function Task:initialize(id, name, objClass, screen)
     self.name = name
     self.reusable = true
     self.deps = {}
+    self.newDeps = {}
     self.tasks = {}
+    self.vm = LuaVM:new()
 end
 
 function Task:addTask(threaded, func, deps)
@@ -60,8 +63,7 @@ function Task:addTask(threaded, func, deps)
 
     self.tasks[#self.tasks+1] = {
         func = func,
-        threaded = threaded,
-        deps = deps
+        threaded = threaded
     }
 
     return self
@@ -73,19 +75,21 @@ function Task:setReusable(reusable)
 end
 
 function Task:addDependency(id, temporary)
+    if id:match('^#.') then
+        temporary = true
+        id = id.sub(2)
+    end
+
     self.deps[id] = not not temporary
     return self
 end
 
-local function loadFunc(stagePtr, proc, obj, name, deps, params)
-    -- If there are no dependencies, move params to theirs slots instead
-    if #deps == 0 then
-        deps, params = params, {}
-    end
-
-    if proc(obj, name, unpack(deps)) == false then
+local function loadFunc(stagePtr, vm, proc, obj, name, params)
+    local retVals = {proc(obj, name, unpack(params))}
+    if retVals[0] == false then
         stagePtr[0] = 0
     else
+        vm:push(unpack(retVals))
         stagePtr[0] = stagePtr[0] + 1
     end
 end
@@ -158,16 +162,21 @@ function Cache.iteration()
                 end
             end
 
-            -- Check how many dependencies haave successfully loaded
+            -- Add dependencies that are added during a subTask
+            for dep, temporary in pairs(task.newDeps) do
+                cache(task.screen, dep)
+                task.deps[dep] = temporary
+            end
+
+            -- Check how many dependencies have successfully loaded
             local ready = true
             for dependency in pairs(task.deps) do
                 local item = cache(task.screen, dependency, true)
 
-                local status = not item and 'failed' or item.__wk_status
-                if status == 'failed' then
+                if not item or item.__wk_status == 'failed' then
                     task.stagePtr[0] = 0
                     break
-                elseif status ~= 'ready' then
+                elseif item.__wk_status ~= 'ready' then
                     ready = false
                     break
                 end
@@ -185,7 +194,7 @@ function Cache.iteration()
                 task.lastStage = stage
 
                 if stage > #task.tasks then
-                    -- Task is done, remove it froom ongoing tasks
+                    -- Task is done, remove it from ongoing tasks
                     task.obj.__wk_status = 'ready'
                     loadingTasks[i] = nil
                     finishedTasks = finishedTasks + 1
@@ -204,25 +213,57 @@ function Cache.iteration()
                     end
                 else
                     local subTask = task.tasks[stage]
-                    local deps = {}
-                    if subTask.deps and #subTask.deps > 0 then
-                        for i, dep in ipairs(subTask.deps) do
-                            deps[#deps+1] = cache(task.screen, dep, true)
+                    local params = {}
+                    local depsChanged = false
+
+                    if stage == 1 then
+                        -- First entry, add tasks params to vm
+                        for entry in pairs(task.deps) do
+                            params[#params+1] = cache(task.screen, entry, true)
+                        end
+                    elseif subTask.entries then
+                        for i, entry in ipairs(subTask.entries) do
+                            if type(entry) == 'string' and entry:match('.:.') then
+                                params[#params+1] = cache(task.screen, entry, true)
+                            elseif not depsChanged then
+                                params[#params+1] = entry
+                            end
+                        end
+                    else
+                        -- Pop IDs from the vm and repopulate it with instances
+                        subTask.entries = {task.vm:pop(task.vm:top(), true)}
+                        for i, entry in ipairs(subTask.entries) do
+                            if type(entry) == 'string' and entry:match('.:.') then
+                                depsChanged = true
+                                local temporary = false
+                                if entry:match('^#.') then
+                                    temporary = true
+                                    entry = entry:sub(2)
+                                end
+                                if not task.deps[entry] then
+                                    task.newDeps[entry] = temporary
+                                end
+                            elseif not depsChanged then
+                                params[#params+1] = entry
+                            end
                         end
                     end
-                    subTask.params = subTask.params or {}
 
-                    -- TODO: Re-implement gpu-multithreading (on non-android devices)
-                    if subTask.threaded and subTask.threaded ~= 'gpu' then
-                        Thread:new(
-                            loadFunc, task.stagePtr, subTask.func, task.obj, task.name,
-                            deps, subTask.params
-                        ):detach()
+                    if not depsChanged then
+                        -- TODO: Re-implement gpu-multithreading (on non-android devices)
+                        if subTask.threaded and subTask.threaded ~= 'gpu' then
+                            Thread:new(
+                                loadFunc, task.stagePtr, task.vm, subTask.func,
+                                task.obj, task.name, params
+                            ):detach()
+                        else
+                            loadFunc(
+                                task.stagePtr, task.vm, subTask.func,
+                                task.obj, task.name, params
+                            )
+                        end
                     else
-                        loadFunc(
-                            task.stagePtr, subTask.func, task.obj, task.name,
-                            deps, subTask.params
-                        )
+                        task.lastStage = 0
                     end
                 end
             end

@@ -41,21 +41,20 @@ ffi.cdef [[
 ]]
 
 function FontStack.static.factory(task, filename)
-    local fonts = loadfile(filename)
-    if fonts then 
-        fonts = fonts()
-        for i, font in ipairs(fonts) do
-            task:addDependency(font)
-        end
+    task:addTask(true, function(fontStack, filename)
+            local fonts = loadfile(filename)
+            if not fonts then return false end
 
-        task:addTask(function(fontStack, filename, ...)
-                for i, font in ipairs({...}) do
-                    fontStack:addFont(font)
-                end
-            end, fonts)
-    else
-        task:addTask(function() return false end)
-    end
+            fonts = fonts()
+            if type(fonts) ~= 'table' then return false end
+
+            return unpack(fonts)
+        end)
+        :addTask(function(fontStack, filename, ...)
+            for i, font in ipairs({...}) do
+                fontStack:addFont(font)
+            end
+        end)
 end
 
 function FontStack:initialize()

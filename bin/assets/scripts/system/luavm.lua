@@ -287,7 +287,7 @@ function LuaVM:isOpen()
     return self._cdata ~= nil
 end
 
-function LuaVM:getTop()
+function LuaVM:top()
     if self._cdata == nil then return 0 end
 
     return C.lua_gettop(self._cdata) - 1
