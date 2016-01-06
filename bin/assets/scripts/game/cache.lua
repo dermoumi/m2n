@@ -28,6 +28,7 @@
 
 local ffi    = require 'ffi'
 local Log    = require 'util.log'
+local Config = require 'config'
 local Thread = require 'system.thread'
 local LuaVM  = require 'system.luavm'
 local class  = require 'class'
@@ -78,7 +79,7 @@ end
 function Task:addParam(...)
     local params = {...}
     local count, paramCount = table.maxn(params), table.maxn(self.params)
-    
+
     for i = 1, count do
         local param = params[i]
         if type(param) == 'string' and param:match('.:.') then
@@ -105,7 +106,9 @@ function Task:addDependency(id, temporary)
     return self
 end
 
-local function loadFunc(stagePtr, vm, proc, obj, name, params)
+local function loadFunc(stagePtr, vm, gpu, proc, obj, name, params)
+    if gpu then require('window').ensureContext() end
+
     local retVals = {proc(obj, name, unpack(params))}
     if retVals[0] == false then
         stagePtr[0] = 0
@@ -268,15 +271,16 @@ function Cache.iteration()
 
                     if not depsChanged then
                         -- TODO: Re-implement gpu-multithreading (on non-android devices)
-                        if subTask.threaded and subTask.threaded ~= 'gpu' then
+                        local gpu = subTask.threaded == 'gpu' and not Config.noGpuMultithreading
+                        if subTask.threaded == true or gpu then
                             Thread:new(
-                                loadFunc, task.stagePtr, task.vm, subTask.func,
-                                task.obj, task.name, params
+                                loadFunc, task.stagePtr, task.vm, gpu,
+                                subTask.func, task.obj, task.name, params
                             ):detach()
                         else
                             loadFunc(
-                                task.stagePtr, task.vm, subTask.func,
-                                task.obj, task.name, params
+                                task.stagePtr, task.vm, false,
+                                subTask.func, task.obj, task.name, params
                             )
                         end
                     else

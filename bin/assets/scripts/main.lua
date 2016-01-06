@@ -47,6 +47,9 @@ local Window   = require 'window'
 local Audio    = require 'audio'
 local Screen   = require 'screen'
 
+local Config   = require 'config'
+Config.noGpuMultithreading = System.platform('android')
+
 -- Load settings (in VM sandbox)
 local vm = LuaVM:new()
 local argsCount = vm:pcall(function()

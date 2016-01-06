@@ -33,5 +33,8 @@ return {
     multisamplingLevel = 0,
 
     -- Default texture format for new textures
-    textureFormat = 'rgba8'
+    textureFormat = 'rgba8',
+
+    -- True to allow multi-threading on the GPU
+    noGpuMultithreading = false
 }

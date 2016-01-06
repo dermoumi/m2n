@@ -170,6 +170,8 @@ function Texture.static.bind(texture, slot)
 end
 
 function Texture:initialize(texType, width, height, depth, hasMips, mipMap)
+    self._cdata = ffi.gc(C.nxTextureNew(), C.nxTextureRelease)
+
     if texType and width and height then
         self:create(texType, width, height, depth, hasMips, mipMap)
     end
@@ -183,35 +185,27 @@ function Texture:release()
 end
 
 function Texture:create(texType, width, height, depth, hasMips, mipMap)
-    self:release()
-
     if hasMips == nil then hasMips = true end
     if mipMap == nil  then mipMap = true end
     depth = depth or 1
 
     texType = toTextureType[texType]
     if texType then
-        local handle = C.nxTextureNew()
         local status = C.nxTextureCreate(
-            handle, texType, toTextureFormat[Config.textureFormat] or 1, width, height, depth,
+            self._cdata, texType, toTextureFormat[Config.textureFormat] or 1, width, height, depth,
             hasMips, mipMap, Graphics.getCapabilities('sRGBTexturesSupported')
         )
 
         if status == 1 then
             Log.warning('Cannot create texture: invalid texture size')
-            C.nxTextureRelease(handle)
         elseif status == 2 then
             local max = Graphics.getCapabilities('maxTexSize')
             Log.warning(
                 ('Cannot create texture: internal texture size is too high (%ux%ux%u).'
                  .. ' Maximum is %ux%ux%u'):format(width, height, depth, max, max, max)
             )
-            C.nxTextureRelease(handle)
         elseif status == 3 then
-            Log.warning('Cannot create texture')
-            C.nxTextureRelease(handle)
-        else
-            self._cdata = ffi.gc(handle, C.nxTextureRelease)
+            Log.error('Cannot create texture')
         end
     else
         Log.warning('Invalid texture type')

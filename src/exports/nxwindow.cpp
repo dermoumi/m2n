@@ -34,11 +34,14 @@
 #include <SDL2/SDL.h>
 #include <vector>
 #include <algorithm>
+#include <atomic>
 
 using NxWindow = SDL_Window;
 
-static NxWindow* window {nullptr};
-static SDL_GLContext context;
+static std::atomic<SDL_GLContext> sharedContext;
+
+static std::atomic<NxWindow*> window {nullptr};
+thread_local SDL_GLContext context {nullptr};
 static Image icon;
 
 NX_EXPORT NxWindow* nxWindowGet()
@@ -51,6 +54,7 @@ NX_EXPORT void nxWindowClose()
     if (!window) return;
 
     SDL_GL_DeleteContext(context);
+    SDL_GL_DeleteContext(sharedContext);
     SDL_DestroyWindow(window);
     window = nullptr;
 }
@@ -124,6 +128,7 @@ NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, int
         window = SDL_CreateWindow(title, posX, posY, width, height, flags);
         if (!window) return nullptr;
 
+        sharedContext = SDL_GL_CreateContext(window);
         context = SDL_GL_CreateContext(window);
         if (!context) {
             SDL_DestroyWindow(window);
@@ -168,6 +173,14 @@ NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, int
     }
 
     return window;
+}
+
+NX_EXPORT void nxWindowEnsureContext()
+{
+    if (!context) {
+        SDL_GL_MakeCurrent(window, sharedContext);
+        context = SDL_GL_CreateContext(window);
+    }
 }
 
 NX_EXPORT void nxWindowDisplay()
@@ -338,7 +351,7 @@ NX_EXPORT void nxWindowSetTitle(const char* title)
 NX_EXPORT void nxWindowSimpleMessageBox(const char* title, const char* message, uint32_t type,
     bool attach)
 {
-    SDL_ShowSimpleMessageBox(type, title, message, attach ? window : nullptr);
+    SDL_ShowSimpleMessageBox(type, title, message, attach ? window.load() : nullptr);
 }
 
 NX_EXPORT int nxWindowMessageBox(const char* title, const char* message, const char** entries,
@@ -361,7 +374,7 @@ NX_EXPORT int nxWindowMessageBox(const char* title, const char* message, const c
 
     const SDL_MessageBoxData messageboxdata {
         type,
-        attach ? window : nullptr,
+        attach ? window.load() : nullptr,
         title,
         message,
         static_cast<int>(count),
