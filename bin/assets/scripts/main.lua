@@ -122,9 +122,9 @@ while Window.isOpen() do
     screen:__render()
     Graphics.finish()
 
-    ::continue::
     Window.display()
 
+    ::continue::
     if screen ~= Screen.currentScreen() then
         Window.resetFrameTime()
     end
