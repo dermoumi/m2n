@@ -59,6 +59,19 @@ local function isCArray(a)
     return type(a) == 'cdata' or type(a) == 'userdata'
 end
 
+function Image.static.factory(filename)
+    return {
+        funcs = {
+            {
+                proc = function(image, filename)
+                    image:load(filename)
+                end,
+                threaded = false
+            }
+        }
+    }
+end
+
 function Image:initialize(a, b, c, d, e, f)
     local handle = C.nxImageNew()
     self._cdata  = ffi.gc(handle, C.nxImageRelease)

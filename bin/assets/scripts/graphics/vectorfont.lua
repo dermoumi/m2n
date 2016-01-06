@@ -41,6 +41,19 @@ ffi.cdef [[
     const char* nxVectorFontFamilyName(const NxFont*);
 ]]
 
+function VectorFont.static.factory(filename)
+    return {
+        funcs = {
+            {
+                proc = function(font, filename)
+                    font:open(filename)
+                end,
+                threaded = false
+            }
+        }
+    }
+end
+
 function VectorFont:initialize(a, b)
     local handle = C.nxVectorFontNew()
     self._cdata = ffi.gc(handle, C.nxFontRelease)

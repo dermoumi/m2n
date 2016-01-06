@@ -56,14 +56,15 @@ local function addLoadingTask(screen, id)
     -- Does not exists, add it the task list
     local type = id:match('[^:]+')
 
-    local factoryFunc = registeredTypes[type]
-    if not factoryFunc then
+    local objClass = registeredTypes[type]
+    if not objClass then
         error('Attempting to load object of unregistered type "' .. type .. '"')
     end
 
     local name = id:sub(#type+2)
-    local task = factoryFunc(name)
+    local task = objClass.factory(name)
     task.id = id
+    task.obj = task.obj or objClass:new()
     task.stagePtr = ffi.new('uint32_t[1]', 1)
     task.lastStage = 0
     task.screen = screen
@@ -76,8 +77,12 @@ local function addLoadingTask(screen, id)
     return task.obj, task.reusable
 end
 
-function Cache.registerType(type, factoryFunc)
-    registeredTypes[type] = factoryFunc
+function Cache.registerType(objType, objClass)
+    if type(objClass) == 'string' then
+        objClass = require(objClass)
+    end
+    registeredTypes[objType] = objClass
+    return Cache
 end
 
 function Cache.prepare()
