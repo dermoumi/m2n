@@ -49,6 +49,8 @@ function ScreenTitle:initialize(firstRun)
     end
 
     self.texture = self:cache('tex2d:assets/pasrien.png')
+    self.soundSource = self:cache('sound:assets/test.wav')
+    self.musicSource = self:cache('music:assets/undersodiumbulb.ogg')
 
     -- self:worker():addFile('graphics.image', 'assets/pasrien.png')
     -- self:worker():addFile('graphics.image', 'assets/cursor.png')
@@ -71,24 +73,23 @@ function ScreenTitle:entered()
         :setPosition(100, 100)
         -- :attach('text', self.text)
 
-    -- self.voiceGroup = require('audio.voicegroup'):new()
-    -- self.echoFilter = require('audio.echofilter'):new()
-    --     :setParams(.5, .5)
+    self.voiceGroup = require('audio.voicegroup'):new()
+    self.echoFilter = require('audio.echofilter'):new()
+        :setParams(.5, .5)
 
-    -- self.voiceGroup = require('audio.voicegroup'):new()
+    self.voiceGroup = require('audio.voicegroup'):new()
 
-    -- self.audiobus = require('audio.bus'):new()
-    --     -- :setFilter(self.echoFilter)
-    -- self.audiobus:play()
+    self.audiobus = require('audio.bus'):new()
+        -- :setFilter(self.echoFilter)
+    self.audiobus:play()
 
-    -- self.soundSource = self:cache('assets/test.wav')
-    --     :setLooping(true)
-    -- self.voiceGroup:add(self.soundSource:playThrough(self.audiobus, -1, 0, true))
+    self.soundSource:setLooping(true)
+    self.voiceGroup:add(self.soundSource:playThrough(self.audiobus, -1, 0, true))
 
-    -- self.musicSource:setVolume(.1)
-    -- self.voiceGroup:add(self.musicSource:playThrough(self.audiobus, -1, 0, true))
+    self.musicSource:setVolume(.1)
+    self.voiceGroup:add(self.musicSource:playThrough(self.audiobus, -1, 0, true))
 
-    -- self.voiceGroup:pause(false)
+    self.voiceGroup:pause(false)
 
     -- Mouse.setCursor(self:cache('assets/cursor.png'), 4, 4)
 end
@@ -122,6 +123,8 @@ function ScreenTitle:keydown(scancode, keyCode, repeated)
         end
     elseif scancode == '\\' then
         self:performTransition(Screen.goTo, 'screen.title')
+    elseif scancode == 'p' then
+        self:performTransition(Screen.push, 'screen.title')
     elseif scancode == 'return' then
         print(Window.showMessageBox('test', 'helloworld!', {
             'ok',

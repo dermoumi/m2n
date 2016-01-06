@@ -84,6 +84,8 @@ require('game.cache')
     .registerType('vectorfont', 'graphics.vectorfont')
     .registerType('fontstack', 'graphics.fontstack')
     .registerType('tex2d', 'graphics.texture2d')
+    .registerType('music', 'audio.source')
+    .registerType('sound', 'audio.source')
 
 -- Startup screen
 Screen.goTo('screen.title', true)

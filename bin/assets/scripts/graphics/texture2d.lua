@@ -30,7 +30,7 @@ local Texture = require 'graphics.texture'
 
 local Texture2D = Texture:subclass('graphics.texture2d')
 
-function Texture2D.static.factory(filename, type)
+function Texture2D.static.factory(filename)
     local depImage = 'image:' .. filename
     return {
         deps = {

@@ -38,7 +38,12 @@ local totalTasks, finishedTasks, failedTasks = 0, 0, 0
 local loadingTasks = {}
 
 local function loadFunc(stagePtr, proc, obj, name, deps, params)
-    if proc(obj, name, unpack(deps), params and unpack(params)) == false then
+    -- If there are no dependencies, move params to theirs slots instead
+    if #deps == 0 then
+        deps, params = params, {}
+    end
+
+    if proc(obj, name, unpack(deps), unpack(params)) == false then
         stagePtr[0] = 0
     else
         stagePtr[0] = stagePtr[0] + 1
@@ -173,6 +178,7 @@ function Cache.iteration()
                             deps[#deps+1] = cache(task.screen, dep, true)
                         end
                     end
+                    func.params = func.params or {}
 
                     -- TODO: Re-implement gpu-multithreading (on non-android devices)
                     if func.threaded and func.threaded ~= 'gpu' then

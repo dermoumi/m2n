@@ -84,6 +84,26 @@ local toAttenuationModel = {
 }
 AudioSource.static._toAttenuationModel = toAttenuationModel;
 
+function AudioSource.static.factory(filename, type)
+    local stream = (type == 'music')
+    return {
+        reusable = not stream,
+        funcs = {
+            {
+                proc = function(source, filename, stream)
+                    if stream then
+                        source:open(filename)
+                    else
+                        source:load(filename)
+                    end
+                end,
+                threaded = true,
+                params = {stream}
+            }
+        }
+    }
+end
+
 function AudioSource:initialize()
     self._cdata = ffi.gc(C.nxAudioSourceCreate(), C.nxAudioSourceRelease)
 end
