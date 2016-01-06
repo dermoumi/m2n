@@ -290,7 +290,7 @@ end
 function LuaVM:getTop()
     if self._cdata == nil then return 0 end
 
-    return C.lua_gettop(self._cdata)
+    return C.lua_gettop(self._cdata) - 1
 end
 
 function LuaVM:setTop(index)
