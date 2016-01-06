@@ -48,7 +48,7 @@ function VectorFont.static.factory(filename)
                 proc = function(font, filename)
                     font:open(filename)
                 end,
-                threaded = false
+                threaded = true
             }
         }
     }

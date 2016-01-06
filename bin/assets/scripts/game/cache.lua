@@ -38,10 +38,10 @@ local totalTasks, finishedTasks, failedTasks = 0, 0, 0
 local loadingTasks = {}
 
 local function loadFunc(stagePtr, proc, obj, name, deps, params)
-    if proc(obj, name, unpack(deps), params and unpack(params)) then
-        stagePtr[0] = stagePtr + 1
-    else
+    if proc(obj, name, unpack(deps), params and unpack(params)) == false then
         stagePtr[0] = 0
+    else
+        stagePtr[0] = stagePtr[0] + 1
     end
 end
 
