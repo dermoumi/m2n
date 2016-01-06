@@ -132,16 +132,15 @@ int main(int argc, char* argv[])
     SDL_StopTextInput();
 
     // Run the lua code
-    int retval;
     LuaVM lua;
 
     if (!lua.initialize(argc, argv)) {
         return fatalError(lua.getErrorMessage());
     }
 
-    if (!lua.runCode("boot.lua", "return require 'main'", retval)) {
+    if (!lua.runCode("boot.lua", "return require 'main'")) {
         return fatalError(lua.getErrorMessage());
     }
 
-    return retval;
+    return 0;
 }

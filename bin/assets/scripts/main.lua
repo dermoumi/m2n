@@ -131,5 +131,3 @@ while Window.isOpen() do
 end
 
 Audio.release()
-
-return 0

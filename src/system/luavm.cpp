@@ -66,7 +66,7 @@ bool LuaVM::initialize(int argc, char** argv)
     return true;
 }
 
-bool LuaVM::runCode(const std::string& filename, const std::string& code, int& retval)
+bool LuaVM::runCode(const std::string& filename, const std::string& code)
 {
     // Make sure we have a valid Lua state
     if (!mState) {
@@ -86,15 +86,7 @@ bool LuaVM::runCode(const std::string& filename, const std::string& code, int& r
         return false;
     }
 
-    // Try to retrieve the return value
-    if (lua_isnumber(mState, -1)) {
-        retval = lua_tonumber(mState, -1);
-        return true;
-    }
-    else {
-        mErrorMessage = "Invalid return value";
-        return false;
-    }
+    return true;
 }
 
 std::string LuaVM::getErrorMessage() const

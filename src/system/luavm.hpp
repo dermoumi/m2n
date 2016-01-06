@@ -40,7 +40,7 @@ public:
     ~LuaVM();
 
     bool initialize(int argc = 0, char** argv = nullptr);
-    bool runCode(const std::string& filename, const std::string& code, int& retval);
+    bool runCode(const std::string& filename, const std::string& code);
 
     std::string getErrorMessage() const;
 

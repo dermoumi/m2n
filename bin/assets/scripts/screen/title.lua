@@ -134,7 +134,7 @@ function ScreenTitle:keydown(scancode, keyCode, repeated)
 end
 
 function ScreenTitle:left()
-    -- self.audiobus:stop()
+    self.audiobus:stop()
 end
 
 return ScreenTitle
