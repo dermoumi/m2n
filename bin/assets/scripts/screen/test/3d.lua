@@ -40,6 +40,34 @@ local Mesh        = require 'graphics.mesh'
 
 local ScreenTest3D = Screen:subclass 'screen.test.3d'
 
+local function writeGeomteryFile(filename, vertexData, indexData)
+    local vertBuffer, vertBufSize = Geometry.vertexDataToBuffer(vertexData)
+    local indexBuffer, indexBufSize = Geometry.indexDataToBuffer(indexData)
+
+    local OutputFile = require 'filesystem.outputfile'
+    local file = OutputFile:new(filename)
+        :writeU32(vertBufSize)
+        :writeU32(indexBufSize)
+        :write(vertBuffer, vertBufSize)
+        :write(indexBuffer, indexBufSize)
+        :release()
+end
+
+local function readGeometryFile(filename)
+    local vertBuffer, vertBufSize, indexBuffer, indexBufSize
+
+    local InputFile = require 'filesystem.inputfile'
+    local file = InputFile:new(filename)
+
+    vertBufSize, indexBufSize = file:readU32(), file:readU32()
+    if vertBufSize > 0 then vertBuffer = file:read(vertBufSize) end
+    if indexBufSize > 0 then indexBuffer = file:read(indexBufSize) end
+
+    return Geometry:new()
+        :setVertexData(vertBuffer, vertBufSize)
+        :setIndexData(indexBuffer, indexBufSize)
+end
+
 function ScreenTest3D:entered()
     self.text = require('graphics.text')
         :new('', require 'game.font', 14)
@@ -54,8 +82,7 @@ function ScreenTest3D:entered()
         -- :setScaling(2, 2, 2)
         -- :lookAt(0, 0, 0)
 
-    local cubeGeom = Geometry:new()
-        :setVertexData(
+    writeGeomteryFile('cube.geom', {
             -1,-1,-1, 0, 0,
             -1,-1, 1, 0, 0,
             -1, 1, 1, 0, 0,
@@ -92,7 +119,48 @@ function ScreenTest3D:entered()
              1, 1, 1, 0, 0,
             -1, 1, 1, 0, 0,
              1,-1, 1, 0, 0
-        )
+        })
+
+    local cubeGeom = readGeometryFile('/userdata/cube.geom')
+        -- Geometry:new()
+        -- :setVertexData(
+        --     -1,-1,-1, 0, 0,
+        --     -1,-1, 1, 0, 0,
+        --     -1, 1, 1, 0, 0,
+        --      1, 1,-1, 0, 0,
+        --     -1,-1,-1, 0, 0,
+        --     -1, 1,-1, 0, 0,
+        --      1,-1, 1, 0, 0,
+        --     -1,-1,-1, 0, 0,
+        --      1,-1,-1, 0, 0,
+        --      1, 1,-1, 0, 0,
+        --      1,-1,-1, 0, 0,
+        --     -1,-1,-1, 0, 0,
+        --     -1,-1,-1, 0, 0,
+        --     -1, 1, 1, 0, 0,
+        --     -1, 1,-1, 0, 0,
+        --      1,-1, 1, 0, 0,
+        --     -1,-1, 1, 0, 0,
+        --     -1,-1,-1, 0, 0,
+        --     -1, 1, 1, 0, 0,
+        --     -1,-1, 1, 0, 0,
+        --      1,-1, 1, 0, 0,
+        --      1, 1, 1, 0, 0,
+        --      1,-1,-1, 0, 0,
+        --      1, 1,-1, 0, 0,
+        --      1,-1,-1, 0, 0,
+        --      1, 1, 1, 0, 0,
+        --      1,-1, 1, 0, 0,
+        --      1, 1, 1, 0, 0,
+        --      1, 1,-1, 0, 0,
+        --     -1, 1,-1, 0, 0,
+        --      1, 1, 1, 0, 0,
+        --     -1, 1,-1, 0, 0,
+        --     -1, 1, 1, 0, 0,
+        --      1, 1, 1, 0, 0,
+        --     -1, 1, 1, 0, 0,
+        --      1,-1, 1, 0, 0
+        -- )
 
     local cubesModel = Model:new()
 

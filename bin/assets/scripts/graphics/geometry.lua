@@ -46,7 +46,7 @@ local vertexSize, vertexLayout =
 
 function Geometry.static.vertexDataToBuffer(a, b, ...)
     if b then a = {a, b, ...} end
-    if type(a) ~= 'table' then return nil end
+    if type(a) ~= 'table' then return ffi.new('NxMeshVertexPosCoords*'), 0, 0 end
 
     local buffer, vertCount
     if type(a[0]) == 'table' then
@@ -64,25 +64,25 @@ function Geometry.static.vertexDataToBuffer(a, b, ...)
         end
     end
 
-    return buffer, vertCount, vertexSize * vertCount
+    return buffer, vertexSize * vertCount, vertCount
 end
 
 function Geometry.static.indexDataToBuffer(a, b, ...)
     if b then a = {a, b, ...} end
-    if type(a) ~= 'table' then return nil end
+    if type(a) ~= 'table' then return ffi.new('uint16_t*'), 0, 0 end
 
     local indexCount = #a
-    return ffi.new('uint16_t[?]', indexCount, a), indexCount, ffi.sizeof('uint16_t') * indexCount
+    return ffi.new('uint16_t[?]', indexCount, a), ffi.sizeof('uint16_t') * indexCount, indexCount
 end
 
-function Geometry:setVertexData(buffer, vertCount, ...)
+function Geometry:setVertexData(buffer, size, ...)
     if type(buffer) ~= 'cdata' then
-        buffer, vertCount = Geometry.vertexDataToBuffer(buffer, vertCount, ...)
+        buffer, size = Geometry.vertexDataToBuffer(buffer, size, ...)
     end
 
-    if buffer and vertCount ~= 0 then
-        self._vertexCount = vertCount
-        self._vertexBuffer = Arraybuffer.vertexbuffer(vertCount * vertexSize, buffer)
+    if buffer and size ~= 0 then
+        self._vertexCount = size / vertexSize
+        self._vertexBuffer = Arraybuffer.vertexbuffer(size, buffer)
     else
         self._vertexCount = 0
         self._vertexBuffer = nil
@@ -91,14 +91,14 @@ function Geometry:setVertexData(buffer, vertCount, ...)
     return self
 end
 
-function Geometry:setIndexData(buffer, indexCount, ...)
+function Geometry:setIndexData(buffer, size, ...)
     if type(buffer) ~= 'cdata' then
-        buffer, vertCount = Geometry.indexDataToBuffer(buffer, indexCount, ...)
+        buffer, size = Geometry.indexDataToBuffer(buffer, size, ...)
     end
 
-    if buffer and indexCount ~= 0 then
-        self._indexCount = indexCount
-        self._indexBuffer = Arraybuffer.indexbuffer(ffi.sizeof('uint16_t') * indexCount, buffer)
+    if buffer and size ~= 0 then
+        self._indexCount = size / ffi.sizeof('uint16_t')
+        self._indexBuffer = Arraybuffer.indexbuffer(size, buffer)
     else
         self._indexCount = 0
         self._indexBuffer = nil

@@ -76,7 +76,7 @@ function InputFile:read(size)
     if type(size) ~= 'number' then size = self:size() end
 
     local readBytesPtr = ffi.new('size_t[1]')
-    local buffer       = ffi.new('char[?]', size)
+    local buffer       = ffi.new('uint8_t[?]', size)
 
     local ok = C.nxFsRead(self._cdata, buffer, size, readBytesPtr)
     if not ok then return self:_throwError('', 0) end

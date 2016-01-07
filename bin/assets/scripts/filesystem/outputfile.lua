@@ -41,7 +41,7 @@ ffi.cdef[[
     bool nxFsFlush(PHYSFS_File*);
     void nxFsClose(PHYSFS_File*);
 
-    bool nxFsWrite(PHYSFS_File*, const char*, size_t, size_t*);
+    bool nxFsWrite(PHYSFS_File*, const void*, size_t, size_t*);
     bool nxFsWriteS8(PHYSFS_File*, int8_t);
     bool nxFsWriteS16(PHYSFS_File*, int16_t);
     bool nxFsWriteS32(PHYSFS_File*, int32_t);
