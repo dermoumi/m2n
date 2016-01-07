@@ -53,35 +53,7 @@ local function writeGeomteryFile(filename, vertexData, indexData)
         :release()
 end
 
-local function readGeometryFile(filename)
-    local vertBuffer, vertBufSize, indexBuffer, indexBufSize
-
-    local InputFile = require 'filesystem.inputfile'
-    local file = InputFile:new(filename)
-
-    vertBufSize, indexBufSize = file:readU32(), file:readU32()
-    if vertBufSize > 0 then vertBuffer = file:read(vertBufSize) end
-    if indexBufSize > 0 then indexBuffer = file:read(indexBufSize) end
-
-    return Geometry:new()
-        :setVertexData(vertBuffer, vertBufSize)
-        :setIndexData(indexBuffer, indexBufSize)
-end
-
-function ScreenTest3D:entered()
-    self.text = require('graphics.text')
-        :new('', require 'game.font', 14)
-        :setPosition(10, 10)
-
-    self.player = SceneEntity:new()
-        -- :setPosition(0, 0, 3)
-
-    self.camera = require('graphics.cameraentity'):new()
-        :attachTo('MainCamera', self.player)
-        -- :setRotation(0, 0, math.pi / 4)
-        -- :setScaling(2, 2, 2)
-        -- :lookAt(0, 0, 0)
-
+function ScreenTest3D:initialize()
     writeGeomteryFile('cube.geom', {
             -1,-1,-1, 0, 0,
             -1,-1, 1, 0, 0,
@@ -121,46 +93,24 @@ function ScreenTest3D:entered()
              1,-1, 1, 0, 0
         })
 
-    local cubeGeom = readGeometryFile('/userdata/cube.geom')
-        -- Geometry:new()
-        -- :setVertexData(
-        --     -1,-1,-1, 0, 0,
-        --     -1,-1, 1, 0, 0,
-        --     -1, 1, 1, 0, 0,
-        --      1, 1,-1, 0, 0,
-        --     -1,-1,-1, 0, 0,
-        --     -1, 1,-1, 0, 0,
-        --      1,-1, 1, 0, 0,
-        --     -1,-1,-1, 0, 0,
-        --      1,-1,-1, 0, 0,
-        --      1, 1,-1, 0, 0,
-        --      1,-1,-1, 0, 0,
-        --     -1,-1,-1, 0, 0,
-        --     -1,-1,-1, 0, 0,
-        --     -1, 1, 1, 0, 0,
-        --     -1, 1,-1, 0, 0,
-        --      1,-1, 1, 0, 0,
-        --     -1,-1, 1, 0, 0,
-        --     -1,-1,-1, 0, 0,
-        --     -1, 1, 1, 0, 0,
-        --     -1,-1, 1, 0, 0,
-        --      1,-1, 1, 0, 0,
-        --      1, 1, 1, 0, 0,
-        --      1,-1,-1, 0, 0,
-        --      1, 1,-1, 0, 0,
-        --      1,-1,-1, 0, 0,
-        --      1, 1, 1, 0, 0,
-        --      1,-1, 1, 0, 0,
-        --      1, 1, 1, 0, 0,
-        --      1, 1,-1, 0, 0,
-        --     -1, 1,-1, 0, 0,
-        --      1, 1, 1, 0, 0,
-        --     -1, 1,-1, 0, 0,
-        --     -1, 1, 1, 0, 0,
-        --      1, 1, 1, 0, 0,
-        --     -1, 1, 1, 0, 0,
-        --      1,-1, 1, 0, 0
-        -- )
+    self:cache('geom:userdata/cube.geom')
+end
+
+function ScreenTest3D:entered()
+    self.text = require('graphics.text')
+        :new('', require 'game.font', 14)
+        :setPosition(10, 10)
+
+    self.player = SceneEntity:new()
+        -- :setPosition(0, 0, 3)
+
+    self.camera = require('graphics.cameraentity'):new()
+        :attachTo('MainCamera', self.player)
+        -- :setRotation(0, 0, math.pi / 4)
+        -- :setScaling(2, 2, 2)
+        -- :lookAt(0, 0, 0)
+
+    local cubeGeom = self:cache('geom:userdata/cube.geom')
 
     local cubesModel = Model:new()
 

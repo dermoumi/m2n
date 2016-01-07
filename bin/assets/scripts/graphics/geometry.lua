@@ -44,6 +44,26 @@ local vertexSize, vertexLayout =
     ffi.sizeof('NxMeshVertexPosCoords'),
     Graphics.vertexLayout(3)
 
+function Geometry.static.factory(task)
+    task:addTask(function(geom, filename)
+            local success = true
+
+            local file = require('filesystem.inputfile'):new(filename)
+                :onError(function() success = false end)
+
+            local vertBuffer, vertBufSize, indexBuffer, indexBufSize
+
+            vertBufSize, indexBufSize = file:readU32(), file:readU32()
+            if vertBufSize > 0 then vertBuffer = file:read(vertBufSize) end
+            if indexBufSize > 0 then indexBuffer = file:read(indexBufSize) end
+
+            if not success then return false end
+
+            geom:setVertexData(vertBuffer, vertBufSize)
+                :setIndexData(indexBuffer, indexBufSize)
+        end)
+end
+
 function Geometry.static.vertexDataToBuffer(a, b, ...)
     if b then a = {a, b, ...} end
     if type(a) ~= 'table' then return ffi.new('NxMeshVertexPosCoords*'), 0, 0 end

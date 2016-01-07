@@ -25,7 +25,6 @@
     For more information, please refer to <http://unlicense.org>
 --]]
 
-
 local ffi    = require 'ffi'
 local Log    = require 'util.log'
 local Config = require 'config'
@@ -219,6 +218,7 @@ function Cache.iteration()
                 loadingTasks[i] = nil
                 failedTasks = failedTasks + 1
                 finishedTasks = finishedTasks + 1
+                Log.error('Failed to load file: ' .. task.id)
             elseif task.stagePtr[0] ~= task.lastStage and ready then
                 -- If the stage number has changed between last time and now
                 local stage = task.stagePtr[0]

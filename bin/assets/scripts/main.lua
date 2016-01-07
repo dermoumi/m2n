@@ -88,6 +88,7 @@ require('game.cache')
     .registerType('tex2d', 'graphics.texture2d')
     .registerType('music', 'audio.source')
     .registerType('sound', 'audio.source')
+    .registerType('geom', 'graphics.geometry')
 
 -- Startup screen
 Screen.goTo('screen.title', true)
