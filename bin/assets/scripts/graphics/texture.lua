@@ -178,7 +178,7 @@ function Texture:initialize(texType, width, height, depth, hasMips, mipMap)
 end
 
 function Texture:release()
-    if self._cdata == nil then return end
+    if self.__wk_status == 'failed' then return end
 
     C.nxTextureRelease(ffi.gc(self._cdata, nil))
     self._cdata = nil
@@ -215,7 +215,7 @@ function Texture:create(texType, width, height, depth, hasMips, mipMap)
 end
 
 function Texture:setData(data, a, b, c, d, e, f, g, h)
-    if self._cdata ~= nil then
+    if self.__wk_status ~= 'failed' then
         local x, y, z, width, height, depth, slice, mipLevel
 
         if not c then -- Only slice and miplevel provided
@@ -245,7 +245,7 @@ function Texture:bind(slot)
 end
 
 function Texture:data(slice, mipLevel)
-    if self._cdata == nil then return nil end
+    if self.__wk_status == 'failed' then return nil end
 
     local buffer = ffi.new('uint8_t[?]', C.nxTextureBufferSize(self._cdata))
 
@@ -253,7 +253,7 @@ function Texture:data(slice, mipLevel)
 end
 
 function Texture:size()
-    if self._cdata == nil then return 0, 0 end
+    if self.__wk_status == 'failed' then return 0, 0 end
     
     local sizePtr = ffi.new('uint16_t[3]')
     C.nxTextureSize(self._cdata, sizePtr)
@@ -261,7 +261,7 @@ function Texture:size()
 end
 
 function Texture:setFilter(filter)
-    if self._cdata ~= nil then
+    if self.__wk_status ~= 'failed' then
         C.nxTextureSetFilter(self._cdata, toFilter[filter] or 0)
     end
 
@@ -269,7 +269,7 @@ function Texture:setFilter(filter)
 end
 
 function Texture:setAnisotropyLevel(level)
-    if self._cdata ~= nil then
+    if self.__wk_status ~= 'failed' then
         C.nxTextureSetAnisotropyLevel(self._cdata, toAniso[level] or 0)
     end
 
@@ -277,7 +277,7 @@ function Texture:setAnisotropyLevel(level)
 end
 
 function Texture:setRepeating(x, y, z)
-    if self._cdata ~= nil then
+    if self.__wk_status ~= 'failed' then
         x, y, z = toXRepeating[x], toYRepeating[y], toZRepeating[z]
 
         if x then C.nxTextureSetRepeatingX(self._cdata, x) end
@@ -289,7 +289,7 @@ function Texture:setRepeating(x, y, z)
 end
 
 function Texture:setLessOrEqual(lessOrEqual)
-    if self._cdata ~= nil then
+    if self.__wk_status ~= 'failed' then
         C.nxTextureSetLessOrEqual(self._cdata, not not lessOrEqual)
     end
 

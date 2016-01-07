@@ -102,7 +102,10 @@ function Task:addDependency(id, temporary)
         id = id:sub(2)
     end
 
-    self.deps[id] = not not temporary
+    if self.deps[id] ~= false then
+        self.deps[id] = not not temporary
+    end
+
     return self
 end
 
@@ -193,6 +196,7 @@ function Cache.iteration()
             for dep, temporary in pairs(task.newDeps) do
                 cache(task.screen, dep)
                 task.deps[dep] = temporary
+                task.newDeps[dep] = nil
             end
 
             -- Check how many dependencies have successfully loaded
@@ -263,7 +267,7 @@ function Cache.iteration()
                                     temporary = true
                                     entry = entry:sub(2)
                                 end
-                                if not task.deps[entry] then
+                                if task.deps[entry] ~= false then
                                     task.newDeps[entry] = temporary
                                 end
                             elseif not depsChanged then
