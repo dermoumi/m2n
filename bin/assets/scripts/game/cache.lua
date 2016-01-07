@@ -116,6 +116,9 @@ local function loadFunc(stagePtr, vm, gpu, proc, obj, name, params)
         vm:push(unpack(retVals))
         stagePtr[0] = stagePtr[0] + 1
     end
+
+    -- Synchronize loaded data accross all contexts
+    if gpu then require('graphics').sync() end
 end
 
 local function addLoadingTask(screen, id)

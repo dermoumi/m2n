@@ -31,6 +31,7 @@
 #include <cstring>
 #include <vector>
 #include <string>
+#include <mutex>
 
 // Container for different objects used by the device
 template <class T>
@@ -39,6 +40,8 @@ class RDIObjects
 public:
     uint32_t add(const T& obj, bool copy = false)
     {
+        std::lock_guard<std::mutex> lock(mMutex);
+
         if (mFreeList.empty()) {
             if (copy) {
                 mObjects.emplace_back();
@@ -61,6 +64,7 @@ public:
     void remove(uint32_t handle)
     {
         if (handle <= 0 || handle > mObjects.size()) return;
+        std::lock_guard<std::mutex> lock(mMutex);
 
         mObjects[handle - 1] = T(); // Destruct and replace with an invalid object
         mFreeList.push_back(handle - 1);
@@ -68,6 +72,8 @@ public:
 
     T& getRef(uint32_t handle)
     {
+        std::lock_guard<std::mutex> lock(mMutex);
+
         if (handle <= 0 || handle > mObjects.size()) {
             static T invalidObj;
             return invalidObj;
@@ -79,6 +85,7 @@ public:
 private:
     std::vector<T>        mObjects;
     std::vector<uint32_t> mFreeList;
+    std::mutex            mMutex;
 };
 
 // Base class for Render Devices
@@ -352,5 +359,5 @@ public:
     virtual void getCapabilities(uint32_t* maxTexUnits, uint32_t* maxTexSize,
         uint32_t* maxCubeTexSize, uint32_t* maxColBufs, bool* dxt, bool* pvrtci, bool* etc1,
         bool* texFloat, bool* texDepth, bool* texSS, bool* tex3d, bool* texNPOT, bool* texSRGB,
-        bool* rtms, bool* occQuery, bool* timerQuery) const = 0;
+        bool* rtms, bool* occQuery, bool* timerQuery, bool* multithreading) const = 0;
 };

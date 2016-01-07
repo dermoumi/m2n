@@ -255,7 +255,7 @@ function Renderer.getCapabilities(cap)
     if not caps then
         caps = {}
 
-        local u, b = ffi.new('unsigned int[4]'), ffi.new('bool[12]')
+        local u, b = ffi.new('unsigned int[4]'), ffi.new('bool[13]')
         C.nxRendererGetCapabilities(u, b)
 
         caps.maxTexUnits     = tonumber(u[0])
@@ -274,6 +274,7 @@ function Renderer.getCapabilities(cap)
         caps.rtMultisamplingSupported = b[9]
         caps.occQueriesSupported      = b[10]
         caps.timerQueriesSupported    = b[11]
+        caps.multithreadingSupported  = b[12]
     end
 
     if not cap then

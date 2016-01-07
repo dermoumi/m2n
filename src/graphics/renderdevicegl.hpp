@@ -31,6 +31,8 @@
 #if !defined(NX_OPENGL_ES)
 #include "renderdevice.hpp"
 
+#include <atomic>
+
 // OpenGL implementation of RenderDevice
 class RenderDeviceGL : public RenderDevice
 {
@@ -128,7 +130,7 @@ public:
     void getCapabilities(uint32_t* maxTexUnits, uint32_t* maxTexSize,
         uint32_t* maxCubTexSize, uint32_t* maxColBufs, bool* dxt, bool* pvrtci, bool* etc1,
         bool* texFloat, bool* texDepth, bool* texSS, bool* tex3d, bool* texNPOT, bool* texSRGB,
-        bool* rtms, bool* occQuery, bool* timerQuery) const;
+        bool* rtms, bool* occQuery, bool* timerQuery, bool* multithreading) const;
 
 private:
     constexpr static uint32_t MaxNumVertexLayouts = 16;
@@ -265,15 +267,15 @@ private:
     uint32_t mDepthFormat;
     int mVpX {0}, mVpY {0}, mVpWidth {1}, mVpHeight {1};
     int mScX {0}, mScY {0}, mScWidth {1}, mScHeight {1};
-    uint32_t mBufferMemory  {0u};
-    uint32_t mTextureMemory {0u};
+    std::atomic<uint32_t> mBufferMemory  {0u};
+    std::atomic<uint32_t> mTextureMemory {0u};
     int mDefaultFBO        {0};
     int mCurRenderBuffer   {0};
     int mFbWidth           {0};
     int mFbHeight          {0};
     int mOutputBufferIndex {0};
 
-    uint32_t               mNumVertexLayouts{0};
+    std::atomic<uint32_t>  mNumVertexLayouts{0};
     VertexLayout           mVertexLayouts[MaxNumVertexLayouts];
     RDIObjects<RDIBuffer>  mBuffers;
     RDIObjects<RDIShader>  mShaders;

@@ -1323,24 +1323,25 @@ void RenderDeviceGLES2::sync()
 void RenderDeviceGLES2::getCapabilities(uint32_t* maxTexUnits, uint32_t* maxTexSize,
         uint32_t* maxCubTexSize, uint32_t* maxColBufs, bool* dxt, bool* pvrtci, bool* etc1,
         bool* texFloat, bool* texDepth, bool* texSS, bool* tex3D, bool* texNPOT, bool* texSRGB,
-        bool* rtms, bool* occQuery, bool* timerQuery) const
+        bool* rtms, bool* occQuery, bool* timerQuery, bool* multithreading) const
 {
-    if (maxTexUnits)   *maxTexUnits   = mMaxTextureUnits;
-    if (maxTexSize)    *maxTexSize    = mMaxTextureSize;
-    if (maxCubTexSize) *maxCubTexSize = mMaxCubeTextureSize;
-    if (maxColBufs)    *maxColBufs    = mMaxColBuffers;
-    if (dxt)           *dxt           = mDXTSupported;
-    if (pvrtci)        *pvrtci        = mPVRTCISupported;
-    if (etc1)          *etc1          = mTexETC1Supported;
-    if (texFloat)      *texFloat      = mTexFloatSupported;
-    if (texDepth)      *texDepth      = mTexDepthSupported;
-    if (texSS)         *texSS         = mTexShadowSamplers;
-    if (tex3D)         *tex3D         = mTex3DSupported;
-    if (texNPOT)       *texNPOT       = mTexNPOTSupported;
-    if (texSRGB)       *texSRGB       = mTexSRGBSupported;
-    if (rtms)          *rtms          = mRTMultiSampling;
-    if (occQuery)      *occQuery      = mOccQuerySupported;
-    if (timerQuery)    *timerQuery    = mTimerQuerySupported;
+    if (maxTexUnits)    *maxTexUnits    = mMaxTextureUnits;
+    if (maxTexSize)     *maxTexSize     = mMaxTextureSize;
+    if (maxCubTexSize)  *maxCubTexSize  = mMaxCubeTextureSize;
+    if (maxColBufs)     *maxColBufs     = mMaxColBuffers;
+    if (dxt)            *dxt            = mDXTSupported;
+    if (pvrtci)         *pvrtci         = mPVRTCISupported;
+    if (etc1)           *etc1           = mTexETC1Supported;
+    if (texFloat)       *texFloat       = mTexFloatSupported;
+    if (texDepth)       *texDepth       = mTexDepthSupported;
+    if (texSS)          *texSS          = mTexShadowSamplers;
+    if (tex3D)          *tex3D          = mTex3DSupported;
+    if (texNPOT)        *texNPOT        = mTexNPOTSupported;
+    if (texSRGB)        *texSRGB        = mTexSRGBSupported;
+    if (rtms)           *rtms           = mRTMultiSampling;
+    if (occQuery)       *occQuery       = mOccQuerySupported;
+    if (timerQuery)     *timerQuery     = mTimerQuerySupported;
+    if (multithreading) *multithreading = false;
 }
 
 uint32_t RenderDeviceGLES2::createShaderProgram(const char* vertexShaderSrc,

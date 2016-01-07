@@ -272,6 +272,6 @@ NX_EXPORT void nxRendererGetCapabilities(uint32_t* u, bool* b)
 {
     RenderDevice::instance().getCapabilities(
         &u[0], &u[1], &u[2], &u[3], &b[0], &b[1], &b[2], &b[3], &b[4], &b[5], &b[6], &b[7], &b[8],
-        &b[9], &b[10], &b[11]
+        &b[9], &b[10], &b[11], &b[12]
     );
 }

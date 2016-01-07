@@ -32,7 +32,8 @@ static uint16_t maximumSize()
 {
     unsigned int maxSize;
     RenderDevice::instance().getCapabilities(nullptr, &maxSize, nullptr, nullptr, nullptr, nullptr,
-        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
+        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+        nullptr);
     return maxSize;
 }
 

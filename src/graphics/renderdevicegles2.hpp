@@ -128,7 +128,7 @@ public:
     void getCapabilities(uint32_t* maxTexUnits, uint32_t* maxTexSize,
         uint32_t* maxCubTexSize, uint32_t* maxColBufs, bool* dxt, bool* pvrtci, bool* etc1,
         bool* texFloat, bool* texDepth, bool* texSS, bool* tex3d, bool* texNPOT, bool* texSRGB,
-        bool* rtms, bool* occQuery, bool* timerQuery) const;
+        bool* rtms, bool* occQuery, bool* timerQuery, bool* multithreading) const;
 
 private:
     constexpr static uint32_t MaxNumVertexLayouts = 16;

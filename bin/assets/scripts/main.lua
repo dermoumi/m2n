@@ -46,9 +46,7 @@ local Graphics = require 'graphics'
 local Window   = require 'window'
 local Audio    = require 'audio'
 local Screen   = require 'screen'
-
 local Config   = require 'config'
-Config.noGpuMultithreading = System.platform('android')
 
 -- Load settings (in VM sandbox)
 local vm = LuaVM:new()
@@ -65,6 +63,7 @@ Window.create("m2n", 1280, 720, {
 
 -- Initialize renderer
 Graphics.init()
+Config.noGpuMultithreading = not Graphics.getCapabilities('multithreadingSupported')
 
 -- Set window icon
 Window.setIcon('assets/icon.png')

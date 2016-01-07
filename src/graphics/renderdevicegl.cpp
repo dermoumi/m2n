@@ -32,6 +32,7 @@
 #include "../system/log.hpp"
 #include "opengl.hpp"
 
+#include <mutex>
 #include <algorithm>
 
 // Locals
@@ -60,7 +61,8 @@ static GLenum toPrimType[]     = {
     GL_TRIANGLE_FAN
 };
 
-static std::string shaderLog;
+static       std::mutex  vlMutex;
+thread_local std::string shaderLog;
 
 bool RenderDeviceGL::initialize()
 {
@@ -340,6 +342,7 @@ uint32_t RenderDeviceGL::registerVertexLayout(uint8_t numAttribs,
     const VertexLayoutAttrib* attribs)
 {
     if (mNumVertexLayouts == MaxNumVertexLayouts) return 0;
+    std::lock_guard<std::mutex> lock(vlMutex);
 
     mVertexLayouts[mNumVertexLayouts].numAttribs = numAttribs;
     for (uint8_t i = 0; i < numAttribs; ++i) {
@@ -662,6 +665,7 @@ uint32_t RenderDeviceGL::createShader(const char* vertexShaderSrc, const char* f
     glGetProgramiv(programObj, GL_ACTIVE_ATTRIBUTES, &attribCount);
 
     // Run through vertex layouts and check which is compatible with this shader
+    std::lock_guard<std::mutex> lock(vlMutex);
     for (uint32_t i = 0; i < mNumVertexLayouts; ++i) {
         bool allAttribsFound = true;
         auto& vl = mVertexLayouts[i];
@@ -1339,24 +1343,25 @@ void RenderDeviceGL::sync()
 void RenderDeviceGL::getCapabilities(uint32_t* maxTexUnits, uint32_t* maxTexSize,
         uint32_t* maxCubTexSize, uint32_t* maxColBufs, bool* dxt, bool* pvrtci, bool* etc1,
         bool* texFloat, bool* texDepth, bool* texSS, bool* tex3D, bool* texNPOT, bool* texSRGB,
-        bool* rtms, bool* occQuery, bool* timerQuery) const
+        bool* rtms, bool* occQuery, bool* timerQuery, bool* multithreading) const
 {
-    if (maxTexUnits)   *maxTexUnits   = mMaxTextureUnits;
-    if (maxTexSize)    *maxTexSize    = mMaxTextureSize;
-    if (maxCubTexSize) *maxCubTexSize = mMaxCubeTextureSize;
-    if (maxColBufs)    *maxColBufs    = mMaxColBuffers;
-    if (dxt)           *dxt           = mDXTSupported;
-    if (pvrtci)        *pvrtci        = mPVRTCISupported;
-    if (etc1)          *etc1          = mTexETC1Supported;
-    if (texFloat)      *texFloat      = mTexFloatSupported;
-    if (texDepth)      *texDepth      = mTexDepthSupported;
-    if (texSS)         *texSS         = mTexShadowSamplers;
-    if (tex3D)         *tex3D         = mTex3DSupported;
-    if (texNPOT)       *texNPOT       = mTexNPOTSupported;
-    if (texSRGB)       *texSRGB       = mTexSRGBSupported;
-    if (rtms)          *rtms          = mRTMultiSampling;
-    if (occQuery)      *occQuery      = mOccQuerySupported;
-    if (timerQuery)    *timerQuery    = mTimerQuerySupported;
+    if (maxTexUnits)    *maxTexUnits    = mMaxTextureUnits;
+    if (maxTexSize)     *maxTexSize     = mMaxTextureSize;
+    if (maxCubTexSize)  *maxCubTexSize  = mMaxCubeTextureSize;
+    if (maxColBufs)     *maxColBufs     = mMaxColBuffers;
+    if (dxt)            *dxt            = mDXTSupported;
+    if (pvrtci)         *pvrtci         = mPVRTCISupported;
+    if (etc1)           *etc1           = mTexETC1Supported;
+    if (texFloat)       *texFloat       = mTexFloatSupported;
+    if (texDepth)       *texDepth       = mTexDepthSupported;
+    if (texSS)          *texSS          = mTexShadowSamplers;
+    if (tex3D)          *tex3D          = mTex3DSupported;
+    if (texNPOT)        *texNPOT        = mTexNPOTSupported;
+    if (texSRGB)        *texSRGB        = mTexSRGBSupported;
+    if (rtms)           *rtms           = mRTMultiSampling;
+    if (occQuery)       *occQuery       = mOccQuerySupported;
+    if (timerQuery)     *timerQuery     = mTimerQuerySupported;
+    if (multithreading) *multithreading = true;
 }
 
 uint32_t RenderDeviceGL::createShaderProgram(const char* vertexShaderSrc,
