@@ -44,41 +44,63 @@ local vertexSize, vertexLayout =
     ffi.sizeof('NxMeshVertexPosCoords'),
     Graphics.vertexLayout(3)
 
-function Geometry:setVertexData(a, b, ...)
+function Geometry.static.vertexDataToBuffer(a, b, ...)
     if b then a = {a, b, ...} end
-    if type(a) == 'table' then
-        local buffer
-        if type(a[0]) == 'table' then
-            self._vertexCount = #a
-            buffer = ffi.new('NxMeshVertexPosCoords[?]', self._vertexCount, a)
-        else
-            self._vertexCount = #a / 5 -- Five values: xyz, uv
-            buffer = ffi.new('NxMeshVertexPosCoords[?]', self._vertexCount)
-            for i = 1, self._vertexCount do
-                local vertex = {}
-                for j = 1, 5 do
-                    vertex[j] = a[(i-1) * 5 + j]
-                end
-                buffer[i-1] = ffi.new('NxMeshVertexPosCoords', vertex)
-            end
-        end
+    if type(a) ~= 'table' then return nil end
 
-        self._vertexBuffer = Arraybuffer.vertexbuffer(ffi.sizeof(buffer), buffer)
+    local buffer, vertCount
+    if type(a[0]) == 'table' then
+        vertCount = #a
+        buffer = ffi.new('NxMeshVertexPosCoords[?]', vertCount, a)
     else
+        vertCount = #a / 5 -- Five values: xyz, uv
+        buffer = ffi.new('NxMeshVertexPosCoords[?]', vertCount)
+        for i = 1, vertCount do
+            local vertex = {}
+            for j = 1, 5 do
+                vertex[j] = a[(i-1) * 5 + j]
+            end
+            buffer[i-1] = ffi.new('NxMeshVertexPosCoords', vertex)
+        end
+    end
+
+    return buffer, vertCount, vertexSize * vertCount
+end
+
+function Geometry.static.indexDataToBuffer(a, b, ...)
+    if b then a = {a, b, ...} end
+    if type(a) ~= 'table' then return nil end
+
+    local indexCount = #a
+    return ffi.new('uint16_t[?]', indexCount, a), indexCount, ffi.sizeof('uint16_t') * indexCount
+end
+
+function Geometry:setVertexData(buffer, vertCount, ...)
+    if type(buffer) ~= 'cdata' then
+        buffer, vertCount = Geometry.vertexDataToBuffer(buffer, vertCount, ...)
+    end
+
+    if buffer and vertCount ~= 0 then
+        self._vertexCount = vertCount
+        self._vertexBuffer = Arraybuffer.vertexbuffer(vertCount * vertexSize, buffer)
+    else
+        self._vertexCount = 0
         self._vertexBuffer = nil
     end
 
     return self
 end
 
-function Geometry:setIndexData(a, b, ...)
-    if b then a = {a, b, ...} end
-    if type(a) == 'table' then
-        local buffer = ffi.new('uint16_t[?]', #a, a)
+function Geometry:setIndexData(buffer, indexCount, ...)
+    if type(buffer) ~= 'cdata' then
+        buffer, vertCount = Geometry.indexDataToBuffer(buffer, indexCount, ...)
+    end
 
-        self._indexCount = #a
-        self._indexBuffer = Arraybuffer.indexbuffer(ffi.sizeof(buffer), buffer)
+    if buffer and indexCount ~= 0 then
+        self._indexCount = indexCount
+        self._indexBuffer = Arraybuffer.indexbuffer(ffi.sizeof('uint16_t') * indexCount, buffer)
     else
+        self._indexCount = 0
         self._indexBuffer = nil
     end
 
