@@ -275,7 +275,7 @@ private:
     int mFbHeight          {0};
     int mOutputBufferIndex {0};
 
-    std::atomic<uint32_t>  mNumVertexLayouts{0};
+    std::atomic<uint32_t>  mNumVertexLayouts {0u};
     VertexLayout           mVertexLayouts[MaxNumVertexLayouts];
     RDIObjects<RDIBuffer>  mBuffers;
     RDIObjects<RDIShader>  mShaders;

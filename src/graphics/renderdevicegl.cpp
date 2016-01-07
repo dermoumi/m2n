@@ -36,7 +36,7 @@
 #include <algorithm>
 
 // Locals
-static const char* defaultShaderVS =
+thread_local const char* defaultShaderVS =
     "uniform mat4 viewProjMat;\n"
     "uniform mat4 worldMat;\n"
     "attribute vec3 vertPos;\n"
@@ -44,19 +44,19 @@ static const char* defaultShaderVS =
     "   gl_Position = viewProjMat * worldMat * vec4(vertPos, 1.0);\n"
     "}\n";
 
-static const char* defaultShaderFS =
+thread_local const char* defaultShaderFS =
     "uniform vec4 color;\n"
     "void main() {\n"
     "   gl_FragColor = color;\n"
     "}\n";
 
-static GLenum toVertexFormat[] = {GL_FLOAT, GL_UNSIGNED_BYTE};
-static GLenum toIndexFormat[]  = {GL_UNSIGNED_SHORT, GL_UNSIGNED_INT};
-static GLenum toTexType[]      = {GL_TEXTURE_2D, GL_TEXTURE_3D, GL_TEXTURE_CUBE_MAP};
-static GLenum toTexBinding[]   = {
+thread_local GLenum toVertexFormat[] = {GL_FLOAT, GL_UNSIGNED_BYTE};
+thread_local GLenum toIndexFormat[]  = {GL_UNSIGNED_SHORT, GL_UNSIGNED_INT};
+thread_local GLenum toTexType[]      = {GL_TEXTURE_2D, GL_TEXTURE_3D, GL_TEXTURE_CUBE_MAP};
+thread_local GLenum toTexBinding[]   = {
     GL_TEXTURE_BINDING_2D, GL_TEXTURE_BINDING_3D, GL_TEXTURE_BINDING_CUBE_MAP
 };
-static GLenum toPrimType[]     = {
+thread_local GLenum toPrimType[]     = {
     GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_LINE_LOOP, GL_TRIANGLES, GL_TRIANGLE_STRIP,
     GL_TRIANGLE_FAN
 };

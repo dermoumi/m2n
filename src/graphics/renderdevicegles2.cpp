@@ -31,8 +31,10 @@
 #include "../system/log.hpp"
 #include "opengles2.hpp"
 
+#include <mutex>
+
 // Locals
-static const char* defaultShaderVS =
+thread_local const char* defaultShaderVS =
     "uniform mat4 viewProjMat;\n"
     "uniform mat4 worldMat;\n"
     "attribute vec3 vertPos;\n"
@@ -40,24 +42,25 @@ static const char* defaultShaderVS =
     "   gl_Position = viewProjMat * worldMat * vec4(vertPos, 1.0);\n"
     "}\n";
 
-static const char* defaultShaderFS =
+thread_local const char* defaultShaderFS =
     "uniform mediump vec4 color;\n"
     "void main() {\n"
     "   gl_FragColor = color;\n"
     "}\n";
 
-static GLenum toVertexFormat[] = {GL_FLOAT, GL_UNSIGNED_BYTE};
-static GLenum toIndexFormat[]  = {GL_UNSIGNED_SHORT, GL_UNSIGNED_INT};
-static GLenum toTexType[]      = {GL_TEXTURE_2D, GL_TEXTURE_3D_OES, GL_TEXTURE_CUBE_MAP};
-static GLenum toTexBinding[]   = {
+thread_local GLenum toVertexFormat[] = {GL_FLOAT, GL_UNSIGNED_BYTE};
+thread_local GLenum toIndexFormat[]  = {GL_UNSIGNED_SHORT, GL_UNSIGNED_INT};
+thread_local GLenum toTexType[]      = {GL_TEXTURE_2D, GL_TEXTURE_3D_OES, GL_TEXTURE_CUBE_MAP};
+thread_local GLenum toTexBinding[]   = {
     GL_TEXTURE_BINDING_2D, GL_TEXTURE_BINDING_3D_OES, GL_TEXTURE_BINDING_CUBE_MAP
 };
-static GLenum toPrimType[]     = {
+thread_local GLenum toPrimType[]     = {
     GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_LINE_LOOP, GL_TRIANGLES, GL_TRIANGLE_STRIP,
     GL_TRIANGLE_FAN
 };
 
-static std::string shaderLog;
+static       std::mutex  vlMutex;
+thread_local std::string shaderLog;
 
 bool RenderDeviceGLES2::initialize()
 {
@@ -304,6 +307,7 @@ uint32_t RenderDeviceGLES2::registerVertexLayout(uint8_t numAttribs,
 {
     if (mNumVertexLayouts == MaxNumVertexLayouts) return 0;
 
+    std::lock_guard<std::mutex> lock(vlMutex);
     mVertexLayouts[mNumVertexLayouts].numAttribs = numAttribs;
     for (uint8_t i = 0; i < numAttribs; ++i) {
         mVertexLayouts[mNumVertexLayouts].attribs[i] = attribs[i];
@@ -629,6 +633,7 @@ uint32_t RenderDeviceGLES2::createShader(const char* vertexShaderSrc, const char
     glGetProgramiv(programObj, GL_ACTIVE_ATTRIBUTES, &attribCount);
 
     // Run through vertex layouts and check which is compatible with this shader
+    std::lock_guard<std::mutex> lock(vlMutex);
     for (uint32_t i = 0; i < mNumVertexLayouts; ++i) {
         bool allAttribsFound = true;
         auto& vl = mVertexLayouts[i];
@@ -1341,7 +1346,14 @@ void RenderDeviceGLES2::getCapabilities(uint32_t* maxTexUnits, uint32_t* maxTexS
     if (rtms)           *rtms           = mRTMultiSampling;
     if (occQuery)       *occQuery       = mOccQuerySupported;
     if (timerQuery)     *timerQuery     = mTimerQuerySupported;
-    if (multithreading) *multithreading = false;
+    if (multithreading) {
+        #if defined(NX_SYSTEM_IOS)
+            // Needs testing?
+            *multithreading = true;
+        #else
+            *multithreading = false;
+        #endif
+    }
 }
 
 uint32_t RenderDeviceGLES2::createShaderProgram(const char* vertexShaderSrc,
