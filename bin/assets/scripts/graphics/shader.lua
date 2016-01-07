@@ -51,6 +51,16 @@ ffi.cdef [[
     const char* nxShaderDefaultFSCode();
 ]]
 
+function Shader.static.factory(task)
+    task:addTask('gpu', function(shader, filename)
+            local shaders = loadfile(filename)
+            if not shaders then return false end
+
+            local vs, fs = shaders()
+            shader:load(vs, fs)
+        end)
+end
+
 function Shader.static.bind(shader)
     if shader then shader = shader._cdata end
     C.nxShaderBind(shader)
