@@ -1,0 +1,6 @@
+return {
+    shader = 'shader:assets/shaders/solidcolor.shader',
+    uniforms = {
+        uColor = {1, .5, 0, 1}
+    }
+}

@@ -94,7 +94,7 @@ function ScreenTest3D:initialize()
         })
 
     self:cache('geom:userdata/cube.geom')
-    self:cache('shader:assets/shaders/solidcolor.shader')
+    self:cache('material:assets/materials/solidcolor.mat')
 end
 
 function ScreenTest3D:entered()
@@ -115,9 +115,7 @@ function ScreenTest3D:entered()
 
     local cubesModel = Model:new()
 
-    local solidOrangeMat = Material:new()
-        :setShader(self:cache('shader:assets/shaders/solidcolor.shader'))
-        :setUniform('uColor', 1, .5, 0, 1)
+    local solidOrangeMat = self:cache('material:assets/materials/solidcolor.mat')
 
     Mesh:new()
         :setGeometry(cubeGeom)

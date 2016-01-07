@@ -90,6 +90,7 @@ require('game.cache')
     .registerType('sound', 'audio.source')
     .registerType('geom', 'graphics.geometry')
     .registerType('shader', 'graphics.shader')
+    .registerType('material', 'graphics.material')
 
 -- Startup screen
 Screen.goTo('screen.title', true)

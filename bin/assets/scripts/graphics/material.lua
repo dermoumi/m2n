@@ -30,6 +30,67 @@ local Graphics = require 'graphics'
 
 local Material = class 'graphics.material'
 
+function Material.static.factory(task)
+    task:addTask(true, function(mat, filename)
+            local matData = loadfile(filename)
+            if not matData then return false end
+
+            matData = matData()
+            if type(matData) ~= 'table' then return false end
+
+            local retVals = {
+                matData.shader
+            }
+
+            if matData.textures then
+                retVals[#retVals+1] = 'textures'
+                for slot, id in pairs(matData.textures) do
+                    retVals[#retVals+1] = slot
+                    retVals[#retVals+1] = id
+                end
+            end
+
+            if matData.uniforms then
+                retVals[#retVals+1] = 'uniforms'
+                for uniform, data in pairs(matData.uniforms) do
+                    retVals[#retVals+1] = uniform
+                    retVals[#retVals+1] = data
+                end
+            end
+
+            return unpack(retVals)
+        end)
+        :addTask(function(mat, filename, ...)
+            local params, stage, key = {...}
+
+            for i, param in ipairs(params) do
+                if param == 'textures' then
+                    stage = 'textures'
+                elseif param == 'uniforms' then
+                    stage = 'uniforms'
+                elseif stage == 'textures' then
+                    if key then
+                        mat:setTexture(key, param)
+                    else
+                        key = param
+                    end
+                elseif stage == 'uniforms' then
+                    if key then
+                        if type(param) == 'table' then
+                            mat:setUniform(key, unpack(param))
+                        else
+                            mat:setUniform(key, param)
+                        end
+                    else
+                        key = param
+                    end
+                else
+                    mat:setShader(param)
+                end
+            end
+        end)
+end
+
 function Material:initialize(context)
     self._context = context or 'ambient'
     self._textures = {}
