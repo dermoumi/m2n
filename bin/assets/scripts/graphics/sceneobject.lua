@@ -64,7 +64,10 @@ function SceneObject.static.factory(task)
             local key = nil
             for i, param in ipairs({...}) do
                 if param == '=!' then
-                    if stack[#stack]._validate then stack[#stack]:_validate() end
+                    if stack[#stack]._validate and stack[#stack]:_validate() == false then
+                        return false
+                    end
+                    
                     stack[#stack] = nil
                     key = nil
                 elseif type(param) == 'string' and param:match('^=!.') then
