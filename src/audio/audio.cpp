@@ -52,6 +52,7 @@ int Audio::File::eof()
 
 unsigned int Audio::File::read(unsigned char* dst, unsigned int bytes)
 {
+    if (!mFile) return 0u;
     auto status = PHYSFS_readBytes(mFile, dst, bytes);
     if (status < 0) return 0u;
     return static_cast<unsigned int>(status);
@@ -59,6 +60,7 @@ unsigned int Audio::File::read(unsigned char* dst, unsigned int bytes)
 
 unsigned int Audio::File::length()
 {
+    if (!mFile) return 0u;
     auto status = PHYSFS_fileLength(mFile);
     if (status < 0) return 0u;
     return static_cast<unsigned int>(status);
@@ -66,11 +68,13 @@ unsigned int Audio::File::length()
 
 void Audio::File::seek(int offset)
 {
+    if (!mFile) return;
     PHYSFS_seek(mFile, offset);
 }
 
 unsigned int Audio::File::pos()
 {
+    if (!mFile) return 0u;
     auto status = PHYSFS_tell(mFile);
     if (status < 0) return 0u;
     return static_cast<unsigned int>(status);
