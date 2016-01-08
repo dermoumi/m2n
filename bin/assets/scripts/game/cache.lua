@@ -37,7 +37,7 @@ local items = {}
 
 local registeredTypes = {}
 local totalTasks, finishedTasks, failedTasks = 0, 0, 0
-local loadingTasks = {}
+local loadingTasks, temporaryDeps = {}, {}
 
 local Task = class '_cacheclass'
 
@@ -163,6 +163,7 @@ function Cache.prepare()
 end
 
 function Cache.progress()
+    -- print(totalTasks, finishedTasks, failedTasks)
     return totalTasks, finishedTasks, failedTasks
 end
 
@@ -171,6 +172,19 @@ function Cache.hasTasks()
         return true
     end
     return false
+end
+
+local function checkTemporary(dep, screen, temporary)
+    if not screen then screen = false end
+
+    if temporary then
+        if not temporaryDeps[screen] then
+            temporaryDeps[screen] = {}
+        end
+        temporaryDeps[screen][dep] = true
+    elseif temporaryDeps[screen] then
+        temporary[screen][dep] = false
+    end
 end
 
 function Cache.iteration()
@@ -183,19 +197,25 @@ function Cache.iteration()
             local cache = task.screen and task.screen.cache or Cache.get
 
             -- Add dependencies
-            if not task.depsAdded then
+            if not task.depsAdded then 
                 task.depsAdded = true
 
-                for dep in pairs(task.deps) do
+                for dep, temporary in pairs(task.deps) do
                     cache(task.screen, dep)
+
+                    checkTemporary(dep, task.screen, temporary)
                 end
             end
 
             -- Add dependencies that are added during a subTask
             for dep, temporary in pairs(task.newDeps) do
                 cache(task.screen, dep)
-                task.deps[dep] = temporary
-                task.newDeps[dep] = nil
+                if not task.deps[dep] then
+                    task.deps[dep] = temporary
+                    task.newDeps[dep] = nil
+
+                    checkTemporary(dep, task.screen, temporary)
+                end
             end
 
             -- Check how many dependencies have successfully loaded
@@ -217,20 +237,7 @@ function Cache.iteration()
                 task.obj.__wk_status = 'failed'
                 loadingTasks[i] = nil
                 failedTasks = failedTasks + 1
-                finishedTasks = finishedTasks + 1
                 Log.error('Failed to load file: ' .. task.id)
-                
-                -- Remove temporary depndencies
-                for dep, temporary in pairs(task.deps) do
-                    if temporary then
-                        finishedTasks = finishedTasks - 1
-                        if task.screen then
-                            task.screen:uncache(dep)
-                        else
-                            Cache.release(dep)
-                        end
-                    end
-                end
             elseif task.stagePtr[0] ~= task.lastStage and ready then
                 -- If the stage number has changed between last time and now
                 local stage = task.stagePtr[0]
@@ -240,20 +247,7 @@ function Cache.iteration()
                     -- Task is done, remove it from ongoing tasks
                     task.obj.__wk_status = 'ready'
                     loadingTasks[i] = nil
-                    finishedTasks = finishedTasks + 1
                     Log.info('Loaded: ' .. task.id)
-
-                    -- Remove temporary depndencies
-                    for dep, temporary in pairs(task.deps) do
-                        if temporary then
-                            finishedTasks = finishedTasks - 1
-                            if task.screen then
-                                task.screen:uncache(dep)
-                            else
-                                Cache.release(dep)
-                            end
-                        end
-                    end
                 else
                     local subTask = task.tasks[stage]
                     local params = {}
@@ -310,6 +304,27 @@ function Cache.iteration()
         end
     end
 
+    local taskCount = table.maxn(loadingTasks)
+    if taskCount == 0 then
+        -- Remove temporary depndencies
+        for screen, deps in pairs(temporaryDeps) do
+            for dep in pairs(deps) do
+                if screen then
+                    screen:uncache(dep)
+                else
+                    Cache.release(dep)
+                end
+            end
+        end
+        temporaryDeps = {}
+    end
+
+    if totalTasks > taskCount then
+        finishedTasks = totalTasks - taskCount
+    else
+        totalTasks = taskCount
+    end
+
     return Cache
 end
 
@@ -317,6 +332,8 @@ function Cache.wait()
     while Cache.hasTasks() do
         Cache.iteration()
     end
+
+    return Cache
 end
 
 function Cache.get(screen, id, peek)

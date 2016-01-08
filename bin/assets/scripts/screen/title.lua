@@ -48,18 +48,10 @@ function ScreenTitle:initialize(firstRun)
         })
     end
 
+    self:cache('image:assets/pasrien.png')
     self.texture = self:cache('tex2d:assets/pasrien.png')
     self.soundSource = self:cache('sound:assets/test.wav')
     self.musicSource = self:cache('music:assets/undersodiumbulb.ogg')
-
-    -- self:worker():addFile('graphics.image', 'assets/pasrien.png')
-    -- self:worker():addFile('graphics.image', 'assets/cursor.png')
-    -- self:worker():addFile('audio.source', 'assets/test.wav')
-
-    -- self.musicSource = require('audio.source'):new()
-    -- self:worker():addTask(function(music)
-    --     music:open('assets/undersodiumbulb.ogg')
-    -- end, self.musicSource)
 end
 
 function ScreenTitle:entered()
