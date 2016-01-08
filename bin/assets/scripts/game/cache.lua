@@ -219,6 +219,18 @@ function Cache.iteration()
                 failedTasks = failedTasks + 1
                 finishedTasks = finishedTasks + 1
                 Log.error('Failed to load file: ' .. task.id)
+                
+                -- Remove temporary depndencies
+                for dep, temporary in pairs(task.deps) do
+                    if temporary then
+                        finishedTasks = finishedTasks - 1
+                        if task.screen then
+                            task.screen:uncache(dep)
+                        else
+                            Cache.release(dep)
+                        end
+                    end
+                end
             elseif task.stagePtr[0] ~= task.lastStage and ready then
                 -- If the stage number has changed between last time and now
                 local stage = task.stagePtr[0]
