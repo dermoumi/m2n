@@ -61,7 +61,6 @@ function Texture2D:load(image, hasMips, mipMap)
     end
 
     local width, height = image:size()
-
     self:create(width, height, hasMips, mipMap)
         :setData(image:data())
 

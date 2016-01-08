@@ -120,7 +120,7 @@ bool Image::open(const std::string& filename)
     PHYSFS_File* file = PHYSFS_openRead(filename.data());
     if (file) return open(file, true);
 
-    Log::error("Failed to load image \"%s\".", filename.data());
+    Log::error("Failed to load image: %s", filename.data());
     return false;
 }
 

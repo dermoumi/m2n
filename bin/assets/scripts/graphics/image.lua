@@ -59,9 +59,10 @@ local function isCArray(a)
     return type(a) == 'cdata' or type(a) == 'userdata'
 end
 
-function Image.static.factory(task, filename)
+function Image.static.factory(task)
     task:addTask(true, function(image, filename)
             image:load(filename)
+            return image.__valid == true
         end)
 end
 
@@ -77,6 +78,8 @@ function Image:initialize(a, b, c, d, e, f)
 end
 
 function Image:create(width, height, r, g, b, a)
+    self.__valid = true
+
     if type(r) == 'table' then
         C.nxImageCreateFromData(self._cdata, width, height, ffi.new('const uint8_t[?]', #r, r))
     elseif isCArray(r) then
@@ -99,8 +102,8 @@ function Image:load(a, b)
 
     -- Failed to load, Create a dummy, magenta, image.
     if not ok then
-        Log.warning('Unable to load image: ' .. tostring(a) .. (b and ('/' .. tostring(b)) or ''))
         self:create(1, 1, 255, 0, 255)
+        self.__valid = nil
     end
 
     return self
