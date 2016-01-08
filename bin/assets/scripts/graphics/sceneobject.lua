@@ -29,17 +29,6 @@ local Node = require 'graphics.node'
 
 local SceneObject = Node:subclass 'graphics.sceneobject'
 
-local function createObject(type)
-    -- TODO: Add more types of objects
-    if type == 'scene' then
-        return SceneObject:new()
-    elseif type == 'model' then
-        return require('garphics.model'):new()
-    elseif type == 'mesh' then
-        return require('graphics.mesh'):new()
-    end
-end
-
 local function parseObject(ret, data)
     for i, v in pairs(data) do
         if type(v) == 'table' then
