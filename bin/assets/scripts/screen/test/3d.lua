@@ -93,7 +93,7 @@ function ScreenTest3D:initialize()
              1,-1, 1, 0, 0
         })
 
-    self.cubesModel = self:cache('model:assets/sceneobj/cubes.model')
+    self.cubesModel = self:cache('scene:assets/sceneobj/test.scene')
 end
 
 function ScreenTest3D:entered()
@@ -109,7 +109,7 @@ function ScreenTest3D:entered()
     self.cube = ModelEntity:new(self.cubesModel)
         :setPosition(0, 0, -3)
 
-    self.subCube = self.cube:resolveName('WhiteCube')
+    self.subCube = self.cube:resolveName('Cube.WhiteCube')
 
     self.camVelX, self.camVelY, self.camVelZ, self.camSpeed = 0, 0, 0, 4
     self.camSensitivity = 0.001

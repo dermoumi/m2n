@@ -58,6 +58,8 @@ function SceneObject.static.factory(task)
             return unpack(ret)
         end)
         :addTask(function(obj, filename, ...)
+            local SceneObject = require('graphics.sceneobject')
+
             local stack = {obj}
             local key = nil
             for i, param in ipairs({...}) do
@@ -70,7 +72,7 @@ function SceneObject.static.factory(task)
 
                     local kind, newObj = param:sub(3), nil
                     if kind == 'scene' then
-                        newObj = require('graphics.sceneobject'):new()
+                        newObj = SceneObject:new()
                     elseif kind == 'model' then
                         newObj = require('graphics.model'):new()
                     elseif kind == 'mesh' then
@@ -83,7 +85,14 @@ function SceneObject.static.factory(task)
                     stack[#stack+1] = newObj
                     key = nil
                 elseif key then
-                    stack[#stack][key] = param
+                    if type(param) == 'table'
+                        and param.isInstanceOf
+                        and param:isInstanceOf(SceneObject)
+                    then
+                        stack[#stack]:attach(key, param)
+                    else
+                        stack[#stack][key] = param
+                    end
                     key = nil
                 else
                     key = param
