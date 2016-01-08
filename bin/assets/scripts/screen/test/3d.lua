@@ -93,8 +93,7 @@ function ScreenTest3D:initialize()
              1,-1, 1, 0, 0
         })
 
-    self:cache('geom:userdata/cube.geom')
-    self:cache('material:assets/materials/solidcolor.mat')
+    self.cubesModel = self:cache('model:assets/sceneobj/cubes.model')
 end
 
 function ScreenTest3D:entered()
@@ -103,36 +102,14 @@ function ScreenTest3D:entered()
         :setPosition(10, 10)
 
     self.player = SceneEntity:new()
-        -- :setPosition(0, 0, 3)
 
     self.camera = require('graphics.cameraentity'):new()
         :attachTo('MainCamera', self.player)
-        -- :setRotation(0, 0, math.pi / 4)
-        -- :setScaling(2, 2, 2)
-        -- :lookAt(0, 0, 0)
 
-    local cubeGeom = self:cache('geom:userdata/cube.geom')
-
-    local cubesModel = Model:new()
-
-    local solidOrangeMat = self:cache('material:assets/materials/solidcolor.mat')
-
-    Mesh:new()
-        :setGeometry(cubeGeom)
-        :setMaterial(solidOrangeMat)
-        :attachTo('OrangeCube', cubesModel)
-
-    Mesh:new()
-        :setGeometry(cubeGeom)
-        :setMaterial(Material:new())
-        :setTransformation(0, 1, 0, 0, 0, 0, .5, .5, .5)
-        :attachTo('WhiteCube', cubesModel)
-
-    self.cube = ModelEntity:new(cubesModel)
+    self.cube = ModelEntity:new(self.cubesModel)
         :setPosition(0, 0, -3)
 
     self.subCube = self.cube:resolveName('WhiteCube')
-    -- print(self.subCube)
 
     self.camVelX, self.camVelY, self.camVelZ, self.camSpeed = 0, 0, 0, 4
     self.camSensitivity = 0.001

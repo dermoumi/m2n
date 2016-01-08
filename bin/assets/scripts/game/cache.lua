@@ -112,7 +112,7 @@ local function loadFunc(stagePtr, vm, gpu, proc, obj, name, params)
     if gpu then require('window').ensureContext() end
 
     local retVals = {proc(obj, name, unpack(params))}
-    if retVals[0] == false then
+    if retVals[1] == false then
         stagePtr[0] = 0
     else
         vm:push(unpack(retVals))

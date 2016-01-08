@@ -51,13 +51,19 @@ function Mesh:makeEntity(entity)
     entity = entity or require('graphics.meshentity'):new()
 
     entity.geometry, entity.start, entity.count, entity.material =
-        self.geometry, self.start, self.count, self.material
+        self.geometry, self.start, self.count, self.material or Material:new()
 
     return SceneObject.makeEntity(self, entity)
 end
 
 function Mesh:canAttach()
     return false
+end
+
+function Mesh:_validate()
+    self.start = self.start or 0
+    self.count = self.count or
+        (self.geometry._indexBuffer and self.geometry:indexCount() or self.geometry:vertexCount())
 end
 
 return Mesh

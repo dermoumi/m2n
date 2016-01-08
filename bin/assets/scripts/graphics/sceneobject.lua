@@ -29,6 +29,80 @@ local Node = require 'graphics.node'
 
 local SceneObject = Node:subclass 'graphics.sceneobject'
 
+local function createObject(type)
+    -- TODO: Add more types of objects
+    if type == 'scene' then
+        return SceneObject:new()
+    elseif type == 'model' then
+        return require('garphics.model'):new()
+    elseif type == 'mesh' then
+        return require('graphics.mesh'):new()
+    end
+end
+
+local function parseObject(ret, data)
+    for i, v in pairs(data) do
+        if type(v) == 'table' then
+            ret[#ret+1] = i
+            ret[#ret+1] = '=!' .. v[1]
+            v[1] = nil
+            parseObject(ret, v)
+            ret[#ret+1] = '=!'
+        else
+            ret[#ret+1] = i
+            ret[#ret+1] = v
+        end
+    end
+end
+SceneObject.static._parseObject = parseObject
+
+function SceneObject.static.factory(task)
+    task:addTask(true, function(obj, filename)
+            local objData = loadfile(filename)
+            if not objData then return false end
+
+            objData = objData()
+            if type(objData) ~= 'table' then return false end
+
+            local ret = {}
+            require('graphics.sceneobject')._parseObject(ret, objData)
+            return unpack(ret)
+        end)
+        :addTask(function(obj, filename, ...)
+            local stack = {obj}
+            local key = nil
+            for i, param in ipairs({...}) do
+                if param == '=!' then
+                    if stack[#stack]._validate then stack[#stack]:_validate() end
+                    stack[#stack] = nil
+                    key = nil
+                elseif type(param) == 'string' and param:match('^=!.') then
+                    if not key then return false end
+
+                    local kind, newObj = param:sub(3), nil
+                    if kind == 'scene' then
+                        newObj = require('graphics.sceneobject'):new()
+                    elseif kind == 'model' then
+                        newObj = require('graphics.model'):new()
+                    elseif kind == 'mesh' then
+                        newObj = require('graphics.mesh'):new()
+                    else
+                        return false
+                    end
+
+                    stack[#stack]:attach(key, newObj)
+                    stack[#stack+1] = newObj
+                    key = nil
+                elseif key then
+                    stack[#stack][key] = param
+                    key = nil
+                else
+                    key = param
+                end
+            end
+        end)
+end
+
 function SceneObject:initialize(type)
     Node.initialize(self)
 

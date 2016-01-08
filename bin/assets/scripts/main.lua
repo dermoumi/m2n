@@ -91,6 +91,7 @@ require('game.cache')
     .registerType('geom', 'graphics.geometry')
     .registerType('shader', 'graphics.shader')
     .registerType('material', 'graphics.material')
+    .registerType('model', 'graphics.model')
 
 -- Startup screen
 Screen.goTo('screen.title', true)
