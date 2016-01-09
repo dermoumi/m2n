@@ -27,6 +27,7 @@
 
 #include "../config.hpp"
 #include "../system/thread.hpp"
+#include "../system/log.hpp"
 
 #include <luajit/lua.hpp>
 #include <thread>
@@ -49,6 +50,9 @@ static void threadCallback(NxThreadObj* thread)
     // Total elements in stack minus the function itself AND the reserved function
     int argCount = lua_gettop(thread->state) - 2;
     thread->succeeded = lua_pcall(thread->state, argCount, -1, 0) == 0;
+    if (!thread->succeeded) {
+        Log::error(std::string("Thread error: ") + lua_tostring(thread->state, -1));
+    }
 
     if (thread->ownsState) {
         lua_close(thread->state);
@@ -70,8 +74,8 @@ static void threadCallback(NxThreadObj* thread)
 
 NX_EXPORT NxThreadObj* nxThreadCreate(lua_State* state)
 {
-    auto threadObj = new NxThreadObj();
-    threadObj->state     = state;
+    auto threadObj   = new NxThreadObj();
+    threadObj->state = state;
 
     return threadObj;
 }

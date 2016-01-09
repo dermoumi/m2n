@@ -92,18 +92,17 @@ function Image:create(width, height, r, g, b, a)
 end
 
 function Image:load(a, b)
-    local ok = false
+    self.__valid = false
 
     if isCArray(a) and type(b) == 'number' then -- Load from memory
-        ok = C.nxImageOpenFromMemory(self._cdata, a, b)
+        self.__valid = C.nxImageOpenFromMemory(self._cdata, a, b)
     elseif type(a) == 'string' then -- Load from file
-        ok = C.nxImageOpenFromFile(self._cdata, a)
+        self.__valid = C.nxImageOpenFromFile(self._cdata, a)
     end
 
     -- Failed to load, Create a dummy, magenta, image.
-    if not ok then
+    if not self.__valid then
         self:create(1, 1, 255, 0, 255)
-        self.__valid = nil
     end
 
     return self

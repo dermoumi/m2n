@@ -33,7 +33,7 @@ local LuaVM  = require 'system.luavm'
 local class  = require 'class'
 
 local Cache = {}
-local items = {}
+local items = {} -- cached items
 
 local registeredTypes = {}
 local totalTasks, finishedTasks, failedTasks = 0, 0, 0
@@ -139,10 +139,12 @@ local function addLoadingTask(screen, id)
         error('Attempting to load object of unregistered type "' .. type .. '"')
     end
 
+    -- Setup a new task
     local name = id:sub(#type+2)
     local task = Task:new(id, name, objClass, screen)
     objClass.factory(task, name, type)
 
+    -- Add to task list
     loadingTasks[table.maxn(loadingTasks)+1] = task
     return task.obj, task.reusable
 end
@@ -188,8 +190,8 @@ local function checkTemporary(dep, screen, temporary)
 end
 
 function Cache.iteration()
-    -- Reverse iterate because the latter are less likely to be waiting
-    -- for dependencies to load
+    -- Reverse cycle through each loading task.
+    -- Latest tasks are prioritized as they're more likely to be dependencies of earlier tasks.
     for i = table.maxn(loadingTasks), 1, -1 do
         local task = loadingTasks[i]
         if task then
