@@ -92,7 +92,7 @@ require('game.cache')
     .registerType('shader', 'graphics.shader')
     .registerType('material', 'graphics.material')
     .registerType('model', 'graphics.model')
-    .registerType('scene', 'graphics.sceneobject')
+    .registerType('scene', 'graphics.scenegraph')
 
 -- Startup screen
 Screen.goTo('screen.title', true)

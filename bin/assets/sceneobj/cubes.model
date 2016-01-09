@@ -1,11 +1,11 @@
 return {
     OrangeCube = {
         'mesh',
-        geometry = 'geom:userdata/cube.geom',
-        material = 'material:assets/materials/solidcolor.mat'
+        geometry = 'geom:userdata/cube.geom'
     },
     WhiteCube = {
         'mesh',
+        material = 'material:assets/materials/solidcolor.mat',
         geometry = 'geom:userdata/cube.geom',
         ty = 1,
         sx = .5,

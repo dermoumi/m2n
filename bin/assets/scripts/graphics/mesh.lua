@@ -56,10 +56,6 @@ function Mesh:makeEntity(entity)
     return SceneObject.makeEntity(self, entity)
 end
 
-function Mesh:canAttach()
-    return false
-end
-
 function Mesh:_validate()
     self.start = self.start or 0
     self.count = self.count or

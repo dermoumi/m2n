@@ -109,7 +109,7 @@ function ScreenTest3D:entered()
     self.cube = ModelEntity:new(self.cubesModel)
         :setPosition(0, 0, -3)
 
-    self.subCube = self.cube:resolveName('Cube.WhiteCube')
+    self.subCube = self.cube:resolveName('Cube3.WhiteCube') or require('graphics.meshentity'):new()
 
     self.camVelX, self.camVelY, self.camVelZ, self.camSpeed = 0, 0, 0, 4
     self.camSensitivity = 0.001

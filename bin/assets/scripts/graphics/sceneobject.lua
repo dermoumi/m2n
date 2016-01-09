@@ -25,16 +25,25 @@
     For more information, please refer to <http://unlicense.org>
 --]]
 
-local Node = require 'graphics.node'
+local class = require 'class'
 
-local SceneObject = Node:subclass 'graphics.sceneobject'
+local SceneObject = class 'graphics.sceneobject'
 
 local function parseObject(ret, data)
     for i, v in pairs(data) do
         if type(v) == 'table' then
             ret[#ret+1] = i
-            ret[#ret+1] = '=!' .. v[1]
+
+            local source = v[1] or 'scene'
             v[1] = nil
+
+            if source:match('.:.') then
+                ret[#ret+1] = '=#'
+                ret[#ret+1] = source
+            else
+                ret[#ret+1] = '=!' .. source
+            end
+
             parseObject(ret, v)
             ret[#ret+1] = '=!'
         else
@@ -45,11 +54,24 @@ local function parseObject(ret, data)
 end
 SceneObject.static._parseObject = parseObject
 
+local function cloneObject(obj)
+    if type(obj.clone) == 'function' then
+        return obj:clone()
+    else
+        local newObj = obj.class:new()
+        for i, v in pairs(obj) do
+            newObj[i] = v
+        end
+        return newObj
+    end
+end
+SceneObject.static._cloneObject = cloneObject
+
 function SceneObject.static.factory(task)
     task:addTask(true, function(obj, filename)
-            local objData = loadfile(filename)
+            local objData, err = loadfile(filename)
             if not objData then
-                error('Unable to load file: ' .. filename)
+                error('Unable to load file \'' .. filename .. '\' : ' .. err)
             end
 
             objData = objData()
@@ -64,9 +86,17 @@ function SceneObject.static.factory(task)
         :addTask(function(obj, filename, ...)
             local SceneObject = require('graphics.sceneobject')
 
-            local stack, key = {obj}, nil
+            local stack, key, nextIsSource = {obj}, nil, false
             for i, param in ipairs({...}) do
-                if param == '=!' then
+                if param == '=#' then
+                    nextIsSource = true
+                elseif nextIsSource then
+                    param = SceneObject._cloneObject(param)
+                    stack[#stack]:attach(key, param)
+                    stack[#stack+1] = param
+                    key = nil
+                    nextIsSource = false
+                elseif param == '=!' then
                     if stack[#stack]._validate and stack[#stack]:_validate() == false then
                         error('Attempting to attach an invalid object')
                     end
@@ -77,14 +107,13 @@ function SceneObject.static.factory(task)
                     if not key then error('Attempting to attach scene object with no name') end
 
                     local kind, newObj = param:sub(3), nil
-                    if kind == 'scene' then
-                        newObj = SceneObject:new()
-                    elseif kind == 'model' then
+                    if kind == 'model' then
                         newObj = require('graphics.model'):new()
                     elseif kind == 'mesh' then
                         newObj = require('graphics.mesh'):new()
                     else
-                        -- Ignore
+                        -- Anything else can be a scene node... really...
+                        newObj = require('graphics.scenegraph'):new()
                     end
 
                     stack[#stack]:attach(key, newObj)
@@ -108,7 +137,7 @@ function SceneObject.static.factory(task)
 end
 
 function SceneObject:initialize(type)
-    Node.initialize(self)
+    self.children = {}
 
     self.tx, self.ty, self.tz = 0, 0, 0
     self.rx, self.ry, self.rz = 0, 0, 0
@@ -135,6 +164,23 @@ function SceneObject:makeEntity(entity)
     end
 
     return entity
+end
+
+function SceneObject:attach(name, obj)
+    self.children[name] = obj
+
+    obj:attachedTo(self)
+    self:attached(obj)
+
+    return self
+end
+
+function SceneObject:attachedTo(obj)
+    -- Nothing to do
+end
+
+function SceneObject:attached(obj)
+
 end
 
 return SceneObject
