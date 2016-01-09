@@ -115,7 +115,7 @@ local function loadFunc(stagePtr, vm, gpu, proc, obj, name, params)
 
     if retVals[1] == false then
         if retVals[2] then
-            require('util.log').error(retVals[2])
+            require('util.log').error('Unable to load file \'' .. name .. '\' :' .. retVals[2])
         end
         stagePtr[0] = 0
     else
@@ -246,7 +246,7 @@ function Cache.iteration()
                 task.obj.__wk_status = 'failed'
                 loadingTasks[i] = nil
                 failedTasks = failedTasks + 1
-                Log.error('Failed to load file: ' .. task.id)
+                
             elseif task.stagePtr[0] ~= task.lastStage and ready then
                 -- If the stage number has changed between last time and now
                 local stage = task.stagePtr[0]
