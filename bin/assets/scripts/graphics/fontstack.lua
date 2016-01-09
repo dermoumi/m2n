@@ -43,10 +43,14 @@ ffi.cdef [[
 function FontStack.static.factory(task, filename)
     task:addTask(true, function(fontStack, filename)
             local fonts = loadfile(filename)
-            if not fonts then return false end
+            if not fonts then
+                error('Unable to load file: ' .. filename)
+            end
 
             fonts = fonts()
-            if type(fonts) ~= 'table' then return false end
+            if type(fonts) ~= 'table' then
+                error('Invalid fontstack object: ' .. filename)
+            end
 
             return unpack(fonts)
         end)

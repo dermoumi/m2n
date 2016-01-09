@@ -111,11 +111,18 @@ end
 local function loadFunc(stagePtr, vm, gpu, proc, obj, name, params)
     if gpu then require('window').ensureContext() end
 
-    local retVals = {proc(obj, name, unpack(params))}
+    local retVals = {pcall(proc, obj, name, unpack(params))}
+
     if retVals[1] == false then
+        if retVals[2] then
+            require('util.log').error(retVals[2])
+        end
         stagePtr[0] = 0
     else
-        vm:push(unpack(retVals))
+        for i = 2, table.maxn(retVals) do
+            vm:push(retVals[i])
+        end
+
         stagePtr[0] = stagePtr[0] + 1
     end
 

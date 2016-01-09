@@ -48,10 +48,14 @@ SceneObject.static._parseObject = parseObject
 function SceneObject.static.factory(task)
     task:addTask(true, function(obj, filename)
             local objData = loadfile(filename)
-            if not objData then return false end
+            if not objData then
+                error('Unable to load file: ' .. filename)
+            end
 
             objData = objData()
-            if type(objData) ~= 'table' then return false end
+            if type(objData) ~= 'table' then
+                error('Invalid object data: ' .. filename)
+            end
 
             local ret = {}
             require('graphics.sceneobject')._parseObject(ret, objData)
@@ -60,18 +64,17 @@ function SceneObject.static.factory(task)
         :addTask(function(obj, filename, ...)
             local SceneObject = require('graphics.sceneobject')
 
-            local stack = {obj}
-            local key = nil
+            local stack, key = {obj}, nil
             for i, param in ipairs({...}) do
                 if param == '=!' then
                     if stack[#stack]._validate and stack[#stack]:_validate() == false then
-                        return false
+                        error('Attempting to attach an invalid object')
                     end
                     
                     stack[#stack] = nil
                     key = nil
                 elseif type(param) == 'string' and param:match('^=!.') then
-                    if not key then return false end
+                    if not key then error('Attempting to attach scene object with no name') end
 
                     local kind, newObj = param:sub(3), nil
                     if kind == 'scene' then
@@ -81,7 +84,7 @@ function SceneObject.static.factory(task)
                     elseif kind == 'mesh' then
                         newObj = require('graphics.mesh'):new()
                     else
-                        return false
+                        -- Ignore
                     end
 
                     stack[#stack]:attach(key, newObj)
