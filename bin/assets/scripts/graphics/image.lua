@@ -62,7 +62,6 @@ end
 function Image.static.factory(task)
     task:addTask(true, function(image, filename)
             image:load(filename)
-            error('lol')
             if not image.__valid then error() end
         end)
 end
