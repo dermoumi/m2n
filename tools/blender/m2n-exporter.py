@@ -4,6 +4,7 @@ bl_info = {
 }
 
 import os, bpy, bmesh
+from bpy.props import *
 from struct import *
 from bpy_extras.io_utils import ExportHelper
 
@@ -64,11 +65,26 @@ class ExportM2N(bpy.types.Operator, ExportHelper):
 
     models = {}
 
-    overrideScenes = True
-    overrideModels = False
-    overrideImages = False
-    overrideGeometry = False
-    overrideMaterials = False
+    overrideScenes = BoolProperty(
+        name = 'Override existing scenes',
+        default = True
+    )
+    overrideModels = BoolProperty(
+        name = 'Override existing models',
+        default = False
+    )
+    overrideImages = BoolProperty(
+        name = 'Override existing images',
+        default = False
+    )
+    overrideGeometry = BoolProperty(
+        name = 'Override existing geometry',
+        default = False
+    )
+    overrideMaterials = BoolProperty(
+        name = 'Override existing materials',
+        default = False
+    )
 
     def writeImages(self, path):
         scene = bpy.data.scenes.new('__M2N_EXPORTER_SCENE')
