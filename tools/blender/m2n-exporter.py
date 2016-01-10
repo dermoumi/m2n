@@ -231,7 +231,7 @@ class ExportM2N(bpy.types.Operator, ExportHelper):
 
                 uv_layer = bm.loops.layers.uv.active
                 for face in bm.faces:
-                    mat = bpy.data.materials.values()[face.material_index]
+                    mat = obj.material_slots[face.material_index]
                     if mat is not None:
                         mat = mat.name
 

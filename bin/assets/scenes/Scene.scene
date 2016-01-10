@@ -1,9 +1,10 @@
 return {
 	['cube'] = {
 		'model:assets/models/sloth_cube.model',
+		rx = 0.39018136262893677,
 		['sphere'] = {
 			'model:assets/models/sphere.model',
-			tx = 0.026613647118210793,
+			tx = 0.01184268668293953,
 			ty = 1.1146360635757446,
 			tz = 0.009081147611141205
 		}
