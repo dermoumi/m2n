@@ -85,6 +85,10 @@ class ExportM2N(bpy.types.Operator, ExportHelper):
         name = 'Override existing materials',
         default = False
     )
+    entireScene = BoolProperty(
+        name = 'Export entire scene',
+        default = False
+    )
 
     def writeImages(self, path):
         scene = bpy.data.scenes.new('__M2N_EXPORTER_SCENE')
@@ -197,14 +201,16 @@ class ExportM2N(bpy.types.Operator, ExportHelper):
 
     def write(self, filename):
         path = os.path.dirname(os.path.realpath(filename))
+        if len(bpy.context.scene.objects) > 1 or self.entireScene:
+            self.writeScene(path)
+
         self.writeMaterials(path)
         self.writeImages(path)
-        self.writeScene(path)
         self.writeModels(path)
         self.writeGeometry(path)
 
     def execute(self, context):        # execute() is called by blender when running the operator.
-        for obj in bpy.data.objects:
+        for obj in bpy.context.scene.objects:
             if obj.type == 'MESH':
                 m = {}
 
