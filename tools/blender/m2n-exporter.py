@@ -206,7 +206,7 @@ class ExportM2N(bpy.types.Operator, ExportHelper):
                         }
 
                         if uv_layer is not None:
-                            vert['texCoords0'] = (loop[uv_layer].uv.x, loop[uv_layer].uv.y)
+                            vert['texCoords0'] = (loop[uv_layer].uv.x, 1 - loop[uv_layer].uv.y)
                         else:
                             vert['texCoords0'] = (0.0, 0.0)
 

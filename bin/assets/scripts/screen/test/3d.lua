@@ -93,7 +93,7 @@ function ScreenTest3D:initialize()
              1,-1, 1, 0, 0
         })
 
-    self.cubesModel = self:cache('scene:assets/scenes/RandomScene.scene')
+    self.cubesModel = self:cache('scene:assets/scenes/Scene.scene')
 end
 
 function ScreenTest3D:entered()

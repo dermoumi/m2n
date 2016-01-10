@@ -1,0 +1,5 @@
+return {
+	textures = {
+		uTexture0 = 'tex2d:assets/textures/u6bw3VP.jpg'
+	}
+}
