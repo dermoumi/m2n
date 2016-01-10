@@ -47,6 +47,13 @@ def meshToStr(obj):
         if sz != 1: strings.append('sz = ' + str(sz))
         return '{\n\t' + ',\n\t'.join(strings) + '\n}'
 
+def pngFilename(filename):
+    extPos = filename.rfind('.')
+    if extPos >= 0:
+        return filename[:filename.rfind('.')] + '.png'
+    else:
+        return filename + '.png'
+
 class ExportM2N(bpy.types.Operator, ExportHelper):
     """Export M2N scene"""
     bl_idname = "exportm2n.folder"
@@ -60,32 +67,28 @@ class ExportM2N(bpy.types.Operator, ExportHelper):
     overrideScenes = True
     overrideModels = False
     overrideImages = False
-    overrideGeometry = True
+    overrideGeometry = False
     overrideMaterials = False
 
     def writeImages(self, path):
-        # Save, and change scene settings
-        sceneColorMode = bpy.context.scene.render.image_settings.color_mode
-        sceneFileFormat = bpy.context.scene.render.image_settings.file_format
-
-        bpy.context.scene.render.image_settings.color_mode = 'RGBA'
-        bpy.context.scene.render.image_settings.file_format = 'PNG'
+        scene = bpy.data.scenes.new('__M2N_EXPORTER_SCENE')
+        scene.render.image_settings.color_mode = 'RGBA'
+        scene.render.image_settings.file_format = 'PNG'
 
         directory = path + '/' + assetsTextureDir
         if not os.path.exists(directory):
             os.makedirs(directory)
 
         for image in bpy.data.images.values():
-            filepath = directory + '/' + image.name
+            filepath = directory + '/' + pngFilename(image.name)
+            
             if not os.path.exists(filepath) and image.source == 'FILE' or self.overrideImages:
                 try:
-                    image.save_render(filepath, bpy.context.scene)
+                    image.save_render(filepath, scene)
                 except RuntimeError:
-                    print('some random error?')
+                    pass
 
-        # Restore scene settings
-        bpy.context.scene.render.image_settings.color_mode = sceneColorMode
-        bpy.context.scene.render.image_settings.file_format = sceneFileFormat
+        bpy.data.scenes.remove(scene)
 
     def writeMaterials(self, path):
         directory = path + '/' + assetsMaterialDir
@@ -100,7 +103,10 @@ class ExportM2N(bpy.types.Operator, ExportHelper):
                 textureStrings = []
                 for slot, texSlot in enumerate(material.texture_slots):
                     if texSlot is not None and texSlot.texture.type == 'IMAGE':
-                        textureStrings.append("uTexture%i = 'tex2d:%s/%s'" % (slot, assetsTextureDir, texSlot.texture.image.name))
+                        textureStrings.append(
+                            "uTexture%i = 'tex2d:%s/%s'" %
+                            (slot, assetsTextureDir, pngFilename(texSlot.texture.image.name))
+                        )
                 if len(textureStrings) > 0:
                     out.write('\ttextures = {\n\t\t%s\n\t}\n' % ',\n\t\t'.join(textureStrings))
                 out.write('}')
