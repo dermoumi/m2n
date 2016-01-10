@@ -1,0 +1,12 @@
+return {
+	['Material.001'] = {
+		'mesh',
+		geometry = 'geom:assets/geometry/Sphere_Material.001.geom',
+		material = 'material:assets/materials/Material.001.mat'
+	},
+	['Material'] = {
+		'mesh',
+		geometry = 'geom:assets/geometry/Sphere_Material.geom',
+		material = 'material:assets/materials/solidcolor.mat'
+	}
+}

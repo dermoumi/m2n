@@ -70,7 +70,8 @@ function Material.static.factory(task)
                     stage = '=#uniforms'
                 elseif stage == '=#textures' then
                     if key then
-                        mat:setTexture(key, param)
+                        mat:setTexture(param, key)
+                        key = nil
                     else
                         key = param
                     end
@@ -81,6 +82,7 @@ function Material.static.factory(task)
                         else
                             mat:setUniform(key, param)
                         end
+                        key = nil
                     else
                         key = param
                     end
@@ -149,7 +151,7 @@ function Material:_apply(projMat, transMat, context)
     local i = 0
     for slot, texture in pairs(self._textures) do
         texture:bind(i)
-        shader:setSampler(slot, i)
+        self._shader:setSampler(slot, i)
         i = i + 1
     end
 

@@ -93,7 +93,7 @@ function ScreenTest3D:initialize()
              1,-1, 1, 0, 0
         })
 
-    self.cubesModel = self:cache('scene:assets/sceneobj/test.scene')
+    self.cubesModel = self:cache('scene:assets/scenes/RandomScene.scene')
 end
 
 function ScreenTest3D:entered()
@@ -109,7 +109,7 @@ function ScreenTest3D:entered()
     self.cube = ModelEntity:new(self.cubesModel)
         :setPosition(0, 0, -3)
 
-    self.subCube = self.cube:resolveName('Cube3.WhiteCube') or require('graphics.meshentity'):new()
+    -- self.subCube = self.cube:resolveName('Cube3.WhiteCube') or require('graphics.meshentity'):new()
 
     self.camVelX, self.camVelY, self.camVelZ, self.camSpeed = 0, 0, 0, 4
     self.camSensitivity = 0.001
@@ -126,7 +126,7 @@ function ScreenTest3D:update(dt)
     self.text:setString('Current FPS: %i', Window.currentFPS())
 
     -- self.subMesh:rotate(0, 0, math.pi * dt / 2)
-    self.subCube:rotate(0, math.pi * dt / 2, 0)
+    -- self.subCube:rotate(0, math.pi * dt / 2, 0)
 
     if self.camVelX ~= 0 or self.camVelY ~= 0 or self.camVelZ ~= 0 then
         local q = self.player:quaternion()

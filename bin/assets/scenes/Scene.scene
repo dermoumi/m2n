@@ -1,0 +1,10 @@
+return {
+	['Ball :D'] = {
+		'model:assets/models/Sphere.model',
+		tz = 2.553879499435425,
+		sx = 1.0000001192092896,
+		sy = 1.0000001192092896,
+		sz = 1.0000001192092896
+	},
+	['Cube'] = 'model:assets/models/Cube.model'
+}

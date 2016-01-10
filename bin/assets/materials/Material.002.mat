@@ -1,0 +1,6 @@
+return {
+	textures = {
+		uTexture0 = 'tex2d:assets/textures/pasrien.png',
+		uTexture1 = 'tex2d:assets/textures/pasrien.png'
+	}
+}
