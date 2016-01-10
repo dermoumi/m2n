@@ -8,45 +8,15 @@ from bpy.props import *
 from struct import *
 from bpy_extras.io_utils import ExportHelper
 
-assetsMaterialDir = 'assets/materials'
-assetsTextureDir = 'assets/textures'
-assetsSceneDir = 'assets/scenes'
-assetsModelDir = 'assets/models'
-assetsGeometryDir = 'assets/geometry'
+assetsMaterialDir = 'assets/materials/'
+assetsTextureDir = 'assets/textures/'
+assetsSceneDir = 'assets/scenes/'
+assetsModelDir = 'assets/models/'
+assetsGeometryDir = 'assets/geometry/'
 
-materialNameFormat = "'material:" + assetsMaterialDir + "/%s.mat'"
-modelNameFormat = "'model:" + assetsModelDir + "/%s.model'"
-geometryNameFormat = "'geom:" + assetsGeometryDir + "/%s.geom'"
-
-def meshToStr(obj):
-    loc = obj.location
-    rot = obj.matrix_local.to_euler('XYZ')
-    scl = obj.scale
-
-    tx =  loc.x
-    ty =  loc.z
-    tz = -loc.y
-    rx =  rot.x
-    ry =  rot.z
-    rz = -rot.y
-    sx =  scl.x
-    sy =  scl.z
-    sz =  scl.y
-
-    if tx == 0 and ty == 0 and tz == 0 and rx == 0 and ry == 0 and rz == 0 and sx == 1 and sy == 1 and sz == 1:
-        return modelNameFormat % obj.data.name
-    else:
-        strings = [modelNameFormat % obj.data.name]
-        if tx != 0: strings.append('tx = ' + str(tx))
-        if ty != 0: strings.append('ty = ' + str(ty))
-        if tz != 0: strings.append('tz = ' + str(tz))
-        if rx != 0: strings.append('rx = ' + str(rx))
-        if ry != 0: strings.append('ry = ' + str(ry))
-        if rz != 0: strings.append('rz = ' + str(rz))
-        if sx != 1: strings.append('sx = ' + str(sx))
-        if sy != 1: strings.append('sy = ' + str(sy))
-        if sz != 1: strings.append('sz = ' + str(sz))
-        return '{\n\t' + ',\n\t'.join(strings) + '\n}'
+materialNameFormat = "'material:" + assetsMaterialDir + "%s.mat'"
+modelNameFormat = "'model:" + assetsModelDir + "%s.model'"
+geometryNameFormat = "'geom:" + assetsGeometryDir + "%s.geom'"
 
 def pngFilename(filename):
     extPos = filename.rfind('.')
@@ -65,6 +35,10 @@ class ExportM2N(bpy.types.Operator, ExportHelper):
 
     models = {}
 
+    ns = StringProperty(
+        name = 'Namespace',
+        default = ''
+    )
     overrideScenes = BoolProperty(
         name = 'Override existing scenes',
         default = True
@@ -90,12 +64,42 @@ class ExportM2N(bpy.types.Operator, ExportHelper):
         default = False
     )
 
+    def meshToStr(self, obj):
+        loc = obj.location
+        rot = obj.matrix_local.to_euler('XYZ')
+        scl = obj.scale
+
+        tx =  loc.x
+        ty =  loc.z
+        tz = -loc.y
+        rx =  rot.x
+        ry =  rot.z
+        rz = -rot.y
+        sx =  scl.x
+        sy =  scl.z
+        sz =  scl.y
+
+        if tx == 0 and ty == 0 and tz == 0 and rx == 0 and ry == 0 and rz == 0 and sx == 1 and sy == 1 and sz == 1:
+            return modelNameFormat % (self.ns + obj.data.name)
+        else:
+            strings = [modelNameFormat % (self.ns + obj.data.name)]
+            if tx != 0: strings.append('tx = ' + str(tx))
+            if ty != 0: strings.append('ty = ' + str(ty))
+            if tz != 0: strings.append('tz = ' + str(tz))
+            if rx != 0: strings.append('rx = ' + str(rx))
+            if ry != 0: strings.append('ry = ' + str(ry))
+            if rz != 0: strings.append('rz = ' + str(rz))
+            if sx != 1: strings.append('sx = ' + str(sx))
+            if sy != 1: strings.append('sy = ' + str(sy))
+            if sz != 1: strings.append('sz = ' + str(sz))
+            return '{\n\t' + ',\n\t'.join(strings) + '\n}'
+
     def writeImages(self, path):
         scene = bpy.data.scenes.new('__M2N_EXPORTER_SCENE')
         scene.render.image_settings.color_mode = 'RGBA'
         scene.render.image_settings.file_format = 'PNG'
 
-        directory = path + '/' + assetsTextureDir
+        directory = path + '/' + assetsTextureDir + self.ns
         if not os.path.exists(directory):
             os.makedirs(directory)
 
@@ -111,7 +115,7 @@ class ExportM2N(bpy.types.Operator, ExportHelper):
         bpy.data.scenes.remove(scene)
 
     def writeMaterials(self, path):
-        directory = path + '/' + assetsMaterialDir
+        directory = path + '/' + assetsMaterialDir + self.ns
         if not os.path.exists(directory):
             os.makedirs(directory)
 
@@ -124,8 +128,8 @@ class ExportM2N(bpy.types.Operator, ExportHelper):
                 for slot, texSlot in enumerate(material.texture_slots):
                     if texSlot is not None and texSlot.texture.type == 'IMAGE':
                         textureStrings.append(
-                            "uTexture%i = 'tex2d:%s/%s'" %
-                            (slot, assetsTextureDir, pngFilename(texSlot.texture.image.name))
+                            "uTexture%i = 'tex2d:%s%s'" %
+                            (slot, assetsTextureDir, self.ns + pngFilename(texSlot.texture.image.name))
                         )
                 if len(textureStrings) > 0:
                     out.write('\ttextures = {\n\t\t%s\n\t}\n' % ',\n\t\t'.join(textureStrings))
@@ -133,7 +137,7 @@ class ExportM2N(bpy.types.Operator, ExportHelper):
                 out.close()
 
     def writeScene(self, path):
-        directory = path + '/' + assetsSceneDir
+        directory = path + '/' + assetsSceneDir + self.ns
         if not os.path.exists(directory):
             os.makedirs(directory)
 
@@ -146,13 +150,13 @@ class ExportM2N(bpy.types.Operator, ExportHelper):
             objStrings = []
             for obj in scene.objects:
                 if obj.type == 'MESH':
-                    objStrings.append("['" + obj.name + "'] = " + meshToStr(obj))
+                    objStrings.append("['" + obj.name + "'] = " + self.meshToStr(obj))
 
             out.write(',\n'.join(objStrings).replace('\n', '\n\t') + '\n}')
             out.close()
 
     def writeModels(self, path):
-        directory = path + '/' + assetsModelDir
+        directory = path + '/' + assetsModelDir + self.ns
         if not os.path.exists(directory):
             os.makedirs(directory)
 
@@ -169,15 +173,15 @@ class ExportM2N(bpy.types.Operator, ExportHelper):
                     geomName = name + '_' + material
                     matStrings.append(
                         "['" + material + "'] = {\n\t'mesh',\n\t" +
-                        "geometry = " + (geometryNameFormat % geomName) + ",\n\t"
-                        "material = " + (materialNameFormat % material) + "\n}"
+                        "geometry = " + (geometryNameFormat % (self.ns + geomName)) + ",\n\t"
+                        "material = " + (materialNameFormat % (self.ns + material)) + "\n}"
                     )
 
                 out.write(',\n'.join(matStrings).replace('\n', '\n\t') + '\n}')
                 out.close()
 
     def writeGeometry(self, path):
-        directory = path + '/' + assetsGeometryDir
+        directory = path + '/' + assetsGeometryDir + self.ns
         if not os.path.exists(directory):
             os.makedirs(directory)
 
@@ -200,6 +204,9 @@ class ExportM2N(bpy.types.Operator, ExportHelper):
                 out.close()
 
     def write(self, filename):
+        if len(self.ns) > 0:
+            self.ns += '/'
+
         path = os.path.dirname(os.path.realpath(filename))
         if len(bpy.context.scene.objects) > 1 or self.entireScene:
             self.writeScene(path)
