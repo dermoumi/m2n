@@ -101,4 +101,14 @@ function Node:resolveName(name)
     return currNode
 end
 
+function Node:lookupName(name)
+    for nodeName, node in pairs(self.children) do
+        if nodeName == name then return node end
+        local n = node:lookupName(name)
+        if n then return n end
+    end
+
+    return nil
+end
+
 return Node

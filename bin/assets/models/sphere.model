@@ -1,0 +1,12 @@
+return {
+	['solidcolor'] = {
+		'mesh',
+		geometry = 'geom:assets/geometry/sphere_solidcolor.geom',
+		material = 'material:assets/materials/solidcolor.mat'
+	},
+	['sloth'] = {
+		'mesh',
+		geometry = 'geom:assets/geometry/sphere_sloth.geom',
+		material = 'material:assets/materials/sloth.mat'
+	}
+}
