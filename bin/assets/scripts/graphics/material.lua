@@ -43,7 +43,7 @@ function Material.static.factory(task)
             }
 
             if matData.textures then
-                retVals[#retVals+1] = 'textures'
+                retVals[#retVals+1] = '=#textures'
                 for slot, id in pairs(matData.textures) do
                     retVals[#retVals+1] = slot
                     retVals[#retVals+1] = id
@@ -51,7 +51,7 @@ function Material.static.factory(task)
             end
 
             if matData.uniforms then
-                retVals[#retVals+1] = 'uniforms'
+                retVals[#retVals+1] = '=#uniforms'
                 for uniform, data in pairs(matData.uniforms) do
                     retVals[#retVals+1] = uniform
                     retVals[#retVals+1] = data
@@ -64,17 +64,17 @@ function Material.static.factory(task)
             local params, stage, key = {...}
 
             for i, param in ipairs(params) do
-                if param == 'textures' then
-                    stage = 'textures'
-                elseif param == 'uniforms' then
-                    stage = 'uniforms'
-                elseif stage == 'textures' then
+                if param == '=#textures' then
+                    stage = '=#textures'
+                elseif param == '=#uniforms' then
+                    stage = '=#uniforms'
+                elseif stage == '=#textures' then
                     if key then
                         mat:setTexture(key, param)
                     else
                         key = param
                     end
-                elseif stage == 'uniforms' then
+                elseif stage == '=#uniforms' then
                     if key then
                         if type(param) == 'table' then
                             mat:setUniform(key, unpack(param))
