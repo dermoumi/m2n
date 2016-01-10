@@ -1,4 +1,13 @@
 return {
+    ['player'] = {
+        'scene',
+        ['main_camera'] = {
+            'camera'
+        },
+        tx = 0,
+        ty = 1,
+        tz = 9
+    },
 	['cube'] = {
 		'model:assets/models/sloth_cube.model',
 		rx = 0.39018136262893677,

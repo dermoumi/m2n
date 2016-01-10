@@ -103,24 +103,25 @@ function SceneObject.static.factory(task)
                     
                     stack[#stack] = nil
                     key = nil
-                elseif type(param) == 'string' and param:match('^=!.') then
-                    if not key then error('Attempting to attach scene object with no name') end
-
-                    local kind, newObj = param:sub(3), nil
-                    if kind == 'model' then
-                        newObj = require('graphics.model'):new()
-                    elseif kind == 'mesh' then
-                        newObj = require('graphics.mesh'):new()
-                    else
-                        -- Anything else can be a scene node... really...
-                        newObj = require('graphics.scenegraph'):new()
-                    end
-
-                    stack[#stack]:attach(key, newObj)
-                    stack[#stack+1] = newObj
-                    key = nil
                 elseif key then
-                    if type(param) == 'table'
+                    if type(param) == 'string' and param:match('^=!.') then
+                        if not key then error('Attempting to attach scene object with no name') end
+
+                        local kind, newObj = param:sub(3), nil
+                        if kind == 'model' then
+                            newObj = require('graphics.model'):new()
+                        elseif kind == 'mesh' then
+                            newObj = require('graphics.mesh'):new()
+                        elseif kind == 'camera' then
+                            newObj = require('graphics.camera'):new()
+                        else
+                            -- Anything else can be a scene node... really...
+                            newObj = require('graphics.scenegraph'):new()
+                        end
+
+                        stack[#stack]:attach(key, newObj)
+                        stack[#stack+1] = newObj
+                    elseif type(param) == 'table'
                         and param.isInstanceOf
                         and param:isInstanceOf(SceneObject)
                     then

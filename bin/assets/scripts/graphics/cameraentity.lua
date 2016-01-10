@@ -63,7 +63,7 @@ function CameraEntity:setView(left, right, bottom, top, near, far)
 end
 
 function CameraEntity:setPerspective(fov, aspect, near, far)
-    fov, near, far = fov or 70, near or 1, far or -100
+    fov, near, far = fov or 70, near or 0.1, far or -100
     if not aspect then
         local w, h = Window.size()
         aspect = w/h

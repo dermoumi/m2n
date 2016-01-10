@@ -93,7 +93,7 @@ function ScreenTest3D:initialize()
              1,-1, 1, 0, 0
         })
 
-    self.cubesModel = self:cache('scene:assets/scenes/Scene.scene')
+    self.sceneGraph = self:cache('scene:assets/scenes/Scene.scene')
 end
 
 function ScreenTest3D:entered()
@@ -101,15 +101,17 @@ function ScreenTest3D:entered()
         :new('', require 'game.font', 14)
         :setPosition(10, 10)
 
-    self.player = SceneEntity:new()
+    self.scene = SceneEntity:new(self.sceneGraph)
 
-    self.camera = require('graphics.cameraentity'):new()
-        :attachTo('MainCamera', self.player)
+    self.player = self.scene:lookupName('player') or require('graphics.sceneentity'):new()
 
-    self.cube = ModelEntity:new(self.cubesModel)
-        :setPosition(0, 0, -3)
+    self.camera = self.scene:lookupName('main_camera') or require('graphics.cameraentity'):new()
+        :attachTo('main_camera', self.player)
 
-    self.subCube = self.cube:lookupName('cube') or require('graphics.modelentity'):new()
+    self.cube = self.scene:lookupName('cube') or require('graphics.modelentity'):new()
+    -- self.cube:setPosition(0, 0, -3)
+
+    self.subMesh = self.scene:lookupName('sphere') or require('graphics.modelentity'):new()
 
     self.camVelX, self.camVelY, self.camVelZ, self.camSpeed = 0, 0, 0, 4
     self.camSensitivity = 0.001
@@ -126,7 +128,7 @@ function ScreenTest3D:update(dt)
     self.text:setString('Current FPS: %i', Window.currentFPS())
 
     -- self.subMesh:rotate(0, 0, math.pi * dt / 2)
-    self.subCube:rotate(0, math.pi * dt / 2, 0)
+    self.subMesh:rotate(0, math.pi * dt / 2, 0)
 
     if self.camVelX ~= 0 or self.camVelY ~= 0 or self.camVelZ ~= 0 then
         local q = self.player:quaternion()
