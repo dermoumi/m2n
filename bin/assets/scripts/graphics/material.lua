@@ -106,7 +106,7 @@ function Material:setShader(shader)
 end
 
 function Material:setTexture(texture, slot)
-    self._textures[slot or 'uTexture'] = texture
+    self._textures[slot or 'uTexture0'] = texture
 
     return self
 end
@@ -128,7 +128,7 @@ function Material:shader()
 end
 
 function Material:texture(slot)
-    return self._textures[slot or 'uTexture']
+    return self._textures[slot or 'uTexture0']
 end
 
 function Material:context()
@@ -155,7 +155,7 @@ function Material:_apply(projMat, transMat, context)
 
     if i == 0 then
         Graphics.defaultTexture():bind(0)
-        self._shader:setSampler('uTexture', 0)
+        self._shader:setSampler('uTexture0', 0)
     end
 
     return true

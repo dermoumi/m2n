@@ -198,7 +198,7 @@ function Text:_render(camera)
         shader:setUniform('uProjMat', camera:projection())
         shader:setUniform('uTransMat', self:matrix(true))
         shader:setUniform('uColor', self:color(true, true))
-        shader:setSampler('uTexture', 0)
+        shader:setSampler('uTexture0', 0)
 
         local bufferIDs = C.nxTextArraybufferIDs(self._cdata, bufCountPtr)
         for i = 0, bufCountPtr[0] - 1 do

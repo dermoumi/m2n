@@ -171,7 +171,7 @@ function Sprite:_render(camera)
     shader:setUniform('uTransMat', self:matrix(true))
     shader:setUniform('uColor', self:color(true, true))
     shader:setUniform('uTexSize', texW, texH)
-    shader:setSampler('uTexture', 0)
+    shader:setSampler('uTexture0', 0)
 
     Arraybuffer.setVertexbuffer(self._vertexbuffer, 0, 0, 16)
     C.nxRendererSetVertexLayout(Sprite._vertexLayout())

@@ -145,7 +145,7 @@ function Shape:_render(camera)
         shader:setUniform('uTransMat', self:matrix(true))
         shader:setUniform('uColor', self:color(true, true))
         shader:setUniform('uTexSize', 1, 1)
-        shader:setSampler('uTexture', 0)
+        shader:setSampler('uTexture0', 0)
 
         Arraybuffer.setVertexbuffer(self._vertexBuffer, 0, 0, self._vertexSize)
         Arraybuffer.setIndexbuffer(self._indexBuffer, 16)

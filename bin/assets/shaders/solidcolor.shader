@@ -9,10 +9,10 @@ return [[
             gl_Position = uProjMat * uTransMat * vec4(aPosition, 1.0);
         }
     ]], [[
-        uniform sampler2D uTexture;
+        uniform sampler2D uTexture0;
         uniform vec4 uColor;
         varying vec2 vTexCoords;
         void main() {
-            gl_FragColor = texture2D(uTexture, vTexCoords) * uColor;
+            gl_FragColor = texture2D(uTexture0, vTexCoords) * uColor;
         }
     ]]

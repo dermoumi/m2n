@@ -173,12 +173,12 @@ function Renderer.init()
             gl_Position = uProjMat * uTransMat * vec4(aPosition, 0.0, 1.0);
         }
     ]], [[
-        uniform sampler2D uTexture;
+        uniform sampler2D uTexture0;
         uniform vec2 uTexSize;
         uniform vec4 uColor;
         varying vec2 vTexCoords;
         void main() {
-            gl_FragColor = texture2D(uTexture, vTexCoords / uTexSize) * uColor;
+            gl_FragColor = texture2D(uTexture0, vTexCoords / uTexSize) * uColor;
         }
     ]])
     --
@@ -196,13 +196,13 @@ function Renderer.init()
             gl_Position = uProjMat * uTransMat * vec4(aPosition, 0.0, 1.0);
         }
     ]], [[
-        uniform sampler2D uTexture;
+        uniform sampler2D uTexture0;
         uniform vec2 uTexSize;
         uniform vec4 uColor;
         varying vec2 vTexCoords;
         varying vec4 vColor;
         void main() {
-            gl_FragColor = texture2D(uTexture, vTexCoords / uTexSize) * uColor * vColor;
+            gl_FragColor = texture2D(uTexture0, vTexCoords / uTexSize) * uColor * vColor;
         }
     ]])
     --
@@ -217,10 +217,10 @@ function Renderer.init()
             gl_Position = uProjMat * uTransMat * vec4(aPosition, 1.0);
         }
     ]], [[
-        uniform sampler2D uTexture;
+        uniform sampler2D uTexture0;
         varying vec2 vTexCoords;
         void main() {
-            gl_FragColor = texture2D(uTexture, vTexCoords);
+            gl_FragColor = texture2D(uTexture0, vTexCoords);
         }
     ]])
 
@@ -315,7 +315,7 @@ function Renderer.drawFsQuad(texture, width, height)
     shader:setUniform('uTransMat', identityMatrix)
     shader:setUniform('uColor', 1, 1, 1, 1)
     shader:setUniform('uTexSize', width, height)
-    shader:setSampler('uTexture', 0)
+    shader:setSampler('uTexture0', 0)
 
     require('graphics.arraybuffer').setVertexbuffer(vbFsQuad, 0, 0, 16)
     C.nxRendererSetVertexLayout(vertexLayouts[1])
@@ -336,7 +336,7 @@ function Renderer.fillFsQuad(r, g, b, a, blendMode)
     shader:setUniform('uTransMat', identityMatrix)
     shader:setUniform('uColor', (r or 0)/255, (g or 0)/255, (b or 0)/255, (a or 255)/255)
     shader:setUniform('uTexSize', 1, 1)
-    shader:setSampler('uTexture', 0)
+    shader:setSampler('uTexture0', 0)
 
     require('graphics.arraybuffer').setVertexbuffer(vbFsQuad, 0, 0, 16)
     C.nxRendererSetVertexLayout(vertexLayouts[1])
