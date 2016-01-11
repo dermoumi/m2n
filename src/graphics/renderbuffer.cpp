@@ -60,19 +60,22 @@ uint8_t Renderbuffer::create(uint8_t format, uint16_t width, uint16_t height, bo
     return 0;
 }
 
+#include "../system/log.hpp"
+
 Texture* Renderbuffer::texture(uint8_t bufIndex)
 {
     Texture* tex {nullptr};
 
     if (bufIndex == 32 && mDepth) {
-        tex = mTextures[5].get();
+        tex = mTextures[4].get();
 
         if (!tex) {
-            mTextures[5] = std::unique_ptr<Texture>(new Texture(
-                12, mFormat, RenderDevice::instance().getRenderBufferTexture(mHandle, 32),
+            mTextures[4] = std::unique_ptr<Texture>(new Texture(
+                RenderDevice::Tex2D, RenderDevice::DEPTH,
+                RenderDevice::instance().getRenderBufferTexture(mHandle, 32),
                 mWidth, mHeight, 1, 0, true
             ));
-            tex = mTextures[5].get();
+            tex = mTextures[4].get();
         }
     }
     else if (bufIndex < mColorBufferCount) {
@@ -80,7 +83,8 @@ Texture* Renderbuffer::texture(uint8_t bufIndex)
 
         if (!tex) {
             mTextures[bufIndex] = std::unique_ptr<Texture>(new Texture(
-                0, mFormat, RenderDevice::instance().getRenderBufferTexture(mHandle, bufIndex),
+                RenderDevice::Tex2D, mFormat,
+                RenderDevice::instance().getRenderBufferTexture(mHandle, bufIndex),
                 mWidth, mHeight, 1, 0, true
             ));
             tex = mTextures[bufIndex].get();

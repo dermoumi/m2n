@@ -124,7 +124,7 @@ function ScreenTest3D:render()
     self.camera:draw(self.cube)
 
     -- Graphics.setFillMode('solid')
-    self:view():drawFsQuad(self.rb:texture(), 1280, 720, true)
+    self:view():drawFsQuad(self.rb:texture('depth'), 1280, 720, true)
         :draw(self.text)
 end
 
