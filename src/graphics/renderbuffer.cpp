@@ -60,8 +60,6 @@ uint8_t Renderbuffer::create(uint8_t format, uint16_t width, uint16_t height, bo
     return 0;
 }
 
-#include "../system/log.hpp"
-
 Texture* Renderbuffer::texture(uint8_t bufIndex)
 {
     Texture* tex {nullptr};

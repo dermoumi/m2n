@@ -43,6 +43,7 @@ local ScreenTest3D = Screen:subclass 'screen.test.3d'
 
 function ScreenTest3D:initialize()
     self.sceneGraph = self:cache('scene:assets/scenes/Scene.scene')
+    self.depthShader = self:cache('shader:assets/shaders/depthonly.shader')
 end
 
 function ScreenTest3D:entered()
@@ -121,10 +122,11 @@ function ScreenTest3D:render()
 
     self.camera:clear(200, 200, 200)
 
-    self.camera:draw(self.cube)
+    self.camera:draw(self.scene)
 
     -- Graphics.setFillMode('solid')
-    self:view():drawFsQuad(self.rb:texture('depth'), 1280, 720, true)
+    self:view():drawFsQuad(self.rb:texture('depth'), 1280, 720, true, self.depthShader)
+    -- self:view():drawFsQuad(self.rb:texture(), 1280, 720, true)
         :draw(self.text)
 end
 

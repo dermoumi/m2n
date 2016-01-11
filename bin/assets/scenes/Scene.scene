@@ -1,4 +1,10 @@
 return {
+	['Plane'] = {
+		'model:assets/models/Plane.model',
+		ty = -1.1721203327178955,
+		sx = 500.0,
+		sz = 500.0
+	},
 	['player'] = {
 		'scene',
 		tx = 3.7598705291748047,

@@ -98,7 +98,6 @@ function Material:initialize(context)
     self._textures = {}
     self._uniforms = {}
     self._shader = Graphics.defaultShader(3)
-    self._colR, self._colG, self._colB, self._colA = 1, 1, 1, 1
 end
 
 function Material:setShader(shader)

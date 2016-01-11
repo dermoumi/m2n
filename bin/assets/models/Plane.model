@@ -1,0 +1,7 @@
+return {
+	['default'] = {
+		'mesh',
+		geometry = 'geom:assets/geometry/Plane_default.geom',
+		material = 'material:assets/materials/default.mat'
+	}
+}

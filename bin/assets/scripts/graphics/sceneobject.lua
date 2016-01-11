@@ -158,7 +158,7 @@ end
 function SceneObject:makeEntity(entity)
     entity:setPosition(self.tx, self.ty, self.tz)
         :setRotation(self.rx, self.ry, self.rz)
-        :setScaling(self.sx, self.sy, self.sy)
+        :setScaling(self.sx, self.sy, self.sz)
 
     for name, child in pairs(self.children) do
         entity:attach(name, child:makeEntity())
