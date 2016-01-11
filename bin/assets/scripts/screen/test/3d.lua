@@ -25,78 +25,29 @@
     For more information, please refer to <http://unlicense.org>
 --]]
 
-local Keyboard    = require 'window.keyboard'
-local Mouse       = require 'window.mouse'
-local Window      = require 'window'
-local Graphics    = require 'graphics'
-local Geometry    = require 'graphics.geometry'
-local ModelEntity = require 'graphics.modelentity'
-local Model       = require 'graphics.model'
-local Material    = require 'graphics.material'
-local Entity3D    = require 'graphics.entity3d'
-local Screen      = require 'screen'
-local SceneEntity = require 'graphics.sceneentity'
-local Mesh        = require 'graphics.mesh'
+local Keyboard     = require 'window.keyboard'
+local Mouse        = require 'window.mouse'
+local Window       = require 'window'
+local Graphics     = require 'graphics'
+local Geometry     = require 'graphics.geometry'
+local ModelEntity  = require 'graphics.modelentity'
+local Model        = require 'graphics.model'
+local Material     = require 'graphics.material'
+local Entity3D     = require 'graphics.entity3d'
+local Screen       = require 'screen'
+local SceneEntity  = require 'graphics.sceneentity'
+local Mesh         = require 'graphics.mesh'
+local RenderBuffer = require 'graphics.renderbuffer'
 
 local ScreenTest3D = Screen:subclass 'screen.test.3d'
 
-local function writeGeomteryFile(filename, vertexData, indexData)
-    local vertBuffer, vertBufSize = Geometry.vertexDataToBuffer(vertexData)
-    local indexBuffer, indexBufSize = Geometry.indexDataToBuffer(indexData)
-
-    local OutputFile = require 'filesystem.outputfile'
-    local file = OutputFile:new(filename)
-        :writeU32(vertBufSize)
-        :writeU32(indexBufSize)
-        :write(vertBuffer, vertBufSize)
-        :write(indexBuffer, indexBufSize)
-        :release()
-end
-
 function ScreenTest3D:initialize()
-    writeGeomteryFile('cube.geom', {
-            -1,-1,-1, 0, 0,
-            -1,-1, 1, 0, 0,
-            -1, 1, 1, 0, 0,
-             1, 1,-1, 0, 0,
-            -1,-1,-1, 0, 0,
-            -1, 1,-1, 0, 0,
-             1,-1, 1, 0, 0,
-            -1,-1,-1, 0, 0,
-             1,-1,-1, 0, 0,
-             1, 1,-1, 0, 0,
-             1,-1,-1, 0, 0,
-            -1,-1,-1, 0, 0,
-            -1,-1,-1, 0, 0,
-            -1, 1, 1, 0, 0,
-            -1, 1,-1, 0, 0,
-             1,-1, 1, 0, 0,
-            -1,-1, 1, 0, 0,
-            -1,-1,-1, 0, 0,
-            -1, 1, 1, 0, 0,
-            -1,-1, 1, 0, 0,
-             1,-1, 1, 0, 0,
-             1, 1, 1, 0, 0,
-             1,-1,-1, 0, 0,
-             1, 1,-1, 0, 0,
-             1,-1,-1, 0, 0,
-             1, 1, 1, 0, 0,
-             1,-1, 1, 0, 0,
-             1, 1, 1, 0, 0,
-             1, 1,-1, 0, 0,
-            -1, 1,-1, 0, 0,
-             1, 1, 1, 0, 0,
-            -1, 1,-1, 0, 0,
-            -1, 1, 1, 0, 0,
-             1, 1, 1, 0, 0,
-            -1, 1, 1, 0, 0,
-             1,-1, 1, 0, 0
-        })
-
     self.sceneGraph = self:cache('scene:assets/scenes/Scene.scene')
 end
 
 function ScreenTest3D:entered()
+    self.rb = RenderBuffer:new(2048, 1024, true)
+
     self.text = require('graphics.text')
         :new('', require 'game.font', 14)
         :setPosition(10, 10)
@@ -107,6 +58,8 @@ function ScreenTest3D:entered()
 
     self.camera = self.scene:lookupName('main_camera') or require('graphics.cameraentity'):new()
         :attachTo('main_camera', self.player)
+
+    self.camera:setRenderbuffer(self.rb)
 
     self.cube = self.scene:lookupName('cube') or require('graphics.modelentity'):new()
     -- self.cube:setPosition(0, 0, -3)
@@ -171,7 +124,8 @@ function ScreenTest3D:render()
     self.camera:draw(self.cube)
 
     -- Graphics.setFillMode('solid')
-    self:view():draw(self.text)
+    self:view():drawFsQuad(self.rb:texture(), 1280, 720, true)
+        :draw(self.text)
 end
 
 function ScreenTest3D:keydown(scancode, keyCode, repeated)

@@ -167,16 +167,16 @@ function Camera2D:draw(drawable, context)
     return self
 end
 
-function Camera2D:drawFsQuad(texture, width, height)
+function Camera2D:drawFsQuad(texture, width, height, flipped, shader)
     self:apply()
-    Graphics.drawFsQuad(texture, width, height)
+    Graphics.drawFsQuad(texture, width, height, flipped, shader)
 
     return self
 end
 
-function Camera2D:fillFsQuad(r, g, b, a, blendMode)
+function Camera2D:fillFsQuad(r, g, b, a, blendMode, shader)
     self:apply()
-    Graphics.fillFsQuad(r, g, b, a, blendMode)
+    Graphics.fillFsQuad(r, g, b, a, blendMode, shader)
 
     return self
 end

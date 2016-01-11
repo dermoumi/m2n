@@ -86,7 +86,7 @@ ffi.cdef [[
 local vertexLayouts = {}
 local defaultShaders = {}
 local identityMatrix = require('util.matrix'):new()
-local defaultTexture, vbFsQuad, caps
+local defaultTexture, vbFsQuad, vbFlippedFsQuad, caps
 
 local toFillMode = {
     solid = 0,
@@ -225,12 +225,18 @@ function Renderer.init()
     ]])
 
     -- Create the Fullscreen quad vertex buffer
-    local buffer = ffi.new('float[12]', {
+    vbFsQuad = require('graphics.arraybuffer').vertexbuffer(48, ffi.new('float[12]', {
         -1,  1, 0, 0,
         -1, -3, 0, 2,
          3,  1, 2, 0
-    })
-    vbFsQuad = require('graphics.arraybuffer').vertexbuffer(ffi.sizeof(buffer), buffer)
+    }))
+
+    -- Create the Fullscreen flipped quad vertex buffer
+    vbFlippedFsQuad = require('graphics.arraybuffer').vertexbuffer(48, ffi.new('float[12]', {
+        -1,  3, 0, 2,
+        -1, -1, 0, 0,
+         3, -1, 2, 0
+    }))
 
     -- Create the default, empty texture
     defaultTexture = require('graphics.texture'):new()
@@ -299,7 +305,7 @@ function Renderer.defaultTexture()
     return defaultTexture
 end
 
-function Renderer.drawFsQuad(texture, width, height)
+function Renderer.drawFsQuad(texture, width, height, flipped, shader)
     if width and height then
         local texW, texH = texture:size()
         width, height = texW / width, texH / height
@@ -309,7 +315,7 @@ function Renderer.drawFsQuad(texture, width, height)
 
     texture:bind(0)
 
-    local shader = defaultShaders[1]
+    shader = shader or defaultShaders[1]
     shader:bind()
     shader:setUniform('uProjMat', identityMatrix)
     shader:setUniform('uTransMat', identityMatrix)
@@ -317,20 +323,22 @@ function Renderer.drawFsQuad(texture, width, height)
     shader:setUniform('uTexSize', width, height)
     shader:setSampler('uTexture0', 0)
 
-    require('graphics.arraybuffer').setVertexbuffer(vbFsQuad, 0, 0, 16)
     C.nxRendererSetVertexLayout(vertexLayouts[1])
+    require('graphics.arraybuffer').setVertexbuffer(
+        flipped and vbFlippedFsQuad or vbFsQuad, 0, 0, 16
+    )
 
     C.nxRendererDraw(4, 0, 3)
 
     return Renderer
 end
 
-function Renderer.fillFsQuad(r, g, b, a, blendMode)
+function Renderer.fillFsQuad(r, g, b, a, blendMode, shader)
     defaultTexture:bind(0)
 
     Renderer.setBlendMode(blendMode or 'alpha')
 
-    local shader = defaultShaders[1]
+    shader = shader or defaultShaders[1]
     shader:bind()
     shader:setUniform('uProjMat', identityMatrix)
     shader:setUniform('uTransMat', identityMatrix)
