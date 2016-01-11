@@ -155,9 +155,10 @@ function Renderer.init()
         {'aTexCoords', 0, 2, 12, 0}
     }))
     --
-    vertexLayouts[3] = C.nxRendererRegisterVertexLayout(2, ffi.new('NxVertexLayoutAttrib[2]', {
+    vertexLayouts[3] = C.nxRendererRegisterVertexLayout(3, ffi.new('NxVertexLayoutAttrib[3]', {
         {'aPosition',  0, 3, 0,  0},
-        {'aTexCoords', 0, 2, 12, 0}
+        {'aTexCoords', 0, 2, 12, 0},
+        {'aNormal'   , 0, 3, 20, 0}
     }))
 
     -- Initialize default shaders
@@ -209,6 +210,7 @@ function Renderer.init()
     defaultShaders[3] = Shader:new([[
         attribute vec3 aPosition;
         attribute vec2 aTexCoords;
+        attribute vec3 aNormal;
         uniform mat4 uTransMat;
         uniform mat4 uProjMat;
         varying vec2 vTexCoords;

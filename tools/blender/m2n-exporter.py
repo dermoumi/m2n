@@ -57,6 +57,15 @@ class ExportM2N(bpy.types.Operator, ExportHelper):
         name = 'Export entire scene',
         default = False
     )
+    geomFormat = EnumProperty(
+        name = 'Geom format',
+        items = (
+            ('DEF', 'Default', ''),
+            ('VTN', 'Vert/TxCrd/Nrm', ''),
+            ('WJT', '+Wght/Jnt/TxCrd1', '')
+        ),
+        default = 'DEF'
+    )
 
     def objCommon(self, obj, noTransformation = False):
         strings = []
@@ -231,6 +240,10 @@ class ExportM2N(bpy.types.Operator, ExportHelper):
         if not os.path.exists(directory):
             os.makedirs(directory)
 
+        if self.geomFormat in ['DEF', 'VTN']:
+            self.writeGeomVTN(directory)
+
+    def writeGeomVTN(self, directory):
         for name in self.models:
             model = self.models[name]
             for material in model:
@@ -239,13 +252,15 @@ class ExportM2N(bpy.types.Operator, ExportHelper):
                 vertList = model[material]
 
                 out = open(filepath, "wb")
-                out.write(pack('<II', len(vertList) * 20, 0))
+                out.write(pack('<6sB', str.encode('M2N1.0'), 0))
+                out.write(pack('<II', len(vertList) * 32, 0))
 
                 for vert in vertList:
                     pos = vert['position']
                     tc0 = vert['texCoords0']
+                    nrm = vert['normal']
 
-                    out.write(pack('<fffff', pos[0], pos[1], pos[2], tc0[0], tc0[1]))
+                    out.write(pack('<8f', pos[0], pos[1], pos[2], tc0[0], tc0[1], nrm[0], nrm[1], nrm[2]))
 
                 out.close()
 

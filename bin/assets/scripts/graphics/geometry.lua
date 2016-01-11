@@ -36,7 +36,7 @@ local C = ffi.C
 
 ffi.cdef [[
     typedef struct {
-        float x, y, z, u, v;
+        float x, y, z, u, v, nx, ny, nz;
     } NxMeshVertexPosCoords;
 ]]
 
@@ -51,16 +51,26 @@ function Geometry.static.factory(task)
             local file = require('filesystem.inputfile'):new(filename)
                 :onError(function() success = false end)
 
-            local vertBuffer, vertBufSize, indexBuffer, indexBufSize
+            local headGuard = ffi.string(file:read(6), 6)
+            if headGuard == 'M2N1.0' then
+                local format = file:readU8()
+                if format == 0 then
+                    local vertBuffer, vertBufSize, indexBuffer, indexBufSize
 
-            vertBufSize, indexBufSize = file:readU32(), file:readU32()
-            if vertBufSize > 0 then vertBuffer = file:read(vertBufSize) end
-            if indexBufSize > 0 then indexBuffer = file:read(indexBufSize) end
+                    vertBufSize, indexBufSize = file:readU32(), file:readU32()
+                    if vertBufSize > 0 then vertBuffer = file:read(vertBufSize) end
+                    if indexBufSize > 0 then indexBuffer = file:read(indexBufSize) end
 
-            if not success then return false end
+                    if not success then return false end
 
-            geom:setVertexData(vertBuffer, vertBufSize)
-                :setIndexData(indexBuffer, indexBufSize)
+                    geom:setVertexData(vertBuffer, vertBufSize)
+                        :setIndexData(indexBuffer, indexBufSize)
+                else
+                    error('Unknown geometry format')
+                end
+            else
+                error('Unknown geometry format')
+            end
         end)
 end
 
