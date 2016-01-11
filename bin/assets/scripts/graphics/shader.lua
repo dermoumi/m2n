@@ -138,11 +138,13 @@ function Shader:setUniform(name, a, b, c, d)
         if not uniform then
             uniform = C.nxShaderUniformLocation(self._cdata, name)
             self._uniforms[name] = uniform
+
+            if uniform < 0 then
+                Log.warning('Uniform "' .. name .. '" does not exist')
+            end
         end
 
-        if uniform < 0 then
-            Log.warning('Uniform "' .. name .. '" does not exist')
-        else
+        if uniform >= 0 then
             local uniformType, uniformData
             if class.Object.isInstanceOf(a, Matrix) then
                 uniformType = 4
@@ -175,11 +177,13 @@ function Shader:setSampler(name, sampler)
         if not uniform then
             uniform = C.nxShaderSamplerLocation(self._cdata, name)
             self._samplers[name] = uniform
+
+            if uniform < 0 then
+                Log.warning('Sampler "' .. name .. '" does not exist')
+            end
         end
 
-        if uniform < 0 then
-            Log.warning('Sampler "' .. name .. '"does not exist')
-        else
+        if uniform >= 0 then
             C.nxShaderSetSampler(self._cdata, uniform, sampler)
         end
     end

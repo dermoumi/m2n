@@ -1,0 +1,7 @@
+return {
+	['sloth'] = {
+		'mesh',
+		geometry = 'geom:assets/geometry/Torus_sloth.geom',
+		material = 'material:assets/materials/sloth.mat'
+	}
+}

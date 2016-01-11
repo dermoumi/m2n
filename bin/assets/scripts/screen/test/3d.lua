@@ -43,7 +43,7 @@ local ScreenTest3D = Screen:subclass 'screen.test.3d'
 
 function ScreenTest3D:initialize()
     self.sceneGraph = self:cache('scene:assets/scenes/Scene.scene')
-    self.depthShader = self:cache('shader:assets/shaders/depthonly.shader')
+    self.depthShader = self:cache('shader:assets/shaders/outline.shader')
 end
 
 function ScreenTest3D:entered()
@@ -61,6 +61,7 @@ function ScreenTest3D:entered()
         :attachTo('main_camera', self.player)
 
     self.camera:setRenderbuffer(self.rb)
+        :setViewport(0, 0, 1281, 721)
 
     self.cube = self.scene:lookupName('cube') or require('graphics.modelentity'):new()
     -- self.cube:setPosition(0, 0, -3)
@@ -125,7 +126,15 @@ function ScreenTest3D:render()
     self.camera:draw(self.scene)
 
     -- Graphics.setFillMode('solid')
-    self:view():drawFsQuad(self.rb:texture('depth'), 1280, 720, true, self.depthShader)
+    local ux, uy = self.rb:size()
+    ux, uy = 1/ux, 1/uy
+
+    self.rb:texture('depth'):bind(1)
+    self.depthShader:bind()
+        :setSampler('uDepthBuf0', 1)
+        :setUniform('uUnit', ux, uy)
+
+    self:view():drawFsQuad(self.rb:texture(), 1280, 720, true, self.depthShader)
     -- self:view():drawFsQuad(self.rb:texture(), 1280, 720, true)
         :draw(self.text)
 end

@@ -1,5 +1,0 @@
-return {
-	textures = {
-		uTexture0 = 'tex2d:assets/textures/pasrien.png'
-	}
-}

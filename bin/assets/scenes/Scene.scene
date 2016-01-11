@@ -1,9 +1,12 @@
 return {
-	['Plane'] = {
-		'model:assets/models/Plane.model',
-		ty = -1.1721203327178955,
-		sx = 500.0,
-		sz = 500.0
+	['Torus'] = {
+		'model:assets/models/Torus.model',
+		tz = 3.317373037338257
+	},
+	['Cylinder'] = {
+		'model:assets/models/Cylinder.model',
+		ty = 0.5908737182617188,
+		tz = -3.061708688735962
 	},
 	['player'] = {
 		'scene',
