@@ -71,7 +71,7 @@ function CameraEntity:setPerspective(fov, aspect, near, far)
 
     self._fov, self._aspect, self._perspective = fov, aspect, true
 
-    local ymax = near * math.tan(fov/360)
+    local ymax = near * math.tan(fov/180)
     local xmax = ymax * aspect
     return self:setView(-xmax, xmax, -ymax, ymax, near, far)
 end

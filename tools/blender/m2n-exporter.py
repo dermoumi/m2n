@@ -3,7 +3,8 @@ bl_info = {
     "category": "Export",
 }
 
-import os, bpy, bmesh
+import os, bpy, bmesh, math
+from mathutils import *
 from bpy.props import *
 from struct import *
 from bpy_extras.io_utils import ExportHelper
@@ -57,39 +58,80 @@ class ExportM2N(bpy.types.Operator, ExportHelper):
         default = False
     )
 
-    def meshToStr(self, obj):
+    def objCommon(self, obj, noTransformation = False):
+        strings = []
+
+        if not noTransformation:
+            loc = obj.location
+            rot = obj.matrix_local.to_euler('XYZ')
+            scl = obj.scale
+
+            if loc.x != 0: strings.append('tx = ' + str( loc.x))
+            if loc.z != 0: strings.append('ty = ' + str( loc.z))
+            if loc.y != 0: strings.append('tz = ' + str(-loc.y))
+            if rot.x != 0: strings.append('rx = ' + str( rot.x))
+            if rot.z != 0: strings.append('ry = ' + str( rot.z))
+            if rot.y != 0: strings.append('rz = ' + str(-rot.y))
+            if scl.x != 1: strings.append('sx = ' + str( scl.x))
+            if scl.z != 1: strings.append('sy = ' + str( scl.z))
+            if scl.y != 1: strings.append('sz = ' + str( scl.y))
+
+        for child in obj.children:
+            if obj.type in ['MESH', 'CAMERA', 'EMPTY']:
+                strings.append("['" + child.name + "'] = " + self.objToStr(child).replace('\n', '\n\t'))
+
+        return strings
+
+    def objToStr(self, obj):
+        if obj.type == 'MESH':
+            return self.meshToStr(obj)
+        elif obj.type == 'CAMERA':
+            return self.cameraToStr(obj)
+        elif obj.type == 'EMPTY':
+            return self.emptyToStr(obj)
+        else:
+            return ''
+
+    def cameraToStr(self, obj):
+        strings = self.objCommon(obj, True)
+
+        q = Euler((-math.pi/2, 0, 0), 'XYZ').to_quaternion() * obj.matrix_local.to_quaternion()
+
         loc = obj.location
-        rot = obj.matrix_local.to_euler('XYZ')
+        rot = q.to_euler('XYZ')
         scl = obj.scale
 
-        tx =  loc.x
-        ty =  loc.z
-        tz = -loc.y
-        rx =  rot.x
-        ry =  rot.z
-        rz = -rot.y
-        sx =  scl.x
-        sy =  scl.z
-        sz =  scl.y
+        if loc.x != 0: strings.append('tx = ' + str( loc.x))
+        if loc.z != 0: strings.append('ty = ' + str( loc.z))
+        if loc.y != 0: strings.append('tz = ' + str(-loc.y))
+        if rot.x != 0: strings.append('rx = ' + str( rot.x))
+        if rot.z != 0: strings.append('ry = ' + str( rot.z))
+        if rot.y != 0: strings.append('rz = ' + str(-rot.y))
+        if scl.x != 1: strings.append('sx = ' + str( scl.x))
+        if scl.z != 1: strings.append('sy = ' + str( scl.z))
+        if scl.y != 1: strings.append('sz = ' + str( scl.y))
 
-        if tx == 0 and ty == 0 and tz == 0 and rx == 0 and ry == 0 and rz == 0 and sx == 1 and sy == 1 and sz == 1 and len(obj.children) == 0:
+        strings.append('fov = ' + str(obj.data.angle * 180 / math.pi))
+        strings.append('near = ' + str(obj.data.clip_start))
+        strings.append('far = ' + str(obj.data.clip_end))
+
+        strings.insert(0, "'camera'")
+        return '{\n\t' + ',\n\t'.join(strings) + '\n}'
+
+    def emptyToStr(self, obj):
+        strings = self.objCommon(obj)
+
+        strings.insert(0, "'scene'")
+        return '{\n\t' + ',\n\t'.join(strings) + '\n}'
+
+    def meshToStr(self, obj):
+        strings = self.objCommon(obj)
+
+        if not strings:
             return modelNameFormat % (self.ns + obj.data.name)
-        else:
-            strings = [modelNameFormat % (self.ns + obj.data.name)]
-            if tx != 0: strings.append('tx = ' + str(tx))
-            if ty != 0: strings.append('ty = ' + str(ty))
-            if tz != 0: strings.append('tz = ' + str(tz))
-            if rx != 0: strings.append('rx = ' + str(rx))
-            if ry != 0: strings.append('ry = ' + str(ry))
-            if rz != 0: strings.append('rz = ' + str(rz))
-            if sx != 1: strings.append('sx = ' + str(sx))
-            if sy != 1: strings.append('sy = ' + str(sy))
-            if sz != 1: strings.append('sz = ' + str(sz))
 
-            for child in obj.children:
-                strings.append("['" + child.name + "'] = " + self.meshToStr(child).replace('\n', '\n\t'))
-
-            return '{\n\t' + ',\n\t'.join(strings) + '\n}'
+        strings.insert(0, modelNameFormat % (self.ns + obj.data.name))
+        return '{\n\t' + ',\n\t'.join(strings) + '\n}'
 
     def modelToStr(self, name, model):
         matStrings = []
@@ -164,8 +206,8 @@ class ExportM2N(bpy.types.Operator, ExportHelper):
 
             objStrings = []
             for obj in scene.objects:
-                if obj.type == 'MESH' and obj.parent is None:
-                    objStrings.append("['" + obj.name + "'] = " + self.meshToStr(obj))
+                if obj.type in ['MESH', 'CAMERA', 'EMPTY'] and obj.parent is None:
+                    objStrings.append("['" + obj.name + "'] = " + self.objToStr(obj))
 
             out.write(',\n'.join(objStrings).replace('\n', '\n\t') + '\n}')
             out.close()

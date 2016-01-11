@@ -192,7 +192,7 @@ local function checkTemporary(dep, screen, temporary)
         end
         temporaryDeps[screen][dep] = true
     elseif temporaryDeps[screen] then
-        temporary[screen][dep] = false
+        temporaryDeps[screen][dep] = false
     end
 end
 
