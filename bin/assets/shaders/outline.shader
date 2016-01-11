@@ -69,8 +69,5 @@ return [[
             gl_FragColor = colDifForce > edgeThresh ?
                 vec4(vec3(texcol*edgeForce), 1.0) * uColor :
                 vec4(texcol) * uColor;
-
-            // float d = 1.0 - depth(vTexCoords);
-            // gl_FragColor = vec4(d, d, d, 1.0) * uColor;
         }
     ]]

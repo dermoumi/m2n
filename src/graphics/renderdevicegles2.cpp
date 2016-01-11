@@ -403,6 +403,7 @@ uint32_t RenderDeviceGLES2::createTexture(TextureType type, int width, int heigh
         break;
     case DEPTH:
         tex.glFmt = GL_DEPTH_COMPONENT;
+        break;
     default:
         Log::warning("Could not create texture: invalid format");
         return 0;
@@ -931,7 +932,7 @@ uint32_t RenderDeviceGLES2::createRenderBuffer(uint32_t width, uint32_t height,
         // Create depth texture
         if ((samples > 0 && glExt::EXT_multisampled_render_to_texture) ||
             (!glExt::OES_depth_texture && !glExt::ANGLE_depth_texture))
-        {
+        {            
             glGenRenderbuffers(1, &rb.depthBuf);
             glBindRenderbuffer(GL_RENDERBUFFER, rb.depthBuf);
 
@@ -947,8 +948,11 @@ uint32_t RenderDeviceGLES2::createRenderBuffer(uint32_t width, uint32_t height,
                 rb.depthBuf);
         }
         else {
+            Log::info("test2");
+
             uint32_t texObj = createTexture(Tex2D, rb.width, rb.height, 1, DEPTH, false, false,
                 false);
+            Log::info("test3");
             if (glExt::EXT_shadow_samplers) {
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE_EXT, GL_NONE);
             }
