@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,11 +23,10 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local Unicode = {}
 
-------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
@@ -36,7 +35,6 @@ ffi.cdef [[
     const char* nxUnicodeUtf32To8(const uint32_t*, uint32_t*);
 ]]
 
-------------------------------------------------------------
 function Unicode.utf8To32(str)
     local sizePtr = ffi.new('uint32_t[1]')
     local strPtr = C.nxUnicodeUtf8To32(str, sizePtr)
@@ -49,7 +47,6 @@ function Unicode.utf8To32(str)
     return utf32
 end
 
-------------------------------------------------------------
 function Unicode.utf32To8(str)
     -- Make sure the string ends with a 0
     if str[#str] ~= 0 then str[#str + 1] = 0 end
@@ -62,5 +59,4 @@ function Unicode.utf32To8(str)
     return ffi.string(strPtr, sizePtr[0])
 end
 
-------------------------------------------------------------
 return Unicode

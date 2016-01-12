@@ -1025,7 +1025,7 @@ LUA_API const char *lua_setupvalue(lua_State *L, int idx, int n)
   return name;
 }
 
-/* -- Calls --------------------------------------------------------------- */
+/* -- Calls ----- */
 
 LUA_API void lua_call(lua_State *L, int nargs, int nresults)
 {

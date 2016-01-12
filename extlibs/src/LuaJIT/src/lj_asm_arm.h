@@ -333,7 +333,7 @@ static int asm_fusemadd(ASMState *as, IRIns *ir, ARMIns ai, ARMIns air)
 }
 #endif
 
-/* -- Calls --------------------------------------------------------------- */
+/* -- Calls ----- */
 
 /* Generate a call to a C function. */
 static void asm_gencall(ASMState *as, const CCallInfo *ci, IRRef *args)
@@ -483,7 +483,7 @@ static void asm_callx(ASMState *as, IRIns *ir)
   asm_gencall(as, &ci, args);
 }
 
-/* -- Returns ------------------------------------------------------------- */
+/* -- Returns --- */
 
 /* Return to lower frame. Guard that it goes to the right spot. */
 static void asm_retf(ASMState *as, IRIns *ir)

@@ -1,9 +1,9 @@
-------------------------------------------------------------------------------
+--------------------
 -- DynASM ARM module.
 --
 -- Copyright (C) 2005-2014 Mike Pall. All rights reserved.
 -- See dynasm.lua for full copyright notice.
-------------------------------------------------------------------------------
+--------------------
 
 -- Module information:
 local _info = {
@@ -61,7 +61,7 @@ local actargs = { 0 }
 -- Current number of section buffer positions for dasm_put().
 local secpos = 1
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Dump action names and numbers.
 local function dumpactions(out)
@@ -84,7 +84,7 @@ local function writeactions(out, name)
   assert(out:write("0x", tohex(actlist[nn]), "\n};\n\n"))
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Add word to action list.
 local function wputxw(n)
@@ -132,7 +132,7 @@ local function wputpos(pos, n)
   actlist[pos] = n
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Global label name -> global label number. With auto assignment on 1st use.
 local next_global = 20
@@ -178,7 +178,7 @@ local function writeglobalnames(out, name)
   out:write("  (const char *)0\n};\n")
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Extern label name -> extern label number. With auto assignment on 1st use.
 local next_extern = 0
@@ -211,7 +211,7 @@ local function writeexternnames(out, name)
   out:write("  (const char *)0\n};\n")
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Arch-specific maps.
 
@@ -237,7 +237,7 @@ local map_cond = {
   hs = 2, lo = 3,
 }
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Template strings for ARM instructions.
 local map_op = {
@@ -531,7 +531,7 @@ do
   end
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 local function parse_gpr(expr)
   local tname, ovreg = match(expr, "^([%w_]+):(r1?[0-9])$")
@@ -823,7 +823,7 @@ local function parse_vload(q)
   werror("expected address operand")
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Handle opcodes defined with template strings.
 local function parse_template(params, template, nparams, pos)
@@ -943,7 +943,7 @@ map_op[".template__"] = function(params, template, nparams)
   error(err, 0)
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Pseudo-opcode to mark the position where the action list is to be emitted.
 map_op[".actionlist_1"] = function(params)
@@ -973,7 +973,7 @@ map_op[".externnames_1"] = function(params)
   wline(function(out) writeexternnames(out, name) end)
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Label pseudo-opcode (converted from trailing colon form).
 map_op[".label_1"] = function(params)
@@ -984,7 +984,7 @@ map_op[".label_1"] = function(params)
   waction("LABEL_"..mode, n, s, 1)
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Pseudo-opcodes for data storage.
 map_op[".long_*"] = function(params)
@@ -1017,7 +1017,7 @@ map_op[".align_1"] = function(params)
   werror("bad alignment")
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Pseudo-opcode for (primitive) type definitions (map to C types).
 map_op[".type_3"] = function(params, nparams)
@@ -1060,7 +1060,7 @@ local function dumptypes(out, lvl)
   out:write("\n")
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Set the current section.
 function _M.section(num)
@@ -1068,7 +1068,7 @@ function _M.section(num)
   wflush(true) -- SECTION is a terminal action.
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Dump architecture description.
 function _M.dumparch(out)
@@ -1084,7 +1084,7 @@ function _M.dumpdef(out, lvl)
   dumpexterns(out, lvl)
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Pass callbacks from/to the DynASM core.
 function _M.passcb(wl, we, wf, ww)
@@ -1118,5 +1118,5 @@ end
 
 return _M
 
-------------------------------------------------------------------------------
+--------------------
 

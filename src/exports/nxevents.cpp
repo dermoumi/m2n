@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,15 +23,13 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #include "../config.hpp"
 
 #include <SDL2/SDL.h>
 #include <string>
 
-//----------------------------------------------------------
-// Constants
-//----------------------------------------------------------
 enum NxEventType
 {
     NX_NoEvent = 0,
@@ -68,9 +66,6 @@ enum NxEventType
     NX_FileDropped
 };
 
-//----------------------------------------------------------
-// Declarations
-//----------------------------------------------------------
 using NxWindow = SDL_Window;
 extern NxWindow* nxWindowGet();
 
@@ -79,9 +74,6 @@ struct NxEvent {
     const char* t;
 };
 
-//----------------------------------------------------------
-// Locals
-//----------------------------------------------------------
 static NxEventType nextEvent(NxEvent* e, int (*func)(SDL_Event*))
 {
     static std::string strArg;
@@ -249,18 +241,12 @@ static NxEventType nextEvent(NxEvent* e, int (*func)(SDL_Event*))
     }
 }
 
-//----------------------------------------------------------
-// Exported functions
-//----------------------------------------------------------
 NX_EXPORT NxEventType nxEventWait(NxEvent* e)
 {
     return nextEvent(e, SDL_WaitEvent);
 }
 
-//----------------------------------------------------------
 NX_EXPORT NxEventType nxEventPoll(NxEvent* e)
 {
     return nextEvent(e, SDL_PollEvent);
 }
-
-//==============================================================================

@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,14 +23,12 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #include "../config.hpp"
 #include "../system/log.hpp"
 #include "../graphics/renderdevice.hpp"
 
-//----------------------------------------------------------
-// Declarations
-//----------------------------------------------------------
 struct NxVertexLayoutAttrib
 {
     char    semanticName[32];
@@ -40,39 +38,31 @@ struct NxVertexLayoutAttrib
     uint8_t format;
 };
 
-//----------------------------------------------------------
-// Exported functions
-//----------------------------------------------------------
 NX_EXPORT bool nxRendererInit()
 {
     return RenderDevice::instance().initialize();
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxRendererBegin()
 {
     RenderDevice::instance().beginRendering();
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxRendererFinish()
 {
     RenderDevice::instance().finishRendering();
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxRendererResetStates()
 {
     RenderDevice::instance().resetStates();
 }
 
-//----------------------------------------------------------
 NX_EXPORT bool nxRendererCommitStates(uint32_t filter)
 {
     return RenderDevice::instance().commitStates(filter);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxRendererClear(uint8_t r, uint8_t g, uint8_t b, uint8_t a, float depth,
     bool col0, bool col1, bool col2, bool col3, bool clrDepth)
 {
@@ -88,19 +78,16 @@ NX_EXPORT void nxRendererClear(uint8_t r, uint8_t g, uint8_t b, uint8_t a, float
     RenderDevice::instance().clear(flags, clearColor, depth);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxRendererDraw(uint8_t primType, uint32_t firstVert, uint32_t vertCount)
 {
     RenderDevice::instance().draw(static_cast<RenderDevice::PrimType>(primType), firstVert, vertCount);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxRendererDrawIndexed(uint8_t primType, uint32_t firstIndex, uint32_t indexCount)
 {
     RenderDevice::instance().drawIndexed(static_cast<RenderDevice::PrimType>(primType), firstIndex, indexCount);
 }
 
-//----------------------------------------------------------
 NX_EXPORT uint32_t nxRendererRegisterVertexLayout(uint8_t numAttribs,
     const NxVertexLayoutAttrib* attribs)
 {
@@ -108,152 +95,128 @@ NX_EXPORT uint32_t nxRendererRegisterVertexLayout(uint8_t numAttribs,
     for (uint8_t i = 0; i < numAttribs; ++i) {
         attributes[i].semanticName = attribs[i].semanticName;
         memcpy(&attributes[i].vbSlot, &attribs[i].vbSlot, sizeof(NxVertexLayoutAttrib) - 32);
-    } 
+    }
 
     return RenderDevice::instance().registerVertexLayout(numAttribs, attributes.data());
 }
 
-//----------------------------------------------------------
 NX_EXPORT uint32_t nxRendererCreateVertexBuffer(uint32_t size, const void* data)
 {
     return RenderDevice::instance().createVertexBuffer(size, data);
 }
 
-//----------------------------------------------------------
 NX_EXPORT uint32_t nxRendererCreateIndexBuffer(uint32_t size, const void* data)
 {
     return RenderDevice::instance().createIndexBuffer(size, data);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxRendererDestroyBuffer(uint32_t buffer)
 {
     RenderDevice::instance().destroyBuffer(buffer);
 }
 
-//----------------------------------------------------------
 NX_EXPORT bool nxRendererUpdateBufferData(uint32_t buffer, uint32_t offset, uint32_t size,
     const void* data)
 {
     return RenderDevice::instance().updateBufferData(buffer, offset, size, data);
 }
 
-//----------------------------------------------------------
 NX_EXPORT uint32_t nxRendererGetBufferMemory()
 {
     return RenderDevice::instance().getBufferMemory();
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxRendererSetViewport(int x, int y, int width, int height)
 {
     RenderDevice::instance().setViewport(x, y, width, height);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxRendererSetScissorRect(int x, int y, int width, int height)
 {
     RenderDevice::instance().setScissorRect(x, y, width, height);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxRendererSetIndexBuffer(uint32_t bufObj, uint8_t format)
 {
     RenderDevice::instance().setIndexBuffer(bufObj, static_cast<RenderDevice::IndexFormat>(format));
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxRendererSetVertexBuffer(uint8_t slot, uint32_t vbObj, uint32_t offset,
     uint32_t stride)
 {
     RenderDevice::instance().setVertexBuffer(slot, vbObj, offset, stride);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxRendererSetVertexLayout(uint8_t vlObj)
 {
     RenderDevice::instance().setVertexLayout(vlObj);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxRendererSetTexture(uint8_t slot, uint32_t texObj, uint16_t samplerState)
 {
     RenderDevice::instance().setTexture(slot, texObj, samplerState);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxRendererSetColorWriteMask(bool enabled)
 {
     RenderDevice::instance().setColorWriteMask(enabled);
 }
 
-//----------------------------------------------------------
 NX_EXPORT bool nxRendererGetColorWriteMask()
 {
     return RenderDevice::instance().getColorWriteMask();
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxRendererSetFillMode(uint8_t fillMode)
 {
     RenderDevice::instance().setFillMode(static_cast<RenderDevice::FillMode>(fillMode));
 }
 
-//----------------------------------------------------------
 NX_EXPORT uint8_t nxRendererGetFillMode()
 {
     return RenderDevice::instance().getFillMode();
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxRendererSetCullMode(uint8_t cullMode)
 {
     RenderDevice::instance().setCullMode(static_cast<RenderDevice::CullMode>(cullMode));
 }
 
-//----------------------------------------------------------
 NX_EXPORT uint8_t nxRendererGetCullMode()
 {
     return RenderDevice::instance().getCullMode();
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxRendererSetScissorTest(bool enabled)
 {
     RenderDevice::instance().setScissorTest(enabled);
 }
 
-//----------------------------------------------------------
 NX_EXPORT bool nxRendererGetScissorTest()
 {
     return RenderDevice::instance().getScissorTest();
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxRendererSetMultisampling(bool enabled)
 {
     RenderDevice::instance().setMultisampling(enabled);
 }
 
-//----------------------------------------------------------
 NX_EXPORT bool nxRendererGetMultisampling()
 {
     return RenderDevice::instance().getMultisampling();
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxRendererSetAlphaToCoverage(bool enabled)
 {
     RenderDevice::instance().setAlphaToCoverage(enabled);
 }
 
-//----------------------------------------------------------
 NX_EXPORT bool nxRendererGetAlphaToCoverage()
 {
     return RenderDevice::instance().getAlphaToCoverage();
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxRendererSetBlendMode(bool enabled, uint8_t src, uint8_t dst)
 {
     RenderDevice::instance().setBlendMode(
@@ -262,7 +225,6 @@ NX_EXPORT void nxRendererSetBlendMode(bool enabled, uint8_t src, uint8_t dst)
     );
 }
 
-//----------------------------------------------------------
 NX_EXPORT bool nxRendererGetBlendMode(uint8_t* blendFuncs)
 {
     return RenderDevice::instance().getBlendMode(
@@ -271,55 +233,45 @@ NX_EXPORT bool nxRendererGetBlendMode(uint8_t* blendFuncs)
     );
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxRendererSetDepthMask(bool enabled)
 {
     RenderDevice::instance().setDepthMask(enabled);
 }
 
-//----------------------------------------------------------
 NX_EXPORT bool nxRendererGetDepthMask()
 {
     return RenderDevice::instance().getDepthMask();
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxRendererSetDepthTest(bool enabled)
 {
     RenderDevice::instance().setDepthTest(enabled);
 }
 
-//----------------------------------------------------------
 NX_EXPORT bool nxRendererGetDepthTest()
 {
     return RenderDevice::instance().getDepthTest();
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxRendererSetDepthFunc(uint8_t func)
 {
     RenderDevice::instance().setDepthFunc(static_cast<RenderDevice::DepthFunc>(func));
 }
 
-//----------------------------------------------------------
 NX_EXPORT uint8_t nxRendererGetDepthFunc()
 {
     return RenderDevice::instance().getDepthFunc();
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxRendererSync()
 {
     RenderDevice::instance().sync();
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxRendererGetCapabilities(uint32_t* u, bool* b)
 {
     RenderDevice::instance().getCapabilities(
         &u[0], &u[1], &u[2], &u[3], &b[0], &b[1], &b[2], &b[3], &b[4], &b[5], &b[6], &b[7], &b[8],
-        &b[9], &b[10], &b[11]
+        &b[9], &b[10], &b[11], &b[12]
     );
 }
-
-//==============================================================================

@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,11 +23,10 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local Audio = {}
 
-------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
@@ -61,38 +60,32 @@ ffi.cdef [[
     void nxAudioSetGlobalFilter(NxAudioFilter*, uint32_t);
 ]]
 
-------------------------------------------------------------
 function Audio.init()
     return C.nxAudioInit()
 end
 
-------------------------------------------------------------
 function Audio.release()
     C.nxAudioRelease()
 end
 
-------------------------------------------------------------
 function Audio.stopAll()
     C.nxAudioStopAll()
 
     return Audio
 end
 
-------------------------------------------------------------
 function Audio.pauseAll(pause)
     C.nxAudioPauseAll(pause)
 
     return Audio
 end
 
-------------------------------------------------------------
 function Audio.setGlobalVolume(volume)
     C.nxAudioSetGlobalVolume(volume)
 
     return Audio
 end
 
-------------------------------------------------------------
 function Audio.setGlobalFilter(filter, id)
     if filter then filter = filter._cdata end
     C.nxAudioSetGlobalFilter(filter, id or 0)
@@ -100,35 +93,30 @@ function Audio.setGlobalFilter(filter, id)
     return Audio
 end
 
-------------------------------------------------------------
 function Audio.setMaxActiveVoiceCount(count)
     C.nxAudioSetMaxActiveVoiceCount(count)
 
     return Audio
 end
 
-------------------------------------------------------------
 function Audio.enableVisualization(enabled)
     C.nxAudioEnableVisualization(enabled)
 
     return Audio
 end
 
-------------------------------------------------------------
 function Audio.update3d()
     C.nxAudioUpdate3dAudio()
 
     return Audio
 end
 
-------------------------------------------------------------
 function Audio.setSoundSpeed(speed)
     C.nxAudioSet3dSoundSpeed(speed)
 
     return Audio
 end
 
-------------------------------------------------------------
 function Audio.setListenerParameters(
     posX, posY, posZ, atX, atY, atZ, upX, upY, upZ, velX, velY, velZ
 )
@@ -138,35 +126,30 @@ function Audio.setListenerParameters(
     return Audio
 end
 
-------------------------------------------------------------
 function Audio.setListenerPosition(x, y, z)
     C.nxAudioSet3dListenerPosition(x, y, z)
 
     return Audio
 end
 
-------------------------------------------------------------
 function Audio.setListenerAt(x, y, z)
     C.nxAudioSet3dListenerAt(x, y, z)
 
     return Audio
 end
 
-------------------------------------------------------------
 function Audio.setListenerUp(x, y, z)
     C.nxAudioSet3dListenerUp(x, y, z)
 
     return Audio
 end
 
-------------------------------------------------------------
 function Audio.setListenerVelocity(x, y, z)
     C.nxAudioSet3dListenerVelocity(x, y, z)
 
     return Audio
 end
 
-------------------------------------------------------------
 function Audio.voiceCount(active)
     if active then
         return C.nxAudioActiveVoiceCount()
@@ -175,40 +158,32 @@ function Audio.voiceCount(active)
     end
 end
 
-------------------------------------------------------------
 function Audio.postClipScaler()
     return C.nxAudioPostClipScaler()
 end
 
-------------------------------------------------------------
 function Audio.globalVolume()
     return C.nxAudioGlobalVolume()
 end
 
-------------------------------------------------------------
 function Audio.maxActiveVoiceCount()
     return C.nxAudioMaxActiveVoiceCount()
 end
 
-------------------------------------------------------------
 function Audio.calcFFTData()
     return C.nxAudioCalcFFTData()
 end
 
-------------------------------------------------------------
 function Audio.currentWaveData()
     return C.nxAudioCurrentWaveData()
 end
 
-------------------------------------------------------------
 function Audio.soundSpeed()
     return C.nxAudio3dSoundSpeed()
 end
 
-------------------------------------------------------------
 function Audio.fadeGlobalVolume(to, time)
     C.nxAudioFadeGlobalVolume(to, time)
 end
 
-------------------------------------------------------------
 return Audio

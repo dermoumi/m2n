@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,13 +23,12 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local Font = require 'graphics.font'
 
 local FontStack = Font:subclass('graphics.fontstack')
 
-------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
@@ -41,14 +40,33 @@ ffi.cdef [[
     void nxFontStackAddStack(NxFont*, const NxFont*, bool);
 ]]
 
-------------------------------------------------------------
+function FontStack.static.factory(task, filename)
+    task:addTask(true, function(fontStack, filename)
+            local fonts, err = loadfile(filename)
+            if not fonts then
+                error('Unable to load file \'' .. filename .. '\': ' .. err)
+            end
+
+            fonts = fonts()
+            if type(fonts) ~= 'table' then
+                error('Invalid fontstack object: ' .. filename)
+            end
+
+            return unpack(fonts)
+        end)
+        :addTask(function(fontStack, filename, ...)
+            for i, font in ipairs({...}) do
+                fontStack:addFont(font)
+            end
+        end)
+end
+
 function FontStack:initialize()
     local handle = C.nxFontStackNew()
     self._cdata = ffi.gc(handle, C.nxFontRelease)
     self._fonts = {}
 end
 
-------------------------------------------------------------
 function FontStack:addFont(font, prepend)
     if self._cdata ~= nil then
         if font:isInstanceOf(FontStack) then
@@ -67,5 +85,4 @@ function FontStack:addFont(font, prepend)
     return self
 end
 
-------------------------------------------------------------
 return FontStack

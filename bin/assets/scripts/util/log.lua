@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,11 +23,10 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local Log = {}
 
-------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
@@ -40,35 +39,28 @@ ffi.cdef [[
     void nxLogFatal(const char* message);
 ]]
 
-------------------------------------------------------------
 function Log.verbose(message, arg, ...)
     C.nxLogVerbose(arg and tostring(message):format(arg, ...) or message)
 end
 
-------------------------------------------------------------
 function Log.debug(message, arg, ...)
     C.nxLogDebug(arg and tostring(message):format(arg, ...) or message)
 end
 
-------------------------------------------------------------
 function Log.warning(message, arg, ...)
     C.nxLogWarning(arg and tostring(message):format(arg, ...) or message)
 end
 
-------------------------------------------------------------
 function Log.info(message, arg, ...)
     C.nxLogInfo(arg and tostring(message):format(arg, ...) or message)
 end
 
-------------------------------------------------------------
 function Log.error(message, arg, ...)
     C.nxLogError(arg and tostring(message):format(arg, ...) or message)
 end
 
-------------------------------------------------------------
 function Log.fatal(message, arg, ...)
     C.nxLogFatal(arg and tostring(message):format(arg, ...) or message)
 end
 
-------------------------------------------------------------
 return Log

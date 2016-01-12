@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,44 +23,19 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
-local Mesh     = require 'graphics.mesh'
-local Material = require 'graphics.material'
-local class    = require 'class'
+local SceneObject = require 'graphics.sceneobject'
 
-local Model = class 'graphics.model'
+local Model = SceneObject:subclass 'graphics.model'
 
-------------------------------------------------------------
 function Model:initialize()
-    self._meshes = {}
+    SceneObject.initialize(self, 'model')
 end
 
-------------------------------------------------------------
-function Model:addMesh(m, start, count)
-    if start then m = Mesh:new(m or Material:new(), start, count) end
-
-    self._meshes[#self._meshes+1] = m
-
-    return self
+function Model:makeEntity(entity)
+    entity = entity or require('graphics.modelentity'):new()
+    return SceneObject.makeEntity(self, entity)
 end
 
-------------------------------------------------------------
-function Model:setGeometry(geometry)
-    self._geometry = geometry
-
-    return self
-end
-
-------------------------------------------------------------
-function Model:_draw(projMat, transMat, context)
-    if #self._meshes > 0 and self._geometry and self._geometry:_apply() then
-        local indexed = self._geometry._indexBuffer
-        for i, mesh in ipairs(self._meshes) do
-            mesh:_draw(projMat, transMat, context, indexed)
-        end
-    end
-end
-
-------------------------------------------------------------
 return Model

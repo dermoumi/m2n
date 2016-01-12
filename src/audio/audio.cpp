@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,61 +23,58 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #include "audio.hpp"
 
 #include <physfs/physfs.h>
 
-//----------------------------------------------------------
 SoLoud::Soloud& Audio::instance()
 {
     static SoLoud::Soloud soloud;
     return soloud;
 }
 
-//----------------------------------------------------------
 Audio::File::~File()
 {
     if (mFile) PHYSFS_close(mFile);
 }
 
-//----------------------------------------------------------
 bool Audio::File::open(const char* filename)
 {
     return (mFile = PHYSFS_openRead(filename)) != nullptr;
 }
 
-//----------------------------------------------------------
 int Audio::File::eof()
 {
     return PHYSFS_eof(mFile);
 }
 
-//----------------------------------------------------------
 unsigned int Audio::File::read(unsigned char* dst, unsigned int bytes)
 {
+    if (!mFile) return 0u;
     auto status = PHYSFS_readBytes(mFile, dst, bytes);
     if (status < 0) return 0u;
     return static_cast<unsigned int>(status);
 }
 
-//----------------------------------------------------------
 unsigned int Audio::File::length()
 {
+    if (!mFile) return 0u;
     auto status = PHYSFS_fileLength(mFile);
     if (status < 0) return 0u;
     return static_cast<unsigned int>(status);
 }
 
-//----------------------------------------------------------
 void Audio::File::seek(int offset)
 {
+    if (!mFile) return;
     PHYSFS_seek(mFile, offset);
 }
 
-//----------------------------------------------------------
 unsigned int Audio::File::pos()
 {
+    if (!mFile) return 0u;
     auto status = PHYSFS_tell(mFile);
     if (status < 0) return 0u;
     return static_cast<unsigned int>(status);

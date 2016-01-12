@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,16 +23,16 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
-local Config   = require 'config'
 local class    = require 'class'
+local Config   = require 'config'
+local Log      = require 'util.log'
 local Graphics = require 'graphics'
 local Image    = require 'graphics.image'
 
 local Texture = class 'graphics.texture'
 
-------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
@@ -65,7 +65,6 @@ ffi.cdef [[
     void nxTextureBind(const NxTexture*, uint8_t);
 ]]
 
-------------------------------------------------------------
 local toTextureType = {
     ['2d'] = 0,
     ['3d'] = 1,
@@ -159,12 +158,10 @@ local fromZRepeating = {
     [0x800] = 'clampcol'
 }
 
-------------------------------------------------------------
 function Texture.static.usedMemory()
     return C.nxTextureUsedMemory();
 end
 
-------------------------------------------------------------
 function Texture.static.bind(texture, slot)
     if texture then texture = texture._cdata end
     C.nxTextureBind(texture, slot)
@@ -172,52 +169,43 @@ function Texture.static.bind(texture, slot)
     return Texture
 end
 
-------------------------------------------------------------
 function Texture:initialize(texType, width, height, depth, hasMips, mipMap)
+    self._cdata = ffi.gc(C.nxTextureNew(), C.nxTextureRelease)
+
     if texType and width and height then
         self:create(texType, width, height, depth, hasMips, mipMap)
     end
 end
 
-------------------------------------------------------------
 function Texture:release()
-    if self._cdata == nil then return end
+    if self.__wk_status == 'failed' then return end
 
     C.nxTextureRelease(ffi.gc(self._cdata, nil))
     self._cdata = nil
 end
 
-------------------------------------------------------------
 function Texture:create(texType, width, height, depth, hasMips, mipMap)
-    self:release()
-
     if hasMips == nil then hasMips = true end
     if mipMap == nil  then mipMap = true end
     depth = depth or 1
 
     texType = toTextureType[texType]
     if texType then
-        local handle = C.nxTextureNew()
         local status = C.nxTextureCreate(
-            handle, texType, toTextureFormat[Config.textureFormat] or 1, width, height, depth,
+            self._cdata, texType, toTextureFormat[Config.textureFormat] or 1, width, height, depth,
             hasMips, mipMap, Graphics.getCapabilities('sRGBTexturesSupported')
         )
 
         if status == 1 then
             Log.warning('Cannot create texture: invalid texture size')
-            C.nxTextureRelease(handle)
         elseif status == 2 then
             local max = Graphics.getCapabilities('maxTexSize')
             Log.warning(
                 ('Cannot create texture: internal texture size is too high (%ux%ux%u).'
                  .. ' Maximum is %ux%ux%u'):format(width, height, depth, max, max, max)
             )
-            C.nxTextureRelease(handle)
         elseif status == 3 then
-            Log.warning('Cannot create texture')
-            C.nxTextureRelease(handle)
-        else
-            self._cdata = ffi.gc(handle, C.nxTextureRelease)
+            Log.error('Cannot create texture')
         end
     else
         Log.warning('Invalid texture type')
@@ -226,9 +214,8 @@ function Texture:create(texType, width, height, depth, hasMips, mipMap)
     return self
 end
 
-------------------------------------------------------------
 function Texture:setData(data, a, b, c, d, e, f, g, h)
-    if self._cdata ~= nil then
+    if self.__wk_status ~= 'failed' then
         local x, y, z, width, height, depth, slice, mipLevel
 
         if not c then -- Only slice and miplevel provided
@@ -251,52 +238,46 @@ function Texture:setData(data, a, b, c, d, e, f, g, h)
     return self
 end
 
-------------------------------------------------------------
 function Texture:bind(slot)
     C.nxTextureBind(self._cdata, slot or 0)
 
     return self
 end
 
-------------------------------------------------------------
 function Texture:data(slice, mipLevel)
-    if self._cdata == nil then return nil end
+    if self.__wk_status == 'failed' then return nil end
 
     local buffer = ffi.new('uint8_t[?]', C.nxTextureBufferSize(self._cdata))
 
     return C.nxTextureData(self._cdata, buffer, slice or 0, mipLevel or 0)
 end
 
-------------------------------------------------------------
 function Texture:size()
-    if self._cdata == nil then return 0, 0 end
+    if self.__wk_status == 'failed' then return 0, 0 end
     
     local sizePtr = ffi.new('uint16_t[3]')
     C.nxTextureSize(self._cdata, sizePtr)
     return sizePtr[0], sizePtr[1], sizePtr[2]
 end
 
-------------------------------------------------------------
 function Texture:setFilter(filter)
-    if self._cdata ~= nil then
+    if self.__wk_status ~= 'failed' then
         C.nxTextureSetFilter(self._cdata, toFilter[filter] or 0)
     end
 
     return self
 end
 
-------------------------------------------------------------
 function Texture:setAnisotropyLevel(level)
-    if self._cdata ~= nil then
+    if self.__wk_status ~= 'failed' then
         C.nxTextureSetAnisotropyLevel(self._cdata, toAniso[level] or 0)
     end
 
     return self
 end
 
-------------------------------------------------------------
 function Texture:setRepeating(x, y, z)
-    if self._cdata ~= nil then
+    if self.__wk_status ~= 'failed' then
         x, y, z = toXRepeating[x], toYRepeating[y], toZRepeating[z]
 
         if x then C.nxTextureSetRepeatingX(self._cdata, x) end
@@ -307,26 +288,22 @@ function Texture:setRepeating(x, y, z)
     return self
 end
 
-------------------------------------------------------------
 function Texture:setLessOrEqual(lessOrEqual)
-    if self._cdata ~= nil then
+    if self.__wk_status ~= 'failed' then
         C.nxTextureSetLessOrEqual(self._cdata, not not lessOrEqual)
     end
 
     return self
 end
 
-------------------------------------------------------------
 function Texture:filter()
     return fromFilter[C.nxTextureFilter(self._cdata)] or 'bilinear'
 end
 
-------------------------------------------------------------
 function Texture:anisotropyLevel()
     return fromAniso[C.nxTextureAnisotropyLevel(self._cdata)] or 1
 end
 
-------------------------------------------------------------
 function Texture:repeating()
     local repeatingPtr = ffi.new('uint32_t[3]')
     C.nxTextureRepeating(self._cdata, repeatingPtr)
@@ -336,25 +313,20 @@ function Texture:repeating()
         fromZRepeating[repeatingPtr[2]] or 'clamp'
 end
 
-------------------------------------------------------------
 function Texture:lessOrEqual()
     return C.nxTextureLessOrEqual(self._cdata)
 end
 
-------------------------------------------------------------
 function Texture:flipCoords()
     return C.nxTextureFlipCoords(self._cdata)
 end
 
-------------------------------------------------------------
 function Texture:texType()
     return fromTextureType[C.nxTextureType(self._cdata)]
 end
 
-------------------------------------------------------------
 function Texture:texFormat()
     return fromTextureFormat[C.nxTextureFormat(self._cdata)]
 end
 
-------------------------------------------------------------
 return Texture

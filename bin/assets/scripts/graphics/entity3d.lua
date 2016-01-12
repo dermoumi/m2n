@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,146 +23,113 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local Matrix     = require 'util.matrix'
 local Quaternion = require 'util.quaternion'
+local Node       = require 'graphics.node'
 
-local Entity3D = {}
+local Entity3D = Node:subclass 'graphics.entity3d'
 
-------------------------------------------------------------
-function Entity3D:initialize()
+function Entity3D:initialize(type)
+    Node.initialize(self)
+    
     self._posX, self._posY, self._posZ = 0, 0, 0
     self._scaleX, self._scaleY, self._scaleZ = 1, 1, 1
     self._quat = Quaternion:new(0, 0, 0)
-
-    self._children = {}
+    self.type = type
 end
 
-------------------------------------------------------------
-function Entity3D:_invalidate()
+function Entity3D:_markDirty()
     self._matrix = nil
 
     if self._absMatrix then
         self._absMatrix = nil
-        for i, child in pairs(self._children) do
-            child:_invalidate()
+        for name, child in pairs(self.children) do
+            child:_markDirty()
         end
     end
 
     return self
 end
 
-------------------------------------------------------------
-function Entity3D:setParent(parent)
-    parent:addChild(self)
-
-    return self
+function Entity3D:attachedTo(node)
+    self._absMatrix = nil
 end
 
-------------------------------------------------------------
-function Entity3D:addChild(child)
-    if child._parent ~= self then
-        if child._parent then
-            child._parent:removeChild(child)
-        end
-
-        child._parent = self
-        child._absMatrix = nil
-
-        self._children[#self._children+1] = child
-    end
-
-    return self
+function Entity3D:detachedFrom(node)
+    self._absMatrix = nil
 end
 
-------------------------------------------------------------
-function Entity3D:removeChild(child)
-    child._parent = nil
-    child._absMatrix = nil
-
-    for i, v in pairs(self._children) do
-        if v == child then
-            self._children[i] = nil
-            break
-        end
-    end
-
-    return self
+function Entity3D:boundingBox()
+    return 0, 0, 0, 0, 0, 0
 end
 
-------------------------------------------------------------
+function Entity3D:lodLevel(eyeX, eyeY, eyeZ)
+    return 0
+end
+
 function Entity3D:setPosition(x, y, z)
     self._posX, self._posY, self._posZ = x, y, z
 
-    return self:_invalidate()
+    return self:_markDirty()
 end
 
-------------------------------------------------------------
 function Entity3D:setRotation(x, y, z, w)
     self._quat = Quaternion:new(x, y, z, w)
 
-    return self:_invalidate()
+    return self:_markDirty()
 end
 
-------------------------------------------------------------
 function Entity3D:setScaling(x, y, z)
     self._scaleX, self._scaleY, self._scaleZ = x, y, z
 
-    return self:_invalidate()
+    return self:_markDirty()
 end
 
-------------------------------------------------------------
 function Entity3D:move(x, y, z)
     return self:setPosition(self._posX + x, self._posY + y, self._posZ + z)
 end
 
-------------------------------------------------------------
 function Entity3D:rotate(x, y, z, w)
     self._quat:combine(not y and x or Quaternion:new(x, y, z, w))
 
-    return self:_invalidate()
+    return self:_markDirty()
 end
 
-------------------------------------------------------------
 function Entity3D:scale(x, y, z)
     return self:setScale(self._scaleX * x, self._scaleY * y, self._scaleZ * z)
 end
 
-------------------------------------------------------------
 function Entity3D:position(absolute)
-    if absolute and self._parent then
-        return self._parent:matrix(true):apply(self._posX, self._posY, self._posZ)
+    if absolute and self.parent then
+        return self.parent:matrix(true):apply(self._posX, self._posY, self._posZ)
     end
 
     return self._posX, self._posY, self._posZ
 end
 
-------------------------------------------------------------
 function Entity3D:quaternion(absolute)
-    if absolute and self._parent then
-        return Quaternion.combine(self._parent:quaternion(true), self._quat)
+    if absolute and self.parent then
+        return Quaternion.combine(self.parent:quaternion(true), self._quat)
     end
 
     return self._quat
 end
 
-------------------------------------------------------------
 function Entity3D:rotation(absolute)
     return self:quaternion(absolute):angles()
 end
 
-------------------------------------------------------------
 function Entity3D:scaling(absolute)
-    if absolute and self._parent then
-        local x, y, z = self._parent:scaling(true)
+    if absolute and self.parent then
+        local x, y, z = self.parent:scaling(true)
         return self._scaleX * x, self._scaleY * y, self._scaleZ * z
     end
 
     return self._scaleX, self._scaleY, self._scaleZ
 end
 
-------------------------------------------------------------
 function Entity3D:matrix(absolute)
     -- Calculate relative transformation
     if not self._matrix then
@@ -175,8 +142,8 @@ function Entity3D:matrix(absolute)
 
     if absolute then
         if not self._absMatrix then
-            self._absMatrix = self._parent
-                and Matrix.fastMult43(self._parent:matrix(true), self._matrix)
+            self._absMatrix = self.parent
+                and Matrix.fastMult43(self.parent:matrix(true), self._matrix)
                 or  self._matrix
         end
 
@@ -186,19 +153,16 @@ function Entity3D:matrix(absolute)
     end
 end
 
-------------------------------------------------------------
 function Entity3D:_render(camera, context)
     -- Nothing to do
 end
 
-------------------------------------------------------------
 function Entity3D:_draw(camera, context)
     self:_render(camera, context)
 
-    for i, v in pairs(self._children) do
-        camera:draw(v)
+    for name, child in pairs(self.children) do
+        camera:draw(child, context)
     end
 end
 
-------------------------------------------------------------
 return Entity3D

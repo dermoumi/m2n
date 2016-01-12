@@ -231,7 +231,7 @@ HRESULT LzmaBenchCon(
     }
   }
   callback.Normalize();
-  fprintf(f, "----------------------------------------------------------------\nAvr:");
+  fprintf(f, "------\nAvr:");
   PrintTotals(f, callback.EncodeRes);
   fprintf(f, "     ");
   PrintTotals(f, callback.DecodeRes);

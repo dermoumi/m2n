@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,7 +23,8 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #include "vectorfont.hpp"
 
 #include "image.hpp"
@@ -41,7 +42,6 @@
 #include <cstring>
 #include <sstream>
 
-//----------------------------------------------------------
 static unsigned long read(FT_Stream rec, unsigned long offset, unsigned char* buffer,
     unsigned long count)
 {
@@ -49,13 +49,13 @@ static unsigned long read(FT_Stream rec, unsigned long offset, unsigned char* bu
 
     if (PHYSFS_seek(file, offset)) {
         if (count == 0) return 0u;
-        
+
         auto status = PHYSFS_readBytes(file, buffer, count);
 
         // If succeeded, return status as the number of bytes read
         if (status > 0u) return static_cast<unsigned long>(status);
     }
-    
+
     // "This function might be called to perform a seek or skip operation with a ‘count’ of 0.
     // "A non-zero return value then indicates an error.
     return count == 0u ? 1u : 0u;
@@ -66,7 +66,6 @@ static void close(FT_Stream)
     // Nothing to do
 }
 
-//----------------------------------------------------------
 class VectorFont::FileWrapper
 {
 public:
@@ -75,7 +74,6 @@ public:
     PHYSFS_File* handle;
 };
 
-//----------------------------------------------------------
 class VectorFont::FreetypeHandle
 {
 public:
@@ -86,7 +84,6 @@ public:
     FT_Face       face      {nullptr};
 };
 
-//----------------------------------------------------------
 VectorFont::FreetypeHandle::~FreetypeHandle()
 {
     if (face) FT_Done_Face(face);
@@ -96,13 +93,11 @@ VectorFont::FreetypeHandle::~FreetypeHandle()
     if (library) FT_Done_FreeType(library);
 }
 
-//----------------------------------------------------------
 VectorFont::~VectorFont()
 {
     cleanup();
 }
 
-//----------------------------------------------------------
 bool VectorFont::open(const std::string& filename)
 {
     // Cleanup thee previous resources
@@ -117,7 +112,6 @@ bool VectorFont::open(const std::string& filename)
     return open(mFile->handle);
 }
 
-//----------------------------------------------------------
 bool VectorFont::open(const void* data, size_t size)
 {
     // Cleanup the previous resources
@@ -158,7 +152,6 @@ bool VectorFont::open(const void* data, size_t size)
     return true;
 }
 
-//----------------------------------------------------------
 bool VectorFont::open(PHYSFS_File* file)
 {
     // Cleanup the previous resources
@@ -221,13 +214,11 @@ bool VectorFont::open(PHYSFS_File* file)
     return true;
 }
 
-//----------------------------------------------------------
 const VectorFont::Info& VectorFont::info() const
 {
     return mInfo;
 }
 
-//----------------------------------------------------------
 const Glyph& VectorFont::glyph(uint32_t codePoint, uint32_t charSize, bool bold) const
 {
     // Build the key by combining the codepoint and the bold flag
@@ -257,7 +248,6 @@ const Glyph& VectorFont::glyph(uint32_t codePoint, uint32_t charSize, bool bold)
     return mPages[charSize][glyph.page].glyphs.emplace(key, glyph).first->second;
 }
 
-//----------------------------------------------------------
 float VectorFont::kerning(uint32_t first, uint32_t second, uint32_t charSize) const
 {
     // Special case where first or second character is 0 (NUL character)
@@ -284,7 +274,6 @@ float VectorFont::kerning(uint32_t first, uint32_t second, uint32_t charSize) co
     return 0.f;
 }
 
-//----------------------------------------------------------
 float VectorFont::lineSpacing(uint32_t charSize) const
 {
     auto face = mFreetype ? mFreetype->face : nullptr;
@@ -296,7 +285,6 @@ float VectorFont::lineSpacing(uint32_t charSize) const
     return 0.f;
 }
 
-//----------------------------------------------------------
 float VectorFont::underlinePosition(uint32_t charSize) const
 {
     FT_Face face = mFreetype ? mFreetype->face : nullptr;
@@ -312,7 +300,6 @@ float VectorFont::underlinePosition(uint32_t charSize) const
     return 0.f;
 }
 
-//----------------------------------------------------------
 float VectorFont::underlineThickness(uint32_t charSize) const
 {
     FT_Face face = mFreetype ? mFreetype->face : nullptr;
@@ -328,13 +315,11 @@ float VectorFont::underlineThickness(uint32_t charSize) const
     return 0.f;
 }
 
-//----------------------------------------------------------
 const Texture* VectorFont::texture(uint32_t charSize, uint32_t index) const
 {
     return &mPages[charSize][index].texture;
 }
 
-//----------------------------------------------------------
 void VectorFont::cleanup()
 {
     mFreetype = nullptr;
@@ -342,7 +327,6 @@ void VectorFont::cleanup()
     mPixelBuffer.clear();
 }
 
-//----------------------------------------------------------
 Glyph VectorFont::loadGlyph(uint32_t codePoint, uint32_t charSize, bool bold) const
 {
     // The glyph to return
@@ -499,7 +483,6 @@ Glyph VectorFont::loadGlyph(uint32_t codePoint, uint32_t charSize, bool bold) co
     return glyph;
 }
 
-//----------------------------------------------------------
 bool VectorFont::findGlyphRect(Page* page, uint32_t width, uint32_t height, uint32_t& coordsX,
     uint32_t& coordsY, uint32_t& coordsW, uint32_t& coordsH) const
 {
@@ -571,7 +554,6 @@ bool VectorFont::findGlyphRect(Page* page, uint32_t width, uint32_t height, uint
     return true;
 }
 
-//----------------------------------------------------------
 bool VectorFont::ensureSize(uint32_t charSize) const
 {
     // FT_Set_Pixel_Sizes is an expensive function, so we must call it only when necessary
@@ -596,7 +578,6 @@ bool VectorFont::ensureSize(uint32_t charSize) const
     return result == FT_Err_Ok;
 }
 
-//----------------------------------------------------------
 VectorFont::Row::Row(uint32_t rowTop, uint32_t rowHeight) :
     top(rowTop),
     height(rowHeight)
@@ -604,7 +585,6 @@ VectorFont::Row::Row(uint32_t rowTop, uint32_t rowHeight) :
     // Nothing else to do
 }
 
-//----------------------------------------------------------
 VectorFont::Page::Page()
 {
     // Make sure that the texture is initialize by default
@@ -623,7 +603,6 @@ VectorFont::Page::Page()
     texture.setData(image.getPixelsPtr(), -1, -1, -1, -1, -1, -1, 0, 0);
 }
 
-//--------------------------------------------------------
 VectorFont::Page::Page(Page&& other)
 {
     std::swap(glyphs, other.glyphs);

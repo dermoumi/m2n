@@ -292,7 +292,7 @@ typedef struct
 #define SWAP_words(a,b) { \
   register int t=*((int*)a); *((int*)a)=*((int*)b); *((int*)b)=t; }
 
-/* ---------------------------------------------------------------------- */
+/* ------------ */
 
 static char *
 pivot_big(char *first, char *mid, char *last, size_t size,
@@ -335,7 +335,7 @@ pivot_big(char *first, char *mid, char *last, size_t size,
         : (compare(m1, m3) < 0 ? m1 : (compare(m2, m3) < 0 ? m3 : m2));
 }
 
-/* ---------------------------------------------------------------------- */
+/* ------------ */
 
 static void
 qsort_nonaligned(void *base, size_t nmemb, size_t size,
@@ -459,7 +459,7 @@ qsort_words(void *base, size_t nmemb,
     free(pivot);
 }
 
-/* ---------------------------------------------------------------------- */
+/* ------------ */
 
 void
 qsort(void *base, size_t nmemb, size_t size,

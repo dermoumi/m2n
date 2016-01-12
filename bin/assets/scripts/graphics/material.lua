@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,83 +23,125 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local class    = require 'class'
 local Graphics = require 'graphics'
 
 local Material = class 'graphics.material'
 
-------------------------------------------------------------
+function Material.static.factory(task)
+    task:addTask(true, function(mat, filename)
+            local matData = loadfile(filename)
+            if not matData then return false end
+
+            matData = matData()
+            if type(matData) ~= 'table' then return false end
+
+            local retVals = {
+                matData.shader
+            }
+
+            if matData.textures then
+                retVals[#retVals+1] = '=#textures'
+                for slot, id in pairs(matData.textures) do
+                    retVals[#retVals+1] = slot
+                    retVals[#retVals+1] = id
+                end
+            end
+
+            if matData.uniforms then
+                retVals[#retVals+1] = '=#uniforms'
+                for uniform, data in pairs(matData.uniforms) do
+                    retVals[#retVals+1] = uniform
+                    retVals[#retVals+1] = data
+                end
+            end
+
+            return unpack(retVals)
+        end)
+        :addTask(function(mat, filename, ...)
+            local params, stage, key = {...}
+
+            for i, param in ipairs(params) do
+                if param == '=#textures' then
+                    stage = '=#textures'
+                elseif param == '=#uniforms' then
+                    stage = '=#uniforms'
+                elseif stage == '=#textures' then
+                    if key then
+                        mat:setTexture(param, key)
+                        key = nil
+                    else
+                        key = param
+                    end
+                elseif stage == '=#uniforms' then
+                    if key then
+                        if type(param) == 'table' then
+                            mat:setUniform(key, unpack(param))
+                        else
+                            mat:setUniform(key, param)
+                        end
+                        key = nil
+                    else
+                        key = param
+                    end
+                else
+                    mat:setShader(param)
+                end
+            end
+        end)
+end
+
 function Material:initialize(context)
     self._context = context or 'ambient'
     self._textures = {}
     self._uniforms = {}
     self._shader = Graphics.defaultShader(3)
-    self._colR, self._colG, self._colB, self._colA = 255, 255, 255, 255
 end
 
-------------------------------------------------------------
 function Material:setShader(shader)
     self._shader = shader or Graphics.defaultShader(3)
 
     return self
 end
 
-------------------------------------------------------------
 function Material:setTexture(texture, slot)
-    self._textures[slot or 'uTexture'] = texture
+    self._textures[slot or 'uTexture0'] = texture
 
     return self
 end
 
-------------------------------------------------------------
-function Material:setColor(r, g, b, a)
-    self._colR, self._colG, self._colB, self._colA = r, g, b, a or 255
-
-    return self
-end
-
-------------------------------------------------------------
 function Material:setContext(context)
     self._context = context
 
     return self
 end
 
-------------------------------------------------------------
 function Material:setUniform(name, a, b, c, d)
     self._uniforms[name] = {a, b, c, d}
 
     return self
 end
 
-------------------------------------------------------------
 function Material:shader()
     return self._shader
 end
 
-------------------------------------------------------------
 function Material:texture(slot)
-    return self._textures[slot or 'uTexture']
+    return self._textures[slot or 'uTexture0']
 end
 
-------------------------------------------------------------
-function Material:color()
-    return self._colR, self._colG, self._colB, self._colA
-end
-
-------------------------------------------------------------
 function Material:context()
     return self._context
 end
 
-------------------------------------------------------------
-function Material:_apply(projMat, transMat)
+function Material:_apply(projMat, transMat, context)
+    if context and context ~= self._context then return false end
+
     self._shader:bind()
         :setUniform('uProjMat', projMat)
         :setUniform('uTransMat', transMat)
-        :setUniform('uColor', self._colR/255, self._colG/255, self._colB/255, self._colA/255)
 
     for uniform, values in pairs(self._uniforms) do
         self._shader:setUniform(uniform, unpack(values))
@@ -108,15 +150,16 @@ function Material:_apply(projMat, transMat)
     local i = 0
     for slot, texture in pairs(self._textures) do
         texture:bind(i)
-        shader:setSampler(slot, i)
+        self._shader:setSampler(slot, i)
         i = i + 1
     end
 
     if i == 0 then
         Graphics.defaultTexture():bind(0)
-        self._shader:setSampler('uTexture', 0)
+        self._shader:setSampler('uTexture0', 0)
     end
+
+    return true
 end
 
-------------------------------------------------------------
 return Material

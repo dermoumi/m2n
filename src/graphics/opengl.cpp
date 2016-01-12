@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,13 +23,12 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #define _CRT_SECURE_NO_WARNINGS
 #include "opengl.hpp"
 
-//==============================================================================
 #if !defined(NX_OPENGL_ES)
-//------------------------------------------------------------------------------
 
 #include <cstdlib>
 #include <cstring>
@@ -37,9 +36,7 @@
 
 #include <SDL2/SDL.h>
 
-//----------------------------------------------------------
 // Capabilities
-//----------------------------------------------------------
 namespace glExt
 {
     bool EXT_framebuffer_object = false;
@@ -54,9 +51,8 @@ namespace glExt
     int majorVersion = 1, minorVersion = 0;
 }
 
-//----------------------------------------------------------
 // OpenGL Functions
-//----------------------------------------------------------
+
 // GL 1.2
 PFNGLBLENDCOLORPROC glBlendColor = 0x0;
 PFNGLBLENDEQUATIONPROC glBlendEquation = 0x0;
@@ -206,9 +202,7 @@ PFNGLQUERYCOUNTERPROC glQueryCounter = 0x0;
 PFNGLGETQUERYOBJECTI64VPROC glGetQueryObjecti64v = 0x0;
 PFNGLGETQUERYOBJECTUI64VPROC glGetQueryObjectui64v = 0x0;
 
-//----------------------------------------------------------
-// Local
-//----------------------------------------------------------
+// Locals
 namespace
 {
     NX_HIDDEN bool isExtensionSupported(const std::string& extName)
@@ -260,15 +254,13 @@ namespace
     }
 }
 
-//----------------------------------------------------------
 // Initialization function
-//----------------------------------------------------------
 bool initOpenGLExtensions()
 {
     bool r = true;
-    
+
     getOpenGLVersion();
-    
+
     // GL 1.2
     r &= (glBlendColor = (PFNGLBLENDCOLORPROC) SDL_GL_GetProcAddress("glBlendColor")) != nullptr;
     r &= (glBlendEquation = (PFNGLBLENDEQUATIONPROC) SDL_GL_GetProcAddress("glBlendEquation")) != nullptr;
@@ -287,7 +279,7 @@ bool initOpenGLExtensions()
     r &= (glCompressedTexSubImage2D = (PFNGLCOMPRESSEDTEXSUBIMAGE2DPROC) SDL_GL_GetProcAddress("glCompressedTexSubImage2D")) != nullptr;
     r &= (glCompressedTexSubImage1D = (PFNGLCOMPRESSEDTEXSUBIMAGE1DPROC) SDL_GL_GetProcAddress("glCompressedTexSubImage1D")) != nullptr;
     r &= (glGetCompressedTexImage = (PFNGLGETCOMPRESSEDTEXIMAGEPROC) SDL_GL_GetProcAddress("glGetCompressedTexImage")) != nullptr;
-    
+
     // GL 1.4
     r &= (glBlendFuncSeparate = (PFNGLBLENDFUNCSEPARATEPROC) SDL_GL_GetProcAddress("glBlendFuncSeparate")) != nullptr;
     r &= (glMultiDrawArrays = (PFNGLMULTIDRAWARRAYSPROC) SDL_GL_GetProcAddress("glMultiDrawArrays")) != nullptr;
@@ -317,7 +309,7 @@ bool initOpenGLExtensions()
     r &= (glUnmapBuffer = (PFNGLUNMAPBUFFERPROC) SDL_GL_GetProcAddress("glUnmapBuffer")) != nullptr;
     r &= (glGetBufferParameteriv = (PFNGLGETBUFFERPARAMETERIVPROC) SDL_GL_GetProcAddress("glGetBufferParameteriv")) != nullptr;
     r &= (glGetBufferPointerv = (PFNGLGETBUFFERPOINTERVPROC) SDL_GL_GetProcAddress("glGetBufferPointerv")) != nullptr;
-    
+
     // GL 2.0
     r &= (glBlendEquationSeparate = (PFNGLBLENDEQUATIONSEPARATEPROC) SDL_GL_GetProcAddress("glBlendEquationSeparate")) != nullptr;
     r &= (glDrawBuffers = (PFNGLDRAWBUFFERSPROC) SDL_GL_GetProcAddress("glDrawBuffers")) != nullptr;
@@ -386,11 +378,11 @@ bool initOpenGLExtensions()
     r &= (glUniformMatrix4x3fv = (PFNGLUNIFORMMATRIX4X3FVPROC) SDL_GL_GetProcAddress("glUniformMatrix4x3fv")) != nullptr;
     */
 
-    // GL 3.0 
+    // GL 3.0
     if (glExt::majorVersion >= 3) {
         r &= (glGetStringi = (PFNGLGETSTRINGIPROC) SDL_GL_GetProcAddress("glGetStringi")) != nullptr;
     }
-    
+
     // Extensions
     glExt::EXT_framebuffer_object = isExtensionSupported("GL_EXT_framebuffer_object");
     if (glExt::EXT_framebuffer_object)
@@ -413,7 +405,7 @@ bool initOpenGLExtensions()
         r &= (glGetFramebufferAttachmentParameterivEXT = (PFNGLGETFRAMEBUFFERATTACHMENTPARAMETERIVEXTPROC) SDL_GL_GetProcAddress("glGetFramebufferAttachmentParameterivEXT")) != nullptr;
         r &= (glGenerateMipmapEXT = (PFNGLGENERATEMIPMAPEXTPROC) SDL_GL_GetProcAddress("glGenerateMipmapEXT")) != nullptr;
     }
-    
+
     glExt::EXT_texture_filter_anisotropic = isExtensionSupported("GL_EXT_texture_filter_anisotropic");
 
     glExt::EXT_texture_compression_s3tc = isExtensionSupported("GL_EXT_texture_compression_s3tc");
@@ -444,6 +436,4 @@ bool initOpenGLExtensions()
     return r;
 }
 
-//------------------------------------------------------------------------------
 #endif
-//==============================================================================

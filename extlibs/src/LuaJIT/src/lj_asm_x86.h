@@ -379,7 +379,7 @@ static Reg asm_fuseloadm(ASMState *as, IRRef ref, RegSet allow, int is64)
 #define asm_fuseloadm(as, ref, allow, is64)  asm_fuseload(as, (ref), (allow))
 #endif
 
-/* -- Calls --------------------------------------------------------------- */
+/* -- Calls ----- */
 
 /* Count the required number of stack slots for a call. */
 static int asm_count_call_slots(ASMState *as, const CCallInfo *ci, IRRef *args)
@@ -637,7 +637,7 @@ static void asm_callx(ASMState *as, IRIns *ir)
   asm_gencall(as, &ci, args);
 }
 
-/* -- Returns ------------------------------------------------------------- */
+/* -- Returns --- */
 
 /* Return to lower frame. Guard that it goes to the right spot. */
 static void asm_retf(ASMState *as, IRIns *ir)

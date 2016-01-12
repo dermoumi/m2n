@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,9 +23,11 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #include "../config.hpp"
 #include "../system/thread.hpp"
+#include "../system/log.hpp"
 
 #include <luajit/lua.hpp>
 #include <thread>
@@ -34,10 +36,6 @@
     #include <jni.h>
     #include <SDL2/SDL.h>
 #endif
-
-//----------------------------------------------------------
-// Locals
-//----------------------------------------------------------
 
 struct NxThreadObj
 {
@@ -52,6 +50,9 @@ static void threadCallback(NxThreadObj* thread)
     // Total elements in stack minus the function itself AND the reserved function
     int argCount = lua_gettop(thread->state) - 2;
     thread->succeeded = lua_pcall(thread->state, argCount, -1, 0) == 0;
+    if (!thread->succeeded) {
+        Log::error(std::string("Thread error: ") + lua_tostring(thread->state, -1));
+    }
 
     if (thread->ownsState) {
         lua_close(thread->state);
@@ -71,34 +72,28 @@ static void threadCallback(NxThreadObj* thread)
     }
 }
 
-//----------------------------------------------------------
-// Exported functions
-//----------------------------------------------------------
 NX_EXPORT NxThreadObj* nxThreadCreate(lua_State* state)
 {
-    auto threadObj = new NxThreadObj();
-    threadObj->state     = state;
-    
+    auto threadObj   = new NxThreadObj();
+    threadObj->state = state;
+
     return threadObj;
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxThreadRelease(NxThreadObj* threadObj)
 {
     delete threadObj;
 }
 
-//----------------------------------------------------------
 NX_EXPORT bool nxThreadWait(NxThreadObj* threadObj)
 {
     threadObj->ownsState = false;
     threadObj->handle = std::thread(threadCallback, threadObj);
     threadObj->handle.join();
-    
+
     return threadObj->succeeded;
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxThreadDetach(NxThreadObj* threadObj)
 {
     threadObj->ownsState = true;
@@ -106,10 +101,7 @@ NX_EXPORT void nxThreadDetach(NxThreadObj* threadObj)
     threadObj->handle.detach();
 }
 
-//----------------------------------------------------------
 NX_EXPORT bool nxThreadIsMain()
 {
     return Thread::isMain();
 }
-
-//==============================================================================

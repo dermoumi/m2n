@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,7 +23,8 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #include "log.hpp"
 
 #include <SDL2/SDL.h>
@@ -33,9 +34,7 @@
 #include <memory>
 #include <mutex>
 
-//----------------------------------------------------------
 // Locals
-//----------------------------------------------------------
 namespace
 {
     struct FileDeleter
@@ -64,14 +63,12 @@ namespace
     }
 }
 
-//----------------------------------------------------------
 bool Log::setLogFile(const std::string& filename)
 {
     logFile = FilePtr(fopen(filename.data(), "w"));
     return logFile != nullptr;
 }
 
-//----------------------------------------------------------
 void Log::verbose(const char* format, ...)
 {
     va_list args;
@@ -83,7 +80,6 @@ void Log::verbose(const char* format, ...)
     va_end(args);
 }
 
-//----------------------------------------------------------
 void Log::debug(const char* format, ...)
 {
     va_list args;
@@ -91,11 +87,10 @@ void Log::debug(const char* format, ...)
 
     SDL_LogMessageV(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_DEBUG, format, args);
     logToFile("DEBUG", format, args);
-    
+
     va_end(args);
 }
 
-//----------------------------------------------------------
 void Log::info(const char* format, ...)
 {
     va_list args;
@@ -103,11 +98,10 @@ void Log::info(const char* format, ...)
 
     SDL_LogMessageV(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO, format, args);
     logToFile("INFO", format, args);
-    
+
     va_end(args);
 }
 
-//----------------------------------------------------------
 void Log::warning(const char* format, ...)
 {
     va_list args;
@@ -115,11 +109,10 @@ void Log::warning(const char* format, ...)
 
     SDL_LogMessageV(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_WARN, format, args);
     logToFile("WARN", format, args);
-    
+
     va_end(args);
 }
 
-//----------------------------------------------------------
 void Log::error(const char* format, ...)
 {
     va_list args;
@@ -127,11 +120,10 @@ void Log::error(const char* format, ...)
 
     SDL_LogMessageV(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_ERROR, format, args);
     logToFile("ERROR", format, args);
-    
+
     va_end(args);
 }
 
-//----------------------------------------------------------
 void Log::fatal(const char* format, ...)
 {
     va_list args;
@@ -139,8 +131,6 @@ void Log::fatal(const char* format, ...)
 
     SDL_LogMessageV(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_CRITICAL, format, args);
     logToFile("FATAL", format, args);
-    
+
     va_end(args);
 }
-
-//==============================================================================

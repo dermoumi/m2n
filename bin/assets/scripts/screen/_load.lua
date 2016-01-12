@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,20 +23,19 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local Text     = require 'graphics.text'
 local GameFont = require 'game.font'
-local Scene    = require 'scene'
+local Cache    = require 'game.cache'
+local Screen   = require 'screen'
 
-local SceneLoad = Scene:subclass('scene._load')
+local ScreenLoad = Screen:subclass('screen._load')
 
-------------------------------------------------------------
-function SceneLoad:initialize(scene)
-    self.nextScene = scene
-    self.worker    = scene.__worker
+function ScreenLoad:initialize(screen)
+    self.nextScreen = screen
 
-    local params = scene.__preloadParams or {}
+    local params = screen.__preloadParams or {}
 
     -- Set background color
     self.colR = params.r or 0
@@ -61,9 +60,8 @@ function SceneLoad:initialize(scene)
     self.message = params.message or 'LOADING %i%%'
 end
 
-------------------------------------------------------------
-function SceneLoad:load()
-    self.worker:start()
+function ScreenLoad:entered()
+    Cache.prepare()
 
     self.currentPercent = 0
 
@@ -73,16 +71,20 @@ function SceneLoad:load()
         :setSize(20)
         :setColor(self.messageColR, self.messageColG, self.messageColB, self.messageColA)
 
-    if self:check() then return end
+    if self:check() then
+        print('done?')
+        return
+    end
 
-    local lastScene = Scene.lastScene()
-    self.opaque = not lastSCene or lastScene:isLoading() or lastScene:isTransitioning()
+    local lastScreen = Screen.lastScreen()
+    self.opaque = not lastSCene or lastScreen:isLoading() or lastScreen:isTransitioning()
 
     self:performTransition()
 end
 
-------------------------------------------------------------
-function SceneLoad:update(dt)
+function ScreenLoad:update(dt)
+    Cache.iteration()
+
     -- Calculate fading percent if there's any ongoing fading
     if self:isOpening() then
         self.fadePercent = self.__transTime / self:transitionDuration()
@@ -100,61 +102,54 @@ function SceneLoad:update(dt)
         )
 end
 
-------------------------------------------------------------
-function SceneLoad:render()
-    -- Draw overlay quad only if there's a scene *currently* rendering behind
+function ScreenLoad:render()
+    -- Draw overlay quad only if there's a screen *currently* rendering behind
     if self.opaque then
         self:view():clear(self.colR, self.colG, self.colB)
-    else    
+    else
         self:view():fillFsQuad(self.colR, self.colG, self.colB, self.colA * self.fadePercent)
     end
 
     self:view():draw(self.text)
 end
 
-------------------------------------------------------------
-function SceneLoad:renderTransition(time, isOpening)
+function ScreenLoad:renderTransition(time, isOpening)
     if not isOpening then
-        Scene.renderTransition(self, time, isOpening)
+        Screen.renderTransition(self, time, isOpening)
     end
 end
 
-------------------------------------------------------------
-function SceneLoad:transitionColor()
+function ScreenLoad:transitionColor()
     return self.colR, self.colG, self.colB, self.colA
 end
 
-------------------------------------------------------------
-function SceneLoad:check()
-    local loaded, failed, total = self.worker:progress()
+function ScreenLoad:check()
+    local total, loaded, failed = Cache.progress()
 
-    local percent = total ~= 0 and math.floor(100 * (loaded + failed) / total + 0.5) or 100
+    local percent = total ~= 0 and math.floor(100 * loaded / total + 0.5) or 100
     if self.currentPercent <= percent then
         self.currentPercent = math.min(self.currentPercent + 1, percent)
         self.text:setString(self.message, self.currentPercent)
     end
 
-    if loaded + failed == total then
+    if loaded >= total then
         if self:isLoading() then
-            Scene.replace(self.nextScene)
+            Screen.replace(self.nextScreen)
         else
-            self:performTransition(Scene.replace, self.nextScene)
+            self:performTransition(Screen.replace, self.nextScreen)
         end
 
-        self.nextScene:performTransition()
+        -- self.nextScreen:performTransition()
         return true
     end
 end
 
-------------------------------------------------------------
-function SceneLoad:updateParent()
+function ScreenLoad:updateParent()
     return true
 end
 
-------------------------------------------------------------
-function SceneLoad:renderParent()
+function ScreenLoad:renderParent()
     return not self.opaque
 end
 
-------------------------------------------------------------
-return SceneLoad
+return ScreenLoad

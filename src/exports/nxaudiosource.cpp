@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,16 +23,14 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #include "../config.hpp"
 #include "../audio/audio.hpp"
 
 #include <soloud/soloud_wav.h>
 #include <soloud/soloud_wavstream.h>
 
-//----------------------------------------------------------
-// Declarations
-//----------------------------------------------------------
 using NxAudioFilter = SoLoud::Filter;
 struct NxAudioSource
 {
@@ -40,9 +38,6 @@ struct NxAudioSource
     Audio::File* file; // Used if the audio source needs an active file
 };
 
-//----------------------------------------------------------
-// Exported functions
-//----------------------------------------------------------
 NX_EXPORT NxAudioSource* nxAudioSourceCreate()
 {
     // Create with a dummy Wav object
@@ -52,7 +47,6 @@ NX_EXPORT NxAudioSource* nxAudioSourceCreate()
     };
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxAudioSourceRelease(NxAudioSource* source)
 {
     delete source->handle;
@@ -60,7 +54,6 @@ NX_EXPORT void nxAudioSourceRelease(NxAudioSource* source)
     delete source;
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxAudioSourceLoadFile(NxAudioSource* source, const char* filename)
 {
     delete source->file;
@@ -74,7 +67,6 @@ NX_EXPORT void nxAudioSourceLoadFile(NxAudioSource* source, const char* filename
     static_cast<SoLoud::Wav*>(source->handle)->loadFile(&file);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxAudioSourceLoadMemory(NxAudioSource* source, uint8_t* buffer, size_t size)
 {
     delete source->file;
@@ -85,13 +77,11 @@ NX_EXPORT void nxAudioSourceLoadMemory(NxAudioSource* source, uint8_t* buffer, s
     static_cast<SoLoud::Wav*>(source->handle)->loadMem(buffer, size, true, false);
 }
 
-//----------------------------------------------------------
 NX_EXPORT double nxAudioSourceStaticLength(NxAudioSource* source)
 {
     return static_cast<SoLoud::Wav*>(source->handle)->getLength();
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxAudioSourceOpenFile(NxAudioSource* source, const char* filename)
 {
     delete source->file;
@@ -103,7 +93,6 @@ NX_EXPORT void nxAudioSourceOpenFile(NxAudioSource* source, const char* filename
     static_cast<SoLoud::WavStream*>(source->handle)->loadFile(source->file);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxAudioSourceOpenMemory(NxAudioSource* source, uint8_t* buffer, size_t size)
 {
     delete source->file;
@@ -114,26 +103,22 @@ NX_EXPORT void nxAudioSourceOpenMemory(NxAudioSource* source, uint8_t* buffer, s
     static_cast<SoLoud::WavStream*>(source->handle)->loadMem(buffer, size, true, false);
 }
 
-//----------------------------------------------------------
 NX_EXPORT double nxAudioSourceStreamLength(NxAudioSource* source)
 {
     return static_cast<SoLoud::WavStream*>(source->handle)->getLength();
 }
 
-//----------------------------------------------------------
 NX_EXPORT uint32_t nxAudioPlay(NxAudioSource* source, float volume, float pan, bool paused)
 {
     return Audio::instance().play(*source->handle, volume, pan, paused);
 }
 
-//----------------------------------------------------------
 NX_EXPORT uint32_t nxAudioPlayClocked(NxAudioSource* source, double interval, float volume,
     float pan)
 {
     return Audio::instance().playClocked(interval, *source->handle, volume, pan);
 }
 
-//----------------------------------------------------------
 NX_EXPORT uint32_t nxAudioPlay3d(NxAudioSource* source, float x, float y, float z, float velX,
     float velY, float velZ, float volume, bool paused)
 {
@@ -142,7 +127,6 @@ NX_EXPORT uint32_t nxAudioPlay3d(NxAudioSource* source, float x, float y, float 
     );
 }
 
-//----------------------------------------------------------
 NX_EXPORT uint32_t nxAudioPlay3dClocked(NxAudioSource* source, double interval, float x, float y,
     float z, float velX, float velY, float velZ, float volume)
 {
@@ -151,73 +135,61 @@ NX_EXPORT uint32_t nxAudioPlay3dClocked(NxAudioSource* source, double interval, 
     );
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxAudioSetVolume(NxAudioSource* source, float volume)
 {
     source->handle->setVolume(volume);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxAudioSetLooping(NxAudioSource* source, bool looping)
 {
     source->handle->setLooping(looping);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxAudioSetSingleInstance(NxAudioSource* source, bool singleInstance)
 {
     source->handle->setSingleInstance(singleInstance);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxAudioSourceStop(NxAudioSource* source)
 {
     source->handle->stop();
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxAudioSetInaudibleBehavior(NxAudioSource* source, bool ticks, bool kill)
 {
     source->handle->setInaudibleBehavior(ticks, kill);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxAudioSet3dMinMaxDistance(NxAudioSource* source, float min, float max)
 {
     source->handle->set3dMinMaxDistance(min, max);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxAudioSet3dAttenuation(NxAudioSource* source, uint32_t model, float rolloffFactor)
 {
     source->handle->set3dAttenuation(model, rolloffFactor);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxAudioSet3dDopplerFactor(NxAudioSource* source, float dopplerFactor)
 {
     source->handle->set3dDopplerFactor(dopplerFactor);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxAudioSet3dListenerRelative(NxAudioSource* source, bool relative)
 {
     source->handle->set3dListenerRelative(relative);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxAudioSet3dDistanceDelay(NxAudioSource* source, bool delay)
 {
     source->handle->set3dDistanceDelay(delay);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxAudioSourceSetFilter(NxAudioSource* source, NxAudioFilter* filter, uint32_t id)
 {
     source->handle->setFilter(id, filter);
 }
 
-//----------------------------------------------------------
 NX_EXPORT NxAudioSource* nxAudioBusCreate()
 {
     return new NxAudioSource {
@@ -226,14 +198,12 @@ NX_EXPORT NxAudioSource* nxAudioBusCreate()
     };
 }
 
-//----------------------------------------------------------
 NX_EXPORT uint32_t nxAudioSourcePlayThrough(NxAudioSource* source, NxAudioSource* bus, float volume,
     float pan, bool paused)
 {
     return static_cast<SoLoud::Bus*>(bus->handle)->play(*source->handle, volume, pan, paused);
 }
 
-//----------------------------------------------------------
 NX_EXPORT uint32_t nxAudioSourcePlayClockedThrough(NxAudioSource* source, NxAudioSource* bus,
     double interval, float volume, float pan)
 {
@@ -242,7 +212,6 @@ NX_EXPORT uint32_t nxAudioSourcePlayClockedThrough(NxAudioSource* source, NxAudi
     );
 }
 
-//----------------------------------------------------------
 NX_EXPORT uint32_t nxAudioSourcePlay3dThrough(NxAudioSource* source, NxAudioSource* bus,
     float posX, float posY, float posZ, float velX, float velY, float velZ, float volume,
     bool paused)
@@ -252,7 +221,6 @@ NX_EXPORT uint32_t nxAudioSourcePlay3dThrough(NxAudioSource* source, NxAudioSour
     );
 }
 
-//----------------------------------------------------------
 NX_EXPORT uint32_t nxAudioSourcePlay3dClockedThrough(NxAudioSource* source, NxAudioSource* bus,
     double interval, float posX, float posY, float posZ, float velX, float velY, float velZ,
     float volume)
@@ -262,25 +230,21 @@ NX_EXPORT uint32_t nxAudioSourcePlay3dClockedThrough(NxAudioSource* source, NxAu
     );
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxAudioBusSetChannels(NxAudioSource* bus, uint32_t channels)
 {
     static_cast<SoLoud::Bus*>(bus->handle)->setChannels(channels);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxAudioBusEnableVisualization(NxAudioSource* bus, bool enabled)
 {
     static_cast<SoLoud::Bus*>(bus->handle)->setVisualizationEnable(enabled);
 }
 
-//----------------------------------------------------------
 NX_EXPORT const float* nxAudioBusCalcFFT(NxAudioSource* bus)
 {
     return static_cast<SoLoud::Bus*>(bus->handle)->calcFFT();
 }
 
-//----------------------------------------------------------
 NX_EXPORT const float* nxAudioBusCurrentWaveData(NxAudioSource* bus)
 {
     return static_cast<SoLoud::Bus*>(bus->handle)->getWave();

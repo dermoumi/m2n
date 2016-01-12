@@ -1,10 +1,10 @@
-------------------------------------------------------------------------------
+--------------------
 -- DynASM. A dynamic assembler for code generation engines.
 -- Originally designed and implemented for LuaJIT.
 --
 -- Copyright (C) 2005-2014 Mike Pall. All rights reserved.
 -- See below for full copyright notice.
-------------------------------------------------------------------------------
+--------------------
 
 -- Application information.
 local _info = {
@@ -54,7 +54,7 @@ local exit = os.exit
 local io = io
 local stdin, stdout, stderr = io.stdin, io.stdout, io.stderr
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Program options.
 local g_opt = {}
@@ -66,7 +66,7 @@ local g_errcount = 0
 -- Write buffer for output file.
 local g_wbuffer, g_capbuffer
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Write an output line (or callback function) to the buffer.
 local function wline(line, needindent)
@@ -106,7 +106,7 @@ local function wdumplines(out, buf)
   end
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Emit an error. Processing continues with next statement.
 local function werror(msg)
@@ -143,7 +143,7 @@ local function wprinterr(...)
   end
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Map holding all option handlers.
 local opt_map = {}
@@ -167,7 +167,7 @@ local function optparam(args)
   return p
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Core pseudo-opcodes.
 local map_coreop = {}
@@ -178,7 +178,7 @@ local map_op = {}
 local dostmt
 local readfile
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Map for defines (initially empty, chains to arch-specific map).
 local map_def = {}
@@ -251,7 +251,7 @@ local function dumpdefines(out, lvl)
   out:write("\n")
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Support variables for conditional assembly.
 local condlevel = 0
@@ -348,7 +348,7 @@ local function checkconds()
   end
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Search for a file in the given path and open it for reading.
 local function pathopen(path, name)
@@ -385,7 +385,7 @@ map_op[".elif_1"] = map_coreop[".elif_1"]
 map_op[".else_0"] = map_coreop[".else_0"]
 map_op[".endif_0"] = map_coreop[".endif_0"]
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Support variables for macros.
 local mac_capture, mac_lineno, mac_name
@@ -497,7 +497,7 @@ local function checkmacros()
   end
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Support variables for captures.
 local cap_lineno, cap_name
@@ -581,7 +581,7 @@ local function checkcaptures()
   end
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Sections names.
 local map_sections = {}
@@ -614,7 +614,7 @@ local function dumpsections(out, lvl)
   out:write("\n")
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Replacement for customized Lua, which lacks the package library.
 local prefix = ""
@@ -706,7 +706,7 @@ map_coreop[".arch_1"] = function(params)
   wfatal("duplicate .arch statement")
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Dummy pseudo-opcode. Don't confuse '.nop' with 'nop'.
 map_coreop[".nop_*"] = function(params)
@@ -735,7 +735,7 @@ local function dumpdef(out)
   dumpcaptures(out, lvl)
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Helper for splitstmt.
 local splitlvl
@@ -868,7 +868,7 @@ local function doline(line)
   end
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Write DynASM header.
 local function dasmhead(out)
@@ -966,7 +966,7 @@ local function translate(infile, outfile)
   writefile(outfile)
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Print help text.
 function opt_map.help()
@@ -1017,7 +1017,7 @@ function opt_map.nolineno() g_opt.cpp = false end
 function opt_map.flushline() g_opt.flushline = true end
 function opt_map.dumpdef() g_opt.dumpdef = g_opt.dumpdef + 1 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Short aliases for long options.
 local opt_alias = {
@@ -1078,7 +1078,7 @@ local function parseargs(args)
   translate(args[args.argn], g_opt.outfile)
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Add the directory dynasm.lua resides in to the Lua module search path.
 local arg = arg
@@ -1090,5 +1090,5 @@ end
 -- Start DynASM.
 parseargs{...}
 
-------------------------------------------------------------------------------
+--------------------
 

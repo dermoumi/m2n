@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,13 +23,12 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local BinaryFile = require 'filesystem._binaryfile'
 
 local InputFile = BinaryFile:subclass('filesystem.inputfile')
 
-------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
@@ -55,12 +54,10 @@ ffi.cdef[[
     const char* nxFsReadString(PHYSFS_File*);
 ]]
 
-------------------------------------------------------------
 function InputFile:initialize(filename)
     BinaryFile.initialize(self, filename)
 end
 
-------------------------------------------------------------
 function InputFile:open(filename)
     -- Close if already open
     if self:isOpen() then self:close() end
@@ -72,25 +69,21 @@ function InputFile:open(filename)
     return self
 end
 
-------------------------------------------------------------
-function InputFile:read(size, asCdata)
+function InputFile:read(size)
     if self._cdata == nil then return '', 0 end
 
     -- If size is invalid, read all
     if type(size) ~= 'number' then size = self:size() end
 
     local readBytesPtr = ffi.new('size_t[1]')
-    local buffer       = ffi.new('char[?]', size)
+    local buffer       = ffi.new('uint8_t[?]', size)
 
     local ok = C.nxFsRead(self._cdata, buffer, size, readBytesPtr)
     if not ok then return self:_throwError('', 0) end
 
-    if not asCdata then buffer = ffi.string(buffer, readBytesPtr[0]) end
-
     return buffer, tonumber(readBytesPtr[0])
 end
 
-------------------------------------------------------------
 function InputFile:readS8()
     if self._cdata == nil then return 0 end
 
@@ -102,7 +95,6 @@ function InputFile:readS8()
     return tonumber(valPtr[0])
 end
 
-------------------------------------------------------------
 function InputFile:readS16()
     if self._cdata == nil then return 0 end
 
@@ -114,7 +106,6 @@ function InputFile:readS16()
     return tonumber(valPtr[0])
 end
 
-------------------------------------------------------------
 function InputFile:readS32()
     if self._cdata == nil then return 0 end
 
@@ -126,7 +117,6 @@ function InputFile:readS32()
     return tonumber(valPtr[0])
 end
 
-------------------------------------------------------------
 function InputFile:readS64()
     if self._cdata == nil then return 0 end
 
@@ -138,7 +128,6 @@ function InputFile:readS64()
     return valPtr[0]
 end
 
-------------------------------------------------------------
 function InputFile:readU8()
     if self._cdata == nil then return 0 end
 
@@ -150,7 +139,6 @@ function InputFile:readU8()
     return tonumber(valPtr[0])
 end
 
-------------------------------------------------------------
 function InputFile:readU16()
     if self._cdata == nil then return 0 end
 
@@ -162,7 +150,6 @@ function InputFile:readU16()
     return tonumber(valPtr[0])
 end
 
-------------------------------------------------------------
 function InputFile:readU32()
     if self._cdata == nil then return 0 end
 
@@ -174,7 +161,6 @@ function InputFile:readU32()
     return tonumber(valPtr[0])
 end
 
-------------------------------------------------------------
 function InputFile:readU64()
     if self._cdata == nil then return 0 end
 
@@ -186,7 +172,6 @@ function InputFile:readU64()
     return valPtr[0]
 end
 
-------------------------------------------------------------
 function InputFile:readFloat()
     if self._cdata == nil then return 0 end
 
@@ -200,7 +185,6 @@ function InputFile:readFloat()
     return tonumber(valPtr[0])
 end
 
-------------------------------------------------------------
 function InputFile:readDouble()
     if self._cdata == nil then return 0 end
 
@@ -212,7 +196,6 @@ function InputFile:readDouble()
     return tonumber(valPtr[0])
 end
 
-------------------------------------------------------------
 function InputFile:readString()
     if self._cdata == nil then return '' end
 
@@ -222,5 +205,4 @@ function InputFile:readString()
     return ffi.string(str)
 end
 
-------------------------------------------------------------
 return InputFile

@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,14 +23,13 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local class = require 'class'
 local Log   = require 'util.log'
 
 local BinaryFile = class 'filesystem._binaryfile'
 
-------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
@@ -45,12 +44,10 @@ ffi.cdef[[
     bool nxFsSeek(PHYSFS_File*, size_t);
 ]]
 
-------------------------------------------------------------
 function BinaryFile.static.defaultCallback(message)
     Log.error('File I/O error: ' .. message)
 end
 
-------------------------------------------------------------
 function BinaryFile:initialize(filename)
     self._errorCallback = BinaryFile.defaultCallback
 
@@ -58,14 +55,12 @@ function BinaryFile:initialize(filename)
     if type(filename) == 'string' then self:open(filename) end
 end
 
-------------------------------------------------------------
 function BinaryFile:onError(callback)
     self._errorCallback = callback
 
     return self
 end
 
-------------------------------------------------------------
 function BinaryFile:_throwError(retVal1, retVal2)
     self._errorCallback(ffi.string(C.nxFsGetError()))
     self:release()
@@ -73,12 +68,10 @@ function BinaryFile:_throwError(retVal1, retVal2)
     return retVal1, retVal2
 end
 
-------------------------------------------------------------
 function BinaryFile:isOpen()
     return self._cdata ~= nil
 end
 
-------------------------------------------------------------
 function BinaryFile:release()
     if self._cdata == nil then return end
 
@@ -86,7 +79,6 @@ function BinaryFile:release()
     self._cdata = nil
 end
 
-------------------------------------------------------------
 function BinaryFile:size()
     if self._cdata == nil then return 0 end
 
@@ -96,7 +88,6 @@ function BinaryFile:size()
     return tonumber(size[0])
 end
 
-------------------------------------------------------------
 function BinaryFile:tell()
     if self._cdata == nil then return 0 end
 
@@ -106,7 +97,6 @@ function BinaryFile:tell()
     return tonumber(position[0])
 end
 
-------------------------------------------------------------
 function BinaryFile:seek(position)
     if self._cdata == nil then return self end
 
@@ -115,5 +105,4 @@ function BinaryFile:seek(position)
     return self
 end
 
-------------------------------------------------------------
 return BinaryFile

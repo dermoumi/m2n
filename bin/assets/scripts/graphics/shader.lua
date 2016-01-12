@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,7 +23,7 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local class     = require 'class'
 local Log       = require 'util.log'
@@ -32,7 +32,6 @@ local InputFile = require 'filesystem.inputfile'
 
 local Shader = class 'graphics.shader'
 
-------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
@@ -52,7 +51,16 @@ ffi.cdef [[
     const char* nxShaderDefaultFSCode();
 ]]
 
-------------------------------------------------------------
+function Shader.static.factory(task)
+    task:addTask('gpu', function(shader, filename)
+            local shaders = loadfile(filename)
+            if not shaders then return false end
+
+            local vs, fs = shaders()
+            shader:load(vs, fs)
+        end)
+end
+
 function Shader.static.bind(shader)
     if shader then shader = shader._cdata end
     C.nxShaderBind(shader)
@@ -60,7 +68,6 @@ function Shader.static.bind(shader)
     return Shader
 end
 
-------------------------------------------------------------
 function Shader:initialize(vertexShader, fragmentShader)
     local handle = C.nxShaderNew()
     self._cdata = ffi.gc(handle, C.nxShaderRelease)
@@ -73,14 +80,12 @@ function Shader:initialize(vertexShader, fragmentShader)
     end
 end
 
-------------------------------------------------------------
 function Shader:release()
     if self._cdata == nil then return end
     C.nxShaderRelease(ffi.gc(self._cdata, nil))
     self._cdata = nil
 end
 
-------------------------------------------------------------
 function Shader:load(vertexShader, fragmentShader)
     if type(vertexShader) == 'string' then
         -- Try to open vertex shader file
@@ -120,14 +125,12 @@ function Shader:load(vertexShader, fragmentShader)
     return self
 end
 
-------------------------------------------------------------
 function Shader:bind()
     C.nxShaderBind(self._cdata)
 
     return self
 end
 
-------------------------------------------------------------
 function Shader:setUniform(name, a, b, c, d)
     if self._cdata ~= nil then
         local uniform = self._uniforms[name]
@@ -135,11 +138,13 @@ function Shader:setUniform(name, a, b, c, d)
         if not uniform then
             uniform = C.nxShaderUniformLocation(self._cdata, name)
             self._uniforms[name] = uniform
+
+            if uniform < 0 then
+                Log.warning('Uniform "' .. name .. '" does not exist')
+            end
         end
 
-        if uniform < 0 then
-            Log.warning('Uniform "' .. name .. '" does not exist')
-        else
+        if uniform >= 0 then
             local uniformType, uniformData
             if class.Object.isInstanceOf(a, Matrix) then
                 uniformType = 4
@@ -165,7 +170,6 @@ function Shader:setUniform(name, a, b, c, d)
     return self
 end
 
-------------------------------------------------------------
 function Shader:setSampler(name, sampler)
     if self._cdata ~= nil then
         -- Check local uniforms
@@ -173,11 +177,13 @@ function Shader:setSampler(name, sampler)
         if not uniform then
             uniform = C.nxShaderSamplerLocation(self._cdata, name)
             self._samplers[name] = uniform
+
+            if uniform < 0 then
+                Log.warning('Sampler "' .. name .. '" does not exist')
+            end
         end
 
-        if uniform < 0 then
-            Log.warning('Sampler "' .. name .. '"does not exist')
-        else
+        if uniform >= 0 then
             C.nxShaderSetSampler(self._cdata, uniform, sampler)
         end
     end
@@ -185,5 +191,4 @@ function Shader:setSampler(name, sampler)
     return self
 end
 
-------------------------------------------------------------
 return Shader

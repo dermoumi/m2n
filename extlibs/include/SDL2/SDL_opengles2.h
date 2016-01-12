@@ -131,9 +131,9 @@
 *                                  int arg2) KHRONOS_APIATTRIBUTES;
 */
 
-/*-------------------------------------------------------------------------
+/*---------------
 * Definition of KHRONOS_APICALL
-*-------------------------------------------------------------------------
+*---------------
 * This precedes the return type of the function in the function prototype.
 */
 #if defined(_WIN32) && !defined(__SCITECH_SNAP__)
@@ -144,9 +144,9 @@
 #   define KHRONOS_APICALL
 #endif
 
-/*-------------------------------------------------------------------------
+/*---------------
 * Definition of KHRONOS_APIENTRY
-*-------------------------------------------------------------------------
+*---------------
 * This follows the return type of the function  and precedes the function
 * name in the function prototype.
 */
@@ -157,9 +157,9 @@
 #   define KHRONOS_APIENTRY
 #endif
 
-/*-------------------------------------------------------------------------
+/*---------------
 * Definition of KHRONOS_APIATTRIBUTES
-*-------------------------------------------------------------------------
+*---------------
 * This follows the closing parenthesis of the function prototype arguments.
 */
 #if defined (__ARMCC_2__)
@@ -168,9 +168,9 @@
 #define KHRONOS_APIATTRIBUTES
 #endif
 
-/*-------------------------------------------------------------------------
+/*---------------
 * basic type definitions
-*-----------------------------------------------------------------------*/
+*-------------*/
 #if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) || defined(__GNUC__) || defined(__SCO__) || defined(__USLC__)
 
 
@@ -368,9 +368,9 @@ extern "C" {
  * 2.0. For details, see http://oss.sgi.com/projects/FreeB/ .
  */
 
-/*-------------------------------------------------------------------------
+/*---------------
  * Data type definitions
- *-----------------------------------------------------------------------*/
+ *-------------*/
 
 typedef void             GLvoid;
 typedef char             GLchar;
@@ -820,9 +820,9 @@ typedef khronos_ssize_t  GLsizeiptr;
 
 #define GL_INVALID_FRAMEBUFFER_OPERATION  0x0506
 
-/*-------------------------------------------------------------------------
+/*---------------
  * GL core functions.
- *-----------------------------------------------------------------------*/
+ *-------------*/
 
 GL_APICALL void         GL_APIENTRY glActiveTexture (GLenum texture);
 GL_APICALL void         GL_APIENTRY glAttachShader (GLuint program, GLuint shader);
@@ -992,9 +992,9 @@ extern "C" {
 #   define GL_APIENTRYP GL_APIENTRY*
 #endif
 
-/*------------------------------------------------------------------------*
+/*--------------*
  * OES extension tokens
- *------------------------------------------------------------------------*/
+ *--------------*/
 
 /* GL_OES_compressed_ETC1_RGB8_texture */
 #ifndef GL_OES_compressed_ETC1_RGB8_texture
@@ -1154,9 +1154,9 @@ typedef void* GLeglImageOES;
 #define GL_INT_10_10_10_2_OES                                   0x8DF7
 #endif
 
-/*------------------------------------------------------------------------*
+/*--------------*
  * KHR extension tokens
- *------------------------------------------------------------------------*/
+ *--------------*/
 
 #ifndef GL_KHR_debug
 typedef void (GL_APIENTRYP GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,GLvoid *userParam);
@@ -1233,9 +1233,9 @@ typedef void (GL_APIENTRYP GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLen
 #define GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR               0x93DD
 #endif
 
-/*------------------------------------------------------------------------*
+/*--------------*
  * AMD extension tokens
- *------------------------------------------------------------------------*/
+ *--------------*/
 
 /* GL_AMD_compressed_3DC_texture */
 #ifndef GL_AMD_compressed_3DC_texture
@@ -1266,9 +1266,9 @@ typedef void (GL_APIENTRYP GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLen
 #define GL_Z400_BINARY_AMD                                      0x8740
 #endif
 
-/*------------------------------------------------------------------------*
+/*--------------*
  * ANGLE extension tokens
- *------------------------------------------------------------------------*/
+ *--------------*/
 
 /* GL_ANGLE_framebuffer_blit */
 #ifndef GL_ANGLE_framebuffer_blit
@@ -1316,9 +1316,9 @@ typedef void (GL_APIENTRYP GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLen
 #define GL_TRANSLATED_SHADER_SOURCE_LENGTH_ANGLE                0x93A0
 #endif
 
-/*------------------------------------------------------------------------*
+/*--------------*
  * APPLE extension tokens
- *------------------------------------------------------------------------*/
+ *--------------*/
 
 /* GL_APPLE_copy_texture_levels */
 /* No new tokens introduced by this extension. */
@@ -1385,9 +1385,9 @@ typedef struct __GLsync *GLsync;
 #define GL_TEXTURE_MAX_LEVEL_APPLE                              0x813D
 #endif
 
-/*------------------------------------------------------------------------*
+/*--------------*
  * ARM extension tokens
- *------------------------------------------------------------------------*/
+ *--------------*/
 
 /* GL_ARM_mali_program_binary */
 #ifndef GL_ARM_mali_program_binary
@@ -1402,9 +1402,9 @@ typedef struct __GLsync *GLsync;
 /* GL_ARM_rgba8 */
 /* No new tokens introduced by this extension. */
 
-/*------------------------------------------------------------------------*
+/*--------------*
  * EXT extension tokens
- *------------------------------------------------------------------------*/
+ *--------------*/
 
 /* GL_EXT_blend_minmax */
 #ifndef GL_EXT_blend_minmax
@@ -1599,27 +1599,27 @@ typedef struct __GLsync *GLsync;
 #define GL_UNPACK_SKIP_PIXELS                                   0x0CF4
 #endif
 
-/*------------------------------------------------------------------------*
+/*--------------*
  * DMP extension tokens
- *------------------------------------------------------------------------*/
+ *--------------*/
 
 /* GL_DMP_shader_binary */
 #ifndef GL_DMP_shader_binary
 #define GL_SHADER_BINARY_DMP                                    0x9250
 #endif
 
-/*------------------------------------------------------------------------*
+/*--------------*
  * FJ extension tokens
- *------------------------------------------------------------------------*/
+ *--------------*/
 
 /* GL_FJ_shader_binary_GCCSO */
 #ifndef GL_FJ_shader_binary_GCCSO
 #define GCCSO_SHADER_BINARY_FJ                                  0x9260
 #endif
 
-/*------------------------------------------------------------------------*
+/*--------------*
  * IMG extension tokens
- *------------------------------------------------------------------------*/
+ *--------------*/
 
 /* GL_IMG_program_binary */
 #ifndef GL_IMG_program_binary
@@ -1653,9 +1653,9 @@ typedef struct __GLsync *GLsync;
 #define GL_TEXTURE_SAMPLES_IMG                                  0x9136
 #endif
 
-/*------------------------------------------------------------------------*
+/*--------------*
  * NV extension tokens
- *------------------------------------------------------------------------*/
+ *--------------*/
 
 /* GL_NV_coverage_sample */
 #ifndef GL_NV_coverage_sample
@@ -1748,9 +1748,9 @@ typedef struct __GLsync *GLsync;
 /* GL_NV_texture_npot_2D_mipmap */
 /* No new tokens introduced by this extension. */
 
-/*------------------------------------------------------------------------*
+/*--------------*
  * QCOM extension tokens
- *------------------------------------------------------------------------*/
+ *--------------*/
 
 /* GL_QCOM_alpha_test */
 #ifndef GL_QCOM_alpha_test
@@ -1834,22 +1834,22 @@ typedef struct __GLsync *GLsync;
 #define GL_MULTISAMPLE_BUFFER_BIT7_QCOM                         0x80000000
 #endif
 
-/*------------------------------------------------------------------------*
+/*--------------*
  * VIV extension tokens
- *------------------------------------------------------------------------*/
+ *--------------*/
 
 /* GL_VIV_shader_binary */
 #ifndef GL_VIV_shader_binary
 #define GL_SHADER_BINARY_VIV                                    0x8FC4
 #endif
 
-/*------------------------------------------------------------------------*
+/*--------------*
  * End of extension tokens, start of corresponding extension functions
- *------------------------------------------------------------------------*/
+ *--------------*/
 
-/*------------------------------------------------------------------------*
+/*--------------*
  * OES extension functions
- *------------------------------------------------------------------------*/
+ *--------------*/
 
 /* GL_OES_compressed_ETC1_RGB8_texture */
 #ifndef GL_OES_compressed_ETC1_RGB8_texture
@@ -2035,9 +2035,9 @@ typedef GLboolean (GL_APIENTRYP PFNGLISVERTEXARRAYOESPROC) (GLuint array);
 #define GL_OES_vertex_type_10_10_10_2 1
 #endif
 
-/*------------------------------------------------------------------------*
+/*--------------*
  * KHR extension functions
- *------------------------------------------------------------------------*/
+ *--------------*/
 
 #ifndef GL_KHR_debug
 #define GL_KHR_debug 1
@@ -2072,9 +2072,9 @@ typedef void (GL_APIENTRYP PFNGLGETPOINTERVPROC) (GLenum pname, void **params);
 #endif
 
 
-/*------------------------------------------------------------------------*
+/*--------------*
  * AMD extension functions
- *------------------------------------------------------------------------*/
+ *--------------*/
 
 /* GL_AMD_compressed_3DC_texture */
 #ifndef GL_AMD_compressed_3DC_texture
@@ -2120,9 +2120,9 @@ typedef void (GL_APIENTRYP PFNGLGETPERFMONITORCOUNTERDATAAMDPROC) (GLuint monito
 #define GL_AMD_program_binary_Z400 1
 #endif
 
-/*------------------------------------------------------------------------*
+/*--------------*
  * ANGLE extension functions
- *------------------------------------------------------------------------*/
+ *--------------*/
 
 /* GL_ANGLE_framebuffer_blit */
 #ifndef GL_ANGLE_framebuffer_blit
@@ -2181,9 +2181,9 @@ GL_APICALL void GL_APIENTRY glGetTranslatedShaderSourceANGLE (GLuint shader, GLs
 typedef void (GL_APIENTRYP PFLGLGETTRANSLATEDSHADERSOURCEANGLEPROC) (GLuint shader, GLsizei bufsize, GLsizei *length, GLchar *source);
 #endif
 
-/*------------------------------------------------------------------------*
+/*--------------*
  * APPLE extension functions
- *------------------------------------------------------------------------*/
+ *--------------*/
 
 /* GL_APPLE_copy_texture_levels */
 #ifndef GL_APPLE_copy_texture_levels
@@ -2241,9 +2241,9 @@ typedef void (GL_APIENTRYP PFNGLGETSYNCIVAPPLEPROC) (GLsync sync, GLenum pname, 
 #define GL_APPLE_texture_max_level 1
 #endif
 
-/*------------------------------------------------------------------------*
+/*--------------*
  * ARM extension functions
- *------------------------------------------------------------------------*/
+ *--------------*/
 
 /* GL_ARM_mali_program_binary */
 #ifndef GL_ARM_mali_program_binary
@@ -2260,9 +2260,9 @@ typedef void (GL_APIENTRYP PFNGLGETSYNCIVAPPLEPROC) (GLsync sync, GLenum pname, 
 #define GL_ARM_rgba8 1
 #endif
 
-/*------------------------------------------------------------------------*
+/*--------------*
  * EXT extension functions
- *------------------------------------------------------------------------*/
+ *--------------*/
 
 /* GL_EXT_blend_minmax */
 #ifndef GL_EXT_blend_minmax
@@ -2529,27 +2529,27 @@ typedef void (GL_APIENTRYP PFNGLTEXTURESTORAGE3DEXTPROC) (GLuint texture, GLenum
 #define GL_EXT_unpack_subimage 1
 #endif
 
-/*------------------------------------------------------------------------*
+/*--------------*
  * DMP extension functions
- *------------------------------------------------------------------------*/
+ *--------------*/
 
 /* GL_DMP_shader_binary */
 #ifndef GL_DMP_shader_binary
 #define GL_DMP_shader_binary 1
 #endif
 
-/*------------------------------------------------------------------------*
+/*--------------*
  * FJ extension functions
- *------------------------------------------------------------------------*/
+ *--------------*/
 
 /* GL_FJ_shader_binary_GCCSO */
 #ifndef GL_FJ_shader_binary_GCCSO
 #define GL_FJ_shader_binary_GCCSO 1
 #endif
 
-/*------------------------------------------------------------------------*
+/*--------------*
  * IMG extension functions
- *------------------------------------------------------------------------*/
+ *--------------*/
 
 /* GL_IMG_program_binary */
 #ifndef GL_IMG_program_binary
@@ -2582,9 +2582,9 @@ typedef void (GL_APIENTRYP PFNGLRENDERBUFFERSTORAGEMULTISAMPLEIMGPROC) (GLenum t
 typedef void (GL_APIENTRYP PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEIMGPROC) (GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level, GLsizei samples);
 #endif
 
-/*------------------------------------------------------------------------*
+/*--------------*
  * NV extension functions
- *------------------------------------------------------------------------*/
+ *--------------*/
 
 /* GL_NV_coverage_sample */
 #ifndef GL_NV_coverage_sample
@@ -2676,9 +2676,9 @@ typedef void (GL_APIENTRYP PFNGLREADBUFFERNVPROC) (GLenum mode);
 #define GL_NV_texture_npot_2D_mipmap 1
 #endif
 
-/*------------------------------------------------------------------------*
+/*--------------*
  * QCOM extension functions
- *------------------------------------------------------------------------*/
+ *--------------*/
 
 /* GL_QCOM_alpha_test */
 #ifndef GL_QCOM_alpha_test
@@ -2768,9 +2768,9 @@ typedef void (GL_APIENTRYP PFNGLSTARTTILINGQCOMPROC) (GLuint x, GLuint y, GLuint
 typedef void (GL_APIENTRYP PFNGLENDTILINGQCOMPROC) (GLbitfield preserveMask);
 #endif
 
-/*------------------------------------------------------------------------*
+/*--------------*
  * VIV extension tokens
- *------------------------------------------------------------------------*/
+ *--------------*/
 
 /* GL_VIV_shader_binary */
 #ifndef GL_VIV_shader_binary

@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,13 +23,12 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #define _CRT_SECURE_NO_WARNINGS
 #include "opengles2.hpp"
 
-//==============================================================================
 #if defined(NX_OPENGL_ES)
-//------------------------------------------------------------------------------
 
 #include <cstdlib>
 #include <cstring>
@@ -43,9 +42,7 @@
     #include <CoreFoundation/CoreFoundation.h>
 #endif
 
-//----------------------------------------------------------
 // Capabilities
-//----------------------------------------------------------
 namespace glExt
 {
     bool EXT_multisampled_render_to_texture = false;
@@ -76,9 +73,7 @@ namespace glExt
     int majorVersion = 1, minorVersion = 0;
 }
 
-//----------------------------------------------------------
 // Extensions
-//----------------------------------------------------------
 #ifdef NXGL_OES_texture_3D
     PFNGLTEXIMAGE3DOESPROC glTexImage3DOES = 0x0;
     PFNGLTEXSUBIMAGE3DOESPROC glTexSubImage3DOES = 0x0;
@@ -110,9 +105,7 @@ namespace glExt
     PFNGLGETQUERYOBJECTUIVEXTPROC glGetQueryObjectuivEXT = 0x0;
 #endif
 
-//----------------------------------------------------------
 // Locals
-//----------------------------------------------------------
 namespace
 {
     NX_HIDDEN bool isExtensionSupported(const std::string& extName)
@@ -150,8 +143,6 @@ namespace
     }
 }
 
-//----------------------------------------------------------
-
 NX_HIDDEN bool initOpenGLExtensions()
 {
     getOpenGLVersion();
@@ -169,7 +160,7 @@ NX_HIDDEN bool initOpenGLExtensions()
             glExt::OES_texture_3D = v;
         }
     #endif
-    
+
     glExt::EXT_multisampled_render_to_texture = isExtensionSupported( "GL_EXT_multisampled_render_to_texture" );
     #ifdef NXGL_EXT_multisampled_render_to_texture
         if (glExt::EXT_multisampled_render_to_texture) {
@@ -181,7 +172,7 @@ NX_HIDDEN bool initOpenGLExtensions()
     #endif
 
         // ANGLE_framebuffer_blit and ANGLE_framebuffer_multisample
-    glExt::ANGLE_framebuffer_blit = glExt::ANGLE_framebuffer_multisample = 
+    glExt::ANGLE_framebuffer_blit = glExt::ANGLE_framebuffer_multisample =
         isExtensionSupported("GL_ANGLE_framebuffer_multisample") && isExtensionSupported("GL_ANGLE_framebuffer_blit");
 
     #if defined(NXGL_ANGLE_framebuffer_blit) && defined(NXGL_ANGLE_framebuffer_multisample)
@@ -211,7 +202,7 @@ NX_HIDDEN bool initOpenGLExtensions()
             glExt::EXT_occlusion_query_boolean = v;
         }
     #endif
-    
+
     glExt::OES_rgb8_rgba8 = isExtensionSupported("GL_OES_rgb8_rgba8");
 
     glExt::EXT_texture_filter_anisotropic = isExtensionSupported("GL_EXT_texture_filter_anisotropic");
@@ -233,6 +224,4 @@ NX_HIDDEN bool initOpenGLExtensions()
     return true;
 }
 
-//------------------------------------------------------------------------------
 #endif
-//==============================================================================

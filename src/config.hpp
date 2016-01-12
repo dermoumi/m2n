@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,12 +23,11 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #pragma once
 
-//----------------------------------------------------------
 // Defining platforms
-//----------------------------------------------------------
 #if defined(WINCE)
     #define NX_SYSTEM_WINCE
     #warning Windows CE support is incomplete and untested
@@ -61,7 +60,7 @@
     #elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
         #define NX_SYSTEM_FREEBSD
         #warning FreeBSD support is incomplete and untested
-    
+
     #else
         #error This UNIX operating system is not supported
     #endif
@@ -70,14 +69,12 @@
     #error This operating system is not supported
 #endif
 
-//----------------------------------------------------------
 // Portable Export/Import macros
-//----------------------------------------------------------
 #if defined(NX_SYSTEM_WINDOWS) || defined(NX_SYSTEM_WINCE)
     #define NX_EXPORT extern "C" __declspec(dllexport)
     #define NX_IMPORT __declspec(dllimport)
     #define NX_HIDDEN
-    
+
     // Turn off annoying C4251 and C4996 warnings on Visual C++ compilers
     #ifdef _MSC_VER
         #pragma warning(disable: 4251)
@@ -101,15 +98,11 @@
     #define NX_HIDDEN
 #endif
 
-//----------------------------------------------------------
 // General include
-//----------------------------------------------------------
 #include <cstdint> // Integer types
 #include <cstddef> // nullptr_t and size_t
 
-//----------------------------------------------------------
 // Constants
-//----------------------------------------------------------
 constexpr char GAME_FULLTITLE[]  = "Monsters of 2nd Night";
 constexpr char GAME_SHORTTITLE[] = "m2n";
 constexpr char GAME_ORGNAME[]    = "nxsie";
@@ -121,5 +114,3 @@ constexpr char GAME_ORGNAME[]    = "nxsie";
     constexpr unsigned int NX_GL_MAJOR = 2u;
     constexpr unsigned int NX_GL_MINOR = 1u;
 #endif
-    
-//==============================================================================

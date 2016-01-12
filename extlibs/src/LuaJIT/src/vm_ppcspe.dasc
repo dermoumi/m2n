@@ -13,7 +13,7 @@
 |// Note: The ragged indentation of the instructions is intentional.
 |//       The starting columns indicate data dependencies.
 |
-|//-----------------------------------------------------------------------
+|-----------
 |
 |// Fixed register assignments for the interpreter.
 |// Don't use: r1 = sp, r2 and r13 = reserved and/or small data area ptr
@@ -129,7 +129,7 @@
 |.type NARGS8,		int
 |.type TRACE,		GCtrace
 |
-|//-----------------------------------------------------------------------
+|-----------
 |
 |// These basic macros should really be part of DynASM.
 |.macro srwi, rx, ry, n; rlwinm rx, ry, 32-n, n, 31; .endmacro
@@ -141,7 +141,7 @@
 |// Trap for not-yet-implemented parts.
 |.macro NYI; tw 4, sp, sp; .endmacro
 |
-|//-----------------------------------------------------------------------
+|-----------
 |
 |// Access to frame relative to BASE.
 |.define FRAME_PC,	-8
@@ -222,7 +222,7 @@
 |  ins_callt
 |.endmacro
 |
-|//-----------------------------------------------------------------------
+|-----------
 |
 |// Macros to test operand types.
 |.macro checknum, reg; evcmpltu reg, TISNUM; .endmacro
@@ -269,7 +269,7 @@
 |  stw tmp, tab->gclist
 |.endmacro
 |
-|//-----------------------------------------------------------------------
+|-----------
 
 /* Generate subroutines used by opcodes and other parts of the VM. */
 /* The .code_sub section should be last to help static branch prediction. */
@@ -277,9 +277,9 @@ static void build_subroutines(BuildCtx *ctx)
 {
   |.code_sub
   |
-  |//-----------------------------------------------------------------------
-  |//-- Return handling ----------------------------------------------------
-  |//-----------------------------------------------------------------------
+  |-----------
+  | Return handling ----------------------------------------------------
+  |-----------
   |
   |->vm_returnp:
   |  // See vm_return. Also: TMP2 = previous base.
@@ -411,9 +411,9 @@ static void build_subroutines(BuildCtx *ctx)
   |    st_vmstate
   |  b ->vm_returnc
   |
-  |//-----------------------------------------------------------------------
-  |//-- Grow stack for calls -----------------------------------------------
-  |//-----------------------------------------------------------------------
+  |-----------
+  | Grow stack for calls -----------------------------------------------
+  |-----------
   |
   |->vm_growstack_c:			// Grow stack for C function.
   |  li CARG2, LUA_MINSTACK
@@ -439,9 +439,9 @@ static void build_subroutines(BuildCtx *ctx)
   |  // BASE = new base, RB = LFUNC/CFUNC, RC = nargs*8, FRAME_PC(BASE) = PC
   |  ins_callt				// Just retry the call.
   |
-  |//-----------------------------------------------------------------------
-  |//-- Entry points into the assembler VM ---------------------------------
-  |//-----------------------------------------------------------------------
+  |-----------
+  | Entry points into the assembler VM ---------------------------------
+  |-----------
   |
   |->vm_resume:				// Setup C frame and resume thread.
   |  // (lua_State *L, TValue *base, int nres1 = 0, ptrdiff_t ef = 0)
@@ -561,14 +561,14 @@ static void build_subroutines(BuildCtx *ctx)
   |  bne <3				// Else continue with the call.
   |  b ->vm_leave_cp			// No base? Just remove C frame.
   |
-  |//-----------------------------------------------------------------------
-  |//-- Metamethod handling ------------------------------------------------
-  |//-----------------------------------------------------------------------
+  |-----------
+  | Metamethod handling ------------------------------------------------
+  |-----------
   |
   |// The lj_meta_* functions (except for lj_meta_cat) don't reallocate the
   |// stack, so BASE doesn't need to be reloaded across these calls.
   |
-  |//-- Continuation dispatch ----------------------------------------------
+  | Continuation dispatch ----------------------------------------------
   |
   |->cont_dispatch:
   |  // BASE = meta base, RA = resultptr, RD = (nresults+1)*8
@@ -607,7 +607,7 @@ static void build_subroutines(BuildCtx *ctx)
   |   evstddx TMP0, BASE, RA
   |  b ->cont_nop
   |
-  |//-- Table indexing metamethods -----------------------------------------
+  | Table indexing metamethods -----------------------------------------
   |
   |->vmeta_tgets1:
   |  evmergelo STR:RC, TISSTR, STR:RC
@@ -661,7 +661,7 @@ static void build_subroutines(BuildCtx *ctx)
   |   li NARGS8:RC, 16			// 2 args for func(t, k).
   |  b ->vm_call_dispatch_f
   |
-  |//-----------------------------------------------------------------------
+  |-----------
   |
   |->vmeta_tsets1:
   |  evmergelo STR:RC, TISSTR, STR:RC
@@ -717,7 +717,7 @@ static void build_subroutines(BuildCtx *ctx)
   |  evstdd TMP0, 16(BASE)		// Copy value to third argument.
   |  b ->vm_call_dispatch_f
   |
-  |//-- Comparison metamethods ---------------------------------------------
+  | Comparison metamethods ---------------------------------------------
   |
   |->vmeta_comp:
   |  mr CARG1, L
@@ -771,7 +771,7 @@ static void build_subroutines(BuildCtx *ctx)
   |  // Returns 0/1 or TValue * (metamethod).
   |  b <3
   |
-  |//-- Arithmetic metamethods ---------------------------------------------
+  | Arithmetic metamethods ---------------------------------------------
   |
   |->vmeta_arith_vn:
   |  add CARG3, BASE, RB
@@ -832,7 +832,7 @@ static void build_subroutines(BuildCtx *ctx)
   |  b ->vmeta_binop			// Binop call for compatibility.
 #endif
   |
-  |//-- Call metamethod ----------------------------------------------------
+  | Call metamethod ----------------------------------------------------
   |
   |->vmeta_call:			// Resolve and call __call metamethod.
   |  // TMP2 = old base, BASE = new base, RC = nargs*8
@@ -861,7 +861,7 @@ static void build_subroutines(BuildCtx *ctx)
   |   lwz LFUNC:RB, FRAME_FUNC(RA)	// Guaranteed to be a function here.
   |  b ->BC_CALLT_Z
   |
-  |//-- Argument coercion for 'for' statement ------------------------------
+  | Argument coercion for 'for' statement ------------------------------
   |
   |->vmeta_for:
   |  mr CARG1, L
@@ -883,9 +883,9 @@ static void build_subroutines(BuildCtx *ctx)
   |.endif
   |  b =>BC_FORI
   |
-  |//-----------------------------------------------------------------------
-  |//-- Fast functions -----------------------------------------------------
-  |//-----------------------------------------------------------------------
+  |-----------
+  | Fast functions -----------------------------------------------------
+  |-----------
   |
   |.macro .ffunc, name
   |->ff_ .. name:
@@ -927,7 +927,7 @@ static void build_subroutines(BuildCtx *ctx)
   |  bgel ->fff_gcstep
   |.endmacro
   |
-  |//-- Base library: checks -----------------------------------------------
+  | Base library: checks -----------------------------------------------
   |
   |.ffunc assert
   |  cmplwi NARGS8:RC, 8
@@ -964,7 +964,7 @@ static void build_subroutines(BuildCtx *ctx)
   |  evlddx STR:CRET1, TMP2, TMP1
   |  b ->fff_restv
   |
-  |//-- Base library: getters and setters ---------------------------------
+  | Base library: getters and setters ---------------------------------
   |
   |.ffunc_1 getmetatable
   |  checktab CARG1
@@ -1042,7 +1042,7 @@ static void build_subroutines(BuildCtx *ctx)
   |  evldd CRET1, 0(CRET1)
   |  b ->fff_restv
   |
-  |//-- Base library: conversions ------------------------------------------
+  | Base library: conversions ------------------------------------------
   |
   |.ffunc tonumber
   |  // Only handles the number case inline (without a base argument).
@@ -1074,7 +1074,7 @@ static void build_subroutines(BuildCtx *ctx)
   |  evmergelo STR:CRET1, TISSTR, STR:CRET1
   |  b ->fff_restv
   |
-  |//-- Base library: iterators -------------------------------------------
+  | Base library: iterators -------------------------------------------
   |
   |.ffunc next
   |  cmplwi NARGS8:RC, 8
@@ -1181,7 +1181,7 @@ static void build_subroutines(BuildCtx *ctx)
   |  evstdd CFUNC:TMP0, 0(RA)
   |  b ->fff_res
   |
-  |//-- Base library: catch errors ----------------------------------------
+  | Base library: catch errors ----------------------------------------
   |
   |.ffunc pcall
   |  cmplwi NARGS8:RC, 8
@@ -1209,7 +1209,7 @@ static void build_subroutines(BuildCtx *ctx)
   |  addi PC, TMP3, 16+FRAME_PCALL
   |  b ->vm_call_dispatch
   |
-  |//-- Coroutine library --------------------------------------------------
+  | Coroutine library --------------------------------------------------
   |
   |.macro coroutine_resume_wrap, resume
   |.if resume
@@ -1346,7 +1346,7 @@ static void build_subroutines(BuildCtx *ctx)
   |    stb CRET1, L->status
   |  b ->vm_leave_unw
   |
-  |//-- Math library -------------------------------------------------------
+  | Math library -------------------------------------------------------
   |
   |.ffunc_n math_abs
   |  efdabs CRET1, CARG1
@@ -1531,7 +1531,7 @@ static void build_subroutines(BuildCtx *ctx)
   |  math_minmax math_min, efdtstlt
   |  math_minmax math_max, efdtstgt
   |
-  |//-- String library -----------------------------------------------------
+  | String library -----------------------------------------------------
   |
   |.ffunc_1 string_len
   |  checkstr STR:CARG1
@@ -1717,7 +1717,7 @@ static void build_subroutines(BuildCtx *ctx)
   |ffstring_case string_lower, 65
   |ffstring_case string_upper, 97
   |
-  |//-- Table library ------------------------------------------------------
+  | Table library ------------------------------------------------------
   |
   |.ffunc_1 table_getn
   |  checktab CARG1
@@ -1727,7 +1727,7 @@ static void build_subroutines(BuildCtx *ctx)
   |  efdcfsi CRET1, CRET1
   |  b ->fff_restv
   |
-  |//-- Bit library --------------------------------------------------------
+  | Bit library --------------------------------------------------------
   |
   |.macro .ffunc_bit, name
   |  .ffunc_n bit_..name
@@ -1790,7 +1790,7 @@ static void build_subroutines(BuildCtx *ctx)
   |.ffunc_bit_sh rol, rotlw, 0
   |.ffunc_bit_sh ror, rotlw, 2
   |
-  |//-----------------------------------------------------------------------
+  |-----------
   |
   |->fff_fallback:			// Call fast function fallback handler.
   |  // BASE = new base, RB = CFUNC, RC = nargs*8
@@ -1855,9 +1855,9 @@ static void build_subroutines(BuildCtx *ctx)
   |   lwz CFUNC:RB, FRAME_FUNC(BASE)
   |  blr
   |
-  |//-----------------------------------------------------------------------
-  |//-- Special dispatch targets -------------------------------------------
-  |//-----------------------------------------------------------------------
+  |-----------
+  | Special dispatch targets -------------------------------------------
+  |-----------
   |
   |->vm_record:				// Dispatch target for recording phase.
   |.if JIT
@@ -1946,9 +1946,9 @@ static void build_subroutines(BuildCtx *ctx)
   |  mtctr CRET1
   |  bctr
   |
-  |//-----------------------------------------------------------------------
-  |//-- Trace exit handler -------------------------------------------------
-  |//-----------------------------------------------------------------------
+  |-----------
+  | Trace exit handler -------------------------------------------------
+  |-----------
   |
   |->vm_exit_handler:
   |.if JIT
@@ -1959,9 +1959,9 @@ static void build_subroutines(BuildCtx *ctx)
   |  NYI
   |.endif
   |
-  |//-----------------------------------------------------------------------
-  |//-- Math helper functions ----------------------------------------------
-  |//-----------------------------------------------------------------------
+  |-----------
+  | Math helper functions ----------------------------------------------
+  |-----------
   |
   |// FP value rounding. Called by math.floor/math.ceil fast functions
   |// and from JIT code.
@@ -2053,20 +2053,20 @@ static void build_subroutines(BuildCtx *ctx)
   |->vm_trunc_hilo:
   |.endif
   |
-  |//-----------------------------------------------------------------------
-  |//-- Miscellaneous functions --------------------------------------------
-  |//-----------------------------------------------------------------------
+  |-----------
+  | Miscellaneous functions --------------------------------------------
+  |-----------
   |
-  |//-----------------------------------------------------------------------
-  |//-- FFI helper functions -----------------------------------------------
-  |//-----------------------------------------------------------------------
+  |-----------
+  | FFI helper functions -----------------------------------------------
+  |-----------
   |
   |->vm_ffi_call:
   |.if FFI
   |  NYI
   |.endif
   |
-  |//-----------------------------------------------------------------------
+  |-----------
 }
 
 /* Generate the code for a single instruction. */
@@ -3582,7 +3582,7 @@ static void build_ins(BuildCtx *ctx, BCOp op, int defop)
     |  b ->vm_returnc
     break;
 
-  /* ---------------------------------------------------------------------- */
+  /* ------------ */
 
   default:
     fprintf(stderr, "Error: undefined opcode BC_%s\n", bc_names[op]);

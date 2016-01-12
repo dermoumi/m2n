@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,14 +23,13 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local class   = require 'class'
 local Texture = require 'graphics.texture'
 
 local Font = class 'graphics.font'
 
-------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
@@ -47,14 +46,12 @@ ffi.cdef [[
     const NxTexture* nxFontTexture(const NxFont*, uint32_t, uint32_t);
 ]]
 
-------------------------------------------------------------
 function Font:release()
     if not self._cdata then return end
     C.nxFontRelease(self._cdata)
     self._cdata = nil
 end
 
-------------------------------------------------------------
 function Font:glyph(codePoint, charSize, bold)
     if self._cdata == nil then return 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, false end
 
@@ -67,31 +64,26 @@ function Font:glyph(codePoint, charSize, bold)
         values[9], values[10] ~= 0 -- page, isValid
 end
 
-------------------------------------------------------------
 function Font:kerning(first, second, charSize)
     if self._cdata == nil then return 0 end
     return C.nxFontKerning(self._cdata, first, second, charSize)
 end
 
-------------------------------------------------------------
 function Font:lineSpacing(charSize)
     if self._cdata == nil then return 0 end
     return C.nxFontLineSpacing(self._cdata, charSize)
 end
 
-------------------------------------------------------------
 function Font:underlinePosition(charSize)
     if self._cdata == nil then return 0 end
     return C.nxFontUnderlinePosition(self._cdata, charSize)
 end
 
-------------------------------------------------------------
 function Font:underlineThickness(charSize)
     if self._cdata == nil then return 0 end
     return C.nxFontUnderlineThickness(self._data, charSize)
 end
 
-------------------------------------------------------------
 function Font:texture(charSize, index)
     if self._cdata == nil then return Texture:new() end
 
@@ -100,5 +92,4 @@ function Font:texture(charSize, index)
     return texture
 end
 
-------------------------------------------------------------
 return Font

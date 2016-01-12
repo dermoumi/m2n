@@ -800,7 +800,7 @@ LJLIB_PUSH(top-2) LJLIB_SET(arch)
 
 #include "lj_libdef.h"
 
-/* ------------------------------------------------------------------------ */
+/* -------------- */
 
 /* Create special weak-keyed finalizer table. */
 static GCtab *ffi_finalizer(lua_State *L)

@@ -14,9 +14,9 @@ extern "C" {
  * 2.0. For details, see http://oss.sgi.com/projects/FreeB/ .
  */
 
-/*-------------------------------------------------------------------------
+/*---------------
  * Data type definitions
- *-----------------------------------------------------------------------*/
+ *-------------*/
 
 typedef void             GLvoid;
 typedef char             GLchar;
@@ -466,9 +466,9 @@ typedef khronos_ssize_t  GLsizeiptr;
 
 #define GL_INVALID_FRAMEBUFFER_OPERATION  0x0506
 
-/*-------------------------------------------------------------------------
+/*---------------
  * GL core functions.
- *-----------------------------------------------------------------------*/
+ *-------------*/
 
 GL_APICALL void         GL_APIENTRY glActiveTexture (GLenum texture);
 GL_APICALL void         GL_APIENTRY glAttachShader (GLuint program, GLuint shader);

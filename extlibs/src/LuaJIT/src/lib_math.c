@@ -16,7 +16,7 @@
 #include "lj_lib.h"
 #include "lj_vm.h"
 
-/* ------------------------------------------------------------------------ */
+/* -------------- */
 
 #define LJLIB_MODULE_math
 
@@ -100,7 +100,7 @@ LJLIB_ASM_(math_max)		LJLIB_REC(math_minmax IR_MAX)
 LJLIB_PUSH(3.14159265358979323846) LJLIB_SET(pi)
 LJLIB_PUSH(1e310) LJLIB_SET(huge)
 
-/* ------------------------------------------------------------------------ */
+/* -------------- */
 
 /* This implements a Tausworthe PRNG with period 2^223. Based on:
 **   Tables of maximally-equidistributed combined LFSR generators,
@@ -214,7 +214,7 @@ LJLIB_CF(math_randomseed)
   return 0;
 }
 
-/* ------------------------------------------------------------------------ */
+/* -------------- */
 
 #include "lj_libdef.h"
 

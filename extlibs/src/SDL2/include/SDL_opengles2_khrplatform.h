@@ -92,9 +92,9 @@
  *                                  int arg2) KHRONOS_APIATTRIBUTES;
  */
 
-/*-------------------------------------------------------------------------
+/*---------------
  * Definition of KHRONOS_APICALL
- *-------------------------------------------------------------------------
+ *---------------
  * This precedes the return type of the function in the function prototype.
  */
 #if defined(_WIN32) && !defined(__SCITECH_SNAP__)
@@ -105,9 +105,9 @@
 #   define KHRONOS_APICALL
 #endif
 
-/*-------------------------------------------------------------------------
+/*---------------
  * Definition of KHRONOS_APIENTRY
- *-------------------------------------------------------------------------
+ *---------------
  * This follows the return type of the function  and precedes the function
  * name in the function prototype.
  */
@@ -118,9 +118,9 @@
 #   define KHRONOS_APIENTRY
 #endif
 
-/*-------------------------------------------------------------------------
+/*---------------
  * Definition of KHRONOS_APIATTRIBUTES
- *-------------------------------------------------------------------------
+ *---------------
  * This follows the closing parenthesis of the function prototype arguments.
  */
 #if defined (__ARMCC_2__)
@@ -129,9 +129,9 @@
 #define KHRONOS_APIATTRIBUTES
 #endif
 
-/*-------------------------------------------------------------------------
+/*---------------
  * basic type definitions
- *-----------------------------------------------------------------------*/
+ *-------------*/
 #if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) || defined(__GNUC__) || defined(__SCO__) || defined(__USLC__)
 
 

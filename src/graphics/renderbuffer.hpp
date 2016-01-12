@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,16 +23,15 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #pragma once
 #include "../config.hpp"
 #include "texture.hpp"
 
 #include <memory>
 
-//==========================================================
 // Represents a drawable texture in the VRAM
-//==========================================================
 class Renderbuffer
 {
 public:

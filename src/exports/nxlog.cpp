@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,46 +23,37 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #include "../config.hpp"
 #include "../system/log.hpp"
 
-//----------------------------------------------------------
-// Exported functions
-//----------------------------------------------------------
 NX_EXPORT void nxLogVerbose(const char* message)
 {
     Log::verbose(message);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxLogDebug(const char* message)
 {
     Log::debug(message);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxLogWarning(const char* message)
 {
     Log::warning(message);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxLogInfo(const char* message)
 {
     Log::info(message);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxLogError(const char* message)
 {
     Log::error(message);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxLogFatal(const char* message)
 {
     Log::fatal(message);
 }
-
-//==============================================================================

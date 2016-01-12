@@ -540,7 +540,7 @@ Interface:
 
 
 5.4 Multi-call decompressing with input callback and output buffer
-------------------------------------------------------------------
+--------
 When to use: File->File decompressing 
 Compile files: LzmaDecode.h, LzmaDecode.c
 Compile defines: _LZMA_IN_CB, _LZMA_OUT_READ
@@ -567,7 +567,7 @@ Interface:
 
 
 5.5 Multi-call State Decompressing (zlib-like interface)
-------------------------------------------------------------------
+--------
 When to use: file->file decompressing 
 Compile files: LzmaStateDecode.h, LzmaStateDecode.c
 Compile defines:

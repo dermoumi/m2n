@@ -17,7 +17,7 @@
 #include "lj_err.h"
 #include "lj_lib.h"
 
-/* ------------------------------------------------------------------------ */
+/* -------------- */
 
 /* Error codes for ll_loadfunc. */
 #define PACKAGE_ERR_LIB		1
@@ -172,7 +172,7 @@ static const char *ll_bcsym(void *lib, const char *sym)
 
 #endif
 
-/* ------------------------------------------------------------------------ */
+/* -------------- */
 
 static void **ll_register(lua_State *L, const char *path)
 {
@@ -258,7 +258,7 @@ static int lj_cf_package_unloadlib(lua_State *L)
   return 0;
 }
 
-/* ------------------------------------------------------------------------ */
+/* -------------- */
 
 static int readable(const char *filename)
 {
@@ -389,7 +389,7 @@ static int lj_cf_package_loader_preload(lua_State *L)
   return 1;
 }
 
-/* ------------------------------------------------------------------------ */
+/* -------------- */
 
 static const int sentinel_ = 0;
 #define sentinel	((void *)&sentinel_)
@@ -441,7 +441,7 @@ static int lj_cf_package_require(lua_State *L)
   return 1;
 }
 
-/* ------------------------------------------------------------------------ */
+/* -------------- */
 
 static void setfenv(lua_State *L)
 {
@@ -520,7 +520,7 @@ static int lj_cf_package_seeall(lua_State *L)
   return 0;
 }
 
-/* ------------------------------------------------------------------------ */
+/* -------------- */
 
 #define AUXMARK		"\1"
 

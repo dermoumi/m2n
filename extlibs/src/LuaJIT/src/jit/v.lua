@@ -1,9 +1,9 @@
-----------------------------------------------------------------------------
+------------------
 -- Verbose mode of the LuaJIT compiler.
 --
 -- Copyright (C) 2005-2014 Mike Pall. All rights reserved.
 -- Released under the MIT license. See Copyright Notice in luajit.h
-----------------------------------------------------------------------------
+------------------
 --
 -- This module shows verbose information about the progress of the
 -- JIT compiler. It prints one line for each generated trace. This module
@@ -55,7 +55,7 @@
 --
 -- Also check out the -jdump module, which prints all the gory details.
 --
-------------------------------------------------------------------------------
+--------------------
 
 -- Cache some library functions and objects.
 local jit = require("jit")
@@ -69,7 +69,7 @@ local stdout, stderr = io.stdout, io.stderr
 -- Active flag and output file handle.
 local active, out
 
-------------------------------------------------------------------------------
+--------------------
 
 local startloc, startex
 
@@ -133,7 +133,7 @@ local function dump_trace(what, tr, func, pc, otr, oex)
   end
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Detach dump handlers.
 local function dumpoff()

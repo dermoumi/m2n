@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,11 +23,10 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local Renderer = {}
 
-------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
@@ -84,11 +83,10 @@ ffi.cdef [[
     void nxRendererGetCapabilities(uint32_t*, bool*);
 ]]
 
-------------------------------------------------------------
 local vertexLayouts = {}
 local defaultShaders = {}
 local identityMatrix = require('util.matrix'):new()
-local defaultTexture, vbFsQuad, caps
+local defaultTexture, vbFsQuad, vbFlippedFsQuad, caps
 
 local toFillMode = {
     solid = 0,
@@ -142,7 +140,6 @@ local fromDepthFunc = {
     [5] = 'always'
 }
 
-------------------------------------------------------------
 function Renderer.init()
     if not C.nxRendererInit() then return error('Unable to initialize renderer') end
 
@@ -157,10 +154,11 @@ function Renderer.init()
         {'aColor',     0, 4, 8,  1},
         {'aTexCoords', 0, 2, 12, 0}
     }))
-    ------------------------------------------------------------
-    vertexLayouts[3] = C.nxRendererRegisterVertexLayout(2, ffi.new('NxVertexLayoutAttrib[2]', {
+    --
+    vertexLayouts[3] = C.nxRendererRegisterVertexLayout(3, ffi.new('NxVertexLayoutAttrib[3]', {
         {'aPosition',  0, 3, 0,  0},
-        {'aTexCoords', 0, 2, 12, 0}
+        {'aTexCoords', 0, 2, 12, 0},
+        {'aNormal'   , 0, 3, 20, 0}
     }))
 
     -- Initialize default shaders
@@ -176,12 +174,12 @@ function Renderer.init()
             gl_Position = uProjMat * uTransMat * vec4(aPosition, 0.0, 1.0);
         }
     ]], [[
-        uniform sampler2D uTexture;
+        uniform sampler2D uTexture0;
         uniform vec2 uTexSize;
         uniform vec4 uColor;
         varying vec2 vTexCoords;
         void main() {
-            gl_FragColor = texture2D(uTexture, vTexCoords / uTexSize) * uColor;
+            gl_FragColor = texture2D(uTexture0, vTexCoords / uTexSize) * uColor;
         }
     ]])
     --
@@ -199,19 +197,20 @@ function Renderer.init()
             gl_Position = uProjMat * uTransMat * vec4(aPosition, 0.0, 1.0);
         }
     ]], [[
-        uniform sampler2D uTexture;
+        uniform sampler2D uTexture0;
         uniform vec2 uTexSize;
         uniform vec4 uColor;
         varying vec2 vTexCoords;
         varying vec4 vColor;
         void main() {
-            gl_FragColor = texture2D(uTexture, vTexCoords / uTexSize) * uColor * vColor;
+            gl_FragColor = texture2D(uTexture0, vTexCoords / uTexSize) * uColor * vColor;
         }
     ]])
     --
     defaultShaders[3] = Shader:new([[
         attribute vec3 aPosition;
         attribute vec2 aTexCoords;
+        attribute vec3 aNormal;
         uniform mat4 uTransMat;
         uniform mat4 uProjMat;
         varying vec2 vTexCoords;
@@ -220,21 +219,26 @@ function Renderer.init()
             gl_Position = uProjMat * uTransMat * vec4(aPosition, 1.0);
         }
     ]], [[
-        uniform sampler2D uTexture;
-        uniform vec4 uColor;
+        uniform sampler2D uTexture0;
         varying vec2 vTexCoords;
         void main() {
-            gl_FragColor = texture2D(uTexture, vTexCoords) * uColor;
+            gl_FragColor = texture2D(uTexture0, vTexCoords);
         }
     ]])
 
     -- Create the Fullscreen quad vertex buffer
-    local buffer = ffi.new('float[12]', {
+    vbFsQuad = require('graphics.arraybuffer').vertexbuffer(48, ffi.new('float[12]', {
         -1,  1, 0, 0,
         -1, -3, 0, 2,
          3,  1, 2, 0
-    })
-    vbFsQuad = require('graphics.arraybuffer').vertexbuffer(ffi.sizeof(buffer), buffer)
+    }))
+
+    -- Create the Fullscreen flipped quad vertex buffer
+    vbFlippedFsQuad = require('graphics.arraybuffer').vertexbuffer(48, ffi.new('float[12]', {
+        -1,  3, 0, 2,
+        -1, -1, 0, 0,
+         3, -1, 2, 0
+    }))
 
     -- Create the default, empty texture
     defaultTexture = require('graphics.texture'):new()
@@ -242,26 +246,23 @@ function Renderer.init()
         :setData(ffi.new('uint8_t[4]', {255, 255, 255, 255}), 0, 0)
 end
 
-------------------------------------------------------------
 function Renderer.begin()
     C.nxRendererBegin()
 
     return Renderer
 end
 
-------------------------------------------------------------
 function Renderer.finish()
     C.nxRendererFinish()
 
     return Renderer
 end
 
-------------------------------------------------------------
 function Renderer.getCapabilities(cap)
     if not caps then
         caps = {}
 
-        local u, b = ffi.new('unsigned int[4]'), ffi.new('bool[12]')
+        local u, b = ffi.new('unsigned int[4]'), ffi.new('bool[13]')
         C.nxRendererGetCapabilities(u, b)
 
         caps.maxTexUnits     = tonumber(u[0])
@@ -280,8 +281,9 @@ function Renderer.getCapabilities(cap)
         caps.rtMultisamplingSupported = b[9]
         caps.occQueriesSupported      = b[10]
         caps.timerQueriesSupported    = b[11]
+        caps.multithreadingSupported  = b[12]
     end
-    
+
     if not cap then
         local capsClone = {}
         for i, v in pairs(caps) do
@@ -293,23 +295,19 @@ function Renderer.getCapabilities(cap)
     return caps[cap]
 end
 
-------------------------------------------------------------
 function Renderer.vertexLayout(index)
     return vertexLayouts[index]
 end
 
-------------------------------------------------------------
 function Renderer.defaultShader(index)
     return defaultShaders[index]
 end
 
-------------------------------------------------------------
 function Renderer.defaultTexture()
     return defaultTexture
 end
 
-------------------------------------------------------------
-function Renderer.drawFsQuad(texture, width, height)
+function Renderer.drawFsQuad(texture, width, height, flipped, shader)
     if width and height then
         local texW, texH = texture:size()
         width, height = texW / width, texH / height
@@ -319,35 +317,36 @@ function Renderer.drawFsQuad(texture, width, height)
 
     texture:bind(0)
 
-    local shader = defaultShaders[1]
+    shader = shader or defaultShaders[1]
     shader:bind()
     shader:setUniform('uProjMat', identityMatrix)
     shader:setUniform('uTransMat', identityMatrix)
     shader:setUniform('uColor', 1, 1, 1, 1)
     shader:setUniform('uTexSize', width, height)
-    shader:setSampler('uTexture', 0)
+    shader:setSampler('uTexture0', 0)
 
-    require('graphics.arraybuffer').setVertexbuffer(vbFsQuad, 0, 0, 16)
     C.nxRendererSetVertexLayout(vertexLayouts[1])
+    require('graphics.arraybuffer').setVertexbuffer(
+        flipped and vbFlippedFsQuad or vbFsQuad, 0, 0, 16
+    )
 
     C.nxRendererDraw(4, 0, 3)
 
     return Renderer
 end
 
-------------------------------------------------------------
-function Renderer.fillFsQuad(r, g, b, a, blendMode)
+function Renderer.fillFsQuad(r, g, b, a, blendMode, shader)
     defaultTexture:bind(0)
 
     Renderer.setBlendMode(blendMode or 'alpha')
 
-    local shader = defaultShaders[1]
+    shader = shader or defaultShaders[1]
     shader:bind()
     shader:setUniform('uProjMat', identityMatrix)
     shader:setUniform('uTransMat', identityMatrix)
     shader:setUniform('uColor', (r or 0)/255, (g or 0)/255, (b or 0)/255, (a or 255)/255)
     shader:setUniform('uTexSize', 1, 1)
-    shader:setSampler('uTexture', 0)
+    shader:setSampler('uTexture0', 0)
 
     require('graphics.arraybuffer').setVertexbuffer(vbFsQuad, 0, 0, 16)
     C.nxRendererSetVertexLayout(vertexLayouts[1])
@@ -357,79 +356,66 @@ function Renderer.fillFsQuad(r, g, b, a, blendMode)
     return Renderer
 end
 
-------------------------------------------------------------
 function Renderer.enableColorWriteMask(enabled)
     C.nxRendererSetColorWriteMask(enabled)
 
     return Renderer
 end
 
-------------------------------------------------------------
 function Renderer.colorWriteMaskEnabled()
     return C.nxRendererGetColorWriteMask()
 end
 
-------------------------------------------------------------
 function Renderer.setFillMode(mode)
     C.nxRendererSetFillMode(toFillMode[mode])
 
     return Renderer
 end
 
-------------------------------------------------------------
 function Renderer.fillMode()
     return fromFillMode[C.nxRendererGetFillMode()]
 end
 
-------------------------------------------------------------
 function Renderer.setCullMode(mode)
     C.nxRendererSetCullMode(toCullMode[mode])
 
     return Renderer
 end
 
-------------------------------------------------------------
 function Renderer.cullMode()
     return fromCullMode[C.nxRendererGetCullMode()]
 end
 
-------------------------------------------------------------
 function Renderer.enableScissorTest(enabled)
     C.nxRendererSetScissorTest(enabled)
 
     return Renderer
 end
 
-------------------------------------------------------------
 function Renderer.scissorTestEnabled()
     return C.nxRendererGetScissorTest()
 end
 
-------------------------------------------------------------
 function Renderer.enableMultisampling(enabled)
     C.nxRendererSetMultisampling(enabled)
 
     return Renderer
 end
 
-------------------------------------------------------------
 function Renderer.multisamplingEnabled()
     return C.nxRendererGetMultisampling()
 end
 
-------------------------------------------------------------
 function Renderer.enableAlphaToCoverage(enabled)
     C.nxRendererSetAlphaToCoverage(enabled)
 
     return Renderer
 end
 
-------------------------------------------------------------
 function Renderer.alphaToCoverageEnabled()
     return C.nxRendererGetAlphaToCoverage()
 end
 
-------------------------------------------------------------
 function Renderer.setBlendMode(srcFactor, dstFactor)
     if srcFactor == 'none' or (srcFactor == 'one' and dstFactor == 'zero') then
         C.nxRendererSetBlendMode(false, 1, 0)
@@ -446,58 +432,49 @@ function Renderer.setBlendMode(srcFactor, dstFactor)
     return Renderer
 end
 
-------------------------------------------------------------
 function Renderer.blendMode()
     local factors = ffi.new('uint32_t[2]')
     if C.nxRendererGetBlendMode(factors) then
         return true, fromBlendFactor[factors[0]], fromBlendFactor[factors[1]]
     end
-    
+
     return false
 end
 
-------------------------------------------------------------
 function Renderer.enableDepthMask(enabled)
     C.nxRendererSetDepthMask(enabled)
 
     return Renderer
 end
 
-------------------------------------------------------------
 function Renderer.depthMaskEnabled()
     return C.nxRendererGetDepthMask()
 end
 
-------------------------------------------------------------
 function Renderer.enableDepthTest(enabled)
     C.nxRendererSetDepthTest(enabled)
 
     return Renderer
 end
 
-------------------------------------------------------------
 function Renderer.depthTestEnabled()
     return C.nxRendererGetDepthTest()
 end
 
-------------------------------------------------------------
 function Renderer.setDepthFunc(func)
     C.nxRendererSetDepthFunc(toDepthFunc[func])
 
     return Renderer
 end
 
-------------------------------------------------------------
 function Renderer.depthFunc()
     return fromDepthFunc[C.nxRendererGetDepthFunc()]
 end
 
-------------------------------------------------------------
 function Renderer.sync()
     C.nxRendererSync()
 
     return Renderer
 end
 
-------------------------------------------------------------
 return Renderer

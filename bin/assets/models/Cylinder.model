@@ -1,0 +1,7 @@
+return {
+	['solidcolor'] = {
+		'mesh',
+		geometry = 'geom:assets/geometry/Cylinder_solidcolor.geom',
+		material = 'material:assets/materials/solidcolor.mat'
+	}
+}

@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,14 +23,20 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local Image   = require 'graphics.image'
 local Texture = require 'graphics.texture'
 
 local Texture2D = Texture:subclass('graphics.texture2d')
 
-------------------------------------------------------------
+function Texture2D.static.factory(task, filename)
+    task:addParam('#image:' .. filename)
+        :addTask('gpu', function(texture, filename, image)
+            texture:load(image)
+        end)
+end
+
 function Texture2D:initialize(a, b, c, d)
     Texture.initialize(self)
 
@@ -41,12 +47,10 @@ function Texture2D:initialize(a, b, c, d)
     end
 end
 
-------------------------------------------------------------
 function Texture2D:create(width, height, hasMips, mipMap)
     return Texture.create(self, '2d', width, height, 1, hasMips, mipMap)
 end
 
-------------------------------------------------------------
 function Texture2D:load(image, hasMips, mipMap)
     local localImage = false
 
@@ -57,7 +61,6 @@ function Texture2D:load(image, hasMips, mipMap)
     end
 
     local width, height = image:size()
-
     self:create(width, height, hasMips, mipMap)
         :setData(image:data())
 
@@ -66,7 +69,6 @@ function Texture2D:load(image, hasMips, mipMap)
     return self
 end
 
-------------------------------------------------------------
 function Texture2D:setData(data, a, b, c, d, e)
     local x, y, width, height, mipLevel
     if not b then
@@ -78,10 +80,8 @@ function Texture2D:setData(data, a, b, c, d, e)
     return Texture.setData(self, data, x, y, width, height, 1, mipLevel)
 end
 
-------------------------------------------------------------
 function Texture2D:data(mipLevel)
     return Texture.data(self, 1, mipLevel)
 end
 
-------------------------------------------------------------
 return Texture2D

@@ -1133,7 +1133,7 @@ static void *tmalloc_small(mstate m, size_t nb)
   return chunk2mem(v);
 }
 
-/* ----------------------------------------------------------------------- */
+/* ------------- */
 
 void *lj_alloc_create(void)
 {

@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,7 +23,8 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #include "filesystem.hpp"
 #include "log.hpp"
 
@@ -32,9 +33,7 @@
 #include <sstream>
 #include <mutex>
 
-//----------------------------------------------------------
 // Implementation of Android's asset management into PHYSFS
-//----------------------------------------------------------
 #if defined(NX_SYSTEM_ANDROID)
 #include <jni.h>
 namespace
@@ -45,14 +44,12 @@ namespace
     static jmethodID fsListAssetDirectoryMID = nullptr;
     static jmethodID fsIsDirectoryMID = nullptr;
 
-    //------------------------------------------------------
     int ioSeekFunc(PHYSFS_Io*, PHYSFS_uint64)
     {
         // Nothing to do
         return 1;
     }
 
-    //------------------------------------------------------
     PHYSFS_sint64 ioTellFunc(PHYSFS_Io*)
     {
         // Nothing to do
@@ -60,7 +57,6 @@ namespace
         return -1;
     }
 
-    //------------------------------------------------------
     PHYSFS_sint64 ioSizeFunc(PHYSFS_Io*)
     {
         // Nothing to do
@@ -68,7 +64,6 @@ namespace
         return -1;
     }
 
-    //------------------------------------------------------
     PHYSFS_Io* ioDuplicateFunc(PHYSFS_Io*)
     {
         // Nothing to do
@@ -76,13 +71,11 @@ namespace
         return nullptr;
     }
 
-    //------------------------------------------------------
     void ioDestroyFunc(PHYSFS_Io*)
     {
         // Nothing to do
     }
 
-    //------------------------------------------------------
     struct FileHandle
     {
         SDL_RWops* source;
@@ -90,7 +83,6 @@ namespace
         std::string filename;  // Needed for handle duplication
     };
 
-    //------------------------------------------------------
     PHYSFS_sint64 readFunc(PHYSFS_Io* io, void* buffer, PHYSFS_uint64 len)
     {
         auto* handle = reinterpret_cast<FileHandle*>(io->opaque);
@@ -109,7 +101,6 @@ namespace
         return len;
     }
 
-    //------------------------------------------------------
     int seekFunc(PHYSFS_Io* io, PHYSFS_uint64 offset)
     {
         auto* handle = reinterpret_cast<FileHandle*>(io->opaque);
@@ -128,7 +119,6 @@ namespace
         return 1;
     }
 
-    //------------------------------------------------------
     PHYSFS_sint64 tellFunc(PHYSFS_Io* io)
     {
         auto* source = reinterpret_cast<FileHandle*>(io->opaque)->source;
@@ -142,14 +132,12 @@ namespace
         return status;
     }
 
-    //------------------------------------------------------
     PHYSFS_sint64 sizeFunc(PHYSFS_Io* io)
     {
         auto* handle = reinterpret_cast<FileHandle*>(io->opaque);
         return handle->size;
     }
 
-    //------------------------------------------------------
     PHYSFS_Io* openReadFunc(void* opaque, const char* filename);
     PHYSFS_Io* duplicateFunc(PHYSFS_Io* io)
     {
@@ -163,7 +151,6 @@ namespace
         return newIo;
     }
 
-    //------------------------------------------------------
     void destroyFunc(PHYSFS_Io* io)
     {
         auto* handle = reinterpret_cast<FileHandle*>(io->opaque);
@@ -174,7 +161,6 @@ namespace
         delete io;
     }
 
-    //------------------------------------------------------
     void* openArchiveFunc(PHYSFS_Io*, const char* name, int forWrite)
     {
         if (forWrite) {
@@ -190,7 +176,6 @@ namespace
         return new char(); // Return pointer to a dummy value ._.
     }
 
-    //------------------------------------------------------
     void enumerateFilesFunc(void* opaque, const char* dirName, PHYSFS_EnumFilesCallback cb,
         const char* origDir, void* callbackData)
     {
@@ -224,7 +209,6 @@ namespace
         }
     }
 
-    //------------------------------------------------------
     PHYSFS_Io* openReadFunc(void* opaque, const char* filename)
     {
         SDL_RWops* source = SDL_RWFromFile(filename, "rb");
@@ -255,7 +239,6 @@ namespace
         return io;
     }
 
-    //------------------------------------------------------
     PHYSFS_Io* unsupportedIOFunc(void*, const char*)
     {
         Log::error("Unsupported IO func");
@@ -263,7 +246,6 @@ namespace
         return nullptr;
     }
 
-    //------------------------------------------------------
     int unsupportedIntFunc(void*, const char*)
     {
         Log::error("Unsupported IO func");
@@ -271,7 +253,6 @@ namespace
         return 0;
     }
 
-    //------------------------------------------------------
     int statFunc(void* opaque, const char* filename, PHYSFS_Stat* stat)
     {
         stat->readonly = 1;
@@ -311,7 +292,6 @@ namespace
         return 1;
     }
 
-    //------------------------------------------------------
     void closeArchiveFunc(void* opaque)
     {
         delete static_cast<char*>(opaque);
@@ -319,7 +299,6 @@ namespace
 }
 #endif
 
-//----------------------------------------------------------
 Filesystem::~Filesystem()
 {
     if (PHYSFS_isInit()) PHYSFS_deinit();
@@ -330,7 +309,6 @@ Filesystem::~Filesystem()
     #endif
 }
 
-//----------------------------------------------------------
 bool Filesystem::initialize(const char* arg0)
 {
     if (!PHYSFS_init(arg0)) return false;
@@ -410,19 +388,16 @@ bool Filesystem::initialize(const char* arg0)
     return true;
 }
 
-//----------------------------------------------------------
 bool Filesystem::mountDir(const std::string& dir, const std::string& point, bool append)
 {
     return PHYSFS_mount(dir.data(), point.data(), append);
 }
 
-//----------------------------------------------------------
 bool Filesystem::mountArchive(const std::string& dir, const std::string& point, bool append)
 {
     return PHYSFS_mount(dir.data(), point.data(), append);
 }
 
-//----------------------------------------------------------
 bool Filesystem::mountAssetsDir(const std::string& point, bool append)
 {
     #if defined(NX_SYSTEM_ANDROID)
@@ -438,20 +413,17 @@ bool Filesystem::mountAssetsDir(const std::string& point, bool append)
     #endif
 }
 
-//----------------------------------------------------------
 bool Filesystem::setWriteDir(const std::string& dir)
 {
     return PHYSFS_setWriteDir(dir.data());
 }
 
-//----------------------------------------------------------
 std::string Filesystem::getErrorMessage()
 {
     const char* message = PHYSFS_getLastError();
     return message ? message : "<unknown error message>";
 }
 
-//----------------------------------------------------------
 std::string Filesystem::getPrefsDir()
 {
     #if defined(NX_SYSTEM_ANDROID)
@@ -463,11 +435,8 @@ std::string Filesystem::getPrefsDir()
     return dir ? dir : "";
 }
 
-//----------------------------------------------------------
 std::string Filesystem::getBaseDir()
 {
     const char* dir = PHYSFS_getBaseDir();
     return dir ? dir : "";
 }
-
-//==============================================================================

@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,20 +23,19 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #pragma once
 #include "../config.hpp"
 
 #include <string>
 
-//==========================================================
 // A set of functions to handle logging information
-//==========================================================
 class NX_HIDDEN Log
 {
 public:
     static bool setLogFile(const std::string& filename);
-    
+
     static void verbose(const char* format, ...);
     static void verbose(const std::string& message)
     {
@@ -73,5 +72,3 @@ public:
         fatal(message.data());
     }
 };
-
-//==============================================================================

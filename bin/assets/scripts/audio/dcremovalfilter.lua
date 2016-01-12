@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,23 +23,20 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local AudioFilter = require 'audio._filter'
 
 local AudioDCRemovalFilter = AudioFilter:subclass('audio.dcremovalfilter')
 
-------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
-------------------------------------------------------------
 function AudioDCRemovalFilter:initialize()
     local handle = C.nxAudioFilterDcRemovalCreate()
     self._cdata = ffi.gc(handle, C.nxAudioFilterRelease)
 end
 
-------------------------------------------------------------
 function AudioDCRemovalFilter:setParams(length)
     if self._cdata ~= nil then
         C.nxAudioFilterDcRemovalSetParams(self._cdata, length or 1)
@@ -48,5 +45,4 @@ function AudioDCRemovalFilter:setParams(length)
     return self
 end
 
-------------------------------------------------------------
 return AudioDCRemovalFilter

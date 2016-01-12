@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,7 +23,7 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local Entity2D    = require 'graphics.entity2d'
 local ArrayBuffer = require 'graphics.arraybuffer'
@@ -32,7 +32,6 @@ local Text        = require 'graphics.text'
 local RtlText = Text:subclass('graphics.rtltext')
 -- RtlText:include(Entity2D)
 
-------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
@@ -40,7 +39,6 @@ ffi.cdef [[
     NxText* nxRtlTextNew();
 ]]
 
-------------------------------------------------------------
 function RtlText:initialize(str, font, charSize)
     Entity2D.initialize(self)
 
@@ -54,5 +52,4 @@ function RtlText:initialize(str, font, charSize)
     self._vertices = ArrayBuffer:new()
 end
 
-------------------------------------------------------------
 return RtlText

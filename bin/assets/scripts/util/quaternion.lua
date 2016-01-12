@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,16 +23,14 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local class = require 'class'
 
 local Quaternion = class 'util.quaternion'
 
-------------------------------------------------------------
 local EPSILON = 0.000001
 
-------------------------------------------------------------
 function Quaternion.static.fromToRotation(x1, y1, z1, x2, y2, z2)
     local dot = x1*x2 + y1*y2 + z1*z2
     if dot <= -1 then
@@ -58,19 +56,16 @@ function Quaternion.static.fromToRotation(x1, y1, z1, x2, y2, z2)
     end
 end
 
-------------------------------------------------------------
 function Quaternion.static.fromAxisAngle(x, y, z, rad)
     rad = rad / 2
     local s = math.sin(rad)
     return Quaternion:new(s*x, s*y, s*z, math.cos(rad))
 end
 
-------------------------------------------------------------
 function Quaternion.static.combine(quat1, quat2)
     return Quaternion:new(quat1):combine(quat2)
 end
 
-------------------------------------------------------------
 function Quaternion:initialize(x, y, z, w)
     if not x then
         self.x, self.y, self.z, self.w = 0, 0, 0, 0
@@ -86,7 +81,6 @@ function Quaternion:initialize(x, y, z, w)
     end
 end
 
-------------------------------------------------------------
 function Quaternion:combine(q)
     local x, y, z, w = self.x, self.y, self.z, self.w
 
@@ -99,7 +93,6 @@ function Quaternion:combine(q)
     return self
 end
 
-------------------------------------------------------------
 function Quaternion:angles()
     self:normalize()
 
@@ -113,7 +106,6 @@ function Quaternion:angles()
         math.atan2(2 * (wz+xy), 1 - 2 * (yy+zz))
 end
 
-------------------------------------------------------------
 function Quaternion:normalize()
     local len = self.x*self.x + self.y*self.y + self.z*self.z + self.w*self.w
 
@@ -125,7 +117,6 @@ function Quaternion:normalize()
     return self
 end
 
-------------------------------------------------------------
 function Quaternion:apply(x, y, z)
     local x2, y2, z2 = self.x * 2,  self.y * 2,  self.z * 2
     local a1, a2, a3 = self.x * x2, self.y * y2, self.z * z2
@@ -137,5 +128,4 @@ function Quaternion:apply(x, y, z)
         (a5 - a8) * x + (a6 + a7) * y + (1 - a1 - a2) * z
 end
 
-------------------------------------------------------------
 return Quaternion

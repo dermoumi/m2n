@@ -1,14 +1,14 @@
-----------------------------------------------------------------------------
+------------------
 -- LuaJIT MIPS disassembler module.
 --
 -- Copyright (C) 2005-2014 Mike Pall. All rights reserved.
 -- Released under the MIT/X license. See Copyright Notice in luajit.h
-----------------------------------------------------------------------------
+------------------
 -- This is a helper module used by the LuaJIT machine code dumper module.
 --
 -- It disassembles all standard MIPS32R1/R2 instructions.
 -- Default mode is big-endian, but see: dis_mipsel.lua
-------------------------------------------------------------------------------
+--------------------
 
 local type = type
 local sub, byte, format = string.sub, string.byte, string.format
@@ -18,9 +18,9 @@ local bit = require("bit")
 local band, bor, tohex = bit.band, bit.bor, bit.tohex
 local lshift, rshift, arshift = bit.lshift, bit.rshift, bit.arshift
 
-------------------------------------------------------------------------------
+--------------------
 -- Primary and extended opcode maps
-------------------------------------------------------------------------------
+--------------------
 
 local map_movci = { shift = 16, mask = 1, [0] = "movfDSC", "movtDSC", }
 local map_srl = { shift = 21, mask = 1, [0] = "srlDTA", "rotrDTA", }
@@ -225,7 +225,7 @@ local map_pri = {
   false,	"sdc1HSO",	"sdc2TSO",	false,
 }
 
-------------------------------------------------------------------------------
+--------------------
 
 local map_gpr = {
   [0] = "r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7",
@@ -234,7 +234,7 @@ local map_gpr = {
   "r24", "r25", "r26", "r27", "r28", "sp", "r30", "ra",
 }
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Output a nicely formatted line with an opcode and operands.
 local function putop(ctx, text, operands)
@@ -371,7 +371,7 @@ local function disass_ins(ctx)
   return putop(ctx, name, operands)
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Disassemble a block of code.
 local function disass_block(ctx, ofs, len)

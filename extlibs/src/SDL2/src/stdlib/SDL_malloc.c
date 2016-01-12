@@ -5078,7 +5078,7 @@ mspace_mallopt(int param_number, int value)
 */
 
 
-/* -----------------------------------------------------------------------
+/* -------------
 History:
     V2.8.3 Thu Sep 22 11:16:32 2005  Doug Lea  (dl at gee)
       * Add max_footprint functions

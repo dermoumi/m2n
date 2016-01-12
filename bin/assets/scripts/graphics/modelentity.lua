@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,37 +23,52 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
-local Entity3D = require 'graphics.entity3d'
-local class    = require 'class'
+local ffi         = require 'ffi'
+local Graphics    = require 'graphics'
+local SceneEntity = require 'graphics.sceneentity'
 
-local ModelNode = class 'graphics.modelnode'
-ModelNode:include(Entity3D)
+local ModelEntity = SceneEntity:subclass 'graphics.modelentity'
 
-------------------------------------------------------------
-function ModelNode:initialize(model)
-    Entity3D.initialize(self)
-    self:setModel(model)
+function ModelEntity:initialize(model)
+    SceneEntity.initialize(self, 'model')
+    self.meshes = {}
+    if model then self:setModel(model) end
 end
 
-------------------------------------------------------------
-function ModelNode:setModel(model)
-    self._model = model
-    return self
+function ModelEntity:setModel(model)
+    return model:makeEntity(self)
 end
 
-------------------------------------------------------------
-function ModelNode:model()
-    return self._model
-end
+function ModelEntity:attached(node)
+    SceneEntity.attached(self, node)
+    if node.type == 'mesh' then
+        local table = self.meshes[node.geometry]
+        if not table then
+            table = {}
+            self.meshes[node.geometry] = table
+        end
 
-------------------------------------------------------------
-function ModelNode:_render(camera, context)
-    if self._model then
-        self._model:_draw(camera:projection(), self:matrix(true), context)
+        table[#table+1] = node
     end
 end
 
-------------------------------------------------------------
-return ModelNode
+function ModelEntity:_render(camera, context)
+    local proj, renderFunc = camera:projection(), nil
+    for geometry, meshTable in pairs(self.meshes) do
+        if geometry:_apply() then
+            renderFunc = geometry._indexBuffer
+                and ffi.C.nxRendererDrawIndexed
+                or ffi.C.nxRendererDraw
+
+            for i, mesh in pairs(meshTable) do
+                if mesh.material and mesh.material:_apply(proj, mesh:matrix(true), context) then
+                    renderFunc(4, mesh.start, mesh.count)
+                end
+            end
+        end
+    end
+end
+
+return ModelEntity

@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
  This is free and unencumbered software released into the public domain.
 
  Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,26 +23,10 @@
  OTHER DEALINGS IN THE SOFTWARE.
 
  For more information, please refer to <http://unlicense.org>
- --]]----------------------------------------------------------------------------
+ --]]
 
-local VectorFont = require 'graphics.vectorfont'
-local FontStack  = require 'graphics.fontstack'
-local Log        = require 'util.log'
-local GameCache  = require 'game.cache'
+local Cache = require 'game.cache'
+local stack = Cache.get('fontstack:assets/fonts/defaultstack.lua')
 
-------------------------------------------------------------
-local stack = FontStack:new()
-
-local fonts = {
-    'assets/fonts/01-Asap-Regular.otf',
-    'assets/fonts/02-mplus-1c-regular.ttf',
-    'assets/fonts/03-koodak.ttf'
-}
-
-for i, v in ipairs(fonts) do
-    stack:addFont(
-        GameCache.get(v, function() return VectorFont:new(v) end, true)
-    )
-end
-
+Cache.wait()
 return stack

@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,7 +23,8 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #pragma once
 #include "../config.hpp"
 #include "font.hpp"
@@ -33,14 +34,9 @@
 #include <vector>
 #include <map>
 
-//==========================================================
-// Declarations
-//==========================================================
 struct PHYSFS_File;
 
-//==========================================================
 // Represents a vector font
-//==========================================================
 class VectorFont : public Font
 {
 public:
@@ -64,7 +60,7 @@ public:
     virtual float lineSpacing(uint32_t charSize) const;
     virtual float underlinePosition(uint32_t charSize) const;
     virtual float underlineThickness(uint32_t charSize) const;
-    virtual const Texture* texture(uint32_t charSize, uint32_t index) const; 
+    virtual const Texture* texture(uint32_t charSize, uint32_t index) const;
 
 private:
     using GlyphTable = std::map<uint32_t, Glyph>;

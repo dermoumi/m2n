@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,17 +23,14 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
-local class       = require 'class'
 local Graphics    = require 'graphics'
 local Arraybuffer = require 'graphics.arraybuffer'
 local Entity2D    = require 'graphics.entity2d'
 
-local Shape = class 'graphics.shape'
-Shape:include(Entity2D)
+local Shape = Entity2D:subclass 'graphics.shape'
 
-------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
@@ -50,7 +47,6 @@ ffi.cdef [[
     } NxShapeVertexPosColorCoords;
 ]]
 
-------------------------------------------------------------
 local toPrimitive = {
     points = 0,
     lines = 1,
@@ -61,7 +57,6 @@ local toPrimitive = {
     trianglefan = 6
 }
 
-------------------------------------------------------------
 local function vertexStruct(hasColor)
     if hasColor then
         return 'NxShapeVertexPosColorCoords', 8, 20
@@ -70,35 +65,30 @@ local function vertexStruct(hasColor)
     end
 end
 
-------------------------------------------------------------
 function Shape.static._defaultShader(hasColor)
     return Graphics.defaultShader(hasColor and 2 or 1)
 end
 
-------------------------------------------------------------
 function Shape.static._vertexLayout(hasColor)
     return Graphics.vertexLayout(hasColor and 2 or 1)
 end
 
-------------------------------------------------------------
 function Shape:initialize()
     Entity2D.initialize(self)
 end
 
-------------------------------------------------------------
 function Shape:setTexture(texture)
     self._texture = texture
 
     return self
 end
 
-------------------------------------------------------------
 function Shape:setVertexData(primitive, hasColor, a, b, ...)
     if b then a = {a, b, ...} end
     if type(a) == 'table' then
         self._primitive  = toPrimitive[primitive] or 0
         self._hasColor   = hasColor
-        
+
         local structName, valueCount, vertexSize = vertexStruct(hasColor)
         self._vertexSize = vertexSize
 
@@ -126,7 +116,6 @@ function Shape:setVertexData(primitive, hasColor, a, b, ...)
     return self
 end
 
-------------------------------------------------------------
 function Shape:setIndexData(a, b, ...)
     if b then a = {a, b, ...} end
     if type(a) == 'table' then
@@ -141,12 +130,10 @@ function Shape:setIndexData(a, b, ...)
     return self
 end
 
-------------------------------------------------------------
 function Shape:texture()
     return self._texture
 end
 
-------------------------------------------------------------
 function Shape:_render(camera)
     if self._vertexBuffer then
         local texture = self._texture or Graphics.defaultTexture()
@@ -158,7 +145,7 @@ function Shape:_render(camera)
         shader:setUniform('uTransMat', self:matrix(true))
         shader:setUniform('uColor', self:color(true, true))
         shader:setUniform('uTexSize', 1, 1)
-        shader:setSampler('uTexture', 0)
+        shader:setSampler('uTexture0', 0)
 
         Arraybuffer.setVertexbuffer(self._vertexBuffer, 0, 0, self._vertexSize)
         Arraybuffer.setIndexbuffer(self._indexBuffer, 16)
@@ -172,5 +159,4 @@ function Shape:_render(camera)
     end
 end
 
-------------------------------------------------------------
 return Shape

@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,7 +23,8 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #include "renderdevice.hpp"
 
 #include <memory>
@@ -35,7 +36,6 @@
     #include "renderdevicegles2.hpp"
 #endif
 
-//----------------------------------------------------------
 static RenderDevice* getDevice()
 {
     #if !defined(NX_OPENGL_ES)
@@ -45,7 +45,6 @@ static RenderDevice* getDevice()
     #endif
 }
 
-//----------------------------------------------------------
 RenderDevice& RenderDevice::instance()
 {
     static std::unique_ptr<RenderDevice> rdi(getDevice());
@@ -53,7 +52,6 @@ RenderDevice& RenderDevice::instance()
     return *rdi;
 }
 
-//----------------------------------------------------------
 uint32_t RenderDevice::calcTextureSize(TextureFormat format, int width, int height, int depth)
 {
     switch(format)
@@ -82,5 +80,3 @@ uint32_t RenderDevice::calcTextureSize(TextureFormat format, int width, int heig
         return 0;
     }
 }
-
-//==============================================================================

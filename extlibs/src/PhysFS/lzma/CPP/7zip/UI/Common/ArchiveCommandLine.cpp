@@ -237,7 +237,7 @@ static bool ParseArchiveCommand(const UString &commandString, CArchiveCommand &c
   return true;
 }
 
-// ------------------------------------------------------------------
+// --------
 // filenames functions
 
 static bool AddNameToCensor(NWildcard::CCensor &wildcardCensor, 

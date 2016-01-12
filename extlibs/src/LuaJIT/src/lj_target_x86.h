@@ -173,7 +173,7 @@ typedef struct {
   uint8_t scale;	/* Index scale (XM_SCALE1 .. XM_SCALE8). */
 } x86ModRM;
 
-/* -- Opcodes ------------------------------------------------------------- */
+/* -- Opcodes --- */
 
 /* Macros to construct variable-length x86 opcodes. -(len+1) is in LSB. */
 #define XO_(o)		((uint32_t)(0x0000fe + (0x##o<<24)))

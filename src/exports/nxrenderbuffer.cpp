@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,53 +23,45 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #include "../config.hpp"
 #include "../graphics/renderbuffer.hpp"
 
 using NxRenderbuffer = Renderbuffer;
 using NxTexture      = Texture;
 
-//----------------------------------------------------------
-// Exported functions
-//----------------------------------------------------------
 NX_EXPORT NxRenderbuffer* nxRenderbufferNew()
 {
     return new NxRenderbuffer();
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxRenderbufferRelease(NxRenderbuffer* buffer)
 {
     delete buffer;
 }
 
-//----------------------------------------------------------
 NX_EXPORT uint8_t nxRenderbufferCreate(NxRenderbuffer* buffer, uint8_t format, uint16_t width,
     uint16_t height, bool depth, uint8_t colBufCount, uint8_t samples)
 {
     return buffer->create(format, width, height, depth, colBufCount, samples);
 }
 
-//----------------------------------------------------------
 NX_EXPORT NxTexture* nxRenderbufferTexture(NxRenderbuffer* buffer, uint8_t bufIndex)
 {
     return buffer->texture(bufIndex);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxRenderbufferSize(const NxRenderbuffer* buffer, uint16_t* sizePtr)
 {
     buffer->size(sizePtr[0], sizePtr[1]);
 }
 
-//----------------------------------------------------------
 NX_EXPORT uint8_t nxRenderbufferFormat(const NxRenderbuffer* buffer)
 {
     return buffer->texFormat();
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxRenderbufferBind(const NxRenderbuffer* buffer)
 {
     Renderbuffer::bind(buffer);

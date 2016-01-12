@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,84 +23,70 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #include "../config.hpp"
 #include "../graphics/text.hpp"
 #include "../graphics/rtltext.hpp"
 
-//----------------------------------------------------------
-// Declarations
-//----------------------------------------------------------
 using NxText = Text;
 using NxFont = Font;
 
-//----------------------------------------------------------
 NX_EXPORT NxText* nxTextNew()
 {
     return new Text();
 }
 
-//----------------------------------------------------------
 NX_EXPORT NxText* nxRtlTextNew()
 {
     return new RtlText();
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxTextRelease(NxText* text)
 {
     delete text;
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxTextSetString(NxText* text, const char* str)
 {
     text->setString(str);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxTextSetU32String(NxText* text, const uint32_t* str)
 {
     text->setString(reinterpret_cast<const char32_t*>(str));
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxTextSetFont(NxText* text, const NxFont* font)
 {
     text->setFont(*font);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxTextSetCharacterSize(NxText* text, uint32_t charSize)
 {
     text->setCharacterSize(charSize);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxTextSetStyle(NxText* text, uint8_t style)
 {
     text->setStyle(style);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxTextCharacterPosition(const Text* text, uint32_t index, float* posPtr)
 {
     text->characterPosition(index, posPtr[0], posPtr[1]);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxTextBounds(const Text* text, float* boundsPtr)
 {
     text->bounds(boundsPtr[0], boundsPtr[1], boundsPtr[2], boundsPtr[3]);
 }
 
-//----------------------------------------------------------
 NX_EXPORT uint32_t nxTextArraybuffer(const Text* text, uint32_t* vertexCount, uint32_t index)
 {
     return text->arraybuffer(*vertexCount, index);
 }
 
-//----------------------------------------------------------
 NX_EXPORT uint32_t* nxTextArraybufferIDs(const Text* text, uint32_t* count)
 {
     return text->arraybufferIDs(count);

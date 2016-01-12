@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,11 +23,10 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local Joystick = {}
 
-------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
@@ -48,7 +47,7 @@ ffi.cdef [[
     const char* nxJoystickGetGUID(NxJoystick*);
 ]]
 
--- Constants -----------------------------------------------
+-- Constants
 local hatPos = {
     [0] = 'centered',
     [1] = 'up',
@@ -64,48 +63,40 @@ Joystick._hatPos = hatPos
 
 local joysticks = {}
 
-------------------------------------------------------------
 function Joystick.isConnected(id)
     return joysticks[id] ~= nil
 end
 
-------------------------------------------------------------
 function Joystick.getButtonCount(id)
     if not joysticks[id] then return 0 end
     return C.nxJoystickButtonCount(joysticks[id])
 end
 
-------------------------------------------------------------
 function Joystick.getAxisCount(id)
     if not joysticks[id] then return 0 end
     return C.nxJoystickAxisCount(joysticks[id])
 end
 
-------------------------------------------------------------
 function Joystick.getBallCount(id)
     if not joysticks[id] then return 0 end
     return C.nxJoystickBallCount(joysticks[id])
 end
 
-------------------------------------------------------------
 function Joystick.getHatCount(id)
     if not joysticks[id] then return 0 end
     return C.nxJoystickHatCount(joysticks[id])
 end
 
-------------------------------------------------------------
 function Joystick.isButtonDown(id, button)
     if not joysticks[id] then return false end
     return C.nxJoystickGetButton(joysticks[id], button)
 end
 
-------------------------------------------------------------
 function Joystick.getAxisPosition(id, axis)
     if not joysticks[id] then return 0 end
     return tonumber(C.nxJoystickGetAxis(joysticks[id], axis))
 end
 
-------------------------------------------------------------
 function Joystick.getBallPosition(id, ball)
     if not joysticks[id] then return 0, 0 end
     local posPtr = ffi.new('int[2]')
@@ -113,25 +104,22 @@ function Joystick.getBallPosition(id, ball)
     return tonumber(posPtr[0]), tonumber(posPtr[1])
 end
 
-------------------------------------------------------------
 function Joystick.getHatPosition(id, hat)
     if not joysticks[id] then return 'centered' end
     return hatPos[C.nxJoystickGetHat(joysticks[id], hat)]
 end
 
-------------------------------------------------------------
 function Joystick.getName(id)
     if not joysticks[id] then return '' end
     return ffi.string(C.nxJoystickGetName(joysticks[id]))
 end
 
-------------------------------------------------------------
 function Joystick.getGUID(id)
     if not joysticks[id] then return '' end
     return ffi.string(C.nxJoystickGetGUID(joysticks[id]))
 end
 
--- Automatically called on joyconnect events ---------------
+-- Automatically called on joyconnect events
 function Joystick.__connectEvent(id, isConnected)
     if isConnected then
         joysticks[id] = ffi.gc(C.nxJoystickOpen(id), C.nxJoystickClose)
@@ -141,5 +129,4 @@ function Joystick.__connectEvent(id, isConnected)
     end
 end
 
-------------------------------------------------------------
 return Joystick

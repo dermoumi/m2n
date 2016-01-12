@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,20 +23,20 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #include "renderdevicegl.hpp"
 
 #if !defined(NX_OPENGL_ES)
-//------------------------------------------------------------------------------
+
 #include "../system/log.hpp"
 #include "opengl.hpp"
 
+#include <mutex>
 #include <algorithm>
 
-//==========================================================
 // Locals
-//==========================================================
-static const char* defaultShaderVS =
+thread_local const char* defaultShaderVS =
     "uniform mat4 viewProjMat;\n"
     "uniform mat4 worldMat;\n"
     "attribute vec3 vertPos;\n"
@@ -44,26 +44,26 @@ static const char* defaultShaderVS =
     "   gl_Position = viewProjMat * worldMat * vec4(vertPos, 1.0);\n"
     "}\n";
 
-static const char* defaultShaderFS =
+thread_local const char* defaultShaderFS =
     "uniform vec4 color;\n"
     "void main() {\n"
     "   gl_FragColor = color;\n"
     "}\n";
 
-static GLenum toVertexFormat[] = {GL_FLOAT, GL_UNSIGNED_BYTE};
-static GLenum toIndexFormat[]  = {GL_UNSIGNED_SHORT, GL_UNSIGNED_INT};
-static GLenum toTexType[]      = {GL_TEXTURE_2D, GL_TEXTURE_3D, GL_TEXTURE_CUBE_MAP};
-static GLenum toTexBinding[]   = {
+thread_local GLenum toVertexFormat[] = {GL_FLOAT, GL_UNSIGNED_BYTE};
+thread_local GLenum toIndexFormat[]  = {GL_UNSIGNED_SHORT, GL_UNSIGNED_INT};
+thread_local GLenum toTexType[]      = {GL_TEXTURE_2D, GL_TEXTURE_3D, GL_TEXTURE_CUBE_MAP};
+thread_local GLenum toTexBinding[]   = {
     GL_TEXTURE_BINDING_2D, GL_TEXTURE_BINDING_3D, GL_TEXTURE_BINDING_CUBE_MAP
 };
-static GLenum toPrimType[]     = {
+thread_local GLenum toPrimType[]     = {
     GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_LINE_LOOP, GL_TRIANGLES, GL_TRIANGLE_STRIP,
     GL_TRIANGLE_FAN
 };
 
-static std::string shaderLog;
+static       std::mutex  vlMutex;
+thread_local std::string shaderLog;
 
-//----------------------------------------------------------
 bool RenderDeviceGL::initialize()
 {
     bool failed {false};
@@ -79,7 +79,7 @@ bool RenderDeviceGL::initialize()
         Log::error("Could not find all required OpenGL function entry points");
         failed = true;
     }
-    
+
     // Check that OpenGL 2.0 is available
     if (glExt::majorVersion < 2) {
         Log::error("OpenGL 2.0 is not available");
@@ -157,13 +157,11 @@ bool RenderDeviceGL::initialize()
     return true;
 }
 
-//----------------------------------------------------------
 void RenderDeviceGL::initStates()
 {
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 }
 
-//----------------------------------------------------------
 void RenderDeviceGL::resetStates()
 {
     mCurVertexLayout = 1;                     mNewVertexLayout = 0;
@@ -184,7 +182,6 @@ void RenderDeviceGL::resetStates()
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, mDefaultFBO);
 }
 
-//----------------------------------------------------------
 bool RenderDeviceGL::commitStates(uint32_t filter)
 {
     uint32_t mask = mPendingMask & filter;
@@ -220,7 +217,7 @@ bool RenderDeviceGL::commitStates(uint32_t filter)
 
                 mCurIndexBuffer = mNewIndexBuffer;
             }
-            
+
             mPendingMask &= ~IndexBuffer;
         }
 
@@ -246,7 +243,7 @@ bool RenderDeviceGL::commitStates(uint32_t filter)
                     }
                 }
             }
-            
+
             mPendingMask &= ~Textures;
         }
 
@@ -257,7 +254,7 @@ bool RenderDeviceGL::commitStates(uint32_t filter)
                 mVertexBufUpdated
             ) {
                 if (!applyVertexLayout()) return false;
-                    
+
                 mCurVertexLayout  = mNewVertexLayout;
                 mPrevShaderID     = mCurShaderID;
                 mVertexBufUpdated = false;
@@ -270,7 +267,6 @@ bool RenderDeviceGL::commitStates(uint32_t filter)
     return true;
 }
 
-//----------------------------------------------------------
 void RenderDeviceGL::clear(uint32_t flags, const float* color, float depth)
 {
     uint32_t prevBuffers[4] = {0u};
@@ -326,7 +322,6 @@ void RenderDeviceGL::clear(uint32_t flags, const float* color, float depth)
     }
 }
 
-//----------------------------------------------------------
 void RenderDeviceGL::draw(PrimType primType, uint32_t firstVert, uint32_t vertCount)
 {
     if (commitStates()) {
@@ -334,7 +329,6 @@ void RenderDeviceGL::draw(PrimType primType, uint32_t firstVert, uint32_t vertCo
     }
 }
 
-//----------------------------------------------------------
 void RenderDeviceGL::drawIndexed(PrimType primType, uint32_t firstIndex, uint32_t indexCount)
 {
     if (commitStates()) {
@@ -344,11 +338,11 @@ void RenderDeviceGL::drawIndexed(PrimType primType, uint32_t firstIndex, uint32_
     }
 }
 
-//----------------------------------------------------------
 uint32_t RenderDeviceGL::registerVertexLayout(uint8_t numAttribs,
     const VertexLayoutAttrib* attribs)
 {
     if (mNumVertexLayouts == MaxNumVertexLayouts) return 0;
+    std::lock_guard<std::mutex> lock(vlMutex);
 
     mVertexLayouts[mNumVertexLayouts].numAttribs = numAttribs;
     for (uint8_t i = 0; i < numAttribs; ++i) {
@@ -358,7 +352,6 @@ uint32_t RenderDeviceGL::registerVertexLayout(uint8_t numAttribs,
     return ++mNumVertexLayouts;
 }
 
-//----------------------------------------------------------
 uint32_t RenderDeviceGL::createTexture(TextureType type, int width, int height,
     unsigned int depth, TextureFormat format, bool hasMips, bool genMips, bool sRGB)
 {
@@ -432,7 +425,7 @@ uint32_t RenderDeviceGL::createTexture(TextureType type, int width, int height,
     }
 
     glActiveTexture(GL_TEXTURE15);
-    
+
     int lastTexture;
     glGetIntegerv(toTexBinding[tex.type], &lastTexture);
 
@@ -455,7 +448,6 @@ uint32_t RenderDeviceGL::createTexture(TextureType type, int width, int height,
     return mTextures.add(tex, true);
 }
 
-//----------------------------------------------------------
 void RenderDeviceGL::uploadTextureData(uint32_t texObj, int slice, int mipLevel, const void* pixels)
 {
     if (texObj == 0) return;
@@ -501,7 +493,7 @@ void RenderDeviceGL::uploadTextureData(uint32_t texObj, int slice, int mipLevel,
                 calcTextureSize(format, width, height, 1), pixels);
         }
         else {
-            glTexImage2D(target, mipLevel, tex.glFmt, width, height, 0, inputFormat, inputType, 
+            glTexImage2D(target, mipLevel, tex.glFmt, width, height, 0, inputFormat, inputType,
                 pixels);
         }
     }
@@ -528,7 +520,6 @@ void RenderDeviceGL::uploadTextureData(uint32_t texObj, int slice, int mipLevel,
     glBindTexture(tex.type, lastTexture);
 }
 
-//----------------------------------------------------------
 void RenderDeviceGL::uploadTextureSubData(uint32_t texObj, int slice, int mipLevel, unsigned int x,
     unsigned int y, unsigned int z, unsigned int width, unsigned int height, unsigned int depth,
     const void* pixels)
@@ -550,7 +541,7 @@ void RenderDeviceGL::uploadTextureSubData(uint32_t texObj, int slice, int mipLev
 
     int lastTexture;
     glGetIntegerv(toTexBinding[tex.type], &lastTexture);
-    
+
     glBindTexture(tex.type, tex.glObj);
 
     int inputFormat = GL_RGBA;
@@ -603,7 +594,6 @@ void RenderDeviceGL::uploadTextureSubData(uint32_t texObj, int slice, int mipLev
     glBindTexture(tex.type, lastTexture);
 }
 
-//----------------------------------------------------------
 void RenderDeviceGL::destroyTexture(uint32_t texObj)
 {
     if (texObj == 0) return;
@@ -615,7 +605,6 @@ void RenderDeviceGL::destroyTexture(uint32_t texObj)
     mTextures.remove(texObj);
 }
 
-//----------------------------------------------------------
 bool RenderDeviceGL::getTextureData(uint32_t texObj, int slice, int mipLevel, void* buffer)
 {
     const auto& tex = mTextures.getRef(texObj);
@@ -628,7 +617,7 @@ bool RenderDeviceGL::getTextureData(uint32_t texObj, int slice, int mipLevel, vo
 
     int lastTexture;
     glGetIntegerv(toTexBinding[tex.type], &lastTexture);
-    
+
     glBindTexture(tex.type, tex.glObj);
 
     switch(tex.format) {
@@ -657,13 +646,11 @@ bool RenderDeviceGL::getTextureData(uint32_t texObj, int slice, int mipLevel, vo
     return true;
 }
 
-//----------------------------------------------------------
 uint32_t RenderDeviceGL::getTextureMemory() const
 {
     return mTextureMemory;
 }
 
-//----------------------------------------------------------
 uint32_t RenderDeviceGL::createShader(const char* vertexShaderSrc, const char* fragmentShaderSrc)
 {
     // Compile and link shader
@@ -678,6 +665,7 @@ uint32_t RenderDeviceGL::createShader(const char* vertexShaderSrc, const char* f
     glGetProgramiv(programObj, GL_ACTIVE_ATTRIBUTES, &attribCount);
 
     // Run through vertex layouts and check which is compatible with this shader
+    std::lock_guard<std::mutex> lock(vlMutex);
     for (uint32_t i = 0; i < mNumVertexLayouts; ++i) {
         bool allAttribsFound = true;
         auto& vl = mVertexLayouts[i];
@@ -716,7 +704,6 @@ uint32_t RenderDeviceGL::createShader(const char* vertexShaderSrc, const char* f
     return mShaders.add(shader, true);
 }
 
-//----------------------------------------------------------
 void RenderDeviceGL::destroyShader(uint32_t shaderID)
 {
     if (shaderID == 0) return;
@@ -725,7 +712,6 @@ void RenderDeviceGL::destroyShader(uint32_t shaderID)
     mShaders.remove(shaderID);
 }
 
-//----------------------------------------------------------
 void RenderDeviceGL::bindShader(uint32_t shaderID)
 {
     if (shaderID == 0) {
@@ -740,27 +726,23 @@ void RenderDeviceGL::bindShader(uint32_t shaderID)
     mPendingMask |= VertexLayouts;
 }
 
-//----------------------------------------------------------
 const std::string& RenderDeviceGL::getShaderLog()
 {
     return shaderLog;
 }
 
-//----------------------------------------------------------
 int RenderDeviceGL::getShaderConstLoc(uint32_t shaderID, const char* name)
 {
     RDIShader& shader = mShaders.getRef(shaderID);
     return glGetUniformLocation(shader.oglProgramObj, name);
 }
 
-//----------------------------------------------------------
 int RenderDeviceGL::getShaderSamplerLoc(uint32_t shaderID, const char* name)
 {
     RDIShader& shader = mShaders.getRef(shaderID);
     return glGetUniformLocation(shader.oglProgramObj, name);
 }
 
-//----------------------------------------------------------
 void RenderDeviceGL::setShaderConst(int loc, ShaderConstType type, float* values, uint32_t count)
 {
     switch(type) {
@@ -785,34 +767,29 @@ void RenderDeviceGL::setShaderConst(int loc, ShaderConstType type, float* values
     }
 }
 
-//----------------------------------------------------------
 void RenderDeviceGL::setShaderSampler(int loc, uint32_t texUnit)
 {
     glUniform1i(loc, (int)texUnit);
 }
 
-//----------------------------------------------------------
 const char* RenderDeviceGL::getDefaultVSCode()
 {
     return defaultShaderVS;
 }
 
-//----------------------------------------------------------
 const char* RenderDeviceGL::getDefaultFSCode()
 {
     return defaultShaderFS;
 }
 
-//----------------------------------------------------------
 uint32_t RenderDeviceGL::getCurrentShader() const
 {
     return mCurShaderID;
 }
 
-//----------------------------------------------------------
 void RenderDeviceGL::beginRendering()
 {
-    // Get the currently bound frame buffer object. 
+    // Get the currently bound frame buffer object.
     glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &mDefaultFBO);
 
     mCurVertexLayout = 1;                     mNewVertexLayout = 0;
@@ -833,13 +810,11 @@ void RenderDeviceGL::beginRendering()
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, mDefaultFBO);
 }
 
-//----------------------------------------------------------
 void RenderDeviceGL::finishRendering()
 {
     // Nothing to do
 }
 
-//----------------------------------------------------------
 uint32_t RenderDeviceGL::createVertexBuffer(uint32_t size, const void* data)
 {
     RDIBuffer buf;
@@ -855,9 +830,8 @@ uint32_t RenderDeviceGL::createVertexBuffer(uint32_t size, const void* data)
     return mBuffers.add(buf);
 }
 
-//----------------------------------------------------------
 uint32_t RenderDeviceGL::createIndexBuffer(uint32_t size, const void* data)
-{   
+{
     RDIBuffer buf;
 
     buf.type = GL_ELEMENT_ARRAY_BUFFER;
@@ -871,7 +845,6 @@ uint32_t RenderDeviceGL::createIndexBuffer(uint32_t size, const void* data)
     return mBuffers.add(buf);
 }
 
-//----------------------------------------------------------
 void RenderDeviceGL::destroyBuffer(uint32_t buffer)
 {
     if (buffer == 0) return;
@@ -883,7 +856,6 @@ void RenderDeviceGL::destroyBuffer(uint32_t buffer)
     mBuffers.remove(buffer);
 }
 
-//----------------------------------------------------------
 bool RenderDeviceGL::updateBufferData(uint32_t buffer, uint32_t offset, uint32_t size,
     const void* data)
 {
@@ -902,13 +874,11 @@ bool RenderDeviceGL::updateBufferData(uint32_t buffer, uint32_t offset, uint32_t
     return true;
 }
 
-//----------------------------------------------------------
 uint32_t RenderDeviceGL::getBufferMemory() const
 {
     return mBufferMemory;
 }
 
-//----------------------------------------------------------
 uint32_t RenderDeviceGL::createRenderBuffer(uint32_t width, uint32_t height,
     TextureFormat format, bool depth, uint32_t numColBufs, uint32_t samples)
 {
@@ -1047,7 +1017,6 @@ uint32_t RenderDeviceGL::createRenderBuffer(uint32_t width, uint32_t height,
     return rbObj;
 }
 
-//----------------------------------------------------------
 void RenderDeviceGL::destroyRenderBuffer(uint32_t rbObj)
 {
     auto& rb = mRenderBuffers.getRef(rbObj);
@@ -1071,7 +1040,6 @@ void RenderDeviceGL::destroyRenderBuffer(uint32_t rbObj)
     mRenderBuffers.remove(rbObj);
 }
 
-//----------------------------------------------------------
 uint32_t RenderDeviceGL::getRenderBufferTexture(uint32_t rbObj, uint32_t bufIndex)
 {
     auto& rb = mRenderBuffers.getRef(rbObj);
@@ -1087,7 +1055,6 @@ uint32_t RenderDeviceGL::getRenderBufferTexture(uint32_t rbObj, uint32_t bufInde
     }
 }
 
-//----------------------------------------------------------
 void RenderDeviceGL::setRenderBuffer(uint32_t rbObj)
 {
     // Resolve the renderbuffer if necessary
@@ -1112,7 +1079,7 @@ void RenderDeviceGL::setRenderBuffer(uint32_t rbObj)
         auto& rb = mRenderBuffers.getRef(rbObj);
 
         glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, rb.fboMS ? rb.fboMS : rb.fbo);
-        
+
         mFbWidth  = rb.width;
         mFbHeight = rb.height;
 
@@ -1125,7 +1092,6 @@ void RenderDeviceGL::setRenderBuffer(uint32_t rbObj)
     }
 }
 
-//----------------------------------------------------------
 void RenderDeviceGL::getRenderBufferSize(uint32_t rbObj, int* width, int* height)
 {
     if (rbObj) {
@@ -1139,7 +1105,6 @@ void RenderDeviceGL::getRenderBufferSize(uint32_t rbObj, int* width, int* height
     }
 }
 
-//----------------------------------------------------------
 bool RenderDeviceGL::getRenderBufferData(uint32_t rbObj, int bufIndex, int* width, int* height,
     int* compCount, void* dataBuffer, int bufferSize)
 {
@@ -1207,7 +1172,6 @@ bool RenderDeviceGL::getRenderBufferData(uint32_t rbObj, int bufIndex, int* widt
     return retVal;
 }
 
-//----------------------------------------------------------
 void RenderDeviceGL::setViewport(int x, int y, int width, int height)
 {
     mVpX      = x;
@@ -1218,7 +1182,6 @@ void RenderDeviceGL::setViewport(int x, int y, int width, int height)
     mPendingMask |= Viewport;
 }
 
-//----------------------------------------------------------
 void RenderDeviceGL::setScissorRect(int x, int y, int width, int height)
 {
     mScX      = x;
@@ -1229,7 +1192,6 @@ void RenderDeviceGL::setScissorRect(int x, int y, int width, int height)
     mPendingMask |= Scissor;
 }
 
-//----------------------------------------------------------
 void RenderDeviceGL::setIndexBuffer(uint32_t bufObj, IndexFormat format)
 {
     mIndexFormat = toIndexFormat[format];
@@ -1237,7 +1199,6 @@ void RenderDeviceGL::setIndexBuffer(uint32_t bufObj, IndexFormat format)
     mPendingMask |= IndexBuffer;
 }
 
-//----------------------------------------------------------
 void RenderDeviceGL::setVertexBuffer(uint32_t slot, uint32_t vbObj, uint32_t offset,
     uint32_t stride)
 {
@@ -1249,97 +1210,82 @@ void RenderDeviceGL::setVertexBuffer(uint32_t slot, uint32_t vbObj, uint32_t off
     mPendingMask |= VertexLayouts;
 }
 
-//----------------------------------------------------------
 void RenderDeviceGL::setVertexLayout(uint32_t vlObj)
 {
     mNewVertexLayout = vlObj;
 }
 
-//----------------------------------------------------------
 void RenderDeviceGL::setTexture(uint32_t slot, uint32_t texObj, uint16_t samplerState)
 {
     mTexSlots[slot] = {texObj, samplerState};
     mPendingMask |= Textures;
 }
 
-//----------------------------------------------------------
 void RenderDeviceGL::setColorWriteMask(bool enabled)
 {
     mNewRasterState.renderTargetWriteMask = enabled;
 }
 
-//----------------------------------------------------------
 bool RenderDeviceGL::getColorWriteMask() const
 {
     return mNewRasterState.renderTargetWriteMask;
 }
 
-//----------------------------------------------------------
 void RenderDeviceGL::setFillMode(FillMode fillMode)
 {
     mNewRasterState.fillMode = fillMode;
     mPendingMask |= RenderStates;
 }
 
-//----------------------------------------------------------
 RenderDevice::FillMode RenderDeviceGL::getFillMode() const
 {
     return static_cast<FillMode>(mNewRasterState.fillMode);
 }
 
-//----------------------------------------------------------
 void RenderDeviceGL::setCullMode(CullMode cullMode)
 {
     mNewRasterState.cullMode = cullMode;
     mPendingMask |= RenderStates;
 }
 
-//----------------------------------------------------------
 RenderDevice::CullMode RenderDeviceGL::getCullMode() const
 {
     return static_cast<CullMode>(mNewRasterState.cullMode);
 }
 
-//----------------------------------------------------------
 void RenderDeviceGL::setScissorTest(bool enabled)
 {
     mNewRasterState.scissorEnable = enabled;
     mPendingMask |= RenderStates;
 }
 
-//----------------------------------------------------------
 bool RenderDeviceGL::getScissorTest() const
 {
     return mNewRasterState.scissorEnable;
 }
 
-//----------------------------------------------------------
 void RenderDeviceGL::setMultisampling(bool enabled)
 {
     mNewRasterState.multisampleEnable = enabled;
     mPendingMask |= RenderStates;
 }
 
-//----------------------------------------------------------
 bool RenderDeviceGL::getMultisampling() const
 {
     return mNewRasterState.multisampleEnable;
 }
 
-//----------------------------------------------------------
 void RenderDeviceGL::setAlphaToCoverage(bool enabled)
 {
     mNewBlendState.alphaToCoverageEnable = enabled;
     mPendingMask |= RenderStates;
 }
 
-//----------------------------------------------------------
 bool RenderDeviceGL::getAlphaToCoverage() const
 {
     return mNewBlendState.alphaToCoverageEnable;
 }
 
-//----------------------------------------------------------
 void RenderDeviceGL::setBlendMode(bool enabled, BlendFunc src, BlendFunc dst)
 {
     mNewBlendState.blendEnable = enabled;
@@ -1349,7 +1295,6 @@ void RenderDeviceGL::setBlendMode(bool enabled, BlendFunc src, BlendFunc dst)
     mPendingMask |= RenderStates;
 }
 
-//----------------------------------------------------------
 bool RenderDeviceGL::getBlendMode(BlendFunc& src, BlendFunc& dst) const
 {
     src = static_cast<BlendFunc>(mNewBlendState.srcBlendFunc);
@@ -1357,76 +1302,68 @@ bool RenderDeviceGL::getBlendMode(BlendFunc& src, BlendFunc& dst) const
     return mNewBlendState.blendEnable;
 }
 
-//----------------------------------------------------------
 void RenderDeviceGL::setDepthMask(bool enabled)
 {
     mNewDepthStencilState.depthWriteMask = enabled;
     mPendingMask |= RenderStates;
 }
 
-//----------------------------------------------------------
 bool RenderDeviceGL::getDepthMask() const
 {
     return mNewDepthStencilState.depthWriteMask;
 }
 
-//----------------------------------------------------------
 void RenderDeviceGL::setDepthTest(bool enabled)
 {
     mNewDepthStencilState.depthEnable = enabled;
     mPendingMask |= RenderStates;
 }
 
-//----------------------------------------------------------
 bool RenderDeviceGL::getDepthTest() const
 {
     return mNewDepthStencilState.depthEnable;
 }
 
-//----------------------------------------------------------
 void RenderDeviceGL::setDepthFunc(DepthFunc depthFunc)
 {
     mNewDepthStencilState.depthFunc = depthFunc;
     mPendingMask |= RenderStates;
 }
 
-//----------------------------------------------------------
 RenderDevice::DepthFunc RenderDeviceGL::getDepthFunc() const
 {
     return static_cast<DepthFunc>(mNewDepthStencilState.depthFunc);
 }
 
-//----------------------------------------------------------
 void RenderDeviceGL::sync()
 {
     glFinish();
 }
 
-//----------------------------------------------------------
 void RenderDeviceGL::getCapabilities(uint32_t* maxTexUnits, uint32_t* maxTexSize,
         uint32_t* maxCubTexSize, uint32_t* maxColBufs, bool* dxt, bool* pvrtci, bool* etc1,
         bool* texFloat, bool* texDepth, bool* texSS, bool* tex3D, bool* texNPOT, bool* texSRGB,
-        bool* rtms, bool* occQuery, bool* timerQuery) const
+        bool* rtms, bool* occQuery, bool* timerQuery, bool* multithreading) const
 {
-    if (maxTexUnits)   *maxTexUnits   = mMaxTextureUnits;
-    if (maxTexSize)    *maxTexSize    = mMaxTextureSize;
-    if (maxCubTexSize) *maxCubTexSize = mMaxCubeTextureSize;
-    if (maxColBufs)    *maxColBufs    = mMaxColBuffers;
-    if (dxt)           *dxt           = mDXTSupported;
-    if (pvrtci)        *pvrtci        = mPVRTCISupported;
-    if (etc1)          *etc1          = mTexETC1Supported;
-    if (texFloat)      *texFloat      = mTexFloatSupported;
-    if (texDepth)      *texDepth      = mTexDepthSupported;
-    if (texSS)         *texSS         = mTexShadowSamplers;
-    if (tex3D)         *tex3D         = mTex3DSupported;
-    if (texNPOT)       *texNPOT       = mTexNPOTSupported;
-    if (texSRGB)       *texSRGB       = mTexSRGBSupported;
-    if (rtms)          *rtms          = mRTMultiSampling;
-    if (occQuery)      *occQuery      = mOccQuerySupported;
-    if (timerQuery)    *timerQuery    = mTimerQuerySupported;
+    if (maxTexUnits)    *maxTexUnits    = mMaxTextureUnits;
+    if (maxTexSize)     *maxTexSize     = mMaxTextureSize;
+    if (maxCubTexSize)  *maxCubTexSize  = mMaxCubeTextureSize;
+    if (maxColBufs)     *maxColBufs     = mMaxColBuffers;
+    if (dxt)            *dxt            = mDXTSupported;
+    if (pvrtci)         *pvrtci         = mPVRTCISupported;
+    if (etc1)           *etc1           = mTexETC1Supported;
+    if (texFloat)       *texFloat       = mTexFloatSupported;
+    if (texDepth)       *texDepth       = mTexDepthSupported;
+    if (texSS)          *texSS          = mTexShadowSamplers;
+    if (tex3D)          *tex3D          = mTex3DSupported;
+    if (texNPOT)        *texNPOT        = mTexNPOTSupported;
+    if (texSRGB)        *texSRGB        = mTexSRGBSupported;
+    if (rtms)           *rtms           = mRTMultiSampling;
+    if (occQuery)       *occQuery       = mOccQuerySupported;
+    if (timerQuery)     *timerQuery     = mTimerQuerySupported;
+    if (multithreading) *multithreading = true;
 }
 
-//----------------------------------------------------------
 uint32_t RenderDeviceGL::createShaderProgram(const char* vertexShaderSrc,
     const char* fragmentShaderSrc)
 {
@@ -1487,7 +1424,6 @@ uint32_t RenderDeviceGL::createShaderProgram(const char* vertexShaderSrc,
     return program;
 }
 
-//----------------------------------------------------------
 bool RenderDeviceGL::linkShaderProgram(uint32_t programObj)
 {
     int infoLogLength {0};
@@ -1513,7 +1449,6 @@ bool RenderDeviceGL::linkShaderProgram(uint32_t programObj)
     return true;
 }
 
-//----------------------------------------------------------
 bool RenderDeviceGL::applyVertexLayout()
 {
     if (mNewVertexLayout != 0) {
@@ -1559,11 +1494,10 @@ bool RenderDeviceGL::applyVertexLayout()
         }
         mActiveVertexAttribsMask = newVertexAttribMask;
     }
-    
+
     return true;
 }
 
-//----------------------------------------------------------
 void RenderDeviceGL::applySamplerState(RDITexture& tex)
 {
     thread_local const uint32_t magFilters[] = {GL_LINEAR, GL_LINEAR, GL_NEAREST};
@@ -1605,7 +1539,6 @@ void RenderDeviceGL::applySamplerState(RDITexture& tex)
     }
 }
 
-//----------------------------------------------------------
 void RenderDeviceGL::applyRenderStates()
 {
     // Rasterizer state
@@ -1707,7 +1640,6 @@ void RenderDeviceGL::applyRenderStates()
     }
 }
 
-//----------------------------------------------------------
 void RenderDeviceGL::resolveRenderBuffer(uint32_t rbObj)
 {
     auto& rb = mRenderBuffers.getRef(rbObj);
@@ -1748,6 +1680,4 @@ void RenderDeviceGL::resolveRenderBuffer(uint32_t rbObj)
     glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, mDefaultFBO);
 }
 
-//------------------------------------------------------------------------------
 #endif
-//==============================================================================

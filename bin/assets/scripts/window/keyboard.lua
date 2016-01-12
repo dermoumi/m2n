@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,11 +23,10 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local Keyboard = {}
 
-------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
@@ -40,7 +39,6 @@ ffi.cdef[[
     bool nxKeyboardTextInputActive();
 ]]
 
-------------------------------------------------------------
 
 -- Scancodes table
 local fromScancode = {
@@ -567,54 +565,45 @@ end
 local downKeysSc = {}
 local downKeysSym = {}
 
-------------------------------------------------------------
 function Keyboard.KeyToScancode(key)
     return fromScancode[C.nxKeyboardToScancode(toKeysym[key] or 0)] or 'key_unknown'
 end
 
-------------------------------------------------------------
 function Keyboard.ScancodeToKey(key)
     return fromKeysym[C.nxKeyboardToKeysym(toScancode[key] or 0)] or 'key_unknown'
 end
 
-------------------------------------------------------------
 function Keyboard.modKeyDown(mod)
-    local mod = modkey[mod]
+    mod = toModkey[mod]
     if not mod then return false end
 
     return C.nxKeyboardModKeyDown(mod)
 end
 
-------------------------------------------------------------
 function Keyboard.keysymDown(key)
     return downKeysSym[toKeysym[key] or 0]
 end
 
-------------------------------------------------------------
 function Keyboard.scancodeDown(key)
     return downKeysSc[toScancode[key] or 0]
 end
 
-------------------------------------------------------------
 function Keyboard.startTextInput(x, y, width, height)
     C.nxKeyboardStartTextInput(x, y, width, height)
 
     return Keyboard
 end
 
-------------------------------------------------------------
 function Keyboard.stopTextInput()
     C.nxKeyboardStopTextInput()
 
     return Keyboard
 end
 
-------------------------------------------------------------
 function Keyboard.isTextInputActive()
     return C.nxKeyboardTextInputActive()
 end
 
-------------------------------------------------------------
 function Keyboard.__keyDownEvent(scancode, keysym, isRepeated)
     if not isRepeated then
         downKeysSc[scancode] = true
@@ -622,11 +611,9 @@ function Keyboard.__keyDownEvent(scancode, keysym, isRepeated)
     end
 end
 
-------------------------------------------------------------
 function Keyboard.__keyUpEvent(scancode, keysym)
     downKeysSc[scancode] = nil
     downKeysSym[keysym]  = nil
 end
 
-------------------------------------------------------------
 return Keyboard

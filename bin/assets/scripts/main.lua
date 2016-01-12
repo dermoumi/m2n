@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,7 +23,7 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local Log = require 'util.log'
 
@@ -39,34 +39,31 @@ for i, v in ipairs(arg) do
     end
 end
 
-------------------------------------------------------------
 local System   = require 'system'
 local LuaVM    = require 'system.luavm'
 local Events   = require 'window.events'
 local Graphics = require 'graphics'
 local Window   = require 'window'
 local Audio    = require 'audio'
-local Scene    = require 'scene'
+local Screen   = require 'screen'
+local Config   = require 'config'
 
 -- Load settings (in VM sandbox)
 local vm = LuaVM:new()
 local argsCount = vm:pcall(function()
         local settings = loadfile('userdata/settings.lua')
-        if settings then
-            return settings()
-        else
-            return {}
-        end
+        return settings and settings() or {}
     end)
 local settings, err = vm:pop(argsCount, true)
 
 -- Create window
-Window.create("m2n", 1280, 720, settings.graphics or {
-    vsync = false
+Window.create("m2n", 1280, 720, {
+    vsync = true
 })
 
 -- Initialize renderer
 Graphics.init()
+Config.noGpuMultithreading = not Graphics.getCapabilities('multithreadingSupported')
 
 -- Set window icon
 Window.setIcon('assets/icon.png')
@@ -78,50 +75,66 @@ end
 
 -- Handling FPS
 local totalTime, fixedFrameTime = 0, 1/30
-Window.setFramerateLimit(
-    not noFpsLimit and (System.platform('android', 'ios') and 1/30 or 1/60)
-)
+if not noFpsLimit then
+    local fpsLimit = System.platform('android', 'ios') and 1/30 or 1/60
+    Window.setFramerateLimit(fpsLimit)
+end
 
--- Startup scene
-Scene.goTo('scene.title', true)
+-- Register some types
+require('game.cache')
+    .registerType('image', 'graphics.image')
+    .registerType('vectorfont', 'graphics.vectorfont')
+    .registerType('fontstack', 'graphics.fontstack')
+    .registerType('tex2d', 'graphics.texture2d')
+    .registerType('music', 'audio.source')
+    .registerType('sound', 'audio.source')
+    .registerType('geom', 'graphics.geometry')
+    .registerType('shader', 'graphics.shader')
+    .registerType('material', 'graphics.material')
+    .registerType('model', 'graphics.model')
+    .registerType('scene', 'graphics.scenegraph')
+
+-- Startup screen
+Screen.goTo('screen.title', true)
 
 -- Main loop
 while Window.isOpen() do
-    local scene = Scene.currentScene()
+    local screen = Screen.currentScreen()
 
     -- Process events
     for e, a, b, c, d in Events.poll() do
-        if e == 'quit' and scene:__onEvent('quit') then
+        if e == 'quit' and screen:__onEvent('quit') then
             Window.close()
             break
         else
-            scene:__onEvent(e, a, b, c, d)
-            if scene ~= Scene.currentScene() then goto continue end
+            screen:__onEvent(e, a, b, c, d)
+            if screen ~= Screen.currentScreen() then goto continue end
         end
     end
 
     -- Check that the window is still open
     if not Window.isOpen() then break end
 
-    scene:__update(Window.frameTime())
-    if scene ~= Scene.currentScene() then goto continue end
+    screen:__update(Window.frameTime())
+    if screen ~= Screen.currentScreen() then goto continue end
 
     totalTime = totalTime + Window.frameTime()
     for i = 1, totalTime / fixedFrameTime do
-        scene:__fixedUpdate(fixedFrameTime)
-        if scene ~= Scene.currentScene() then goto continue end
+        screen:__fixedUpdate(fixedFrameTime)
+        if screen ~= Screen.currentScreen() then goto continue end
     end
     totalTime = totalTime % fixedFrameTime
 
     Graphics.begin()
-    scene:__render()
+    screen:__render()
     Graphics.finish()
 
     Window.display()
 
     ::continue::
+    if screen ~= Screen.currentScreen() then
+        Window.resetFrameTime()
+    end
 end
 
 Audio.release()
-
-return 0

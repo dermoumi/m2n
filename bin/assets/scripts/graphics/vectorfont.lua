@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,14 +23,13 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local Config = require 'config'
 local Font   = require 'graphics.font'
 
 local VectorFont = Font:subclass('graphics.vectorfont')
 
-------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
@@ -42,7 +41,12 @@ ffi.cdef [[
     const char* nxVectorFontFamilyName(const NxFont*);
 ]]
 
-------------------------------------------------------------
+function VectorFont.static.factory(task, filename)
+    task:addTask(true, function(font, filename)
+            font:open(filename)
+        end)
+end
+
 function VectorFont:initialize(a, b)
     local handle = C.nxVectorFontNew()
     self._cdata = ffi.gc(handle, C.nxFontRelease)
@@ -51,7 +55,6 @@ function VectorFont:initialize(a, b)
     if a then self:open(a, b) end
 end
 
-------------------------------------------------------------
 function VectorFont:open(a, b)
     local ok
 
@@ -70,12 +73,10 @@ function VectorFont:open(a, b)
     return self
 end
 
-------------------------------------------------------------
 function VectorFont:familyName()
     if self._cdata == nil then return '' end
 
     return ffi.string(C.nxVectorFontFamilyName(self._cdata))
 end
 
-------------------------------------------------------------
 return VectorFont

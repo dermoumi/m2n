@@ -1,9 +1,9 @@
-------------------------------------------------------------------------------
+--------------------
 -- DynASM x86/x64 module.
 --
 -- Copyright (C) 2005-2014 Mike Pall. All rights reserved.
 -- See dynasm.lua for full copyright notice.
-------------------------------------------------------------------------------
+--------------------
 
 local x64 = x64
 
@@ -83,7 +83,7 @@ local actargs = { 0 }
 -- Current number of section buffer positions for dasm_put().
 local secpos = 1
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Compute action numbers for action names.
 for n,name in ipairs(action_names) do
@@ -119,7 +119,7 @@ local function writeactions(out, name)
   out:write(s, last, "\n};\n\n") -- Add last byte back.
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Add byte to action list.
 local function wputxb(n)
@@ -169,7 +169,7 @@ local function wputb(n)
   wputxb(n)
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Global label name -> global label number. With auto assignment on 1st use.
 local next_global = 10
@@ -215,7 +215,7 @@ local function writeglobalnames(out, name)
   out:write("  (const char *)0\n};\n")
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Extern label name -> extern label number. With auto assignment on 1st use.
 local next_extern = -1
@@ -250,7 +250,7 @@ local function writeexternnames(out, name)
   out:write("  (const char *)0\n};\n")
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Arch-specific maps.
 local map_archdef = {}		-- Ext. register name -> int. name.
@@ -386,7 +386,7 @@ local function dumpregs(out)
   end
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Put action for label arg (IMM_LG, IMM_PC, REL_LG, REL_PC).
 local function wputlabel(aprefix, imm, num)
@@ -579,7 +579,7 @@ local function wputmrmsib(t, imark, s, vsreg)
   elseif m == nil then waction("DISP", disp) end
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Return human-readable operand mode string.
 local function opmodestr(op, args)
@@ -827,7 +827,7 @@ local function parseoperand(param)
   return t
 end
 
-------------------------------------------------------------------------------
+--------------------
 -- x86 Template String Description
 -- ===============================
 --
@@ -892,7 +892,7 @@ end
 --             the opcode (+2) for a signed 8 bit immediate.
 --   "J"       generates one of the REL action codes from the last operand.
 --
-------------------------------------------------------------------------------
+--------------------
 
 -- Template strings for x86 instructions. Ordered by first opcode byte.
 -- Unimplemented opcodes (deliberate omissions) are marked with *.
@@ -1406,7 +1406,7 @@ local map_op = {
   -- popcnt is also in SSE4.2
 }
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Arithmetic ops.
 for name,n in pairs{ add = 0, ["or"] = 1, adc = 2, sbb = 3,
@@ -1463,7 +1463,7 @@ for name,n in pairs{ sqrt = 1, add = 8, mul = 9,
   map_op[name.."sd_2"] = format("rro:F20F5%XrM|rx/oq:", n)
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Process pattern string.
 local function dopattern(pat, args, sz, op, needrex)
@@ -1571,7 +1571,7 @@ local function dopattern(pat, args, sz, op, needrex)
   end
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Mapping of operand modes to short names. Suppress output with '#'.
 local map_modename = {
@@ -1671,7 +1671,7 @@ map_op[".template__"] = function(params, template, nparams)
   werror(msg.." in `"..opmodestr(params.op, args).."'")
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- x64-specific opcode for 64 bit immediates and displacements.
 if x64 then
@@ -1715,7 +1715,7 @@ if x64 then
   end
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Pseudo-opcodes for data storage.
 local function op_data(params)
@@ -1742,7 +1742,7 @@ map_op[".word_*"] = op_data
 map_op[".dword_*"] = op_data
 map_op[".aword_*"] = op_data
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Pseudo-opcode to mark the position where the action list is to be emitted.
 map_op[".actionlist_1"] = function(params)
@@ -1772,7 +1772,7 @@ map_op[".externnames_1"] = function(params)
   wline(function(out) writeexternnames(out, name) end)
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Label pseudo-opcode (converted from trailing colon form).
 map_op[".label_2"] = function(params)
@@ -1803,7 +1803,7 @@ map_op[".label_2"] = function(params)
 end
 map_op[".label_1"] = map_op[".label_2"]
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Alignment pseudo-opcode.
 map_op[".align_1"] = function(params)
@@ -1839,7 +1839,7 @@ map_op[".space_2"] = function(params)
 end
 map_op[".space_1"] = map_op[".space_2"]
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Pseudo-opcode for (primitive) type definitions (map to C types).
 map_op[".type_3"] = function(params, nparams)
@@ -1885,7 +1885,7 @@ local function dumptypes(out, lvl)
   out:write("\n")
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Set the current section.
 function _M.section(num)
@@ -1894,7 +1894,7 @@ function _M.section(num)
   wflush(true) -- SECTION is a terminal action.
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Dump architecture description.
 function _M.dumparch(out)
@@ -1911,7 +1911,7 @@ function _M.dumpdef(out, lvl)
   dumpexterns(out, lvl)
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Pass callbacks from/to the DynASM core.
 function _M.passcb(wl, we, wf, ww)
@@ -1933,5 +1933,5 @@ end
 
 return _M
 
-------------------------------------------------------------------------------
+--------------------
 

@@ -1,0 +1,37 @@
+return {
+	['Torus'] = {
+		'model:assets/models/Torus.model',
+		tz = 3.317373037338257
+	},
+	['Cylinder'] = {
+		'model:assets/models/Cylinder.model',
+		ty = 0.5908737182617188,
+		tz = -3.061708688735962
+	},
+	['player'] = {
+		'scene',
+		tx = 3.7598705291748047,
+		ty = 1.745195746421814,
+		tz = -0.0015507787466049194,
+		ry = 1.5707963705062866,
+		['main_camera'] = {
+			'camera',
+			rx = -0.36651909351348877,
+			ry = -9.119191513029534e-12,
+			rz = -1.3268948440003925e-11,
+			fov = 69.99999967119774,
+			near = 0.10000000149011612,
+			far = 100.0
+		}
+	},
+	['cube'] = {
+		'model:assets/models/sloth_cube.model',
+		rx = 0.39018136262893677,
+		['sphere'] = {
+			'model:assets/models/sphere.model',
+			tx = 0.01184268668293953,
+			ty = 1.1146360635757446,
+			tz = 0.009081147611141205
+		}
+	}
+}

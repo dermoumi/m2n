@@ -1,14 +1,14 @@
-----------------------------------------------------------------------------
+------------------
 -- LuaJIT module to save/list bytecode.
 --
 -- Copyright (C) 2005-2014 Mike Pall. All rights reserved.
 -- Released under the MIT license. See Copyright Notice in luajit.h
-----------------------------------------------------------------------------
+------------------
 --
 -- This module saves or lists the bytecode for an input file.
 -- It's run by the -b command line option.
 --
-------------------------------------------------------------------------------
+--------------------
 
 local jit = require("jit")
 assert(jit.version_num == 20003, "LuaJIT core/library version mismatch")
@@ -17,7 +17,7 @@ local bit = require("bit")
 -- Symbol name prefix for LuaJIT bytecode.
 local LJBC_PREFIX = "luaJIT_BC_"
 
-------------------------------------------------------------------------------
+--------------------
 
 local function usage()
   io.stderr:write[[
@@ -56,7 +56,7 @@ local function savefile(name, mode)
   return check(io.open(name, mode))
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 local map_type = {
   raw = "raw", c = "c", h = "h", o = "obj", obj = "obj",
@@ -102,7 +102,7 @@ local function detectmodname(str)
   return string.gsub(str, "[%.%-]", "_")
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 local function bcsave_tail(fp, output, s)
   local ok, err = fp:write(s)
@@ -571,7 +571,7 @@ local function bcsave_obj(ctx, output, s)
   end
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 local function bclist(input, output)
   local f = readfile(input)
@@ -650,7 +650,7 @@ local function docmd(...)
   end
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Public module functions.
 module(...)

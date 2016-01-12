@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,78 +23,63 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #include "../config.hpp"
 #include "../graphics/shader.hpp"
 
-//==========================================================
-// Declarations
-//==========================================================
 using NxShader = Shader;
 
-//==========================================================
-// A set of GLSL Vertex and Fragment shaders
-//==========================================================
 NX_EXPORT NxShader* nxShaderNew()
 {
     return new Shader();
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxShaderRelease(NxShader* shader)
 {
     delete shader;
 }
 
-//----------------------------------------------------------
 NX_EXPORT bool nxShaderLoad(NxShader* shader, const char* vertexShader, const char* fragmentShader)
 {
     return shader->load(vertexShader, fragmentShader);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxShaderSetUniform(NxShader* shader, int loc, uint8_t type, float* data)
 {
     return shader->setUniform(loc, type, data);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxShaderSetSampler(NxShader* shader, int loc, int unit)
 {
     return shader->setSampler(loc, unit);
 }
 
-//----------------------------------------------------------
 NX_EXPORT int nxShaderUniformLocation(const NxShader* shader, const char* name)
 {
     return shader->uniformLocation(name);
 }
 
-//----------------------------------------------------------
 NX_EXPORT int nxShaderSamplerLocation(const NxShader* shader, const char* name)
 {
     return shader->samplerLocation(name);
 }
 
-//----------------------------------------------------------
 NX_EXPORT const char* nxShaderLog()
 {
     return Shader::log();
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxShaderBind(const NxShader* shader)
 {
     Shader::bind(shader);
 }
 
-//----------------------------------------------------------
 NX_EXPORT const char* nxShaderDefaultVSCode()
 {
     return Shader::defaultVSCode();
 }
 
-//----------------------------------------------------------
 NX_EXPORT const char* nxShaderDefaultFSCode()
 {
     return Shader::defaultFSCode();

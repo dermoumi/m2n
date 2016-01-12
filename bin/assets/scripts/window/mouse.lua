@@ -1,4 +1,4 @@
---[[----------------------------------------------------------------------------
+--[[
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,11 +23,10 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]----------------------------------------------------------------------------
+--]]
 
 local Mouse = {}
 
-------------------------------------------------------------
 local ffi = require 'ffi'
 local C = ffi.C
 
@@ -44,7 +43,6 @@ ffi.cdef [[
     bool nxMouseIsGrabbed();
 ]]
 
-------------------------------------------------------------
 local fromCursor = {
     [-1] = 'default',
     [0] = 'arrow',
@@ -82,17 +80,14 @@ Mouse._btn = buttons
 
 local currentCursor, imageCursor = 'default', nil
 
-------------------------------------------------------------
 function Mouse.setVisible(visible)
     return C.nxMouseVisible(visible and 1 or 0)
 end
 
-------------------------------------------------------------
 function Mouse.isVisible()
     return C.nxMouseVisible(-1)
 end
 
-------------------------------------------------------------
 function Mouse.setCursor(cursor, originX, originY)
     if not cursor then cursor = 'default' end
     
@@ -108,19 +103,16 @@ function Mouse.setCursor(cursor, originX, originY)
     return Mouse
 end
 
-------------------------------------------------------------
 function Mouse.getCursor()
     return imageCursor or currentCursor
 end
 
-------------------------------------------------------------
 function Mouse.setPosition(x, y)
     C.nxMouseSetPosition(x, y, false)
 
     return Mouse
 end
 
-------------------------------------------------------------
 function Mouse.position()
     local posPtr = ffi.new('int[2]')
     C.nxMouseGetPosition(posPtr, false)
@@ -128,34 +120,28 @@ function Mouse.position()
     return tonumber(posPtr[0]), tonumber(posPtr[1])
 end
 
-------------------------------------------------------------
 function Mouse.setRelativeMode(relative)
     return C.nxMouseSetRelativeMode(relative)
 end
 
-------------------------------------------------------------
 function Mouse.isRelativeMode()
     return C.nxMouseGetRelativeMode()
 end
 
-------------------------------------------------------------
 function Mouse.isButtonDown(button)
     return C.nxMouseIsButtonDown(buttons[button])
 end
 
-------------------------------------------------------------
 function Mouse.grab(grabbed)
     Log.warning('Grabbing mouse is not implemented yet')
     -- return C.nxMouseSetGrab(grabbed)
     return Mouse
 end
 
-------------------------------------------------------------
 function Mouse.isGrabbed()
     Log.warning('Grabbing mouse is not implemented yet')
     -- return C.nxMouseIsGrabbed()
     return false
 end
 
-------------------------------------------------------------
 return Mouse

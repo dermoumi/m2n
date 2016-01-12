@@ -1,14 +1,14 @@
-----------------------------------------------------------------------------
+------------------
 -- LuaJIT ARM disassembler module.
 --
 -- Copyright (C) 2005-2014 Mike Pall. All rights reserved.
 -- Released under the MIT license. See Copyright Notice in luajit.h
-----------------------------------------------------------------------------
+------------------
 -- This is a helper module used by the LuaJIT machine code dumper module.
 --
 -- It disassembles most user-mode ARMv7 instructions
 -- NYI: Advanced SIMD and VFP instructions.
-------------------------------------------------------------------------------
+--------------------
 
 local type = type
 local sub, byte, format = string.sub, string.byte, string.format
@@ -18,9 +18,9 @@ local bit = require("bit")
 local band, bor, ror, tohex = bit.band, bit.bor, bit.ror, bit.tohex
 local lshift, rshift, arshift = bit.lshift, bit.rshift, bit.arshift
 
-------------------------------------------------------------------------------
+--------------------
 -- Opcode maps
-------------------------------------------------------------------------------
+--------------------
 
 local map_loadc = {
   shift = 8, mask = 15,
@@ -403,7 +403,7 @@ local map_uncondins = {
   false, "blxB", map_loadcu, map_datacu,
 }
 
-------------------------------------------------------------------------------
+--------------------
 
 local map_gpr = {
   [0] = "r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7",
@@ -417,7 +417,7 @@ local map_cond = {
 
 local map_shift = { [0] = "lsl", "lsr", "asr", "ror", }
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Output a nicely formatted line with an opcode and operands.
 local function putop(ctx, text, operands)
@@ -646,7 +646,7 @@ local function disass_ins(ctx)
   return putop(ctx, name..suffix, operands)
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Disassemble a block of code.
 local function disass_block(ctx, ofs, len)

@@ -1,9 +1,9 @@
-----------------------------------------------------------------------------
+------------------
 -- LuaJIT bytecode listing module.
 --
 -- Copyright (C) 2005-2014 Mike Pall. All rights reserved.
 -- Released under the MIT license. See Copyright Notice in luajit.h
-----------------------------------------------------------------------------
+------------------
 --
 -- This module lists the bytecode of a Lua function. If it's loaded by -jbc
 -- it hooks into the parser and lists all functions of a chunk as they
@@ -37,7 +37,7 @@
 --   }
 --   bc.dump(foo, out)
 --
-------------------------------------------------------------------------------
+--------------------
 
 -- Cache some library functions and objects.
 local jit = require("jit")
@@ -52,7 +52,7 @@ local funcuvname = jutil.funcuvname
 local bcnames = vmdef.bcnames
 local stdout, stderr = io.stdout, io.stderr
 
-------------------------------------------------------------------------------
+--------------------
 
 local function ctlsub(c)
   if c == "\n" then return "\\n"
@@ -145,7 +145,7 @@ local function bcdump(func, out, all)
   out:flush()
 end
 
-------------------------------------------------------------------------------
+--------------------
 
 -- Active flag and output file handle.
 local active, out

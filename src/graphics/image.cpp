@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,7 +23,8 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #include "image.hpp"
 #include "../system/log.hpp"
 
@@ -36,9 +37,6 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image/stb_image_write.h>
 
-//==========================================================
-// Locals
-//==========================================================
 // stb_image callbacks that operate on a BinaryFile
 static int read(void* userdata, char* data, int size)
 {
@@ -70,7 +68,6 @@ static int eof(void* userdata)
     return pos >= size;
 }
 
-//----------------------------------------------------------
 void Image::create(unsigned int width, unsigned int height, uint8_t r, uint8_t g, uint8_t b,
     uint8_t a)
 {
@@ -99,7 +96,6 @@ void Image::create(unsigned int width, unsigned int height, uint8_t r, uint8_t g
     }
 }
 
-//----------------------------------------------------------
 void Image::create(unsigned int width, unsigned int height, const uint8_t* pixels)
 {
     if (pixels && width && height) {
@@ -119,17 +115,15 @@ void Image::create(unsigned int width, unsigned int height, const uint8_t* pixel
     }
 }
 
-//----------------------------------------------------------
 bool Image::open(const std::string& filename)
 {
     PHYSFS_File* file = PHYSFS_openRead(filename.data());
     if (file) return open(file, true);
 
-    Log::error("Failed to load image \"%s\".", filename.data());
+    Log::error("Failed to load image: %s", filename.data());
     return false;
 }
 
-//----------------------------------------------------------
 bool Image::open(const void* data, size_t size)
 {
     // Clear the array (just in case)
@@ -169,7 +163,6 @@ bool Image::open(const void* data, size_t size)
     return false;
 }
 
-//----------------------------------------------------------
 bool Image::open(PHYSFS_File* file, bool closeFile)
 {
     // Clear the array (just in case)
@@ -216,7 +209,6 @@ bool Image::open(PHYSFS_File* file, bool closeFile)
     return false;
 }
 
-//----------------------------------------------------------
 bool Image::save(const std::string& filename) const
 {
     if (!mPixels.empty() && (mWidth > 0) && (mHeight > 0)) {
@@ -245,14 +237,12 @@ bool Image::save(const std::string& filename) const
     return false;
 }
 
-//----------------------------------------------------------
 void Image::getSize(unsigned int* width, unsigned int* height) const
 {
     *width = mWidth;
     *height = mHeight;
 }
 
-//----------------------------------------------------------
 void Image::createMaskFromColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a, uint8_t targetAlpha)
 {
     // Make sure that the image is not empty
@@ -270,7 +260,6 @@ void Image::createMaskFromColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a, uint
     }
 }
 
-//----------------------------------------------------------
 void Image::copy(const uint8_t* source, int srcX, int srcY, int stride, int dstX, int dstY,
     int dstW, int dstH, bool applyAlpha)
 {
@@ -322,7 +311,6 @@ void Image::copy(const uint8_t* source, int srcX, int srcY, int stride, int dstX
     }
 }
 
-//----------------------------------------------------------
 void Image::copy(const Image& source, int srcX, int srcY, int dstX, int dstY, int dstW, int dstH,
     bool applyAlpha)
 {
@@ -344,7 +332,6 @@ void Image::copy(const Image& source, int srcX, int srcY, int dstX, int dstY, in
     copy(source.getPixelsPtr(), srcX, srcY, source.mWidth, dstX, dstY, dstW, dstH, applyAlpha);
 }
 
-//----------------------------------------------------------
 void Image::setPixel(unsigned int x, unsigned int y, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 {
     uint8_t* pixel = &mPixels[(x + y * mWidth) * 4];
@@ -354,7 +341,6 @@ void Image::setPixel(unsigned int x, unsigned int y, uint8_t r, uint8_t g, uint8
     *pixel++ = a;
 }
 
-//----------------------------------------------------------
 void Image::getPixel(unsigned int x, unsigned int y, uint8_t* r, uint8_t* g, uint8_t* b,
     uint8_t* a) const
 {
@@ -365,13 +351,11 @@ void Image::getPixel(unsigned int x, unsigned int y, uint8_t* r, uint8_t* g, uin
     *a = *pixel++;
 }
 
-//----------------------------------------------------------
 const uint8_t* Image::getPixelsPtr() const
 {
     return mPixels.data();
 }
 
-//----------------------------------------------------------
 void Image::flipHorizontally()
 {
     if (mPixels.empty()) return;
@@ -390,7 +374,6 @@ void Image::flipHorizontally()
     }
 }
 
-//----------------------------------------------------------
 void Image::flipVertically()
 {
     if (mPixels.empty()) return;
@@ -406,5 +389,3 @@ void Image::flipVertically()
         bottom -= rowSize;
     }
 }
-
-//==============================================================================

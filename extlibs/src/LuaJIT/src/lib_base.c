@@ -656,7 +656,7 @@ static void setpc_wrap_aux(lua_State *L, GCfunc *fn)
   setmref(fn->c.pc, &L2GG(L)->bcff[lj_lib_init_coroutine[1]+2]);
 }
 
-/* ------------------------------------------------------------------------ */
+/* -------------- */
 
 static void newproxy_weaktable(lua_State *L)
 {

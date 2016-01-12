@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,7 +23,8 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #include "../config.hpp"
 
 #include "../system/thread.hpp"
@@ -33,38 +34,31 @@
 #include <SDL2/SDL.h>
 #include <vector>
 #include <algorithm>
+#include <atomic>
 
-//----------------------------------------------------------
-// Declarations
-//----------------------------------------------------------
 using NxWindow = SDL_Window;
 
-//----------------------------------------------------------
-// Locals
-//----------------------------------------------------------
-static NxWindow* window {nullptr};
-static SDL_GLContext context;
+static std::atomic<SDL_GLContext> sharedContext;
+
+static std::atomic<NxWindow*> window {nullptr};
+thread_local SDL_GLContext context {nullptr};
 static Image icon;
 
-//----------------------------------------------------------
-// Exported functions
-//----------------------------------------------------------
 NX_EXPORT NxWindow* nxWindowGet()
 {
     return window;
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxWindowClose()
 {
     if (!window) return;
-    
+
     SDL_GL_DeleteContext(context);
+    SDL_GL_DeleteContext(sharedContext);
     SDL_DestroyWindow(window);
     window = nullptr;
 }
 
-//----------------------------------------------------------
 NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, int fullscreen,
     int display, bool vsync, bool resizable, bool borderless, int minWidth, int minHeight,
     bool highDpi, int refreshRate, int posX, int posY, int depthBits, int stencilBits, int msaa)
@@ -107,7 +101,7 @@ NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, int
         if (borderless) flags |= SDL_WINDOW_BORDERLESS;
         if (highDpi)    flags |= SDL_WINDOW_ALLOW_HIGHDPI;
 
-        // Set context attributes    
+        // Set context attributes
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
         SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
 
@@ -134,6 +128,7 @@ NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, int
         window = SDL_CreateWindow(title, posX, posY, width, height, flags);
         if (!window) return nullptr;
 
+        sharedContext = SDL_GL_CreateContext(window);
         context = SDL_GL_CreateContext(window);
         if (!context) {
             SDL_DestroyWindow(window);
@@ -170,7 +165,7 @@ NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, int
         // // Attempt to enable late-swap tearing
         if (SDL_GL_SetSwapInterval(-1) != 0) {
             // Late-swap tearing failed
-            SDL_GL_SetSwapInterval(1);   
+            SDL_GL_SetSwapInterval(1);
         }
     }
     else {
@@ -180,13 +175,19 @@ NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, int
     return window;
 }
 
-//----------------------------------------------------------
+NX_EXPORT void nxWindowEnsureContext()
+{
+    if (!context) {
+        SDL_GL_MakeCurrent(window, sharedContext);
+        context = SDL_GL_CreateContext(window);
+    }
+}
+
 NX_EXPORT void nxWindowDisplay()
 {
     SDL_GL_SwapWindow(window);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxWindowGetFlags(int* flagsPtr)
 {
     auto flags = SDL_GetWindowFlags(window);
@@ -240,7 +241,6 @@ NX_EXPORT void nxWindowGetFlags(int* flagsPtr)
     }
 }
 
-//----------------------------------------------------------
 NX_EXPORT bool nxWindowGetDesktopSize(int displayIndex, int* sizePtr)
 {
     if (displayIndex < 1 || displayIndex > SDL_GetNumVideoDisplays()) return false;
@@ -255,13 +255,11 @@ NX_EXPORT bool nxWindowGetDesktopSize(int displayIndex, int* sizePtr)
     return false;
 }
 
-//----------------------------------------------------------
 NX_EXPORT int nxWindowGetDisplayCount()
 {
     return SDL_GetNumVideoDisplays();
 }
 
-//----------------------------------------------------------
 NX_EXPORT const char* nxWindowGetDisplayName(int displayIndex)
 {
     if (displayIndex < 1 || displayIndex > SDL_GetNumVideoDisplays()) return nullptr;
@@ -269,7 +267,6 @@ NX_EXPORT const char* nxWindowGetDisplayName(int displayIndex)
     return SDL_GetDisplayName(displayIndex - 1);
 }
 
-//----------------------------------------------------------
 NX_EXPORT int nxWindowGetFullscreen()
 {
     auto flags = SDL_GetWindowFlags(window);
@@ -284,14 +281,12 @@ NX_EXPORT int nxWindowGetFullscreen()
     }
 }
 
-//----------------------------------------------------------
 NX_EXPORT bool nxWindowGetVisible()
 {
     auto flags = SDL_GetWindowFlags(window);
     return (flags & (SDL_WINDOW_HIDDEN | SDL_WINDOW_MINIMIZED));
 }
 
-//----------------------------------------------------------
 NX_EXPORT const int* nxWindowGetDisplayModes(int displayIndex, size_t* count)
 {
     static std::vector<int> modes;
@@ -318,56 +313,47 @@ NX_EXPORT const int* nxWindowGetDisplayModes(int displayIndex, size_t* count)
     return modes.data();
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxWindowGetSize(int* sizePtr)
-{   
+{
     SDL_GetWindowSize(window, &sizePtr[0], &sizePtr[1]);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxWindowGetPosition(int* posPtr)
 {
     SDL_GetWindowPosition(window, &posPtr[0], &posPtr[1]);
 }
 
-//----------------------------------------------------------
 NX_EXPORT const char* nxWindowGetTitle()
 {
     return SDL_GetWindowTitle(window);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxWindowMinimize()
 {
     SDL_MinimizeWindow(window);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxWindowSetPosition(int x, int y)
 {
     SDL_SetWindowPosition(window, x, y);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxWindowSetSize(int width, int height)
 {
     SDL_SetWindowSize(window, width, height);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxWindowSetTitle(const char* title)
 {
     SDL_SetWindowTitle(window, title);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxWindowSimpleMessageBox(const char* title, const char* message, uint32_t type,
     bool attach)
 {
-    SDL_ShowSimpleMessageBox(type, title, message, attach ? window : nullptr);
+    SDL_ShowSimpleMessageBox(type, title, message, attach ? window.load() : nullptr);
 }
 
-//----------------------------------------------------------
 NX_EXPORT int nxWindowMessageBox(const char* title, const char* message, const char** entries,
     uint32_t count, uint32_t accept, uint32_t cancel, uint32_t type, bool attach)
 {
@@ -388,7 +374,7 @@ NX_EXPORT int nxWindowMessageBox(const char* title, const char* message, const c
 
     const SDL_MessageBoxData messageboxdata {
         type,
-        attach ? window : nullptr,
+        attach ? window.load() : nullptr,
         title,
         message,
         static_cast<int>(count),
@@ -405,24 +391,21 @@ NX_EXPORT int nxWindowMessageBox(const char* title, const char* message, const c
     return buttonID + 1;
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxWindowGetDrawableSize(int* sizePtr)
 {
     SDL_GL_GetDrawableSize(window, &sizePtr[0], &sizePtr[1]);
 }
 
-//----------------------------------------------------------
 NX_EXPORT const uint8_t* nxWindowGetIcon(unsigned int* sizePtr)
 {
     icon.getSize(&sizePtr[0], &sizePtr[1]);
     return icon.getPixelsPtr();
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxWindowSetIcon(unsigned int width, unsigned int height, const uint8_t* data)
 {
     uint32_t rmask, gmask, bmask, amask;
- 
+
     #if SDL_BYTEORDER == SDL_BIG_ENDIAN
         rmask = 0xff000000;
         gmask = 0x00ff0000;
@@ -434,7 +417,7 @@ NX_EXPORT void nxWindowSetIcon(unsigned int width, unsigned int height, const ui
         bmask = 0x00ff0000;
         amask = 0xff000000;
     #endif
- 
+
     SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(
         const_cast<uint8_t*>(data), width, height, 32, width * 4, rmask, gmask, bmask, amask
     );
@@ -443,11 +426,9 @@ NX_EXPORT void nxWindowSetIcon(unsigned int width, unsigned int height, const ui
         Log::error("Window's icon surface creation failed: %s", SDL_GetError());
         return;
     }
- 
+
     SDL_SetWindowIcon(window, surface);
     SDL_FreeSurface(surface);
 
     icon.create(width, height, data);
 }
-
-//==============================================================================

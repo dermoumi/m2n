@@ -18,7 +18,7 @@
 #include "lj_jit.h"
 #endif
 
-/* -- Frames -------------------------------------------------------------- */
+/* -- Frames ---- */
 
 /* Get frame corresponding to a level. */
 cTValue *lj_debug_frame(lua_State *L, int level, int *size)

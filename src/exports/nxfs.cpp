@@ -1,4 +1,4 @@
-/*//============================================================================
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,26 +23,22 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
-*///============================================================================
+*/
+
 #include "../config.hpp"
 
 #include <physfs/physfs.h>
 
-//----------------------------------------------------------
-// Exported functions
-//----------------------------------------------------------
 NX_EXPORT char** nxFsEnumerateFiles(const char* path)
 {
     return PHYSFS_enumerateFiles(path);
 }
 
-//----------------------------------------------------------
 NX_EXPORT void nxFsFreeList(void* listVar)
 {
     PHYSFS_freeList(listVar);
 }
 
-//----------------------------------------------------------
 NX_EXPORT bool nxFsIsDirectory(const char* path)
 {
     PHYSFS_Stat stat;
@@ -51,7 +47,6 @@ NX_EXPORT bool nxFsIsDirectory(const char* path)
     return stat.filetype == PHYSFS_FILETYPE_DIRECTORY;
 }
 
-//----------------------------------------------------------
 NX_EXPORT bool nxFsIsFile(const char* path)
 {
     PHYSFS_Stat stat;
@@ -59,5 +54,3 @@ NX_EXPORT bool nxFsIsFile(const char* path)
 
     return stat.filetype == PHYSFS_FILETYPE_REGULAR;
 }
-
-//==========================================================
