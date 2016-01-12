@@ -574,7 +574,7 @@ function Keyboard.ScancodeToKey(key)
 end
 
 function Keyboard.modKeyDown(mod)
-    local mod = modkey[mod]
+    mod = toModkey[mod]
     if not mod then return false end
 
     return C.nxKeyboardModKeyDown(mod)

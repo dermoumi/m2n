@@ -31,6 +31,7 @@ local Graphics = require 'graphics'
 local Window   = require 'window'
 local Screen   = require 'screen'
 local GameFont = require 'game.font'
+local Keyboard = require 'window.keyboard'
 
 local ScreenTitle = Screen:subclass('screen.title')
 
@@ -47,11 +48,6 @@ function ScreenTitle:initialize(firstRun)
             message = 'INITIALIZING %i%%'
         })
     end
-
-    self:cache('image:assets/pasrien.png')
-    self.texture = self:cache('tex2d:assets/pasrien.png')
-    self.soundSource = self:cache('sound:assets/test.wav')
-    self.musicSource = self:cache('music:assets/undersodiumbulb.ogg')
 end
 
 function ScreenTitle:entered()
@@ -59,31 +55,6 @@ function ScreenTitle:entered()
         :new('', GameFont, 14)
         :setPosition(10, 10)
         :setColor(255, 128, 0)
-
-    self.sprite = require('graphics.sprite')
-        :new(self.texture)
-        :setPosition(100, 100)
-        -- :attach('text', self.text)
-
-    self.voiceGroup = require('audio.voicegroup'):new()
-    self.echoFilter = require('audio.echofilter'):new()
-        :setParams(.5, .5)
-
-    self.voiceGroup = require('audio.voicegroup'):new()
-
-    self.audiobus = require('audio.bus'):new()
-        -- :setFilter(self.echoFilter)
-    self.audiobus:play()
-
-    self.soundSource:setLooping(true)
-    self.voiceGroup:add(self.soundSource:playThrough(self.audiobus, -1, 0, true))
-
-    self.musicSource:setVolume(.1)
-    self.voiceGroup:add(self.musicSource:playThrough(self.audiobus, -1, 0, true))
-
-    self.voiceGroup:pause(false)
-
-    -- Mouse.setCursor(self:cache('assets/cursor.png'), 4, 4)
 end
 
 function ScreenTitle:update(dt)
@@ -94,8 +65,6 @@ function ScreenTitle:render()
     self:view():clear()
 
     self:view():draw(self.text)
-        :draw(self.sprite:setPosition(100, 100))
-        :draw(self.sprite:setPosition(600, 100))
 end
 
 function ScreenTitle:keydown(scancode, keyCode, repeated)
@@ -123,10 +92,6 @@ function ScreenTitle:keydown(scancode, keyCode, repeated)
             'cancel'
         }))
     end
-end
-
-function ScreenTitle:left()
-    self.audiobus:stop()
 end
 
 return ScreenTitle
