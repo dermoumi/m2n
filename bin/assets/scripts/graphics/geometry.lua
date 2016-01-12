@@ -40,9 +40,12 @@ ffi.cdef [[
     } NxMeshVertexPosCoords;
 ]]
 
-local vertexSize, vertexLayout =
-    ffi.sizeof('NxMeshVertexPosCoords'),
-    Graphics.vertexLayout(3)
+local formats = {
+    {
+        stride = { ffi.sizeof('NxMeshVertexPosCoords') },
+        layout = Graphics.vertexLayout(3)
+    }
+}
 
 function Geometry.static.factory(task)
     task:addTask(function(geom, filename)
@@ -53,8 +56,8 @@ function Geometry.static.factory(task)
 
             local headGuard = ffi.string(file:read(6), 6)
             if headGuard == 'M2N1.0' then
-                local format = file:readU8()
-                if format == 0 then
+                local format = file:readU8() + 1
+                if format == 1 then
                     local vertBuffer, vertBufSize, indexBuffer, indexBufSize
 
                     vertBufSize, indexBufSize = file:readU32(), file:readU32()
@@ -63,69 +66,43 @@ function Geometry.static.factory(task)
 
                     if not success then return false end
 
-                    geom:setVertexData(vertBuffer, vertBufSize)
+                    geom:setFormat(1)
+                        :setVertexData(1, vertBuffer, vertBufSize)
                         :setIndexData(indexBuffer, indexBufSize)
                 else
                     error('Unknown geometry format')
                 end
             else
-                error('Unknown geometry format')
+                error('Unsupported geometry file')
             end
         end)
 end
 
-function Geometry.static.vertexDataToBuffer(a, b, ...)
-    if b then a = {a, b, ...} end
-    if type(a) ~= 'table' then return ffi.new('NxMeshVertexPosCoords*'), 0, 0 end
-
-    local buffer, vertCount
-    if type(a[0]) == 'table' then
-        vertCount = #a
-        buffer = ffi.new('NxMeshVertexPosCoords[?]', vertCount, a)
-    else
-        vertCount = #a / 5 -- Five values: xyz, uv
-        buffer = ffi.new('NxMeshVertexPosCoords[?]', vertCount)
-        for i = 1, vertCount do
-            local vertex = {}
-            for j = 1, 5 do
-                vertex[j] = a[(i-1) * 5 + j]
-            end
-            buffer[i-1] = ffi.new('NxMeshVertexPosCoords', vertex)
-        end
-    end
-
-    return buffer, vertexSize * vertCount, vertCount
+function Geometry:initialize()
+    self._format = formats[0]
+    self._vertexBuffers = {}
 end
 
-function Geometry.static.indexDataToBuffer(a, b, ...)
-    if b then a = {a, b, ...} end
-    if type(a) ~= 'table' then return ffi.new('uint16_t*'), 0, 0 end
+function Geometry:setFormat(format)
+    self._format = formats[format]
 
-    local indexCount = #a
-    return ffi.new('uint16_t[?]', indexCount, a), ffi.sizeof('uint16_t') * indexCount, indexCount
+    return self
 end
 
-function Geometry:setVertexData(buffer, size, ...)
-    if type(buffer) ~= 'cdata' then
-        buffer, size = Geometry.vertexDataToBuffer(buffer, size, ...)
-    end
-
+function Geometry:setVertexData(slot, buffer, size)
     if buffer and size ~= 0 then
-        self._vertexCount = size / vertexSize
-        self._vertexBuffer = Arraybuffer.vertexbuffer(size, buffer)
+        self._vertexBuffers[slot] = {
+            count = size / self._format.stride[slot],
+            data = Arraybuffer.vertexbuffer(size, buffer)
+        }
     else
-        self._vertexCount = 0
-        self._vertexBuffer = nil
+        self._vertexBuffers[slot] = nil
     end
 
     return self
 end
 
-function Geometry:setIndexData(buffer, size, ...)
-    if type(buffer) ~= 'cdata' then
-        buffer, size = Geometry.indexDataToBuffer(buffer, size, ...)
-    end
-
+function Geometry:setIndexData(buffer, size)
     if buffer and size ~= 0 then
         self._indexCount = size / ffi.sizeof('uint16_t')
         self._indexBuffer = Arraybuffer.indexbuffer(size, buffer)
@@ -137,23 +114,30 @@ function Geometry:setIndexData(buffer, size, ...)
     return self
 end
 
-function Geometry:vertexCount()
-    return self._vertexBuffer and self._vertexCount or 0
+function Geometry:vertexCount(slot)
+    slot = slot or 1
+    return self._vertexBuffers[slot] and self._vertexBuffers[slot].count or 0
 end
 
 function Geometry:indexCount()
-    return self._indexBuffer and self._indexBuffer or 0
+    return self._indexCount
 end
 
 function Geometry:_apply()
-    if self._vertexBuffer then
-        Arraybuffer.setVertexbuffer(self._vertexBuffer, 0, 0, vertexSize)
-        Arraybuffer.setIndexbuffer(self._indexBuffer, 16)
-        C.nxRendererSetVertexLayout(vertexLayout)
-        return true
+    local applied = false
+
+    for i, buffer in ipairs(self._vertexBuffers) do
+        Arraybuffer.setVertexbuffer(buffer.data, i-1, 0, self._format.stride[i])
+        applied = true
     end
 
-    return false
+    if applied then
+        Arraybuffer.setIndexbuffer(self._indexBuffer, 16)
+        C.nxRendererSetVertexLayout(self._format.layout)
+        return true
+    else
+        return false
+    end
 end
 
 return Geometry
