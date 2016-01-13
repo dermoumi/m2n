@@ -205,11 +205,11 @@ private:
             uint32_t hash;
             struct
             {
-                uint32_t fillMode              : 1;
-                uint32_t cullMode              : 2;
-                uint32_t scissorEnable         : 1;
-                uint32_t multisampleEnable     : 1;
-                uint32_t renderTargetWriteMask : 1;
+                uint8_t fillMode              : 1;
+                uint8_t cullMode              : 2;
+                uint8_t scissorEnable         : 1;
+                uint8_t multisampleEnable     : 1;
+                uint8_t renderTargetWriteMask : 1;
             };
         };
     };
@@ -221,10 +221,10 @@ private:
             uint32_t hash;
             struct
             {
-                uint32_t alphaToCoverageEnable : 1;
-                uint32_t blendEnable           : 1;
-                uint32_t srcBlendFunc          : 4;
-                uint32_t dstBlendFunc          : 4;
+                uint8_t alphaToCoverageEnable : 1;
+                uint8_t blendEnable           : 1;
+                uint8_t srcBlendFunc          : 4;
+                uint8_t dstBlendFunc          : 4;
             };
         };
     };
@@ -236,13 +236,12 @@ private:
             uint32_t hash;
             struct
             {
-                uint32_t depthWriteMask : 1;
-                uint32_t depthEnable    : 1;
-                uint32_t depthFunc      : 4;
+                uint8_t depthWriteMask : 1;
+                uint8_t depthEnable    : 1;
+                uint8_t depthFunc      : 4;
             };
         };
     };
-
 
     class Gles2Shader : public Shader
     {
@@ -266,9 +265,6 @@ private:
     };
 
 private:
-    uint32_t createShaderProgram(const char* vertexShaderSrc, const char* fragmentShaderSrc);
-    bool linkShaderProgram(uint32_t programObj);
-
     bool applyVertexLayout();
     void applySamplerState(RDITexture& tex);
     void applyRenderStates();
