@@ -32,17 +32,36 @@
 #include "../graphics/image.hpp"
 
 #include <SDL2/SDL.h>
-#include <vector>
 #include <algorithm>
+#include <vector>
 #include <atomic>
+#include <memory>
 
 using NxWindow = SDL_Window;
+class GlContext
+{
+public:
+    GlContext(SDL_Window* window) {
+        mContext = SDL_GL_CreateContext(window);
+    }
 
-static std::atomic<SDL_GLContext> sharedContext;
+    ~GlContext() {
+        SDL_GL_DeleteContext(mContext);
+    }
+
+    void makeCurrent(SDL_Window* window) {
+        SDL_GL_MakeCurrent(window, mContext);
+    }
+
+private:
+    SDL_GLContext mContext;
+};
 
 static std::atomic<NxWindow*> window {nullptr};
-thread_local SDL_GLContext context {nullptr};
 static Image icon;
+
+static std::unique_ptr<GlContext> sharedContext;
+thread_local std::unique_ptr<GlContext> context;
 
 NX_EXPORT NxWindow* nxWindowGet()
 {
@@ -53,8 +72,8 @@ NX_EXPORT void nxWindowClose()
 {
     if (!window) return;
 
-    SDL_GL_DeleteContext(context);
-    SDL_GL_DeleteContext(sharedContext);
+    context = nullptr;
+    sharedContext = nullptr;
     SDL_DestroyWindow(window);
     window = nullptr;
 }
@@ -64,7 +83,7 @@ NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, int
     bool highDpi, int refreshRate, int posX, int posY, int depthBits, int stencilBits, int msaa)
 {
     // Get a valid display number
-    display = std::max(0, std::min(display - 1, SDL_GetNumVideoDisplays() - 1));
+    display = std::max(0, std::min(display-1, SDL_GetNumVideoDisplays()-1));
 
     if      (posX == -1) posX = SDL_WINDOWPOS_UNDEFINED_DISPLAY(display);
     else if (posX == -2) posX = SDL_WINDOWPOS_CENTERED_DISPLAY(display);
@@ -128,8 +147,14 @@ NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, int
         window = SDL_CreateWindow(title, posX, posY, width, height, flags);
         if (!window) return nullptr;
 
-        sharedContext = SDL_GL_CreateContext(window);
-        context = SDL_GL_CreateContext(window);
+        sharedContext = std::unique_ptr<GlContext>(new GlContext(window));
+        if (!sharedContext) {
+            SDL_DestroyWindow(window);
+            window = nullptr;
+            return nullptr;
+        }
+
+        context = std::unique_ptr<GlContext>(new GlContext(window));
         if (!context) {
             SDL_DestroyWindow(window);
             window = nullptr;
@@ -178,8 +203,8 @@ NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, int
 NX_EXPORT void nxWindowEnsureContext()
 {
     if (!context) {
-        SDL_GL_MakeCurrent(window, sharedContext);
-        context = SDL_GL_CreateContext(window);
+        sharedContext->makeCurrent(window);
+        context = std::unique_ptr<GlContext>(new GlContext(window));
     }
 }
 
