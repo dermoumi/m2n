@@ -63,17 +63,12 @@ public:
     uint32_t getTextureMemory() const;
 
     // Shaders
-    uint32_t createShader(const char* vertexShaderSrc, const char* fragmentShaderSrc);
-    void destroyShader(uint32_t shaderID);
-    void bindShader(uint32_t shaderID);
+    Shader* newShader();
+    void bindShader(Shader* shader);
     const std::string& getShaderLog();
-    int getShaderConstLoc(uint32_t shaderID, const char* name);
-    int getShaderSamplerLoc(uint32_t shaderID, const char* name);
-    void setShaderConst(int loc, ShaderConstType type, float* values, uint32_t count = 1);
-    void setShaderSampler(int loc, uint32_t texUnit);
     const char* getDefaultVSCode();
     const char* getDefaultFSCode();
-    uint32_t getCurrentShader() const;
+    Shader* getCurrentShader() const;
 
     // Buffers
     void beginRendering();
@@ -164,12 +159,6 @@ private:
         bool          genMips;
     };
 
-    struct RDIShader
-    {
-        uint32_t oglProgramObj;
-        RDIInputLayout inputLayouts[MaxNumVertexLayouts];
-    };
-
     struct RDIRenderBuffer
     {
         static constexpr uint32_t MaxColorAttachmentCount = 1;
@@ -254,6 +243,28 @@ private:
         };
     };
 
+
+    class Gles2Shader : public Shader
+    {
+    public:
+        Gles2Shader(RenderDeviceGLES2* device);
+        virtual ~Gles2Shader();
+
+        virtual bool load(const char* vertexShader, const char* fragmentShader);
+        virtual void setUniform(int location, uint8_t type, float* data, uint32_t count = 1);
+        virtual void setSampler(int location, uint8_t unit);
+
+        virtual int uniformLocation(const char* name) const;
+        virtual int samplerLocation(const char* name) const;
+
+    private:
+        friend class RenderDeviceGLES2;
+
+        RenderDeviceGLES2* mDevice;
+        uint32_t           mHandle {0u};
+        RDIInputLayout     mInputLayouts[MaxNumVertexLayouts];
+    };
+
 private:
     uint32_t createShaderProgram(const char* vertexShaderSrc, const char* fragmentShaderSrc);
     bool linkShaderProgram(uint32_t programObj);
@@ -278,7 +289,6 @@ private:
     std::atomic<uint32_t>       mNumVertexLayouts {0u};
     VertexLayout                mVertexLayouts[MaxNumVertexLayouts];
     RDIObjects<RDIBuffer>       mBuffers;
-    RDIObjects<RDIShader>       mShaders;
     RDIObjects<RDITexture>      mTextures;
     RDIObjects<RDIRenderBuffer> mRenderBuffers;
 
@@ -287,7 +297,7 @@ private:
     RDIRasterState       mCurRasterState,       mNewRasterState;
     RDIBlendState        mCurBlendState,        mNewBlendState;
     RDIDepthStencilState mCurDepthStencilState, mNewDepthStencilState;
-    uint32_t mPrevShaderID {0u},    mCurShaderID {0u};
+    Shader *mPrevShader {nullptr}, *mCurShader {nullptr};
     uint32_t mCurVertexLayout {0u}, mNewVertexLayout {0u};
     uint32_t mCurIndexBuffer {0u},  mNewIndexBuffer {0u};
     uint32_t mIndexFormat {0u};

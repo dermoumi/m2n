@@ -237,13 +237,13 @@ bool RenderDeviceGLES2::commitStates(uint32_t filter)
         // Bind vertex buffers
         if (mask & VertexLayouts) {
             if (
-                mNewVertexLayout != mCurVertexLayout || mPrevShaderID != mCurShaderID ||
+                mNewVertexLayout != mCurVertexLayout || mPrevShader != mCurShader ||
                 mVertexBufUpdated
             ) {
                 if (!applyVertexLayout()) return false;
 
                 mCurVertexLayout  = mNewVertexLayout;
-                mPrevShaderID     = mCurShaderID;
+                mPrevShader       = mCurShader;
                 mVertexBufUpdated = false;
             }
 
@@ -620,126 +620,22 @@ uint32_t RenderDeviceGLES2::getTextureMemory() const
     return mTextureMemory;
 }
 
-uint32_t RenderDeviceGLES2::createShader(const char* vertexShaderSrc, const char* fragmentShaderSrc)
+Shader* RenderDeviceGLES2::newShader()
 {
-    // Compile and link shader
-    uint32_t programObj = createShaderProgram(vertexShaderSrc, fragmentShaderSrc);
-    if (programObj == 0) return 0;
-    if (!linkShaderProgram(programObj)) return 0;
-
-    RDIShader shader {};
-    shader.oglProgramObj = programObj;
-
-    int attribCount;
-    glGetProgramiv(programObj, GL_ACTIVE_ATTRIBUTES, &attribCount);
-
-    // Run through vertex layouts and check which is compatible with this shader
-    std::lock_guard<std::mutex> lock(vlMutex);
-    for (uint32_t i = 0; i < mNumVertexLayouts; ++i) {
-        bool allAttribsFound = true;
-        auto& vl = mVertexLayouts[i];
-
-        // Reset attribute indices to -1 (no attribute)
-        for (uint32_t j = 0; j < 16u; ++j) {
-            shader.inputLayouts[i].attribIndices[j] = -1;
-        }
-
-        // Check if shader has all declared attributes, and set locations
-        for (int j = 0; j < attribCount; ++j)
-        {
-            char name[32];
-            uint32_t size, type;
-            glGetActiveAttrib(programObj, j, 32, nullptr, (int*)&size, &type, name);
-
-            bool attribFound = false;
-            for (uint32_t k = 0; k < vl.numAttribs; ++k) {
-                if (vl.attribs[k].semanticName == name) {
-                    auto loc = glGetAttribLocation(programObj, name);
-                    shader.inputLayouts[i].attribIndices[k] = loc;
-                    attribFound = true;
-                    break;
-                }
-            }
-
-            if (!attribFound) {
-                allAttribsFound = false;
-                break;
-            }
-        }
-
-        // An input layout is only valid for this shader if all attributes were found
-        shader.inputLayouts[i].valid = allAttribsFound;
-    }
-
-    return mShaders.add(shader, true);
+    return new Gles2Shader(this);
 }
 
-void RenderDeviceGLES2::destroyShader(uint32_t shaderID)
+void RenderDeviceGLES2::bindShader(Shader* shader)
 {
-    if (shaderID == 0) return;
-    RDIShader &shader = mShaders.getRef(shaderID);
-    if (shader.oglProgramObj != 0) glDeleteProgram(shader.oglProgramObj);
-    mShaders.remove(shaderID);
-}
+    glUseProgram(shader ? static_cast<Gles2Shader*>(shader)->mHandle : 0);
 
-void RenderDeviceGLES2::bindShader(uint32_t shaderID)
-{
-    if (shaderID == 0) {
-        glUseProgram(0);
-    }
-    else {
-        RDIShader& shader = mShaders.getRef(shaderID);
-        glUseProgram(shader.oglProgramObj);
-    }
-
-    mCurShaderID = shaderID;
+    mCurShader    = shader;
     mPendingMask |= VertexLayouts;
 }
 
 const std::string& RenderDeviceGLES2::getShaderLog()
 {
     return shaderLog;
-}
-
-int RenderDeviceGLES2::getShaderConstLoc(uint32_t shaderID, const char* name)
-{
-    RDIShader& shader = mShaders.getRef(shaderID);
-    return glGetUniformLocation(shader.oglProgramObj, name);
-}
-
-int RenderDeviceGLES2::getShaderSamplerLoc(uint32_t shaderID, const char* name)
-{
-    RDIShader& shader = mShaders.getRef(shaderID);
-    return glGetUniformLocation(shader.oglProgramObj, name);
-}
-
-void RenderDeviceGLES2::setShaderConst(int loc, ShaderConstType type, float* values, uint32_t count)
-{
-    switch(type) {
-    case Float:
-        glUniform1fv(loc, count, values);
-        break;
-    case Float2:
-        glUniform2fv(loc, count, values);
-        break;
-    case Float3:
-        glUniform3fv(loc, count, values);
-        break;
-    case Float4:
-        glUniform4fv(loc, count, values);
-        break;
-    case Float44:
-        glUniformMatrix4fv(loc, count, false, values);
-        break;
-    case Float33:
-        glUniformMatrix4fv(loc, count, false, values);
-        break;
-    }
-}
-
-void RenderDeviceGLES2::setShaderSampler(int loc, uint32_t texUnit)
-{
-    glUniform1i(loc, (int)texUnit);
 }
 
 const char* RenderDeviceGLES2::getDefaultVSCode()
@@ -752,9 +648,9 @@ const char* RenderDeviceGLES2::getDefaultFSCode()
     return defaultShaderFS;
 }
 
-uint32_t RenderDeviceGLES2::getCurrentShader() const
+Shader* RenderDeviceGLES2::getCurrentShader() const
 {
-    return mCurShaderID;
+    return mCurShader;
 }
 
 void RenderDeviceGLES2::beginRendering()
@@ -1360,100 +1256,15 @@ void RenderDeviceGLES2::getCapabilities(uint32_t* maxTexUnits, uint32_t* maxTexS
     }
 }
 
-uint32_t RenderDeviceGLES2::createShaderProgram(const char* vertexShaderSrc,
-    const char* fragmentShaderSrc)
-{
-    int infoLogLength {0};
-    int charsWritten  {0};
-    char* infoLog     {nullptr};
-    int status;
-
-    shaderLog = "";
-
-    // Vertex shader
-    uint32_t vs = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vs, 1, &vertexShaderSrc, nullptr);
-    glCompileShader(vs);
-    glGetShaderiv(vs, GL_COMPILE_STATUS, &status);
-    if (!status) {
-        // Get info
-        glGetShaderiv(vs, GL_INFO_LOG_LENGTH, &infoLogLength);
-        if (infoLogLength > 1) {
-            infoLog = new char[infoLogLength];
-            glGetShaderInfoLog(vs, infoLogLength, &charsWritten, infoLog);
-            shaderLog = shaderLog + "[Vertex Shader]\n" + infoLog;
-            delete[] infoLog;
-            infoLog = nullptr;
-        }
-
-        glDeleteShader(vs);
-        return 0;
-    }
-
-    // Fragment shader
-    uint32_t fs = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fs, 1, &fragmentShaderSrc, nullptr);
-    glCompileShader(fs);
-    glGetShaderiv(fs, GL_COMPILE_STATUS, &status);
-    if (!status) {
-        glGetShaderiv(fs, GL_INFO_LOG_LENGTH, &infoLogLength);
-        if (infoLogLength > 1) {
-            infoLog = new char[infoLogLength];
-            glGetShaderInfoLog(fs, infoLogLength, &charsWritten, infoLog);
-            shaderLog = shaderLog + "[Fragment Shader]\n" + infoLog;
-            delete[] infoLog;
-            infoLog = nullptr;
-        }
-
-        glDeleteShader(vs);
-        glDeleteShader(fs);
-        return 0;
-    }
-
-    // Shader program
-    uint32_t program = glCreateProgram();
-    glAttachShader(program, vs);
-    glAttachShader(program, fs);
-    glDeleteShader(vs);
-    glDeleteShader(fs);
-
-    return program;
-}
-
-bool RenderDeviceGLES2::linkShaderProgram(uint32_t programObj)
-{
-    int infoLogLength {0};
-    int charsWritten {0};
-    char* infoLog {nullptr};
-    int status;
-
-    shaderLog = "";
-
-    glLinkProgram(programObj);
-    glGetProgramiv(programObj, GL_INFO_LOG_LENGTH, &infoLogLength);
-    if (infoLogLength > 1) {
-        infoLog = new char[infoLogLength];
-        glGetProgramInfoLog(programObj, infoLogLength, &charsWritten, infoLog);
-        shaderLog = shaderLog + "[Linking]\n" + infoLog;
-        delete[] infoLog;
-        infoLog = nullptr;
-    }
-
-    glGetProgramiv(programObj, GL_LINK_STATUS, &status);
-    if (!status) return false;
-
-    return true;
-}
-
 bool RenderDeviceGLES2::applyVertexLayout()
 {
     if (mNewVertexLayout != 0) {
-        if (mCurShaderID == 0) return false;
+        if (!mCurShader) return false;
 
         uint32_t newVertexAttribMask {0u};
 
-        RDIShader& shader           = mShaders.getRef(mCurShaderID);
-        RDIInputLayout& inputLayout = shader.inputLayouts[mNewVertexLayout-1];
+        Gles2Shader* shader         = static_cast<Gles2Shader*>(mCurShader);
+        RDIInputLayout& inputLayout = shader->mInputLayouts[mNewVertexLayout-1];
 
         if (!inputLayout.valid) return false;
 
@@ -1684,6 +1495,178 @@ void RenderDeviceGLES2::resolveRenderBuffer(uint32_t rbObj)
 
     glBindFramebuffer(GL_READ_FRAMEBUFFER_ANGLE, mDefaultFBO);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER_ANGLE, mDefaultFBO);
+}
+
+RenderDeviceGLES2::Gles2Shader::Gles2Shader(RenderDeviceGLES2* device) :
+    mDevice(device)
+{
+    for (uint32_t i = 0; i < MaxNumVertexLayouts; ++i) {
+        memset(&mInputLayouts[i], 0, sizeof(RDIInputLayout));
+    }
+}
+
+RenderDeviceGLES2::Gles2Shader::~Gles2Shader()
+{
+    if (mHandle) glDeleteProgram(mHandle);
+}
+
+bool RenderDeviceGLES2::Gles2Shader::load(const char* vertexShader, const char* fragmentShader)
+{
+    int infoLogLength {0};
+    int charsWritten  {0};
+    char* infoLog     {nullptr};
+    int status;
+
+    shaderLog = "";
+
+    // Vertex shader
+    uint32_t vs = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vs, 1, &vertexShader, nullptr);
+    glCompileShader(vs);
+    glGetShaderiv(vs, GL_COMPILE_STATUS, &status);
+    if (!status) {
+        // Get info
+        glGetShaderiv(vs, GL_INFO_LOG_LENGTH, &infoLogLength);
+        if (infoLogLength > 1) {
+            infoLog = new char[infoLogLength];
+            glGetShaderInfoLog(vs, infoLogLength, &charsWritten, infoLog);
+            shaderLog = shaderLog + "[Vertex Shader]\n" + infoLog;
+            delete[] infoLog;
+            infoLog = nullptr;
+        }
+
+        glDeleteShader(vs);
+        return false;
+    }
+
+    // Fragment shader
+    uint32_t fs = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fs, 1, &fragmentShader, nullptr);
+    glCompileShader(fs);
+    glGetShaderiv(fs, GL_COMPILE_STATUS, &status);
+    if (!status) {
+        glGetShaderiv(fs, GL_INFO_LOG_LENGTH, &infoLogLength);
+        if (infoLogLength > 1) {
+            infoLog = new char[infoLogLength];
+            glGetShaderInfoLog(fs, infoLogLength, &charsWritten, infoLog);
+            shaderLog = shaderLog + "[Fragment Shader]\n" + infoLog;
+            delete[] infoLog;
+            infoLog = nullptr;
+        }
+
+        glDeleteShader(vs);
+        glDeleteShader(fs);
+        return false;
+    }
+
+    // Shader program
+    uint32_t program = glCreateProgram();
+    glAttachShader(program, vs);
+    glAttachShader(program, fs);
+    glDeleteShader(vs);
+    glDeleteShader(fs);
+
+    // Link shader program
+    shaderLog = "";
+
+    glLinkProgram(program);
+    glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLogLength);
+    if (infoLogLength > 1) {
+        infoLog = new char[infoLogLength];
+        glGetProgramInfoLog(program, infoLogLength, &charsWritten, infoLog);
+        shaderLog = shaderLog + "[Linking]\n" + infoLog;
+        delete[] infoLog;
+        infoLog = nullptr;
+    }
+
+    glGetProgramiv(program, GL_LINK_STATUS, &status);
+    if (!status) {
+        glDeleteProgram(program);
+        return false;
+    }
+
+    int attribCount;
+    glGetProgramiv(program, GL_ACTIVE_ATTRIBUTES, &attribCount);
+
+    // Run through vertex layouts and check which is compatible with this shader
+    std::lock_guard<std::mutex> lock(vlMutex);
+    for (uint32_t i = 0; i < mDevice->mNumVertexLayouts; ++i) {
+        bool allAttribsFound = true;
+        auto& vl = mDevice->mVertexLayouts[i];
+
+        // Reset attribute indices to -1 (no attribute)
+        for (uint32_t j = 0; j < 16u; ++j) {
+            mInputLayouts[i].attribIndices[j] = -1;
+        }
+
+        // Check if shader has all declared attributes, and set locations
+        for (int j = 0; j < attribCount; ++j)
+        {
+            char name[32];
+            uint32_t size, type;
+            glGetActiveAttrib(program, j, 32, nullptr, (int*)&size, &type, name);
+
+            bool attribFound = false;
+            for (uint32_t k = 0; k < vl.numAttribs; ++k) {
+                if (vl.attribs[k].semanticName == name) {
+                    auto loc = glGetAttribLocation(program, name);
+                    mInputLayouts[i].attribIndices[k] = loc;
+                    attribFound = true;
+                }
+            }
+
+            if (!attribFound) {
+                allAttribsFound = false;
+                break;
+            }
+        }
+
+        // An input layout is only valid for this shader if all attributes were found
+        mInputLayouts[i].valid = allAttribsFound;
+    }
+
+    mHandle = program;
+    return true;
+}
+
+void RenderDeviceGLES2::Gles2Shader::setUniform(int location, uint8_t type, float* data,
+    uint32_t count)
+{
+    switch(type) {
+    case Float:
+        glUniform1fv(location, count, data);
+        break;
+    case Float2:
+        glUniform2fv(location, count, data);
+        break;
+    case Float3:
+        glUniform3fv(location, count, data);
+        break;
+    case Float4:
+        glUniform4fv(location, count, data);
+        break;
+    case Float44:
+        glUniformMatrix4fv(location, count, false, data);
+        break;
+    case Float33:
+        glUniformMatrix3fv(location, count, false, data);
+        break;
+    }
+}
+
+void RenderDeviceGLES2::Gles2Shader::setSampler(int location, uint8_t unit)
+{
+    glUniform1i(location, static_cast<int>(unit));
+}
+
+int RenderDeviceGLES2::Gles2Shader::uniformLocation(const char* name) const
+{
+    return glGetUniformLocation(mHandle, name);
+}
+
+int RenderDeviceGLES2::Gles2Shader::samplerLocation(const char* name) const
+{
+    return glGetUniformLocation(mHandle, name);
 }
 
 #endif
