@@ -34,7 +34,7 @@
 #include <SDL2/SDL.h>
 #include <algorithm>
 #include <vector>
-#include <atomic>
+#include <mutex>
 #include <memory>
 
 using NxWindow = SDL_Window;
@@ -57,7 +57,9 @@ private:
     SDL_GLContext mContext;
 };
 
-static std::atomic<NxWindow*> window {nullptr};
+static std::mutex contextMutex;
+
+static NxWindow* window {nullptr};
 static Image icon;
 
 static std::unique_ptr<GlContext> sharedContext;
@@ -203,6 +205,7 @@ NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, int
 NX_EXPORT void nxWindowEnsureContext()
 {
     if (!context) {
+        std::lock_guard<std::mutex> lock(contextMutex);
         sharedContext->makeCurrent(window);
         context = std::unique_ptr<GlContext>(new GlContext(window));
     }
@@ -376,7 +379,7 @@ NX_EXPORT void nxWindowSetTitle(const char* title)
 NX_EXPORT void nxWindowSimpleMessageBox(const char* title, const char* message, uint32_t type,
     bool attach)
 {
-    SDL_ShowSimpleMessageBox(type, title, message, attach ? window.load() : nullptr);
+    SDL_ShowSimpleMessageBox(type, title, message, attach ? window : nullptr);
 }
 
 NX_EXPORT int nxWindowMessageBox(const char* title, const char* message, const char** entries,
@@ -399,7 +402,7 @@ NX_EXPORT int nxWindowMessageBox(const char* title, const char* message, const c
 
     const SDL_MessageBoxData messageboxdata {
         type,
-        attach ? window.load() : nullptr,
+        attach ? window : nullptr,
         title,
         message,
         static_cast<int>(count),
