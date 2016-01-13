@@ -541,19 +541,19 @@ end
 local toModkey = {
     lshift = 1,
     rshift = 2,
-    lctrl = 64,
-    rctrl = 128,
-    lalt = 256,
-    ralt = 512,
-    lmeta = 1024,
-    rmeta = 2048,
-    num = 4096,
-    caps = 8192,
-    altgr = 16384,
-    ctrl = 192,
-    shift = 3,
-    alt = 768,
-    meta = 3072
+    lctrl  = 64,
+    rctrl  = 128,
+    lalt   = 256,
+    ralt   = 512,
+    lmeta  = 1024,
+    rmeta  = 2048,
+    num    = 4096,
+    caps   = 8192,
+    altgr  = 16384,
+    shift  = 3, -- lshift | rshift
+    ctrl   = 192, -- lctrl | rctrl
+    alt    = 768, -- lalt | ralt
+    meta   = 3072 -- lmeta | rmeta
 }
 Keyboard._mod = toModkey
 
