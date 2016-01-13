@@ -26,13 +26,13 @@
 */
 
 #include "../config.hpp"
-#include "../graphics/shader.hpp"
+#include "../graphics/renderdevice.hpp"
 
 using NxShader = Shader;
 
 NX_EXPORT NxShader* nxShaderNew()
 {
-    return new Shader();
+    return RenderDevice::instance().newShader();
 }
 
 NX_EXPORT void nxShaderRelease(NxShader* shader)
@@ -70,7 +70,7 @@ NX_EXPORT const char* nxShaderLog()
     return Shader::log();
 }
 
-NX_EXPORT void nxShaderBind(const NxShader* shader)
+NX_EXPORT void nxShaderBind(NxShader* shader)
 {
     Shader::bind(shader);
 }

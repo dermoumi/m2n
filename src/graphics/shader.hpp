@@ -18,7 +18,7 @@
     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
     MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
     IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-    OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+    OTHER LIABILITY, WHETHER IN AN CATION OF CONTRACT, TORT OR OTHERWISE,
     ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
     OTHER DEALINGS IN THE SOFTWARE.
 
@@ -32,21 +32,17 @@
 class Shader
 {
 public:
-    Shader() = default;
-    ~Shader();
+    virtual ~Shader() = default;
 
-    bool load(const char* vertexShader, const char* fragmentShader);
-    void setUniform(int location, uint8_t type, float* data);
-    void setSampler(int location, uint8_t unit);
+    virtual bool load(const char* vertexShader, const char* fragmentShader) = 0;
+    virtual void setUniform(int location, uint8_t type, float* data, uint32_t count = 1) = 0;
+    virtual void setSampler(int location, uint8_t unit) = 0;
 
-    int uniformLocation(const char* name) const;
-    int samplerLocation(const char* name) const;
+    virtual int uniformLocation(const char* name) const = 0;
+    virtual int samplerLocation(const char* name) const = 0;
 
     static const char* log();
-    static void bind(const Shader* shader);
     static const char* defaultVSCode();
     static const char* defaultFSCode();
-
-private:
-    uint32_t mHandle {0u};
+    static void bind(Shader* shader);
 };

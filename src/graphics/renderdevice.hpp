@@ -27,6 +27,7 @@
 
 #pragma once
 #include "../config.hpp"
+#include "shader.hpp"
 
 #include <cstring>
 #include <vector>
@@ -299,18 +300,12 @@ public:
     virtual uint32_t getTextureMemory() const = 0;
 
     // Shaders
-    virtual uint32_t createShader(const char* vertexShaderSrc, const char* fragmentShaderSrc) = 0;
-    virtual void destroyShader(uint32_t shaderID) = 0;
-    virtual void bindShader(uint32_t shaderID) = 0;
+    virtual Shader* newShader() = 0;
+    virtual void bindShader(Shader* shaderID) = 0;
     virtual const std::string& getShaderLog() = 0;
-    virtual int getShaderConstLoc(uint32_t shaderID, const char* name) = 0;
-    virtual int getShaderSamplerLoc(uint32_t shaderID, const char* name) = 0;
-    virtual void setShaderConst(int loc, ShaderConstType type, float* values,
-        uint32_t count = 1) = 0;
-    virtual void setShaderSampler(int loc, uint32_t texUnit) = 0;
     virtual const char* getDefaultVSCode() = 0;
     virtual const char* getDefaultFSCode() = 0;
-    virtual uint32_t getCurrentShader() const = 0;
+    virtual Shader* getCurrentShader() const = 0;
 
     // Renderbuffers
     virtual uint32_t createRenderBuffer(uint32_t width, uint32_t height, TextureFormat format,

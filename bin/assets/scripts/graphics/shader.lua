@@ -46,7 +46,7 @@ ffi.cdef [[
     int nxShaderUniformLocation(const NxShader*, const char*);
     int nxShaderSamplerLocation(const NxShader*, const char*);
     const char* nxShaderLog();
-    void nxShaderBind(const NxShader*);
+    void nxShaderBind(NxShader*);
     const char* nxShaderDefaultVSCode();
     const char* nxShaderDefaultFSCode();
 ]]

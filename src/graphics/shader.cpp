@@ -28,61 +28,9 @@
 #include "shader.hpp"
 #include "renderdevice.hpp"
 
-Shader::~Shader()
-{
-    if (mHandle) {
-        RenderDevice::instance().destroyShader(mHandle);
-    }
-}
-
-bool Shader::load(const char* vertexShader, const char* fragmentShader)
-{
-    if (mHandle) RenderDevice::instance().destroyShader(mHandle);
-
-    mHandle = RenderDevice::instance().createShader(vertexShader, fragmentShader);
-    return mHandle != 0;
-}
-
-void Shader::setUniform(int location, uint8_t type, float* data)
-{
-    auto prevShader = RenderDevice::instance().getCurrentShader();
-    RenderDevice::instance().bindShader(mHandle);
-
-    RenderDevice::instance().setShaderConst(
-        location, static_cast<RenderDevice::ShaderConstType>(type), data, 1
-    );
-
-    if (prevShader != mHandle) RenderDevice::instance().bindShader(prevShader);
-}
-
-void Shader::setSampler(int location, uint8_t unit)
-{
-    auto prevShader = RenderDevice::instance().getCurrentShader();
-    RenderDevice::instance().bindShader(mHandle);
-
-    RenderDevice::instance().setShaderSampler(location, unit);
-
-    if (prevShader != mHandle) RenderDevice::instance().bindShader(prevShader);
-}
-
-int Shader::uniformLocation(const char* name) const
-{
-    return RenderDevice::instance().getShaderConstLoc(mHandle, name);
-}
-
-int Shader::samplerLocation(const char* name) const
-{
-    return RenderDevice::instance().getShaderSamplerLoc(mHandle, name);
-}
-
 const char* Shader::log()
 {
     return RenderDevice::instance().getShaderLog().data();
-}
-
-void Shader::bind(const Shader* shader)
-{
-    RenderDevice::instance().bindShader(shader ? shader->mHandle : 0);
 }
 
 const char* Shader::defaultVSCode()
@@ -93,4 +41,9 @@ const char* Shader::defaultVSCode()
 const char* Shader::defaultFSCode()
 {
     return RenderDevice::instance().getDefaultFSCode();
+}
+
+void Shader::bind(Shader* shader)
+{
+    RenderDevice::instance().bindShader(shader);
 }
