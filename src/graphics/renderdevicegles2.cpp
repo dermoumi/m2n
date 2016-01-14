@@ -254,10 +254,8 @@ bool RenderDeviceGLES2::commitStates(uint32_t filter)
 
 void RenderDeviceGLES2::clear(uint32_t flags, const float* color, float depth)
 {
-    if (mCurRenderBuffer != 0) {
-        auto& rb = mRenderBuffers.getRef(mCurRenderBuffer);
-
-        if ((flags & ClrDepth) && rb.depthTex == 0) flags &= ~ClrDepth;
+    if (mCurRenderBuffer) {
+        if ((flags & ClrDepth) && mCurRenderBuffer->mDepthTex == 0) flags &= ~ClrDepth;
     }
 
     uint32_t oglClearMask = 0;
@@ -713,211 +711,22 @@ void RenderDeviceGLES2::bind(IndexBuffer* buffer)
     mPendingMask |= IndexBuffers;
 }
 
-uint32_t RenderDeviceGLES2::createRenderBuffer(uint32_t width, uint32_t height,
-    TextureFormat format, bool depth, uint32_t numColBufs, uint32_t samples)
+RenderBuffer* RenderDeviceGLES2::newRenderBuffer()
 {
-    if ((format == RGBA16F || format == RGBA32F) && !mTexFloatSupported) {
-        return 0;
-    }
-
-    if (numColBufs > static_cast<unsigned int>(mMaxColBuffers)) {
-        return 0;
-    }
-
-    uint32_t maxSamples = 0;
-    if (glExt::EXT_multisampled_render_to_texture || glExt::ANGLE_framebuffer_multisample) {
-        GLint value;
-        glGetIntegerv(glExt::EXT_multisampled_render_to_texture ?
-            GL_MAX_SAMPLES_EXT : GL_MAX_SAMPLES_ANGLE, &value);
-        maxSamples = static_cast<uint32_t>(value);
-    }
-
-    if (samples > maxSamples)
-    {
-        samples = maxSamples;
-        Log::warning("GPU does not support desired multisampling quality for render target");
-    }
-
-    RDIRenderBuffer rb;
-    rb.width = width;
-    rb.height = height;
-    rb.samples = samples;
-
-    // Create framebuffers
-    glGenFramebuffers(1, &rb.fbo);
-    if (samples > 0 && glExt::ANGLE_framebuffer_multisample) glGenFramebuffers(1, &rb.fboMS);
-
-    if (numColBufs > 0) {
-        // Attach color buffers
-        for (uint32_t i = 0; i < numColBufs; ++i) {
-            glBindFramebuffer(GL_FRAMEBUFFER, rb.fbo);
-
-            // Create a color texture
-            uint32_t texObj = createTexture(Tex2D, rb.width, rb.height, 1, format, false, false,
-                false);
-            uploadTextureData(texObj, 0, 0, nullptr);
-            rb.colTexs[i] = texObj;
-
-            // Attach the texture
-            auto& tex = mTextures.getRef(texObj);
-            if (samples > 0 && glExt::EXT_multisampled_render_to_texture) {
-                glFramebufferTexture2DMultisampleEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i,
-                    GL_TEXTURE_2D, tex.glObj, 0, samples);
-            }
-            else {
-                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D,
-                    tex.glObj, 0);
-            }
-
-            if (samples > 0 && glExt::ANGLE_framebuffer_multisample) {
-                uint32_t glFmt = 0;
-                if (format == RGBA8 && glExt::OES_rgb8_rgba8) glFmt = GL_RGBA8_OES;
-
-                if (glFmt != 0) {
-                    glBindFramebuffer(GL_FRAMEBUFFER, rb.fboMS);
-
-                    // Create a multisampled renderbuffer
-                    glGenRenderbuffers(1, &rb.colBufs[i]);
-                    glBindRenderbuffer(GL_RENDERBUFFER, rb.colBufs[i]);
-                    glRenderbufferStorageMultisampleANGLE(GL_RENDERBUFFER, rb.samples, glFmt,
-                        rb.width, rb.height);
-
-                    // Attach the renderbuffer
-                    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i,
-                        GL_RENDERBUFFER, rb.colBufs[i]);
-                }
-                else {
-                    Log::error("GPU does not support multisampling for this format");
-                }
-            }
-        }
-    }
-
-    if (depth) {
-        glBindFramebuffer(GL_FRAMEBUFFER, rb.fbo);
-
-        // Create depth texture
-        if ((samples > 0 && glExt::EXT_multisampled_render_to_texture) ||
-            (!glExt::OES_depth_texture && !glExt::ANGLE_depth_texture))
-        {            
-            glGenRenderbuffers(1, &rb.depthBuf);
-            glBindRenderbuffer(GL_RENDERBUFFER, rb.depthBuf);
-
-            if (samples > 0 && glExt::EXT_multisampled_render_to_texture) {
-                glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER, samples, mDepthFormat,
-                    rb.width, rb.height);
-            }
-            else {
-                glRenderbufferStorage(GL_RENDERBUFFER, mDepthFormat, rb.width, rb.height);
-            }
-
-            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER,
-                rb.depthBuf);
-        }
-        else {
-            Log::info("test2");
-
-            uint32_t texObj = createTexture(Tex2D, rb.width, rb.height, 1, DEPTH, false, false,
-                false);
-            Log::info("test3");
-            if (glExt::EXT_shadow_samplers) {
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE_EXT, GL_NONE);
-            }
-
-            uploadTextureData(texObj, 0, 0, nullptr);
-            rb.depthTex = texObj;
-            auto& tex = mTextures.getRef(texObj);
-
-            // Attach the texture
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,
-                tex.glObj, 0);
-        }
-
-        if (samples > 0 && glExt::ANGLE_framebuffer_multisample) {
-            glBindFramebuffer(GL_FRAMEBUFFER, rb.fboMS);
-
-            // Create a multisampled renderbuffer
-            glGenRenderbuffers(1, &rb.depthBufMS);
-            glBindRenderbuffer(GL_RENDERBUFFER, rb.depthBufMS);
-            glRenderbufferStorageMultisampleANGLE(GL_RENDERBUFFER, rb.samples, mDepthFormat,
-                rb.width, rb.height);
-
-            // Attach the render buffer
-            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER,
-                rb.depthBufMS);
-        }
-    }
-
-    uint32_t rbObj = mRenderBuffers.add(rb);
-
-    // Check if FBO is cmplete
-    glBindFramebuffer(GL_FRAMEBUFFER, rb.fbo);
-    uint32_t status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    bool valid = (status == GL_FRAMEBUFFER_COMPLETE);
-
-    if (samples > 0 && glExt::ANGLE_framebuffer_multisample) {
-        glBindFramebuffer(GL_FRAMEBUFFER, rb.fboMS);
-        status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-        if (status != GL_FRAMEBUFFER_COMPLETE) valid = false;
-    }
-
-    if (!valid)
-    {
-        destroyRenderBuffer(rbObj);
-        return 0;
-    }
-
-    glBindFramebuffer(GL_FRAMEBUFFER, mDefaultFBO);
-
-    return rbObj;
+    return new RenderBufferGLES2(this);
 }
 
-void RenderDeviceGLES2::destroyRenderBuffer(uint32_t rbObj)
+void RenderDeviceGLES2::bind(RenderBuffer* buffer)
 {
-    auto& rb = mRenderBuffers.getRef(rbObj);
+    auto rb = static_cast<RenderBufferGLES2*>(buffer);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, mDefaultFBO);
+    // Resolve the renderbuffer if necessary
+    if (mCurRenderBuffer) mCurRenderBuffer->resolve();
 
-    if (rb.depthTex != 0) destroyTexture(rb.depthTex);
-    if (rb.depthBuf != 0) glDeleteRenderbuffers(1, &rb.depthBuf);
-    if (rb.depthBufMS != 0) glDeleteRenderbuffers(1, &rb.depthBufMS);
-    rb.depthTex = rb.depthBuf = rb.depthBufMS = 0;
+    // Set the current renderbuffer
+    mCurRenderBuffer = rb;
 
-    for (uint32_t i = 0; i < RDIRenderBuffer::MaxColorAttachmentCount; ++i) {
-        if (rb.colTexs[i] != 0) destroyTexture(rb.colTexs[i]);
-        if (rb.colBufs[i] != 0) glDeleteRenderbuffers(1, &rb.colBufs[i]);
-        rb.colTexs[i] = rb.colBufs[i] = 0;
-    }
-
-    if (rb.fbo != 0) glDeleteFramebuffers(1, &rb.fbo);
-    if (rb.fboMS != 0) glDeleteFramebuffers(1, &rb.fboMS);
-    rb.fbo = rb.fboMS = 0;
-
-    mRenderBuffers.remove(rbObj);
-}
-
-uint32_t RenderDeviceGLES2::getRenderBufferTexture(uint32_t rbObj, uint32_t bufIndex)
-{
-    auto& rb = mRenderBuffers.getRef(rbObj);
-
-    if (bufIndex < static_cast<uint32_t>(mMaxColBuffers)) return rb.colTexs[bufIndex];
-    if (bufIndex == 32) return rb.depthTex;
-
-    return 0;
-}
-
-void RenderDeviceGLES2::setRenderBuffer(uint32_t rbObj)
-{
-    // Resolve reneder buffer if necessary
-    if (mCurRenderBuffer != 0) resolveRenderBuffer(mCurRenderBuffer);
-
-    // Set new render buffer
-    mCurRenderBuffer = rbObj;
-
-    if (rbObj == 0) {
+    if (!buffer) {
         // Check if the default render buffer is already bound, since this
         // call can be extremely expensive on some platforms
 
@@ -933,99 +742,14 @@ void RenderDeviceGLES2::setRenderBuffer(uint32_t rbObj)
     }
     else {
         // Unbind all textures to make sure that n FBO attachment is bound anymore
-        for (int i = 0; i < mMaxTextureUnits; ++i) {
-            setTexture(i, 0, 0);
-        }
-
+        for (int i = 0; i < mMaxTextureUnits; ++i) setTexture(i, 0, 0);
         commitStates(Textures);
 
-        auto& rb = mRenderBuffers.getRef(rbObj);
+        glBindFramebuffer(GL_FRAMEBUFFER, rb->mFboMS != 0 ? rb->mFboMS : rb->mFbo);
 
-        glBindFramebuffer(GL_FRAMEBUFFER, rb.fboMS != 0 ? rb.fboMS : rb.fbo);
-
-        mFbWidth  = rb.width;
-        mFbHeight = rb.height;
+        mFbWidth  = rb->width();
+        mFbHeight = rb->height();
     }
-}
-
-void RenderDeviceGLES2::getRenderBufferSize(uint32_t rbObj, int* width, int* height)
-{
-    if (rbObj == 0) {
-        if (width)  *width  = mVpWidth;
-        if (height) *height = mVpHeight;
-    }
-    else {
-        auto& rb = mRenderBuffers.getRef(rbObj);
-
-        if (width)  *width  = rb.width;
-        if (height) *height = rb.height;
-    }
-}
-
-bool RenderDeviceGLES2::getRenderBufferData(uint32_t rbObj, int bufIndex, int* width, int* height,
-    int* compCount, void* dataBuffer, int bufferSize)
-{
-    int x, y, w, h;
-    int format = GL_RGBA;
-    int type = GL_UNSIGNED_BYTE;
-
-    beginRendering();
-    glPixelStorei(GL_PACK_ALIGNMENT, 4);
-
-    if (rbObj == 0) {
-        if (bufIndex != 32 && bufIndex != 0) return false;
-
-        if (width)  *width = mVpWidth;
-        if (height) *height = mVpHeight;
-
-        x = mVpX;
-        y = mVpY;
-        w = mVpWidth;
-        h = mVpHeight;
-
-        glBindFramebuffer(GL_FRAMEBUFFER, mDefaultFBO);
-    }
-    else {
-        resolveRenderBuffer(rbObj);
-        auto& rb = mRenderBuffers.getRef(rbObj);
-
-        if (bufIndex == 32 && rb.depthTex == 0) return false;
-
-        if (bufIndex != 32 && (rb.colTexs[bufIndex] == 0 ||
-            static_cast<unsigned int>(bufIndex) >= RDIRenderBuffer::MaxColorAttachmentCount))
-        {
-            return false;
-        }
-
-            if (width)  *width = rb.width;
-            if (height) *height = rb.height;
-
-            x = 0;
-            y = 0;
-            w = rb.width;
-            h = rb.height;
-
-            glBindFramebuffer(GL_FRAMEBUFFER, rb.fbo);
-    }
-
-    glFinish();
-
-    if (bufIndex == 32) {
-        format = GL_DEPTH_COMPONENT;
-        type = GL_UNSIGNED_SHORT;
-    }
-
-    int comps = (bufIndex == 32 ? 1 : RDIRenderBuffer::MaxColorAttachmentCount);
-    if (compCount) *compCount = comps;
-
-    bool retVal = false;
-    if (dataBuffer && bufferSize >= w * h * comps * (type == GL_UNSIGNED_SHORT ? 2 : 1)) {
-        glReadPixels(x, y, w, h, format, type, dataBuffer);
-        retVal = true;
-    }
-
-    glBindFramebuffer(GL_FRAMEBUFFER, mDefaultFBO);
-    return retVal;
 }
 
 void RenderDeviceGLES2::setViewport(int x, int y, int width, int height)
@@ -1415,47 +1139,6 @@ void RenderDeviceGLES2::applyRenderStates()
     }
 }
 
-void RenderDeviceGLES2::resolveRenderBuffer(uint32_t rbObj)
-{
-    auto& rb = mRenderBuffers.getRef(rbObj);
-
-    // Only needed when using ANGLE_framebuffer_multisample (which uses fboMS)
-    if (rb.fboMS == 0) return;
-
-    glBindFramebuffer(GL_READ_FRAMEBUFFER_ANGLE, rb.fboMS);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER_ANGLE, rb.fbo);
-
-    bool depthResolved = false;
-    for (uint32_t i = 0; i < RDIRenderBuffer::MaxColorAttachmentCount; ++i) {
-        if (rb.colBufs[i] != 0) {
-            int mask = GL_COLOR_BUFFER_BIT;
-            if (
-                !depthResolved && rb.depthBufMS != 0 && rb.depthTex != 0 &&
-                !glExt::ANGLE_depth_texture
-            ) {
-                //Cannot resolve depth textures created with ANGLE_depth_texture
-                mask |= GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT;
-                depthResolved = true;
-            }
-
-            glBlitFramebufferANGLE(
-                0, 0, rb.width, rb.height, 0, 0, rb.width, rb.height, mask, GL_NEAREST
-            );
-        }
-    }
-
-    if (!depthResolved && rb.depthBufMS != 0 && rb.depthTex != 0 && !glExt::ANGLE_depth_texture) {
-        //Cannot resolve depth textures created with ANGLE_depth_texture
-        glBlitFramebufferANGLE(
-            0, 0, rb.width, rb.height, 0, 0, rb.width, rb.height,
-            GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT, GL_NEAREST
-        );
-    }
-
-    glBindFramebuffer(GL_READ_FRAMEBUFFER_ANGLE, mDefaultFBO);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER_ANGLE, mDefaultFBO);
-}
-
 RenderDeviceGLES2::ShaderGLES2::ShaderGLES2(RenderDeviceGLES2* device) :
     mDevice(device)
 {
@@ -1742,6 +1425,284 @@ void RenderDeviceGLES2::IndexBufferGLES2::release()
     glDeleteBuffers(1, &mHandle);
 
     mDevice->mIndexBufferMemory -= mSize;
+}
+
+RenderDeviceGLES2::RenderBufferGLES2::RenderBufferGLES2(RenderDeviceGLES2* device) :
+    mDevice(device)
+{
+    for (uint32_t i = 0; i < MaxColorAttachmentCount; ++i) {
+        mColTexs[i] = mColBufs[i] = 0u;
+    }
+}
+
+RenderDeviceGLES2::RenderBufferGLES2::~RenderBufferGLES2()
+{
+    release();
+}
+
+bool RenderDeviceGLES2::RenderBufferGLES2::create(uint8_t format, uint16_t width, uint16_t height,
+    bool depth, uint8_t colBufCount, uint8_t samples)
+{
+    if (width == 0 || height == 0u) {
+        Log::error("Failed to create render buffer: Invalid size (%ux%u)", width, height);
+        return false;
+    }
+
+    if ((format == RGBA16F || format == RGBA32F) && !mDevice->mTexFloatSupported) {
+        Log::error("Failed to create render buffer: Float formats are unsupported");
+        return false;
+    }
+
+    if (colBufCount > static_cast<unsigned int>(mDevice->mMaxColBuffers)) {
+        Log::error("Failed to create render buffer: attempting to create buffer with %u color"
+            " buffers. Maximum supported: %i", colBufCount, mDevice->mMaxColBuffers);
+        return false;
+    }
+
+    uint32_t maxSamples = 0;
+    if (glExt::EXT_multisampled_render_to_texture || glExt::ANGLE_framebuffer_multisample) {
+        GLint value;
+        glGetIntegerv(
+            glExt::EXT_multisampled_render_to_texture ? GL_MAX_SAMPLES_EXT : GL_MAX_SAMPLES_ANGLE,
+            &value
+        );
+        maxSamples = static_cast<uint32_t>(value);
+    }
+    if (samples > maxSamples) {
+        samples = maxSamples;
+        Log::warning(
+            "GPU does not support desired level of multisampling quality for render buffer"
+        );
+    }
+
+    mWidth = width;
+    mHeight = height;
+    mSamples = samples;
+    mFormat = format;
+
+    // Create framebuffers
+    glGenFramebuffers(1, &mFbo);
+    if (samples > 0) glGenFramebuffers(1, &mFboMS);
+
+    if (colBufCount > 0) {
+        // Attach color buffers
+        for (uint8_t i = 0; i < colBufCount; ++i) {
+            glBindFramebuffer(GL_FRAMEBUFFER, mFbo);
+
+            // Create a color texture
+            uint32_t texObj = mDevice->createTexture(
+                Tex2D, width, height, 1, static_cast<TextureFormat>(format), false, false, false
+            );
+            mDevice->uploadTextureData(texObj, 0, 0, nullptr);
+            mColTexs[i] = texObj;
+
+            // Attach the texture
+            auto& tex = mDevice->mTextures.getRef(texObj);
+            if (samples > 0 && glExt::EXT_multisampled_render_to_texture) {
+                glFramebufferTexture2DMultisampleEXT(
+                    GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i,
+                    GL_TEXTURE_2D, tex.glObj, 0, samples
+                );
+            }
+            else {
+                glFramebufferTexture2D(
+                    GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, tex.glObj, 0
+                );
+            }
+
+            if (samples > 0 && glExt::ANGLE_framebuffer_multisample) {
+                if (format == RGBA8 && glExt::OES_rgb8_rgba8) {
+                    glBindFramebuffer(GL_FRAMEBUFFER, mFboMS);
+
+                    // Create a multisampled renderbuffer
+                    glGenRenderbuffers(1, &mColBufs[i]);
+                    glBindRenderbuffer(GL_RENDERBUFFER, mColBufs[i]);
+                    glRenderbufferStorageMultisampleANGLE(
+                        GL_RENDERBUFFER, samples, GL_RGBA8_OES, width, height
+                    );
+
+                    // Attach the renderbuffer
+                    glFramebufferRenderbuffer(
+                        GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_RENDERBUFFER, mColBufs[i]
+                    );
+                }
+                else {
+                    Log::error("GPU does not support multisampling for this format");
+                }
+            }
+        }
+    }
+
+    if (depth) {
+        glBindFramebuffer(GL_FRAMEBUFFER, mFbo);
+
+        // Create depth texture
+        if (
+            (samples > 0 && glExt::EXT_multisampled_render_to_texture) ||
+            (!glExt::OES_depth_texture && !glExt::ANGLE_depth_texture)
+        ) {            
+            glGenRenderbuffers(1, &mDepthBuf);
+            glBindRenderbuffer(GL_RENDERBUFFER, mDepthBuf);
+
+            if (samples > 0 && glExt::EXT_multisampled_render_to_texture) {
+                glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER, samples,
+                    mDevice->mDepthFormat, width, height);
+            }
+            else {
+                glRenderbufferStorage(GL_RENDERBUFFER, mDevice->mDepthFormat, width, height);
+            }
+
+            glFramebufferRenderbuffer(
+                GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, mDepthBuf
+            );
+        }
+        else {
+            uint32_t texObj = mDevice->createTexture(
+                Tex2D, width, height, 1, DEPTH, false, false, false
+            );
+            if (glExt::EXT_shadow_samplers) {
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE_EXT, GL_NONE);
+            }
+
+            mDevice->uploadTextureData(texObj, 0, 0, nullptr);
+            mDepthTex = texObj;
+
+            // Attach the texture
+            auto& tex = mDevice->mTextures.getRef(texObj);
+            glFramebufferTexture2D(
+                GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, tex.glObj, 0
+            );
+        }
+
+        if (samples > 0 && glExt::ANGLE_framebuffer_multisample) {
+            glBindFramebuffer(GL_FRAMEBUFFER, mFboMS);
+
+            // Create a multisampled renderbuffer
+            glGenRenderbuffers(1, &mDepthBufMS);
+            glBindRenderbuffer(GL_RENDERBUFFER, mDepthBufMS);
+            glRenderbufferStorageMultisampleANGLE(
+                GL_RENDERBUFFER, samples, mDevice->mDepthFormat, width, height
+            );
+
+            // Attach the render buffer
+            glFramebufferRenderbuffer(
+                GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, mDepthBufMS
+            );
+        }
+    }
+
+    // Check if FBO is complete
+    glBindFramebuffer(GL_FRAMEBUFFER, mFbo);
+    uint32_t status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    bool valid = (status == GL_FRAMEBUFFER_COMPLETE);
+
+    if (valid && samples > 0 && glExt::ANGLE_framebuffer_multisample) {
+        glBindFramebuffer(GL_FRAMEBUFFER, mFboMS);
+        status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+
+        valid = (status == GL_FRAMEBUFFER_COMPLETE);
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, mDevice->mDefaultFBO);
+
+    if (!valid) {
+        release();
+        return false;
+    }
+
+    return true;
+}
+
+Texture* RenderDeviceGLES2::RenderBufferGLES2::texture(uint8_t index)
+{
+    if (index < MaxColorAttachmentCount) {
+        if (mTextures[index]) return mTextures[index].get();
+
+        mTextures[index] = std::shared_ptr<Texture>(
+            new Texture(Tex2D, mFormat, mColTexs[index], mWidth, mHeight, 1, 0, true)
+        );
+
+        return mTextures[index].get();
+    }
+    else if (index == 32) {
+        if (mTextures[4]) return mTextures[4].get();
+
+        mTextures[4] = std::shared_ptr<Texture>(
+            new Texture(Tex2D, DEPTH, mDepthTex, mWidth, mHeight, 1, 0, true)
+        );
+
+        return mTextures[4].get();
+    }
+
+    return nullptr;
+}
+
+uint16_t RenderDeviceGLES2::RenderBufferGLES2::width() const
+{
+    return mWidth;
+}
+
+uint16_t RenderDeviceGLES2::RenderBufferGLES2::height() const
+{
+    return mHeight;
+}
+
+uint8_t RenderDeviceGLES2::RenderBufferGLES2::format() const
+{
+    return mFormat;
+}
+
+void RenderDeviceGLES2::RenderBufferGLES2::resolve()
+{
+    // Only needed when using ANGLE_framebuffer_multisample (which uses fboMS)
+    if (mFboMS) return;
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER_ANGLE, mFboMS);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER_ANGLE, mFbo);
+
+    bool depthResolved {false};
+    for (uint32_t i = 0; i < MaxColorAttachmentCount; ++i) {
+        if (mColBufs[i] != 0) {
+            int mask = GL_COLOR_BUFFER_BIT;
+            if (
+                !depthResolved && mDepthBufMS != 0 && mDepthTex != 0 &&
+                !glExt::ANGLE_depth_texture
+            ) {
+                //Cannot resolve depth textures created with ANGLE_depth_texture
+                mask |= GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT;
+                depthResolved = true;
+            }
+
+            glBlitFramebufferANGLE(0, 0, mWidth, mHeight, 0, 0, mWidth, mHeight, mask, GL_NEAREST);
+        }
+    }
+
+    //Cannot resolve depth textures created with ANGLE_depth_texture
+    if (!depthResolved && mDepthBufMS != 0 && mDepthTex != 0 && !glExt::ANGLE_depth_texture) {
+        glBlitFramebufferANGLE(
+            0, 0, mWidth, mHeight, 0, 0, mWidth, mHeight,
+            GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT, GL_NEAREST
+        );
+    }
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER_ANGLE, mDevice->mDefaultFBO);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER_ANGLE, mDevice->mDefaultFBO);
+}
+
+void RenderDeviceGLES2::RenderBufferGLES2::release()
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, mDevice->mDefaultFBO);
+
+    for (uint32_t i = 0; i < MaxColorAttachmentCount; ++i) {
+        if (mColTexs) mDevice->destroyTexture(mColTexs[i]);
+        if (mColBufs) glDeleteRenderbuffers(1, &mColBufs[i]);
+    }
+
+    if (mDepthTex) mDevice->destroyTexture(mDepthTex);
+    if (mDepthBuf) glDeleteRenderbuffers(1, &mDepthBuf);
+
+    if (mFbo) glDeleteFramebuffers(1, &mFbo);
+    if (mFboMS) glDeleteFramebuffers(1, &mFboMS);
 }
 
 #endif

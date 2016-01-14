@@ -1460,10 +1460,13 @@ bool RenderDeviceGL::RenderBufferGL::create(uint8_t format, uint16_t width, uint
     }
 
     if ((format == RGBA16F || format == RGBA32F) && !mDevice->mTexFloatSupported) {
+        Log::error("Failed to create render buffer: Float formats are unsupported");
         return false;
     }
 
     if (colBufCount > static_cast<unsigned int>(mDevice->mMaxColBuffers)) {
+        Log::error("Failed to create render buffer: attempting to create buffer with %u color"
+            " buffers. Maximum supported: %i", colBufCount, mDevice->mMaxColBuffers);
         return false;
     }
 
@@ -1555,7 +1558,7 @@ bool RenderDeviceGL::RenderBufferGL::create(uint8_t format, uint16_t width, uint
 
         // Create a depth texture
         uint32_t texObj = mDevice->createTexture(
-            Tex2D, mWidth, mHeight, 1, DEPTH, false, false, false
+            Tex2D, width, height, 1, DEPTH, false, false, false
         );
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
@@ -1567,8 +1570,6 @@ bool RenderDeviceGL::RenderBufferGL::create(uint8_t format, uint16_t width, uint
         glFramebufferTexture2DEXT(
             GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_TEXTURE_2D, tex.glObj, 0
         );
-
-        // Log::info(":) %u", texObj);
 
         if (samples > 0) {
             glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, mFboMS);
@@ -1596,7 +1597,7 @@ bool RenderDeviceGL::RenderBufferGL::create(uint8_t format, uint16_t width, uint
         glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, mFboMS);
         status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
 
-        valid = (status != GL_FRAMEBUFFER_COMPLETE_EXT);
+        valid = (status == GL_FRAMEBUFFER_COMPLETE_EXT);
     }
 
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, mDevice->mDefaultFBO);

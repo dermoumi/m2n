@@ -315,7 +315,6 @@ private:
     bool applyVertexLayout();
     void applySamplerState(RDITexture& tex);
     void applyRenderStates();
-    void resolveRenderBuffer(RenderBufferGL* rbObj);
 
 private:
     uint32_t mDepthFormat;
