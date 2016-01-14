@@ -32,29 +32,19 @@
 #include <memory>
 
 // Represents a drawable texture in the VRAM
-class Renderbuffer
+class RenderBuffer
 {
 public:
-    Renderbuffer() = default;
-    ~Renderbuffer();
+    virtual ~RenderBuffer() = default;
 
-    uint8_t create(uint8_t format, uint16_t width, uint16_t height, bool depth, uint8_t colBufCount,
-        uint8_t samples);
-    Texture* texture(uint8_t bufIndex);
+    virtual bool create(uint8_t format, uint16_t width, uint16_t height, bool depth,
+        uint8_t colBufCount, uint8_t samples) = 0;
+    virtual Texture* texture(uint8_t index) = 0;
 
-    void size(uint16_t& width, uint16_t& height) const;
-    uint8_t texFormat() const;
+    virtual void size(uint16_t& w, uint16_t& h) const;
+    virtual uint16_t width() const = 0;
+    virtual uint16_t height() const = 0;
+    virtual uint8_t format() const = 0;
 
-    static void bind(const Renderbuffer* buffer);
-
-private:
-    uint8_t  mFormat           {0u};
-    uint32_t mHandle           {0u};
-    uint16_t mWidth            {0u};
-    uint16_t mHeight           {0u};
-    bool     mDepth            {false};
-    uint8_t  mColorBufferCount {0u};
-    uint8_t  mSamples          {0u};
-
-    std::unique_ptr<Texture> mTextures[5];
+    static void bind(RenderBuffer* buffer);
 };

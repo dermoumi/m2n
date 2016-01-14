@@ -30,6 +30,7 @@
 #include "shader.hpp"
 #include "indexbuffer.hpp"
 #include "vertexbuffer.hpp"
+#include "renderbuffer.hpp"
 
 #include <cstring>
 #include <vector>
@@ -306,14 +307,8 @@ public:
     virtual Shader* getCurrentShader() const = 0;
 
     // Renderbuffers
-    virtual uint32_t createRenderBuffer(uint32_t width, uint32_t height, TextureFormat format,
-        bool depth, uint32_t numColBufs, uint32_t samples) = 0;
-    virtual void destroyRenderBuffer(uint32_t rbObj) = 0;
-    virtual uint32_t getRenderBufferTexture(uint32_t rbObj, uint32_t bufIndex) = 0;
-    virtual void setRenderBuffer(uint32_t rbObj) = 0;
-    virtual void getRenderBufferSize(uint32_t rbObj, int* width, int* height) = 0;
-    virtual bool getRenderBufferData(uint32_t rbObj, int bufIndex, int* width, int* height,
-        int* compCount, void* dataBuffer, int bufferSize) = 0;
+    virtual RenderBuffer* newRenderBuffer() = 0;
+    virtual void bind(RenderBuffer* buffer) = 0;
 
     // GL States
     virtual void setViewport(int x, int y, int width, int height) = 0;

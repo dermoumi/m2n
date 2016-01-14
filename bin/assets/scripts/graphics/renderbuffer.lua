@@ -30,33 +30,33 @@ local Config  = require 'config'
 local Log     = require 'util.log'
 local Texture = require 'graphics.texture'
 
-local Renderbuffer = class 'graphics.renderbuffer'
+local RenderBuffer = class 'graphics.renderbuffer'
 
 local ffi = require 'ffi'
 local C = ffi.C
 
 ffi.cdef [[
-    typedef struct NxRenderbuffer NxRenderbuffer;
+    typedef struct NxRenderbuffer NxRenderBuffer;
     typedef struct NxTexture NxTexture;
 
-    NxRenderbuffer* nxRenderbufferNew();
-    void nxRenderbufferRelease(NxRenderbuffer*);
-    uint8_t nxRenderbufferCreate(NxRenderbuffer*, uint8_t, uint16_t, uint16_t, bool, uint8_t,
+    NxRenderBuffer* nxRenderBufferNew();
+    void nxRenderBufferRelease(NxRenderBuffer*);
+    bool nxRenderBufferCreate(NxRenderBuffer*, uint8_t, uint16_t, uint16_t, bool, uint8_t,
         uint8_t);
-    NxTexture* nxRenderbufferTexture(NxRenderbuffer*, uint8_t);
-    void nxRenderbufferSize(const NxRenderbuffer*, uint16_t*);
-    uint8_t nxRenderbufferFormat(const NxRenderbuffer*);
-    void nxRenderbufferBind(const NxRenderbuffer*);
+    NxTexture* nxRenderBufferTexture(NxRenderBuffer*, uint8_t);
+    void nxRenderBufferSize(const NxRenderBuffer*, uint16_t*);
+    uint8_t nxRenderBufferFormat(const NxRenderBuffer*);
+    void nxRenderBufferBind(const NxRenderBuffer*);
 ]]
 
-function Renderbuffer.static.bind(buffer)
+function RenderBuffer.static.bind(buffer)
     if buffer then buffer = buffer._cdata end
-    C.nxRenderbufferBind(buffer)
+    C.nxRenderBufferBind(buffer)
 
-    return Renderbuffer
+    return RenderBuffer
 end
 
-function Renderbuffer:initialize(width, height, depth, samples, numColBufs)
+function RenderBuffer:initialize(width, height, depth, samples, numColBufs)
     self._textures = {}
 
     if width and height then
@@ -64,45 +64,37 @@ function Renderbuffer:initialize(width, height, depth, samples, numColBufs)
     end
 end
 
-function Renderbuffer:release()
+function RenderBuffer:release()
     if not self._cdata then return end
 
-    C.nxRenderbufferRelease(ffi.gc(self._cdata, nil))
+    C.nxRenderBufferRelease(ffi.gc(self._cdata, nil))
     self._cdata = nil
     self._textures = {}
 end
 
-function Renderbuffer:bind()
+function RenderBuffer:bind()
     -- No cdata check as to allow debinding
-    C.nxRenderbufferBind(self._cdata)
+    C.nxRenderBufferBind(self._cdata)
 
     return self
 end
 
-function Renderbuffer:create(width, height, depth, samples, numColBufs)
+function RenderBuffer:create(width, height, depth, samples, numColBufs)
     self:release()
 
     if depth == nil then depth = false end
     samples = samples or Config.multisamplingLevel
     numColBufs = numColBufs or 1
 
-    local handle = C.nxRenderbufferNew()
-    local status = C.nxRenderbufferCreate(handle, 1, width, height, depth, numColBufs, samples)
+    local handle = C.nxRenderBufferNew()
+    C.nxRenderBufferCreate(handle, 1, width, height, depth, numColBufs, samples)
 
-    if status == 1 then
-        Log.warning('Cannot create renderbuffer: invalid size')
-        C.nxRenderbufferRelease(handle)
-    elseif status == 2 then
-        Log.warning('Cannot create renderbuffer')
-        C.nxRenderbufferRelease(handle)
-    else
-        self._cdata = ffi.gc(handle, C.nxRenderbufferRelease)
-    end
+    self._cdata = ffi.gc(handle, C.nxRenderBufferRelease)
 
     return self
 end
 
-function Renderbuffer:texture(bufIndex)
+function RenderBuffer:texture(bufIndex)
     if self._cdata == nil then return Texture:new() end
 
     if bufIndex == 'depth' then
@@ -115,18 +107,18 @@ function Renderbuffer:texture(bufIndex)
 
     if not texture then
         texture = Texture:allocate()
-        texture._cdata = ffi.cast('NxTexture*', C.nxRenderbufferTexture(self._cdata, bufIndex))
+        texture._cdata = ffi.cast('NxTexture*', C.nxRenderBufferTexture(self._cdata, bufIndex))
         self._textures[bufIndex] = texture
     end
 
     return texture
 end
 
-function Renderbuffer:size()
+function RenderBuffer:size()
     local sizePtr = ffi.new('uint16_t[2]')
-    C.nxRenderbufferSize(self._cdata, sizePtr)
+    C.nxRenderBufferSize(self._cdata, sizePtr)
 
     return tonumber(sizePtr[0]), tonumber(sizePtr[1])
 end
 
-return Renderbuffer
+return RenderBuffer

@@ -27,42 +27,43 @@
 
 #include "../config.hpp"
 #include "../graphics/renderbuffer.hpp"
+#include "../graphics/renderdevice.hpp"
 
-using NxRenderbuffer = Renderbuffer;
+using NxRenderBuffer = RenderBuffer;
 using NxTexture      = Texture;
 
-NX_EXPORT NxRenderbuffer* nxRenderbufferNew()
+NX_EXPORT NxRenderBuffer* nxRenderBufferNew()
 {
-    return new NxRenderbuffer();
+    return RenderDevice::instance().newRenderBuffer();
 }
 
-NX_EXPORT void nxRenderbufferRelease(NxRenderbuffer* buffer)
+NX_EXPORT void nxRenderBufferRelease(NxRenderBuffer* buffer)
 {
     delete buffer;
 }
 
-NX_EXPORT uint8_t nxRenderbufferCreate(NxRenderbuffer* buffer, uint8_t format, uint16_t width,
+NX_EXPORT bool nxRenderBufferCreate(NxRenderBuffer* buffer, uint8_t format, uint16_t width,
     uint16_t height, bool depth, uint8_t colBufCount, uint8_t samples)
 {
     return buffer->create(format, width, height, depth, colBufCount, samples);
 }
 
-NX_EXPORT NxTexture* nxRenderbufferTexture(NxRenderbuffer* buffer, uint8_t bufIndex)
+NX_EXPORT NxTexture* nxRenderBufferTexture(NxRenderBuffer* buffer, uint8_t bufIndex)
 {
     return buffer->texture(bufIndex);
 }
 
-NX_EXPORT void nxRenderbufferSize(const NxRenderbuffer* buffer, uint16_t* sizePtr)
+NX_EXPORT void nxRenderBufferSize(const NxRenderBuffer* buffer, uint16_t* sizePtr)
 {
     buffer->size(sizePtr[0], sizePtr[1]);
 }
 
-NX_EXPORT uint8_t nxRenderbufferFormat(const NxRenderbuffer* buffer)
+NX_EXPORT uint8_t nxRenderBufferFormat(const NxRenderBuffer* buffer)
 {
-    return buffer->texFormat();
+    return buffer->format();
 }
 
-NX_EXPORT void nxRenderbufferBind(const NxRenderbuffer* buffer)
+NX_EXPORT void nxRenderBufferBind(NxRenderBuffer* buffer)
 {
-    Renderbuffer::bind(buffer);
+    NxRenderBuffer::bind(buffer);
 }

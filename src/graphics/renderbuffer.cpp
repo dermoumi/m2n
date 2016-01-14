@@ -28,82 +28,13 @@
 #include "renderbuffer.hpp"
 #include "renderdevice.hpp"
 
-Renderbuffer::~Renderbuffer()
+void RenderBuffer::size(uint16_t& w, uint16_t& h) const
 {
-    if (mHandle) {
-        RenderDevice::instance().destroyRenderBuffer(mHandle);
-    }
+    w = width();
+    h = height();
 }
 
-uint8_t Renderbuffer::create(uint8_t format, uint16_t width, uint16_t height, bool depth,
-    uint8_t colBufCount, uint8_t samples)
+void RenderBuffer::bind(RenderBuffer* buffer)
 {
-    if (width == 0 || height == 0) return 1;
-    uint32_t handle = RenderDevice::instance().createRenderBuffer(
-        width, height, static_cast<RenderDevice::TextureFormat>(format), depth, colBufCount, samples
-    );
-
-    if (!handle) return 2;
-
-    if (mHandle) {
-        RenderDevice::instance().destroyRenderBuffer(mHandle);
-    }
-
-    mFormat           = format;
-    mHandle           = handle;
-    mWidth            = width;
-    mHeight           = height;
-    mDepth            = depth;
-    mColorBufferCount = colBufCount;
-    mSamples          = samples;
-
-    return 0;
-}
-
-Texture* Renderbuffer::texture(uint8_t bufIndex)
-{
-    Texture* tex {nullptr};
-
-    if (bufIndex == 32 && mDepth) {
-        tex = mTextures[4].get();
-
-        if (!tex) {
-            mTextures[4] = std::unique_ptr<Texture>(new Texture(
-                RenderDevice::Tex2D, RenderDevice::DEPTH,
-                RenderDevice::instance().getRenderBufferTexture(mHandle, 32),
-                mWidth, mHeight, 1, 0, true
-            ));
-            tex = mTextures[4].get();
-        }
-    }
-    else if (bufIndex < mColorBufferCount) {
-        tex = mTextures[bufIndex].get();
-
-        if (!tex) {
-            mTextures[bufIndex] = std::unique_ptr<Texture>(new Texture(
-                RenderDevice::Tex2D, mFormat,
-                RenderDevice::instance().getRenderBufferTexture(mHandle, bufIndex),
-                mWidth, mHeight, 1, 0, true
-            ));
-            tex = mTextures[bufIndex].get();
-        }
-    }
-
-    return tex;
-}
-
-void Renderbuffer::size(uint16_t& width, uint16_t& height) const
-{
-    width = mWidth;
-    height = mHeight;
-}
-
-uint8_t Renderbuffer::texFormat() const
-{
-    return mFormat;
-}
-
-void Renderbuffer::bind(const Renderbuffer* buffer)
-{
-    RenderDevice::instance().setRenderBuffer(buffer ? buffer->mHandle : 0);
+    RenderDevice::instance().bind(buffer);
 }

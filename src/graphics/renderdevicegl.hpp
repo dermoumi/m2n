@@ -83,14 +83,8 @@ public:
     void bind(IndexBuffer* buffer);
 
     // Renderbuffers
-    uint32_t createRenderBuffer(uint32_t width, uint32_t height, TextureFormat format, bool depth,
-        uint32_t numColBufs, uint32_t samples);
-    void destroyRenderBuffer(uint32_t rbObj);
-    uint32_t getRenderBufferTexture(uint32_t rbObj, uint32_t bufIndex);
-    void setRenderBuffer(uint32_t rbObj);
-    void getRenderBufferSize(uint32_t rbObj, int* width, int* height);
-    bool getRenderBufferData(uint32_t rbObj, int bufIndex, int* width, int* height, int* compCount,
-        void* dataBuffer, int bufferSize);
+    RenderBuffer* newRenderBuffer();
+    void bind(RenderBuffer* buffer);
 
     // GL States
     void setViewport(int x, int y, int width, int height);
@@ -151,32 +145,6 @@ private:
         bool          sRGB;
         bool          hasMips;
         bool          genMips;
-    };
-
-    struct RDIRenderBuffer
-    {
-        static constexpr uint32_t MaxColorAttachmentCount = 4;
-
-        uint32_t fbo;
-        uint32_t fboMS;
-        uint32_t width;
-        uint32_t height;
-        uint32_t samples;
-
-        uint32_t depthTex;
-        uint32_t depthBuf;
-        uint32_t colTexs[MaxColorAttachmentCount];
-        uint32_t depthBufMS;
-        uint32_t colBufs[MaxColorAttachmentCount];
-
-        RDIRenderBuffer() :
-            fbo {0u}, fboMS {0u}, width {0u}, height {0u}, samples {0u},
-            depthTex {0u}, depthBuf {0u}, depthBufMS {0u}
-        {
-            for (uint32_t i = 0; i < MaxColorAttachmentCount; ++i) {
-                colTexs[i] = colBufs[i] = 0u;
-            }
-        }
     };
 
     struct RDIVertBufSlot
@@ -303,11 +271,51 @@ private:
         Format          mFormat {_16};
     };
 
+    class RenderBufferGL : public RenderBuffer
+    {
+    public:
+        RenderBufferGL(RenderDeviceGL* device);
+        virtual ~RenderBufferGL();
+
+        virtual bool create(uint8_t format, uint16_t width, uint16_t height, bool depth,
+            uint8_t colBufCount, uint8_t samples);
+        virtual Texture* texture(uint8_t index);
+
+        virtual uint16_t width() const;
+        virtual uint16_t height() const;
+        virtual uint8_t format() const;
+        // TODO: virtual void* data() const;
+
+        static constexpr uint32_t MaxColorAttachmentCount = 4;
+
+    private:
+        friend class RenderDeviceGL;
+
+        void resolve();
+        void release();
+
+        RenderDeviceGL* mDevice;
+        uint32_t mFbo {0u};
+        uint32_t mFboMS {0u};
+        uint16_t mWidth {0u};
+        uint16_t mHeight {0u};
+        uint8_t mSamples {0u};
+        uint8_t mFormat {0u};
+
+        uint32_t mDepthTex {0u};
+        uint32_t mDepthBuf {0u};
+        uint32_t mDepthBufMS {0u};
+        uint32_t mColTexs[MaxColorAttachmentCount];
+        uint32_t mColBufs[MaxColorAttachmentCount];
+
+        std::shared_ptr<Texture> mTextures[5];
+    };
+
 private:
     bool applyVertexLayout();
     void applySamplerState(RDITexture& tex);
     void applyRenderStates();
-    void resolveRenderBuffer(uint32_t rbObj);
+    void resolveRenderBuffer(RenderBufferGL* rbObj);
 
 private:
     uint32_t mDepthFormat;
@@ -316,8 +324,8 @@ private:
     std::atomic<uint32_t> mVertexBufferMemory {0u};
     std::atomic<uint32_t> mIndexBufferMemory {0u};
     std::atomic<uint32_t> mTextureMemory {0u};
+    RenderBufferGL* mCurRenderBuffer {nullptr};
     int mDefaultFBO        {0};
-    int mCurRenderBuffer   {0};
     int mFbWidth           {0};
     int mFbHeight          {0};
     int mOutputBufferIndex {0};
@@ -325,7 +333,6 @@ private:
     std::atomic<uint32_t>  mNumVertexLayouts {0u};
     VertexLayout           mVertexLayouts[MaxNumVertexLayouts];
     RDIObjects<RDITexture> mTextures;
-    RDIObjects<RDIRenderBuffer> mRenderBuffers;
 
     RDIVertBufSlot       mVertBufSlots[16];
     RDITexSlot           mTexSlots[16];
