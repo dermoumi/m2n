@@ -227,18 +227,18 @@ function Renderer.init()
     ]])
 
     -- Create the Fullscreen quad vertex buffer
-    vbFsQuad = require('graphics.arraybuffer').vertexbuffer(48, ffi.new('float[12]', {
+    vbFsQuad = require('graphics.vertexbuffer'):new():load(ffi.new('float[12]', {
         -1,  1, 0, 0,
         -1, -3, 0, 2,
          3,  1, 2, 0
-    }))
+    }), 48, 16)
 
     -- Create the Fullscreen flipped quad vertex buffer
-    vbFlippedFsQuad = require('graphics.arraybuffer').vertexbuffer(48, ffi.new('float[12]', {
+    vbFlippedFsQuad = require('graphics.vertexbuffer'):new():load(ffi.new('float[12]', {
         -1,  3, 0, 2,
         -1, -1, 0, 0,
          3, -1, 2, 0
-    }))
+    }), 48, 16)
 
     -- Create the default, empty texture
     defaultTexture = require('graphics.texture'):new()
@@ -326,9 +326,11 @@ function Renderer.drawFsQuad(texture, width, height, flipped, shader)
     shader:setSampler('uTexture0', 0)
 
     C.nxRendererSetVertexLayout(vertexLayouts[1])
-    require('graphics.arraybuffer').setVertexbuffer(
-        flipped and vbFlippedFsQuad or vbFsQuad, 0, 0, 16
-    )
+    if flipped then
+        vbFlippedFsQuad:bind()
+    else
+        vbFsQuad:bind()
+    end
 
     C.nxRendererDraw(4, 0, 3)
 
@@ -348,7 +350,7 @@ function Renderer.fillFsQuad(r, g, b, a, blendMode, shader)
     shader:setUniform('uTexSize', 1, 1)
     shader:setSampler('uTexture0', 0)
 
-    require('graphics.arraybuffer').setVertexbuffer(vbFsQuad, 0, 0, 16)
+    vbFsQuad:bind()
     C.nxRendererSetVertexLayout(vertexLayouts[1])
 
     C.nxRendererDraw(4, 0, 3)

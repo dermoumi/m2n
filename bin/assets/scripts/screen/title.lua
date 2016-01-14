@@ -48,13 +48,28 @@ function ScreenTitle:initialize(firstRun)
             message = 'INITIALIZING %i%%'
         })
     end
+
+    self.texture = self:cache('tex2d:assets/pasrien.png')
 end
 
 function ScreenTitle:entered()
     self.text = require('graphics.text')
         :new('', GameFont, 14)
         :setPosition(10, 10)
+
         :setColor(255, 128, 0)
+    self.sprite = require('graphics.sprite')
+        :new(self.texture)
+        :setPosition(400, 30)
+
+    self.shape = require('graphics.shape')
+        :new()
+        :setVertexData('trianglestrip', true, {
+                100, 0, 255, 0, 255, 255, 0, 0,
+                0, 0, 255, 255, 0, 255, 0, 0,
+                0, 100, 0, 255, 255, 255, 0, 0
+            })
+        :setPosition(100, 100)
 end
 
 function ScreenTitle:update(dt)
@@ -65,6 +80,8 @@ function ScreenTitle:render()
     self:view():clear()
 
     self:view():draw(self.text)
+        :draw(self.sprite)
+        :draw(self.shape)
 end
 
 function ScreenTitle:keydown(scancode, keyCode, repeated)

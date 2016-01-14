@@ -1,4 +1,4 @@
---[[
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,33 +23,56 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]
+*/
 
-local Entity2D     = require 'graphics.entity2d'
-local VertexBuffer = require 'graphics.vertexbuffer'
-local Text         = require 'graphics.text'
+#include "../config.hpp"
+#include "../graphics/renderdevice.hpp"
+#include "../graphics/indexbuffer.hpp"
 
-local RtlText = Text:subclass('graphics.rtltext')
--- RtlText:include(Entity2D)
+using NxIndexBuffer = IndexBuffer;
 
-local ffi = require 'ffi'
-local C = ffi.C
+NX_EXPORT NxIndexBuffer* nxIndexBufferCreate()
+{
+    return RenderDevice::instance().newIndexBuffer();
+}
 
-ffi.cdef [[
-    NxText* nxRtlTextNew();
-]]
+NX_EXPORT void nxIndexBufferRelease(NxIndexBuffer* buffer)
+{
+    delete buffer;
+}
 
-function RtlText:initialize(str, font, charSize)
-    Entity2D.initialize(self)
+NX_EXPORT bool nxIndexBufferLoad(NxIndexBuffer* buffer, void* data, uint32_t size, uint8_t format)
+{
+    return buffer->load(data, size, static_cast<IndexBuffer::Format>(format));
+}
 
-    self._cdata = ffi.gc(C.nxRtlTextNew(), C.nxTextRelease)
+NX_EXPORT bool nxIndexBufferUpdate(NxIndexBuffer* buffer, void* data, uint32_t size,
+    uint32_t offset)
+{
+    return buffer->update(data, size, offset);
+}
 
-    self:setString(str or '')
-        :setFont(font)
-        :setSize(charSize or 30)
-        
-    self._style = 0
-    self._vertices = VertexBuffer:allocate()
-end
+NX_EXPORT uint32_t nxIndexBufferCount(const NxIndexBuffer* buffer)
+{
+    return buffer->count();
+}
 
-return RtlText
+NX_EXPORT uint32_t nxIndexBufferSize(const NxIndexBuffer* buffer)
+{
+    return buffer->size();
+}
+
+NX_EXPORT uint8_t nxIndexBufferFormat(const NxIndexBuffer* buffer)
+{
+    return static_cast<uint8_t>(buffer->format());
+}
+
+NX_EXPORT uint32_t nxIndexBufferUsedMemory()
+{
+    return NxIndexBuffer::usedMemory();
+}
+
+NX_EXPORT void nxIndexBufferBind(NxIndexBuffer* buffer)
+{
+    NxIndexBuffer::bind(buffer);
+}

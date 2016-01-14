@@ -133,14 +133,13 @@ void Text::bounds(float& x, float& y, float& w, float& h) const
     h = mBoundsH;
 }
 
-uint32_t Text::arraybuffer(uint32_t& vertexCount, uint32_t index) const
+VertexBuffer* Text::vertexBuffer(uint32_t index) const
 {
     ensureGeometryUpdate();
-    vertexCount = mVertices[index].count;
-    return mVertices[index].buffer;
+    return mVertices[index].get();
 }
 
-uint32_t* Text::arraybufferIDs(uint32_t* count) const
+uint32_t* Text::vertexBufferIDs(uint32_t* count) const
 {
     ensureGeometryUpdate();
 
@@ -345,9 +344,13 @@ void Text::ensureGeometryUpdate() const
 
         mBufferIDs.push_back(it.first);
 
-        mVertices[it.first].count = it.second.size() / 4u;
-        mVertices[it.first].buffer = RenderDevice::instance().createVertexBuffer(
-            it.second.size() * sizeof(float), it.second.data()
+        mVertices[it.first] = std::shared_ptr<VertexBuffer>(
+            RenderDevice::instance().newVertexBuffer()
+        );
+        mVertices[it.first]->load(
+            it.second.data(),
+            it.second.size() * sizeof(float),
+            4 * sizeof(float)
         );
     }
 }

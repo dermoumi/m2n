@@ -1,4 +1,4 @@
---[[
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,33 +23,22 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]
+*/
 
-local Entity2D     = require 'graphics.entity2d'
-local VertexBuffer = require 'graphics.vertexbuffer'
-local Text         = require 'graphics.text'
+#include "vertexbuffer.hpp"
+#include "renderdevice.hpp"
 
-local RtlText = Text:subclass('graphics.rtltext')
--- RtlText:include(Entity2D)
+uint32_t VertexBuffer::count() const
+{
+    return size() / stride();
+}
 
-local ffi = require 'ffi'
-local C = ffi.C
+uint32_t VertexBuffer::usedMemory()
+{
+    return RenderDevice::instance().usedVertexBufferMemory();
+}
 
-ffi.cdef [[
-    NxText* nxRtlTextNew();
-]]
-
-function RtlText:initialize(str, font, charSize)
-    Entity2D.initialize(self)
-
-    self._cdata = ffi.gc(C.nxRtlTextNew(), C.nxTextRelease)
-
-    self:setString(str or '')
-        :setFont(font)
-        :setSize(charSize or 30)
-        
-    self._style = 0
-    self._vertices = VertexBuffer:allocate()
-end
-
-return RtlText
+void VertexBuffer::bind(VertexBuffer* buffer, uint8_t slot, uint32_t offset)
+{
+    RenderDevice::instance().bind(buffer, slot, offset);
+}

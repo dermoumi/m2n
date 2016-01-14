@@ -25,10 +25,10 @@
     For more information, please refer to <http://unlicense.org>
 --]]
 
-local Graphics    = require 'graphics'
-local Arraybuffer = require 'graphics.arraybuffer'
-local Texture2D   = require 'graphics.texture2d'
-local Entity2D    = require 'graphics.entity2d'
+local Graphics     = require 'graphics'
+local VertexBuffer = require 'graphics.vertexbuffer'
+local Texture2D    = require 'graphics.texture2d'
+local Entity2D     = require 'graphics.entity2d'
 
 local Sprite = Entity2D:subclass 'graphics.sprite'
 
@@ -57,9 +57,8 @@ function Sprite:initialize(texture, subX, subY, subW, subH, normalized)
 end
 
 function Sprite:release()
-    if self._vertexbuffer then
-        self._vertexbuffer:release()
-        self._vertexbuffer = nil
+    if self._vertexBuffer then
+        self._vertexBuffer:release()
     end
 
     self._bufferUpdated = nil
@@ -152,10 +151,10 @@ function Sprite:_render(camera)
             w, h, subR, subB
         })
 
-        if not self._vertexbuffer then
-            self._vertexbuffer = Arraybuffer.vertexbuffer(ffi.sizeof(buffer), buffer)
+        if not self._vertexBuffer then
+            self._vertexBuffer = VertexBuffer:new(buffer, ffi.sizeof(buffer), 16)
         else
-            self._vertexbuffer:setData(0, ffi.sizeof(buffer), buffer)
+            self._vertexBuffer:update(buffer)
         end
 
         self._bufferUpdated = true
@@ -173,7 +172,7 @@ function Sprite:_render(camera)
     shader:setUniform('uTexSize', texW, texH)
     shader:setSampler('uTexture0', 0)
 
-    Arraybuffer.setVertexbuffer(self._vertexbuffer, 0, 0, 16)
+    self._vertexBuffer:bind()
     C.nxRendererSetVertexLayout(Sprite._vertexLayout())
 
     C.nxRendererDraw(5, 0, 4)

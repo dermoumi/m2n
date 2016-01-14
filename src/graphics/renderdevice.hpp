@@ -28,6 +28,8 @@
 #pragma once
 #include "../config.hpp"
 #include "shader.hpp"
+#include "indexbuffer.hpp"
+#include "vertexbuffer.hpp"
 
 #include <cstring>
 #include <vector>
@@ -112,12 +114,6 @@ public:
     {
         uint32_t           numAttribs;
         VertexLayoutAttrib attribs[16];
-    };
-
-    enum IndexFormat
-    {
-        U16,
-        U32
     };
 
     enum PrimType
@@ -241,7 +237,7 @@ public:
     enum PendingMask : uint32_t
     {
         Viewport      = 1 << 0,
-        IndexBuffer   = 1 << 1,
+        IndexBuffers   = 1 << 1,
         VertexLayouts = 1 << 2,
         Textures      = 1 << 3,
         Scissor       = 1 << 4,
@@ -278,13 +274,15 @@ public:
     virtual uint32_t registerVertexLayout(uint8_t numAttribs,
         const VertexLayoutAttrib* attribs) = 0;
 
-    // Buffers
-    virtual uint32_t createVertexBuffer(uint32_t size, const void* data) = 0;
-    virtual uint32_t createIndexBuffer(uint32_t size, const void* data) = 0;
-    virtual void destroyBuffer(uint32_t buffer) = 0;
-    virtual bool updateBufferData(uint32_t buffer, uint32_t offset, uint32_t size,
-        const void* data) = 0;
-    virtual uint32_t getBufferMemory() const = 0;
+    // Vertex buffers
+    virtual VertexBuffer* newVertexBuffer() = 0;
+    virtual uint32_t usedVertexBufferMemory() const = 0;
+    virtual void bind(VertexBuffer* buffer, uint8_t slot, uint32_t offset) = 0;
+
+    // Index buffers
+    virtual IndexBuffer* newIndexBuffer() = 0;
+    virtual uint32_t usedIndexBufferMemory() const = 0;
+    virtual void bind(IndexBuffer* buffer) = 0;
 
     // Textures
     uint32_t calcTextureSize(TextureFormat format, int width, int height, int depth);
@@ -320,9 +318,6 @@ public:
     // GL States
     virtual void setViewport(int x, int y, int width, int height) = 0;
     virtual void setScissorRect(int x, int y, int width, int height) = 0;
-    virtual void setIndexBuffer(uint32_t bufObj, IndexFormat idxFmt) = 0;
-    virtual void setVertexBuffer(uint32_t slot, uint32_t vbObj, uint32_t offset,
-        uint32_t stride) = 0;
     virtual void setVertexLayout(uint32_t vlObj) = 0;
     virtual void setTexture(uint32_t slot, uint32_t texObj, uint16_t samplerState) = 0;
 

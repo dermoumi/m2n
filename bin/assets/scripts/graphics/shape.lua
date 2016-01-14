@@ -25,9 +25,10 @@
     For more information, please refer to <http://unlicense.org>
 --]]
 
-local Graphics    = require 'graphics'
-local Arraybuffer = require 'graphics.arraybuffer'
-local Entity2D    = require 'graphics.entity2d'
+local Graphics     = require 'graphics'
+local VertexBuffer = require 'graphics.vertexbuffer'
+local IndexBuffer  = require 'graphics.indexbuffer'
+local Entity2D     = require 'graphics.entity2d'
 
 local Shape = Entity2D:subclass 'graphics.shape'
 
@@ -90,25 +91,24 @@ function Shape:setVertexData(primitive, hasColor, a, b, ...)
         self._hasColor   = hasColor
 
         local structName, valueCount, vertexSize = vertexStruct(hasColor)
-        self._vertexSize = vertexSize
 
         local buffer
         if type(a[0]) == 'table' then
-            self._vertexCount = #a
-            buffer = ffi.new(structName .. '[?]', self._vertexCount, a)
+            local vertexCount = #a
+            buffer = ffi.new(structName .. '[?]', vertexCount, a)
         else
-            self._vertexCount = #a / valueCount
-            buffer = ffi.new(structName .. '[?]', self._vertexCount)
-            for i = 1, self._vertexCount do
+            local vertexCount = #a / valueCount
+            buffer = ffi.new(structName .. '[?]', vertexCount)
+            for i = 1, vertexCount do
                 local vertex = {}
                 for j = 1, valueCount do
                     vertex[j] = a[(i-1)*valueCount + j]
                 end
-                buffer[if-1] = ffi.new(structName, vertex)
+                buffer[i-1] = ffi.new(structName, vertex)
             end
         end
 
-        self._vertexBuffer = Arraybuffer.vertexbuffer(ffi.sizeof(buffer), buffer)
+        self._vertexBuffer = VertexBuffer:new(buffer, ffi.sizeof(buffer), vertexSize)
     else
         self._vertexBuffer = nil
     end
@@ -121,8 +121,7 @@ function Shape:setIndexData(a, b, ...)
     if type(a) == 'table' then
         local buffer = ffi.new('uint16_t[?]', #a, a)
 
-        self._indexCount = #a
-        self._indexBuffer = Arraybuffer.indexbuffer(ffi.sizeof(buffer), buffer)
+        self._indexBuffer = IndexBuffer:new(buffer, ffi.sizeof(buffer), '16')
     else
         self._indexBuffer = nil
     end
@@ -147,14 +146,14 @@ function Shape:_render(camera)
         shader:setUniform('uTexSize', 1, 1)
         shader:setSampler('uTexture0', 0)
 
-        Arraybuffer.setVertexbuffer(self._vertexBuffer, 0, 0, self._vertexSize)
-        Arraybuffer.setIndexbuffer(self._indexBuffer, 16)
+        VertexBuffer.bind(self._vertexBuffer)
+        IndexBuffer.bind(self._indexBuffer)
         C.nxRendererSetVertexLayout(Shape._vertexLayout(self._hasColor))
 
         if self._indexBuffer then
-            C.nxRendererDrawIndexed(self._primitive, 0, self._indexCount)
+            C.nxRendererDrawIndexed(self._primitive, 0, self._indexBuffer:count())
         else
-            C.nxRendererDraw(self._primitive, 0, self._vertexCount)
+            C.nxRendererDraw(self._primitive, 0, self._vertexBuffer:count())
         end
     end
 end

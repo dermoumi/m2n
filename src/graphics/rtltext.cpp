@@ -275,9 +275,13 @@ void RtlText::ensureGeometryUpdate() const
 
         mBufferIDs.push_back(it.first);
 
-        mVertices[it.first].count = it.second.size() / 4u;
-        mVertices[it.first].buffer = RenderDevice::instance().createVertexBuffer(
-            it.second.size() * sizeof(float), it.second.data()
+        mVertices[it.first] = std::shared_ptr<VertexBuffer>(
+            RenderDevice::instance().newVertexBuffer()
+        );
+        mVertices[it.first]->load(
+            it.second.data(),
+            it.second.size() * sizeof(float),
+            4 * sizeof(float)
         );
     }
 }

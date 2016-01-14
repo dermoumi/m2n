@@ -26,70 +26,54 @@
 */
 
 #include "../config.hpp"
-#include "../graphics/text.hpp"
-#include "../graphics/rtltext.hpp"
+#include "../graphics/renderdevice.hpp"
 #include "../graphics/vertexbuffer.hpp"
 
-using NxText = Text;
-using NxFont = Font;
 using NxVertexBuffer = VertexBuffer;
 
-NX_EXPORT NxText* nxTextNew()
+NX_EXPORT NxVertexBuffer* nxVertexBufferCreate()
 {
-    return new Text();
+    return RenderDevice::instance().newVertexBuffer();
 }
 
-NX_EXPORT NxText* nxRtlTextNew()
+NX_EXPORT void nxVertexBufferRelease(NxVertexBuffer* buffer)
 {
-    return new RtlText();
+    delete buffer;
 }
 
-NX_EXPORT void nxTextRelease(NxText* text)
+NX_EXPORT bool nxVertexBufferLoad(NxVertexBuffer* buffer, void* data, uint32_t size,
+    uint32_t stride)
 {
-    delete text;
+    return buffer->load(data, size, stride);
 }
 
-NX_EXPORT void nxTextSetString(NxText* text, const char* str)
+NX_EXPORT bool nxVertexBufferUpdate(NxVertexBuffer* buffer, void* data, uint32_t size,
+    uint32_t offset)
 {
-    text->setString(str);
+    return buffer->update(data, size, offset);
 }
 
-NX_EXPORT void nxTextSetU32String(NxText* text, const uint32_t* str)
+NX_EXPORT uint32_t nxVertexBufferSize(const NxVertexBuffer* buffer)
 {
-    text->setString(reinterpret_cast<const char32_t*>(str));
+    return buffer->size();
 }
 
-NX_EXPORT void nxTextSetFont(NxText* text, const NxFont* font)
+NX_EXPORT uint32_t nxVertexBufferStride(const NxVertexBuffer* buffer)
 {
-    text->setFont(*font);
+    return buffer->stride();
 }
 
-NX_EXPORT void nxTextSetCharacterSize(NxText* text, uint32_t charSize)
+NX_EXPORT uint32_t nxVertexBufferCount(const NxVertexBuffer* buffer)
 {
-    text->setCharacterSize(charSize);
+    return buffer->count();
 }
 
-NX_EXPORT void nxTextSetStyle(NxText* text, uint8_t style)
+NX_EXPORT uint32_t nxVertexBufferUsedMemory()
 {
-    text->setStyle(style);
+    return NxVertexBuffer::usedMemory();
 }
 
-NX_EXPORT void nxTextCharacterPosition(const Text* text, uint32_t index, float* posPtr)
+NX_EXPORT void nxVertexBufferBind(NxVertexBuffer* buffer, uint8_t slot, uint32_t offset)
 {
-    text->characterPosition(index, posPtr[0], posPtr[1]);
-}
-
-NX_EXPORT void nxTextBounds(const Text* text, float* boundsPtr)
-{
-    text->bounds(boundsPtr[0], boundsPtr[1], boundsPtr[2], boundsPtr[3]);
-}
-
-NX_EXPORT NxVertexBuffer* nxTextVertexBuffer(const Text* text, uint32_t index)
-{
-    return text->vertexBuffer(index);
-}
-
-NX_EXPORT uint32_t* nxTextVertexBufferIDs(const Text* text, uint32_t* count)
-{
-    return text->vertexBufferIDs(count);
+    NxVertexBuffer::bind(buffer, slot, offset);
 }

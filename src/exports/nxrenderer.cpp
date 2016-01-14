@@ -100,32 +100,6 @@ NX_EXPORT uint32_t nxRendererRegisterVertexLayout(uint8_t numAttribs,
     return RenderDevice::instance().registerVertexLayout(numAttribs, attributes.data());
 }
 
-NX_EXPORT uint32_t nxRendererCreateVertexBuffer(uint32_t size, const void* data)
-{
-    return RenderDevice::instance().createVertexBuffer(size, data);
-}
-
-NX_EXPORT uint32_t nxRendererCreateIndexBuffer(uint32_t size, const void* data)
-{
-    return RenderDevice::instance().createIndexBuffer(size, data);
-}
-
-NX_EXPORT void nxRendererDestroyBuffer(uint32_t buffer)
-{
-    RenderDevice::instance().destroyBuffer(buffer);
-}
-
-NX_EXPORT bool nxRendererUpdateBufferData(uint32_t buffer, uint32_t offset, uint32_t size,
-    const void* data)
-{
-    return RenderDevice::instance().updateBufferData(buffer, offset, size, data);
-}
-
-NX_EXPORT uint32_t nxRendererGetBufferMemory()
-{
-    return RenderDevice::instance().getBufferMemory();
-}
-
 NX_EXPORT void nxRendererSetViewport(int x, int y, int width, int height)
 {
     RenderDevice::instance().setViewport(x, y, width, height);
@@ -134,17 +108,6 @@ NX_EXPORT void nxRendererSetViewport(int x, int y, int width, int height)
 NX_EXPORT void nxRendererSetScissorRect(int x, int y, int width, int height)
 {
     RenderDevice::instance().setScissorRect(x, y, width, height);
-}
-
-NX_EXPORT void nxRendererSetIndexBuffer(uint32_t bufObj, uint8_t format)
-{
-    RenderDevice::instance().setIndexBuffer(bufObj, static_cast<RenderDevice::IndexFormat>(format));
-}
-
-NX_EXPORT void nxRendererSetVertexBuffer(uint8_t slot, uint32_t vbObj, uint32_t offset,
-    uint32_t stride)
-{
-    RenderDevice::instance().setVertexBuffer(slot, vbObj, offset, stride);
 }
 
 NX_EXPORT void nxRendererSetVertexLayout(uint8_t vlObj)

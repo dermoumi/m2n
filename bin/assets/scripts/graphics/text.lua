@@ -25,11 +25,11 @@
     For more information, please refer to <http://unlicense.org>
 --]]
 
-local Unicode     = require 'util.unicode'
-local Graphics    = require 'graphics'
-local Arraybuffer = require 'graphics.arraybuffer'
-local Texture     = require 'graphics.texture'
-local Entity2D    = require 'graphics.entity2d'
+local Unicode      = require 'util.unicode'
+local Graphics     = require 'graphics'
+local VertexBuffer = require 'graphics.vertexbuffer'
+local Texture      = require 'graphics.texture'
+local Entity2D     = require 'graphics.entity2d'
 
 local Text = Entity2D:subclass 'graphics.text'
 
@@ -38,7 +38,6 @@ local C = ffi.C
 
 ffi.cdef [[
     typedef struct NxText NxText;
-    typedef struct NxArraybuffer NxArraybuffer;
 
     NxText* nxTextNew();
     void nxTextRelease(NxText*);
@@ -49,11 +48,11 @@ ffi.cdef [[
     void nxTextSetStyle(NxText*, uint8_t);
     void nxTextCharacterPosition(const NxText*, uint32_t, float*);
     void nxTextBounds(const NxText*, float*);
-    uint32_t nxTextArraybuffer(const NxText*, uint32_t*, uint32_t);
-    uint32_t* nxTextArraybufferIDs(const NxText*, uint32_t*);
+    NxVertexBuffer* nxTextVertexBuffer(const NxText*, uint32_t);
+    uint32_t* nxTextVertexBufferIDs(const NxText*, uint32_t*);
 ]]
 
-local bufCountPtr, vertCountPtr = ffi.new('uint32_t[1]'), ffi.new('uint32_t[1]')
+local bufCountPtr = ffi.new('uint32_t[1]')
 
 local toStyle = {
     regular       = 0,
@@ -81,7 +80,7 @@ function Text:initialize(str, font, charSize)
         :setSize(charSize or 30)
 
     self._style = 0
-    self._vertices = Arraybuffer:new()
+    self._vertices = VertexBuffer:allocate()
 end
 
 function Text:release()
@@ -200,13 +199,12 @@ function Text:_render(camera)
         shader:setUniform('uColor', self:color(true, true))
         shader:setSampler('uTexture0', 0)
 
-        local bufferIDs = C.nxTextArraybufferIDs(self._cdata, bufCountPtr)
+        local bufferIDs = C.nxTextVertexBufferIDs(self._cdata, bufCountPtr)
         for i = 0, bufCountPtr[0] - 1 do
             local bufferID = bufferIDs[i];
 
-            self._vertices._cdata[0] = C.nxTextArraybuffer(self._cdata, vertCountPtr, bufferID)
-
-            Arraybuffer.setVertexbuffer(self._vertices, 0, 0, 16)
+            self._vertices._cdata = C.nxTextVertexBuffer(self._cdata, bufferID)
+            self._vertices:bind()
             C.nxRendererSetVertexLayout(Text._vertexLayout())
 
             local texture = self._font:texture(self._charSize, bufferID)
@@ -215,7 +213,7 @@ function Text:_render(camera)
             local texW, texH = texture:size()
             shader:setUniform('uTexSize', texW, texH)
 
-            C.nxRendererDraw(4, 0, vertCountPtr[0])
+            C.nxRendererDraw(4, 0, self._vertices:count())
         end
     end
 end

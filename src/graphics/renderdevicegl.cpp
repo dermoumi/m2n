@@ -164,11 +164,11 @@ void RenderDeviceGL::initStates()
 
 void RenderDeviceGL::resetStates()
 {
-    mCurVertexLayout = 1;                     mNewVertexLayout = 0;
-    mCurIndexBuffer = 1;                      mNewIndexBuffer = 0;
-    mCurRasterState.hash = 0xFFFFFFFFu;       mNewRasterState.hash = 0u;
-    mCurBlendState.hash = 0xFFFFFFFFu;        mNewBlendState.hash = 0u;
-    mCurDepthStencilState.hash = 0xFFFFFFFFu; mCurDepthStencilState.hash = 0u;
+    mCurIndexBuffer = reinterpret_cast<IndexBuffer*>(1u); mNewIndexBuffer = nullptr;
+    mCurVertexLayout = 1;                                 mNewVertexLayout = 0;
+    mCurRasterState.hash = 0xFFFFFFFFu;                   mNewRasterState.hash = 0u;
+    mCurBlendState.hash = 0xFFFFFFFFu;                    mNewBlendState.hash = 0u;
+    mCurDepthStencilState.hash = 0xFFFFFFFFu;             mCurDepthStencilState.hash = 0u;
 
     for (uint32_t i = 0; i < 16; ++i) setTexture(i, 0, 0);
 
@@ -206,19 +206,17 @@ bool RenderDeviceGL::commitStates(uint32_t filter)
         }
 
         // Bind index buffer
-        if (mask & IndexBuffer) {
+        if (mask & IndexBuffers) {
             if (mNewIndexBuffer != mCurIndexBuffer) {
-                if (mNewIndexBuffer == 0) {
-                    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-                }
-                else {
-                    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mBuffers.getRef(mNewIndexBuffer).glObj);
-                }
+                glBindBuffer(
+                    GL_ELEMENT_ARRAY_BUFFER,
+                    mNewIndexBuffer ? static_cast<GlIndexBuffer*>(mNewIndexBuffer)->mHandle : 0
+                );
 
                 mCurIndexBuffer = mNewIndexBuffer;
             }
 
-            mPendingMask &= ~IndexBuffer;
+            mPendingMask &= ~IndexBuffers;
         }
 
         // Bind textures and set sampler state
@@ -336,6 +334,34 @@ void RenderDeviceGL::drawIndexed(PrimType primType, uint32_t firstIndex, uint32_
 
         glDrawElements(toPrimType[primType], indexCount, mIndexFormat, (char*)0 + firstIndex);
     }
+}
+
+void RenderDeviceGL::beginRendering()
+{
+    // Get the currently bound frame buffer object.
+    glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &mDefaultFBO);
+
+    mCurIndexBuffer = reinterpret_cast<IndexBuffer*>(1u); mNewIndexBuffer = nullptr;
+    mCurVertexLayout = 1;                                 mNewVertexLayout = 0;
+    mCurRasterState.hash = 0xFFFFFFFFu;                   mNewRasterState.hash = 0u;
+    mCurBlendState.hash = 0xFFFFFFFFu;                    mNewBlendState.hash = 0u;
+    mCurDepthStencilState.hash = 0xFFFFFFFFu;             mCurDepthStencilState.hash = 0u;
+
+    // for (uint32_t i = 0; i < 16; ++i) setTexture(i, 0, 0);
+
+    setColorWriteMask(true);
+    // mPendingMask = 0xFFFFFFFFu;
+    mVertexBufUpdated = true;
+    commitStates();
+
+    // Bind buffers
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, mDefaultFBO);
+}
+
+void RenderDeviceGL::finishRendering()
+{
+    // Nothing to do
 }
 
 uint32_t RenderDeviceGL::registerVertexLayout(uint8_t numAttribs,
@@ -684,96 +710,41 @@ Shader* RenderDeviceGL::getCurrentShader() const
     return mCurShader;
 }
 
-void RenderDeviceGL::beginRendering()
+VertexBuffer* RenderDeviceGL::newVertexBuffer()
 {
-    // Get the currently bound frame buffer object.
-    glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &mDefaultFBO);
-
-    mCurVertexLayout = 1;                     mNewVertexLayout = 0;
-    mCurIndexBuffer = 1;                      mNewIndexBuffer = 0;
-    mCurRasterState.hash = 0xFFFFFFFFu;       mNewRasterState.hash = 0u;
-    mCurBlendState.hash = 0xFFFFFFFFu;        mNewBlendState.hash = 0u;
-    mCurDepthStencilState.hash = 0xFFFFFFFFu; mCurDepthStencilState.hash = 0u;
-
-    // for (uint32_t i = 0; i < 16; ++i) setTexture(i, 0, 0);
-
-    setColorWriteMask(true);
-    // mPendingMask = 0xFFFFFFFFu;
-    mVertexBufUpdated = true;
-    commitStates();
-
-    // Bind buffers
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, mDefaultFBO);
+    return new GlVertexBuffer(this);
 }
 
-void RenderDeviceGL::finishRendering()
+uint32_t RenderDeviceGL::usedVertexBufferMemory() const
 {
-    // Nothing to do
+    return mVertexBufferMemory;
 }
 
-uint32_t RenderDeviceGL::createVertexBuffer(uint32_t size, const void* data)
+void RenderDeviceGL::bind(VertexBuffer* buffer, uint8_t slot, uint32_t offset)
 {
-    RDIBuffer buf;
-
-    buf.type = GL_ARRAY_BUFFER;
-    buf.size = size;
-    glGenBuffers(1, &buf.glObj);
-    glBindBuffer(buf.type, buf.glObj);
-    glBufferData(buf.type, size, data, GL_DYNAMIC_DRAW);
-    glBindBuffer(buf.type, 0);
-
-    mBufferMemory += size;
-    return mBuffers.add(buf);
-}
-
-uint32_t RenderDeviceGL::createIndexBuffer(uint32_t size, const void* data)
-{
-    RDIBuffer buf;
-
-    buf.type = GL_ELEMENT_ARRAY_BUFFER;
-    buf.size = size;
-    glGenBuffers(1, &buf.glObj);
-    glBindBuffer(buf.type, buf.glObj);
-    glBufferData(buf.type, size, data, GL_DYNAMIC_DRAW);
-    glBindBuffer(buf.type, 0);
-
-    mBufferMemory += size;
-    return mBuffers.add(buf);
-}
-
-void RenderDeviceGL::destroyBuffer(uint32_t buffer)
-{
-    if (buffer == 0) return;
-
-    RDIBuffer& buf = mBuffers.getRef(buffer);
-    glDeleteBuffers(1, &buf.glObj);
-
-    mBufferMemory -= buf.size;
-    mBuffers.remove(buffer);
-}
-
-bool RenderDeviceGL::updateBufferData(uint32_t buffer, uint32_t offset, uint32_t size,
-    const void* data)
-{
-    const RDIBuffer& buf = mBuffers.getRef(buffer);
-    if (offset + size > buf.size) return false;
-
-    glBindBuffer(buf.type, buf.glObj);
-    if (offset == 0 && size == buf.size) {
-        // Replacing the whole buffer can help the driver to avoid pipeline stalls
-        glBufferData(buf.type, size, data, GL_DYNAMIC_DRAW);
+    auto& vbSlot = mVertBufSlots[slot];
+    if (vbSlot.vbObj != buffer || vbSlot.offset != offset) {
+        vbSlot = {buffer, offset};
+        mVertexBufUpdated = true;
+        mPendingMask |= VertexLayouts;
     }
-    else {
-        glBufferSubData(buf.type, offset, size, data);
-    }
-
-    return true;
 }
 
-uint32_t RenderDeviceGL::getBufferMemory() const
+IndexBuffer* RenderDeviceGL::newIndexBuffer()
 {
-    return mBufferMemory;
+    return new GlIndexBuffer(this);
+}
+
+uint32_t RenderDeviceGL::usedIndexBufferMemory() const
+{
+    return mIndexBufferMemory;
+}
+
+void RenderDeviceGL::bind(IndexBuffer* buffer)
+{
+    mIndexFormat = toIndexFormat[buffer ? buffer->format() : 0];
+    mNewIndexBuffer = buffer;
+    mPendingMask |= IndexBuffers;
 }
 
 uint32_t RenderDeviceGL::createRenderBuffer(uint32_t width, uint32_t height,
@@ -1089,24 +1060,6 @@ void RenderDeviceGL::setScissorRect(int x, int y, int width, int height)
     mPendingMask |= Scissor;
 }
 
-void RenderDeviceGL::setIndexBuffer(uint32_t bufObj, IndexFormat format)
-{
-    mIndexFormat = toIndexFormat[format];
-    mNewIndexBuffer = bufObj;
-    mPendingMask |= IndexBuffer;
-}
-
-void RenderDeviceGL::setVertexBuffer(uint32_t slot, uint32_t vbObj, uint32_t offset,
-    uint32_t stride)
-{
-    auto& vbSlot = mVertBufSlots[slot];
-    if (vbSlot.vbObj == vbObj && vbSlot.offset == offset && vbSlot.stride == stride) return;
-
-    mVertexBufUpdated = true;
-    vbSlot = {vbObj, offset, stride};
-    mPendingMask |= VertexLayouts;
-}
-
 void RenderDeviceGL::setVertexLayout(uint32_t vlObj)
 {
     mNewVertexLayout = vlObj;
@@ -1281,12 +1234,18 @@ bool RenderDeviceGL::applyVertexLayout()
                 VertexLayoutAttrib& attrib = vl.attribs[i];
                 const auto& vbSlot = mVertBufSlots[attrib.vbSlot];
 
-                GLenum format = toVertexFormat[attrib.format];
-                glBindBuffer(GL_ARRAY_BUFFER, mBuffers.getRef(vbSlot.vbObj).glObj);
-                glVertexAttribPointer(
-                    attribIndex, attrib.size, format, format == GL_UNSIGNED_BYTE,
-                    vbSlot.stride, (char*)0 + vbSlot.offset + attrib.offset
-                );
+                GlVertexBuffer* buffer = static_cast<GlVertexBuffer*>(vbSlot.vbObj);
+                if (buffer) {
+                    GLenum format = toVertexFormat[attrib.format];
+                    glBindBuffer(GL_ARRAY_BUFFER, buffer->mHandle);
+                    glVertexAttribPointer(
+                        attribIndex, attrib.size, format, format == GL_UNSIGNED_BYTE,
+                        buffer->stride(), (char*)0 + vbSlot.offset + attrib.offset
+                    );
+                }
+                else {
+                    glBindBuffer(GL_ARRAY_BUFFER, 0);
+                }
 
                 newVertexAttribMask |= 1 << attribIndex;
             }
@@ -1355,20 +1314,11 @@ void RenderDeviceGL::applyRenderStates()
 {
     // Rasterizer state
     if (mNewRasterState.hash != mCurRasterState.hash) {
-        if (mNewRasterState.fillMode == Solid) {
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        }
-        else {
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        }
+        glPolygonMode(GL_FRONT_AND_BACK, mNewRasterState.fillMode == Solid ? GL_FILL : GL_LINE);
 
-        if (mNewRasterState.cullMode == Back) {
+        if (mNewRasterState.cullMode != None) {
             glEnable(GL_CULL_FACE);
-            glCullFace(GL_BACK);
-        }
-        else if (mNewRasterState.cullMode == Front) {
-            glEnable(GL_CULL_FACE);
-            glCullFace(GL_FRONT);
+            glCullFace(mNewRasterState.cullMode == Back ? GL_BACK : GL_FRONT);
         }
         else {
             glDisable(GL_CULL_FACE);
@@ -1424,12 +1374,7 @@ void RenderDeviceGL::applyRenderStates()
 
     // Depth-stencil state
     if (mNewDepthStencilState.hash != mCurDepthStencilState.hash) {
-        if (mNewDepthStencilState.depthWriteMask) {
-            glDepthMask(GL_TRUE);
-        }
-        else {
-            glDepthMask(GL_FALSE);
-        }
+        glDepthMask(mNewDepthStencilState.depthWriteMask ? GL_TRUE : GL_FALSE);
 
         if (mNewDepthStencilState.depthEnable) {
             static uint32_t oglDepthFuncs[] = {
@@ -1662,6 +1607,122 @@ int RenderDeviceGL::GlShader::uniformLocation(const char* name) const
 int RenderDeviceGL::GlShader::samplerLocation(const char* name) const
 {
     return glGetUniformLocation(mHandle, name);
+}
+
+RenderDeviceGL::GlVertexBuffer::GlVertexBuffer(RenderDeviceGL* device) :
+    mDevice(device)
+{
+    // Nothing else to do
+}
+
+RenderDeviceGL::GlVertexBuffer::~GlVertexBuffer()
+{
+    release();
+}
+
+bool RenderDeviceGL::GlVertexBuffer::load(void* data, uint32_t size, uint32_t stride)
+{
+    release();
+
+    glGenBuffers(1, &mHandle);
+    glBindBuffer(GL_ARRAY_BUFFER, mHandle);
+    glBufferData(GL_ARRAY_BUFFER, size, data, GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    mDevice->mVertexBufferMemory += size;
+    mSize = size;
+    mStride = stride;
+    return true;
+}
+
+bool RenderDeviceGL::GlVertexBuffer::update(void* data, uint32_t size, uint32_t offset)
+{
+    if (offset + size > mSize) return false;
+
+    glBindBuffer(GL_ARRAY_BUFFER, mHandle);
+    if (offset == 0u && size == mSize) {
+        glBufferData(GL_ARRAY_BUFFER, size, data, GL_DYNAMIC_DRAW);
+    }
+    else {
+        glBufferSubData(GL_ARRAY_BUFFER, offset, size, data);
+    }
+
+    return true;
+}
+
+uint32_t RenderDeviceGL::GlVertexBuffer::size() const
+{
+    return mSize;
+}
+
+uint32_t RenderDeviceGL::GlVertexBuffer::stride() const
+{
+    return mStride;
+}
+
+void RenderDeviceGL::GlVertexBuffer::release()
+{
+    glDeleteBuffers(1, &mHandle);
+
+    mDevice->mVertexBufferMemory -= mSize;
+}
+
+RenderDeviceGL::GlIndexBuffer::GlIndexBuffer(RenderDeviceGL* device) :
+    mDevice(device)
+{
+    // Nothing else to do
+}
+
+RenderDeviceGL::GlIndexBuffer::~GlIndexBuffer()
+{
+    release();
+}
+
+bool RenderDeviceGL::GlIndexBuffer::load(void* data, uint32_t size, Format format)
+{
+    release();
+
+    glGenBuffers(1, &mHandle);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mHandle);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+    mDevice->mIndexBufferMemory += size;
+    mSize = size;
+    mFormat = format;
+    return true;
+}
+
+bool RenderDeviceGL::GlIndexBuffer::update(void* data, uint32_t size, uint32_t offset)
+{
+    if (offset + size > mSize) return false;
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mHandle);
+    if (offset == 0u && size == mSize) {
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, GL_DYNAMIC_DRAW);
+    }
+    else {
+        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset, size, data);
+    }
+
+    return true;
+}
+
+uint32_t RenderDeviceGL::GlIndexBuffer::size() const
+{
+    return mSize;
+}
+
+IndexBuffer::Format RenderDeviceGL::GlIndexBuffer::format() const
+{
+    return mFormat;
+}
+
+void RenderDeviceGL::GlIndexBuffer::release()
+{
+    glDeleteBuffers(1, &mHandle);
+
+    mDevice->mIndexBufferMemory -= mSize;
 }
 
 #endif

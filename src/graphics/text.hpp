@@ -29,6 +29,9 @@
 #include "../config.hpp"
 
 #include "font.hpp"
+#include "vertexbuffer.hpp"
+
+#include <memory>
 #include <string>
 #include <vector>
 #include <map>
@@ -64,23 +67,17 @@ public:
     void characterPosition(size_t index, float& x, float& y) const;
     void bounds(float& x, float& y, float& w, float& h) const;
 
-    uint32_t arraybuffer(uint32_t& vertexCount, uint32_t index) const;
-    uint32_t* arraybufferIDs(uint32_t* count) const;
+    VertexBuffer* vertexBuffer(uint32_t index) const;
+    uint32_t* vertexBufferIDs(uint32_t* count) const;
 
 protected:
     virtual void ensureGeometryUpdate() const;
-
-    struct VertexList
-    {
-        uint32_t buffer {0u};
-        uint32_t count {0u};
-    };
 
     std::u32string mString;
     const Font*    mFont {nullptr};
     uint32_t       mCharSize {30u};
     uint8_t        mStyle {Regular};
-    mutable std::map<uint32_t, VertexList> mVertices;
+    mutable std::map<uint32_t, std::shared_ptr<VertexBuffer>> mVertices;
     mutable std::vector<uint32_t> mBufferIDs;
     mutable float mBoundsX {0.f}, mBoundsY {0.f}, mBoundsW {0.f}, mBoundsH {0.f};
     mutable bool mNeedsUpdate {false};

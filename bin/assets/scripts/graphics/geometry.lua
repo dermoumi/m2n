@@ -25,9 +25,10 @@
     For more information, please refer to <http://unlicense.org>
 --]]
 
-local Graphics    = require 'graphics'
-local Arraybuffer = require 'graphics.arraybuffer'
-local class       = require 'class'
+local Graphics     = require 'graphics'
+local VertexBuffer = require 'graphics.vertexbuffer'
+local IndexBuffer  = require 'graphics.indexbuffer'
+local class        = require 'class'
 
 local Geometry = class 'graphics.geometry'
 
@@ -91,10 +92,7 @@ end
 
 function Geometry:setVertexData(slot, buffer, size)
     if buffer and size ~= 0 then
-        self._vertexBuffers[slot] = {
-            count = size / self._format.stride[slot],
-            data = Arraybuffer.vertexbuffer(size, buffer)
-        }
+        self._vertexBuffers[slot] = VertexBuffer:new(buffer, size, self._format.stride[slot])
     else
         self._vertexBuffers[slot] = nil
     end
@@ -104,10 +102,8 @@ end
 
 function Geometry:setIndexData(buffer, size)
     if buffer and size ~= 0 then
-        self._indexCount = size / ffi.sizeof('uint16_t')
-        self._indexBuffer = Arraybuffer.indexbuffer(size, buffer)
+        self._indexBuffer = IndexBuffer:new(buffer, size, '16')
     else
-        self._indexCount = 0
         self._indexBuffer = nil
     end
 
@@ -115,24 +111,23 @@ function Geometry:setIndexData(buffer, size)
 end
 
 function Geometry:vertexCount(slot)
-    slot = slot or 1
-    return self._vertexBuffers[slot] and self._vertexBuffers[slot].count or 0
+    return self._vertexBuffers[slot or 1] and self._vertexBuffers[slot or 1]:count() or 0
 end
 
 function Geometry:indexCount()
-    return self._indexCount
+    return self._indexBuffer and self._indexBuffer:count() or 0
 end
 
 function Geometry:_apply()
     local applied = false
 
     for i, buffer in ipairs(self._vertexBuffers) do
-        Arraybuffer.setVertexbuffer(buffer.data, i-1, 0, self._format.stride[i])
+        buffer:bind(i-1)
         applied = true
     end
 
     if applied then
-        Arraybuffer.setIndexbuffer(self._indexBuffer, 16)
+        IndexBuffer.bind(self._indexBuffer, 16)
         C.nxRendererSetVertexLayout(self._format.layout)
         return true
     else

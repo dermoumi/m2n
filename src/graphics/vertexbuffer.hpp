@@ -1,4 +1,4 @@
---[[
+/*
     This is free and unencumbered software released into the public domain.
 
     Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -23,33 +23,23 @@
     OTHER DEALINGS IN THE SOFTWARE.
 
     For more information, please refer to <http://unlicense.org>
---]]
+*/
 
-local Entity2D     = require 'graphics.entity2d'
-local VertexBuffer = require 'graphics.vertexbuffer'
-local Text         = require 'graphics.text'
+#pragma once
+#include "../config.hpp"
 
-local RtlText = Text:subclass('graphics.rtltext')
--- RtlText:include(Entity2D)
+class VertexBuffer
+{
+public:
+    virtual ~VertexBuffer() = default;
 
-local ffi = require 'ffi'
-local C = ffi.C
+    virtual bool load(void* data, uint32_t size, uint32_t stride) = 0;
+    virtual bool update(void* data, uint32_t size, uint32_t offset) = 0;
 
-ffi.cdef [[
-    NxText* nxRtlTextNew();
-]]
+    virtual uint32_t size() const = 0;
+    virtual uint32_t stride() const = 0;
+    virtual uint32_t count() const;
 
-function RtlText:initialize(str, font, charSize)
-    Entity2D.initialize(self)
-
-    self._cdata = ffi.gc(C.nxRtlTextNew(), C.nxTextRelease)
-
-    self:setString(str or '')
-        :setFont(font)
-        :setSize(charSize or 30)
-        
-    self._style = 0
-    self._vertices = VertexBuffer:allocate()
-end
-
-return RtlText
+    static uint32_t usedMemory();
+    static void bind(VertexBuffer* buffer, uint8_t slot = 0, uint32_t offset = 0);
+};
