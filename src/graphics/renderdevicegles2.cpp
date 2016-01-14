@@ -1440,15 +1440,18 @@ RenderDeviceGLES2::RenderBufferGLES2::~RenderBufferGLES2()
     release();
 }
 
-bool RenderDeviceGLES2::RenderBufferGLES2::create(uint8_t format, uint16_t width, uint16_t height,
-    bool depth, uint8_t colBufCount, uint8_t samples)
+bool RenderDeviceGLES2::RenderBufferGLES2::create(Texture::Format format, uint16_t width,
+    uint16_t height, bool depth, uint8_t colBufCount, uint8_t samples)
 {
     if (width == 0 || height == 0u) {
         Log::error("Failed to create render buffer: Invalid size (%ux%u)", width, height);
         return false;
     }
 
-    if ((format == RGBA16F || format == RGBA32F) && !mDevice->mTexFloatSupported) {
+    if (
+        (format == Texture::RGBA16F || format == Texture::RGBA32F)
+        && !mDevice->mTexFloatSupported
+    ) {
         Log::error("Failed to create render buffer: Float formats are unsupported");
         return false;
     }
@@ -1511,7 +1514,7 @@ bool RenderDeviceGLES2::RenderBufferGLES2::create(uint8_t format, uint16_t width
             }
 
             if (samples > 0 && glExt::ANGLE_framebuffer_multisample) {
-                if (format == RGBA8 && glExt::OES_rgb8_rgba8) {
+                if (format == Texture::RGBA8 && glExt::OES_rgb8_rgba8) {
                     glBindFramebuffer(GL_FRAMEBUFFER, mFboMS);
 
                     // Create a multisampled renderbuffer
@@ -1647,7 +1650,7 @@ uint16_t RenderDeviceGLES2::RenderBufferGLES2::height() const
     return mHeight;
 }
 
-uint8_t RenderDeviceGLES2::RenderBufferGLES2::format() const
+Texture::Format RenderDeviceGLES2::RenderBufferGLES2::format() const
 {
     return mFormat;
 }

@@ -144,7 +144,7 @@ bool RenderDeviceGL::initialize()
     mDepthFormat = GL_DEPTH_COMPONENT24;
 
     RenderBuffer* buffer = newRenderBuffer();
-    if (!buffer->create(RGBA8, 32, 32, 1, 1, 0)) {
+    if (!buffer->create(Texture::RGBA8, 32, 32, 1, 1, 0)) {
         mDepthFormat = GL_DEPTH_COMPONENT16;
         Log::warning("Render target depth precision limited to 16 bits");
     }
@@ -1451,15 +1451,18 @@ RenderDeviceGL::RenderBufferGL::~RenderBufferGL()
     release();
 }
 
-bool RenderDeviceGL::RenderBufferGL::create(uint8_t format, uint16_t width, uint16_t height,
-    bool depth, uint8_t colBufCount, uint8_t samples)
+bool RenderDeviceGL::RenderBufferGL::create(Texture::Format format, uint16_t width,
+    uint16_t height, bool depth, uint8_t colBufCount, uint8_t samples)
 {
     if (width == 0u || height == 0u) {
         Log::error("Failed to create render buffer: Invalid size (%ux%u)", width, height);
         return false;
     }
 
-    if ((format == RGBA16F || format == RGBA32F) && !mDevice->mTexFloatSupported) {
+    if (
+        (format == Texture::RGBA16F || format == Texture::RGBA32F)
+        && !mDevice->mTexFloatSupported
+    ) {
         Log::error("Failed to create render buffer: Float formats are unsupported");
         return false;
     }
@@ -1644,7 +1647,7 @@ uint16_t RenderDeviceGL::RenderBufferGL::height() const
     return mHeight;
 }
 
-uint8_t RenderDeviceGL::RenderBufferGL::format() const
+Texture::Format RenderDeviceGL::RenderBufferGL::format() const
 {
     return mFormat;
 }

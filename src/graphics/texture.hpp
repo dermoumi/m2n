@@ -32,6 +32,34 @@
 class Texture
 {
 public:
+    enum Format
+    {
+        Unknown,
+        RGBA8,
+        DXT1,
+        DXT3,
+        DXT5,
+        RGBA16F,
+        RGBA32F,
+
+        PVRTCI_2BPP,
+        PVRTCI_A2BPP,
+        PVRTCI_4BPP,
+        PVRTCI_A4BPP,
+        ETC1,
+
+        DEPTH,
+        Count
+    };
+
+    enum Type
+    {
+        _2D,
+        _3D,
+        _Cube
+    };
+
+public:
     Texture() = default;
     Texture(uint8_t type, uint8_t format, uint32_t handle, uint16_t width, uint16_t height,
         uint16_t depth, uint32_t samplerState, bool rbTexture);

@@ -277,13 +277,13 @@ private:
         RenderBufferGL(RenderDeviceGL* device);
         virtual ~RenderBufferGL();
 
-        virtual bool create(uint8_t format, uint16_t width, uint16_t height, bool depth,
+        virtual bool create(Texture::Format format, uint16_t width, uint16_t height, bool depth,
             uint8_t colBufCount, uint8_t samples);
         virtual Texture* texture(uint8_t index);
 
         virtual uint16_t width() const;
         virtual uint16_t height() const;
-        virtual uint8_t format() const;
+        virtual Texture::Format format() const;
         // TODO: virtual void* data() const;
 
         static constexpr uint32_t MaxColorAttachmentCount = 4;
@@ -300,7 +300,7 @@ private:
         uint16_t mWidth {0u};
         uint16_t mHeight {0u};
         uint8_t mSamples {0u};
-        uint8_t mFormat {0u};
+        Texture::Format mFormat;
 
         uint32_t mDepthTex {0u};
         uint32_t mDepthBuf {0u};

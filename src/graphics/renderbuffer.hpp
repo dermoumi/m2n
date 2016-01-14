@@ -37,14 +37,14 @@ class RenderBuffer
 public:
     virtual ~RenderBuffer() = default;
 
-    virtual bool create(uint8_t format, uint16_t width, uint16_t height, bool depth,
+    virtual bool create(Texture::Format format, uint16_t width, uint16_t height, bool depth,
         uint8_t colBufCount, uint8_t samples) = 0;
     virtual Texture* texture(uint8_t index) = 0;
 
     virtual void size(uint16_t& w, uint16_t& h) const;
     virtual uint16_t width() const = 0;
     virtual uint16_t height() const = 0;
-    virtual uint8_t format() const = 0;
+    virtual Texture::Format format() const = 0;
 
     static void bind(RenderBuffer* buffer);
 };
