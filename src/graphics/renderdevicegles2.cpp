@@ -39,7 +39,7 @@ thread_local const char* defaultShaderVS =
     "uniform mat4 worldMat;\n"
     "attribute vec3 vertPos;\n"
     "void main() {\n"
-    "   gl_Position = viewProjMat * worldMat * vec4(vertPos, 1.0);\n"
+    "    gl_Position = viewProjMat * worldMat * vec4(vertPos, 1.0);\n"
     "}\n";
 
 thread_local const char* defaultShaderFS =
@@ -151,11 +151,11 @@ void RenderDeviceGLES2::initStates()
 
 void RenderDeviceGLES2::resetStates()
 {
-    mCurVertexLayout = 1;                     mNewVertexLayout = 0;
-    mCurIndexBuffer = 1;                      mNewIndexBuffer = 0;
-    mCurRasterState.hash = 0xFFFFFFFFu;       mNewRasterState.hash = 0u;
-    mCurBlendState.hash = 0xFFFFFFFFu;        mNewBlendState.hash = 0u;
-    mCurDepthStencilState.hash = 0xFFFFFFFFu; mCurDepthStencilState.hash = 0u;
+    mCurIndexBuffer = reinterpret_cast<IndexBuffer*>(1u); mNewIndexBuffer = nullptr;
+    mCurVertexLayout = 1;                                 mNewVertexLayout = 0;
+    mCurRasterState.hash = 0xFFFFFFFFu;                   mNewRasterState.hash = 0u;
+    mCurBlendState.hash = 0xFFFFFFFFu;                    mNewBlendState.hash = 0u;
+    mCurDepthStencilState.hash = 0xFFFFFFFFu;             mCurDepthStencilState.hash = 0u;
 
     for (uint32_t i = 0; i < 16; ++i) setTexture(i, 0, 0);
 
@@ -193,19 +193,17 @@ bool RenderDeviceGLES2::commitStates(uint32_t filter)
         }
 
         // Bind index buffer
-        if (mask & IndexBuffer) {
+        if (mask & IndexBuffers) {
             if (mNewIndexBuffer != mCurIndexBuffer) {
-                if (mNewIndexBuffer == 0) {
-                    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-                }
-                else {
-                    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mBuffers.getRef(mNewIndexBuffer).glObj);
-                }
+                glBindBuffer(
+                    GL_ELEMENT_ARRAY_BUFFER,
+                    mNewIndexBuffer ? static_cast<IndexBufferGLES2*>(mNewIndexBuffer)->mHandle : 0
+                );
 
                 mCurIndexBuffer = mNewIndexBuffer;
             }
 
-            mPendingMask &= ~IndexBuffer;
+            mPendingMask &= ~IndexBuffers;
         }
 
         // Bind textures and set sampler state
@@ -300,6 +298,31 @@ void RenderDeviceGLES2::drawIndexed(PrimType primType, uint32_t firstIndex, uint
 
         glDrawElements(toPrimType[primType], indexCount, mIndexFormat, (char*)0 + firstIndex);
     }
+}
+
+void RenderDeviceGLES2::beginRendering()
+{
+    // Get the currently bound frame buffer object.
+    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &mDefaultFBO);
+
+    mCurIndexBuffer = reinterpret_cast<IndexBuffer*>(1u); mNewIndexBuffer = nullptr;
+    mCurVertexLayout = 1;                                 mNewVertexLayout = 0;
+    mCurRasterState.hash = 0xFFFFFFFFu;                   mNewRasterState.hash = 0u;
+    mCurBlendState.hash = 0xFFFFFFFFu;                    mNewBlendState.hash = 0u;
+    mCurDepthStencilState.hash = 0xFFFFFFFFu;             mCurDepthStencilState.hash = 0u;
+
+    setColorWriteMask(true);
+    mVertexBufUpdated = true;
+    commitStates();
+
+    // Bind buffers
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, mDefaultFBO);
+}
+
+void RenderDeviceGLES2::finishRendering()
+{
+    // Nothing to do
 }
 
 uint32_t RenderDeviceGLES2::registerVertexLayout(uint8_t numAttribs,
@@ -622,12 +645,12 @@ uint32_t RenderDeviceGLES2::getTextureMemory() const
 
 Shader* RenderDeviceGLES2::newShader()
 {
-    return new Gles2Shader(this);
+    return new ShaderGLES2(this);
 }
 
-void RenderDeviceGLES2::bindShader(Shader* shader)
+void RenderDeviceGLES2::bind(Shader* shader)
 {
-    glUseProgram(shader ? static_cast<Gles2Shader*>(shader)->mHandle : 0);
+    glUseProgram(shader ? static_cast<ShaderGLES2*>(shader)->mHandle : 0);
 
     mCurShader    = shader;
     mPendingMask |= VertexLayouts;
@@ -653,93 +676,41 @@ Shader* RenderDeviceGLES2::getCurrentShader() const
     return mCurShader;
 }
 
-void RenderDeviceGLES2::beginRendering()
+VertexBuffer* RenderDeviceGLES2::newVertexBuffer()
 {
-    // Get the currently bound frame buffer object.
-    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &mDefaultFBO);
-
-    mCurVertexLayout = 1;                     mNewVertexLayout = 0;
-    mCurIndexBuffer = 1;                      mNewIndexBuffer = 0;
-    mCurRasterState.hash = 0xFFFFFFFFu;       mNewRasterState.hash = 0u;
-    mCurBlendState.hash = 0xFFFFFFFFu;        mNewBlendState.hash = 0u;
-    mCurDepthStencilState.hash = 0xFFFFFFFFu; mCurDepthStencilState.hash = 0u;
-
-    setColorWriteMask(true);
-    mVertexBufUpdated = true;
-    commitStates();
-
-    // Bind buffers
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindFramebuffer(GL_FRAMEBUFFER, mDefaultFBO);
+    return new VertexBufferGLES2(this);
 }
 
-void RenderDeviceGLES2::finishRendering()
+uint32_t RenderDeviceGLES2::usedVertexBufferMemory() const
 {
-    // Nothing to do
+    return mVertexBufferMemory;
 }
 
-uint32_t RenderDeviceGLES2::createVertexBuffer(uint32_t size, const void* data)
+void RenderDeviceGLES2::bind(VertexBuffer* buffer, uint8_t slot, uint32_t offset)
 {
-    RDIBuffer buf;
-
-    buf.type = GL_ARRAY_BUFFER;
-    buf.size = size;
-    glGenBuffers(1, &buf.glObj);
-    glBindBuffer(buf.type, buf.glObj);
-    glBufferData(buf.type, size, data, GL_DYNAMIC_DRAW);
-    glBindBuffer(buf.type, 0);
-
-    mBufferMemory += size;
-    return mBuffers.add(buf);
-}
-
-uint32_t RenderDeviceGLES2::createIndexBuffer(uint32_t size, const void* data)
-{
-    RDIBuffer buf;
-
-    buf.type = GL_ELEMENT_ARRAY_BUFFER;
-    buf.size = size;
-    glGenBuffers(1, &buf.glObj);
-    glBindBuffer(buf.type, buf.glObj);
-    glBufferData(buf.type, size, data, GL_DYNAMIC_DRAW);
-    glBindBuffer(buf.type, 0);
-
-    mBufferMemory += size;
-    return mBuffers.add(buf);
-}
-
-void RenderDeviceGLES2::destroyBuffer(uint32_t buffer)
-{
-    if (buffer == 0) return;
-
-    RDIBuffer& buf = mBuffers.getRef(buffer);
-    if (buf.glObj != 0) glDeleteBuffers(1, &buf.glObj);
-
-    mBufferMemory -= buf.size;
-    mBuffers.remove(buffer);
-}
-
-bool RenderDeviceGLES2::updateBufferData(uint32_t buffer, uint32_t offset, uint32_t size,
-    const void* data)
-{
-    const RDIBuffer& buf = mBuffers.getRef(buffer);
-    if (offset + size > buf.size) return false;
-
-    glBindBuffer(buf.type, buf.glObj);
-    if (offset == 0 && size == buf.size) {
-        // Replacing the whole buffer can help the driver to avoid pipeline stalls
-        glBufferData(buf.type, size, data, GL_DYNAMIC_DRAW);
+    auto& vbSlot = mVertBufSlots[slot];
+    if (vbSlot.vbObj != buffer || vbSlot.offset != offset) {
+        vbSlot = {buffer, offset};
+        mVertexBufUpdated = true;
+        mPendingMask |= VertexLayouts;
     }
-    else {
-        glBufferSubData(buf.type, offset, size, data);
-    }
-
-    return true;
 }
 
-uint32_t RenderDeviceGLES2::getBufferMemory() const
+IndexBuffer* RenderDeviceGLES2::newIndexBuffer()
 {
-    return mBufferMemory;
+    return new IndexBufferGLES2(this);
+}
+
+uint32_t RenderDeviceGLES2::usedIndexBufferMemory() const
+{
+    return mIndexBufferMemory;
+}
+
+void RenderDeviceGLES2::bind(IndexBuffer* buffer)
+{
+    mIndexFormat = toIndexFormat[buffer ? buffer->format() : 0];
+    mNewIndexBuffer = buffer;
+    mPendingMask |= IndexBuffers;
 }
 
 uint32_t RenderDeviceGLES2::createRenderBuffer(uint32_t width, uint32_t height,
@@ -1077,24 +1048,6 @@ void RenderDeviceGLES2::setScissorRect(int x, int y, int width, int height)
     mPendingMask |= Scissor;
 }
 
-void RenderDeviceGLES2::setIndexBuffer(uint32_t bufObj, IndexFormat format)
-{
-    mIndexFormat = toIndexFormat[format];
-    mNewIndexBuffer = bufObj;
-    mPendingMask |= IndexBuffer;
-}
-
-void RenderDeviceGLES2::setVertexBuffer(uint32_t slot, uint32_t vbObj, uint32_t offset,
-    uint32_t stride)
-{
-    auto& vbSlot = mVertBufSlots[slot];
-    if (vbSlot.vbObj == vbObj && vbSlot.offset == offset && vbSlot.stride == stride) return;
-
-    vbSlot = {vbObj, offset, stride};
-    mVertexBufUpdated = true;
-    mPendingMask |= VertexLayouts;
-}
-
 void RenderDeviceGLES2::setVertexLayout(uint32_t vlObj)
 {
     mNewVertexLayout = vlObj;
@@ -1263,7 +1216,7 @@ bool RenderDeviceGLES2::applyVertexLayout()
 
         uint32_t newVertexAttribMask {0u};
 
-        Gles2Shader* shader         = static_cast<Gles2Shader*>(mCurShader);
+        ShaderGLES2* shader         = static_cast<ShaderGLES2*>(mCurShader);
         RDIInputLayout& inputLayout = shader->mInputLayouts[mNewVertexLayout-1];
 
         if (!inputLayout.valid) return false;
@@ -1276,12 +1229,18 @@ bool RenderDeviceGLES2::applyVertexLayout()
                 VertexLayoutAttrib& attrib = vl.attribs[i];
                 const auto& vbSlot = mVertBufSlots[attrib.vbSlot];
 
-                GLenum format = toVertexFormat[attrib.format];
-                glBindBuffer(GL_ARRAY_BUFFER, mBuffers.getRef(vbSlot.vbObj).glObj);
-                glVertexAttribPointer(
-                    attribIndex, attrib.size, format, format == GL_UNSIGNED_BYTE,
-                    vbSlot.stride, (char*)0 + vbSlot.offset + attrib.offset
-                );
+                VertexBufferGLES2* buffer = static_cast<VertexBufferGLES2*>(vbSlot.vbObj);
+                if (buffer) {
+                    GLenum format = toVertexFormat[attrib.format];
+                    glBindBuffer(GL_ARRAY_BUFFER, buffer->mHandle);
+                    glVertexAttribPointer(
+                        attribIndex, attrib.size, format, format == GL_UNSIGNED_BYTE,
+                        buffer->stride(), (char*)0 + vbSlot.offset + attrib.offset
+                    );
+                }
+                else {
+                    glBindBuffer(GL_ARRAY_BUFFER, 0);
+                }
 
                 newVertexAttribMask |= 1 << attribIndex;
             }
@@ -1497,7 +1456,7 @@ void RenderDeviceGLES2::resolveRenderBuffer(uint32_t rbObj)
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER_ANGLE, mDefaultFBO);
 }
 
-RenderDeviceGLES2::Gles2Shader::Gles2Shader(RenderDeviceGLES2* device) :
+RenderDeviceGLES2::ShaderGLES2::ShaderGLES2(RenderDeviceGLES2* device) :
     mDevice(device)
 {
     for (uint32_t i = 0; i < MaxNumVertexLayouts; ++i) {
@@ -1505,12 +1464,12 @@ RenderDeviceGLES2::Gles2Shader::Gles2Shader(RenderDeviceGLES2* device) :
     }
 }
 
-RenderDeviceGLES2::Gles2Shader::~Gles2Shader()
+RenderDeviceGLES2::ShaderGLES2::~ShaderGLES2()
 {
     if (mHandle) glDeleteProgram(mHandle);
 }
 
-bool RenderDeviceGLES2::Gles2Shader::load(const char* vertexShader, const char* fragmentShader)
+bool RenderDeviceGLES2::ShaderGLES2::load(const char* vertexShader, const char* fragmentShader)
 {
     int infoLogLength {0};
     int charsWritten  {0};
@@ -1629,7 +1588,7 @@ bool RenderDeviceGLES2::Gles2Shader::load(const char* vertexShader, const char* 
     return true;
 }
 
-void RenderDeviceGLES2::Gles2Shader::setUniform(int location, uint8_t type, float* data,
+void RenderDeviceGLES2::ShaderGLES2::setUniform(int location, uint8_t type, float* data,
     uint32_t count)
 {
     switch(type) {
@@ -1654,19 +1613,135 @@ void RenderDeviceGLES2::Gles2Shader::setUniform(int location, uint8_t type, floa
     }
 }
 
-void RenderDeviceGLES2::Gles2Shader::setSampler(int location, uint8_t unit)
+void RenderDeviceGLES2::ShaderGLES2::setSampler(int location, uint8_t unit)
 {
     glUniform1i(location, static_cast<int>(unit));
 }
 
-int RenderDeviceGLES2::Gles2Shader::uniformLocation(const char* name) const
+int RenderDeviceGLES2::ShaderGLES2::uniformLocation(const char* name) const
 {
     return glGetUniformLocation(mHandle, name);
 }
 
-int RenderDeviceGLES2::Gles2Shader::samplerLocation(const char* name) const
+int RenderDeviceGLES2::ShaderGLES2::samplerLocation(const char* name) const
 {
     return glGetUniformLocation(mHandle, name);
+}
+
+RenderDeviceGLES2::VertexBufferGLES2::VertexBufferGLES2(RenderDeviceGLES2* device) :
+    mDevice(device)
+{
+    // Nothing else to do
+}
+
+RenderDeviceGLES2::VertexBufferGLES2::~VertexBufferGLES2()
+{
+    release();
+}
+
+bool RenderDeviceGLES2::VertexBufferGLES2::load(void* data, uint32_t size, uint32_t stride)
+{
+    release();
+
+    glGenBuffers(1, &mHandle);
+    glBindBuffer(GL_ARRAY_BUFFER, mHandle);
+    glBufferData(GL_ARRAY_BUFFER, size, data, GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    mDevice->mVertexBufferMemory += size;
+    mSize = size;
+    mStride = stride;
+    return true;
+}
+
+bool RenderDeviceGLES2::VertexBufferGLES2::update(void* data, uint32_t size, uint32_t offset)
+{
+    if (offset + size > mSize) return false;
+
+    glBindBuffer(GL_ARRAY_BUFFER, mHandle);
+    if (offset == 0u && size == mSize) {
+        glBufferData(GL_ARRAY_BUFFER, size, data, GL_DYNAMIC_DRAW);
+    }
+    else {
+        glBufferSubData(GL_ARRAY_BUFFER, offset, size, data);
+    }
+
+    return true;
+}
+
+uint32_t RenderDeviceGLES2::VertexBufferGLES2::size() const
+{
+    return mSize;
+}
+
+uint32_t RenderDeviceGLES2::VertexBufferGLES2::stride() const
+{
+    return mStride;
+}
+
+void RenderDeviceGLES2::VertexBufferGLES2::release()
+{
+    glDeleteBuffers(1, &mHandle);
+
+    mDevice->mVertexBufferMemory -= mSize;
+}
+
+RenderDeviceGLES2::IndexBufferGLES2::IndexBufferGLES2(RenderDeviceGLES2* device) :
+    mDevice(device)
+{
+    // Nothing else to do
+}
+
+RenderDeviceGLES2::IndexBufferGLES2::~IndexBufferGLES2()
+{
+    release();
+}
+
+bool RenderDeviceGLES2::IndexBufferGLES2::load(void* data, uint32_t size, Format format)
+{
+    release();
+
+    glGenBuffers(1, &mHandle);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mHandle);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+    mDevice->mIndexBufferMemory += size;
+    mSize = size;
+    mFormat = format;
+    return true;
+}
+
+bool RenderDeviceGLES2::IndexBufferGLES2::update(void* data, uint32_t size, uint32_t offset)
+{
+    if (offset + size > mSize) return false;
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mHandle);
+    if (offset == 0u && size == mSize) {
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, GL_DYNAMIC_DRAW);
+    }
+    else {
+        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset, size, data);
+    }
+
+    return true;
+}
+
+uint32_t RenderDeviceGLES2::IndexBufferGLES2::size() const
+{
+    return mSize;
+}
+
+IndexBuffer::Format RenderDeviceGLES2::IndexBufferGLES2::format() const
+{
+    return mFormat;
+}
+
+void RenderDeviceGLES2::IndexBufferGLES2::release()
+{
+    glDeleteBuffers(1, &mHandle);
+
+    mDevice->mIndexBufferMemory -= mSize;
 }
 
 #endif

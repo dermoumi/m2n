@@ -315,9 +315,7 @@ void RenderDeviceGL::clear(uint32_t flags, const float* color, float depth)
         glClear(oglClearMask);
     }
 
-    if (mCurRenderBuffer != 0) {
-        glDrawBuffers(4, prevBuffers);
-    }
+    if (mCurRenderBuffer) glDrawBuffers(4, prevBuffers);
 }
 
 void RenderDeviceGL::draw(PrimType primType, uint32_t firstVert, uint32_t vertCount)

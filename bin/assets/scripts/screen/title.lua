@@ -111,4 +111,10 @@ function ScreenTitle:keydown(scancode, keyCode, repeated)
     end
 end
 
+function ScreenTitle:touchdown(id, posX, posY)
+    if id == 2 then
+        self:performTransition(Screen.push, 'screen.test.3d')
+    end
+end
+
 return ScreenTitle

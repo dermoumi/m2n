@@ -47,6 +47,8 @@ public:
     void clear(uint32_t flags, const float* color, float depth);
     void draw(PrimType primType, uint32_t firstVert, uint32_t vertCount);
     void drawIndexed(PrimType primType, uint32_t firstIndex, uint32_t indexCount);
+    void beginRendering();
+    void finishRendering();
 
     // Vertex layouts
     uint32_t registerVertexLayout(uint8_t numAttribs, const VertexLayoutAttrib* attribs);
@@ -64,20 +66,21 @@ public:
 
     // Shaders
     Shader* newShader();
-    void bindShader(Shader* shader);
+    void bind(Shader* shader);
     const std::string& getShaderLog();
     const char* getDefaultVSCode();
     const char* getDefaultFSCode();
     Shader* getCurrentShader() const;
+    
+    // Vertex buffers
+    VertexBuffer* newVertexBuffer();
+    uint32_t usedVertexBufferMemory() const;
+    void bind(VertexBuffer* buffer, uint8_t slot, uint32_t offset);
 
-    // Buffers
-    void beginRendering();
-    void finishRendering();
-    uint32_t createVertexBuffer(uint32_t size, const void* data);
-    uint32_t createIndexBuffer(uint32_t size, const void* data);
-    void destroyBuffer(uint32_t buffer);
-    bool updateBufferData(uint32_t buffer, uint32_t offset, uint32_t size, const void* data);
-    uint32_t getBufferMemory() const;
+    // Index buffers
+    IndexBuffer* newIndexBuffer();
+    uint32_t usedIndexBufferMemory() const;
+    void bind(IndexBuffer* buffer);
 
     // Renderbuffers
     uint32_t createRenderBuffer(uint32_t width, uint32_t height, TextureFormat format, bool depth,
@@ -92,8 +95,6 @@ public:
     // GL States
     void setViewport(int x, int y, int width, int height);
     void setScissorRect(int x, int y, int width, int height);
-    void setIndexBuffer(uint32_t bufObj, IndexFormat idxFmt);
-    void setVertexBuffer(uint32_t slot, uint32_t vbObj, uint32_t offset, uint32_t stride);
     void setVertexLayout(uint32_t vlObj);
     void setTexture(uint32_t slot, uint32_t texObj, uint16_t samplerState);
 
@@ -129,13 +130,6 @@ public:
 
 private:
     constexpr static uint32_t MaxNumVertexLayouts = 16;
-
-    struct RDIBuffer
-    {
-        uint32_t type;
-        uint32_t glObj;
-        uint32_t size;
-    };
 
     struct RDIInputLayout
     {
@@ -187,9 +181,8 @@ private:
 
     struct RDIVertBufSlot
     {
-        uint32_t vbObj;
+        VertexBuffer* vbObj;
         uint32_t offset;
-        uint32_t stride;
     };
 
     struct RDITexSlot
@@ -243,11 +236,11 @@ private:
         };
     };
 
-    class Gles2Shader : public Shader
+    class ShaderGLES2 : public Shader
     {
     public:
-        Gles2Shader(RenderDeviceGLES2* device);
-        virtual ~Gles2Shader();
+        ShaderGLES2(RenderDeviceGLES2* device);
+        virtual ~ShaderGLES2();
 
         virtual bool load(const char* vertexShader, const char* fragmentShader);
         virtual void setUniform(int location, uint8_t type, float* data, uint32_t count = 1);
@@ -264,6 +257,52 @@ private:
         RDIInputLayout     mInputLayouts[MaxNumVertexLayouts];
     };
 
+    class VertexBufferGLES2 : public VertexBuffer
+    {
+    public:
+        VertexBufferGLES2(RenderDeviceGLES2* device);
+        virtual ~VertexBufferGLES2();
+
+        virtual bool load(void* data, uint32_t size, uint32_t stride);
+        virtual bool update(void* data, uint32_t size, uint32_t offset);
+
+        virtual uint32_t size() const;
+        virtual uint32_t stride() const;
+
+    private:
+        friend class RenderDeviceGLES2;
+
+        void release();
+
+        RenderDeviceGLES2* mDevice;
+        uint32_t           mHandle {0u};
+        uint32_t           mSize {0u};
+        uint32_t           mStride {0u};
+    };
+
+    class IndexBufferGLES2 : public IndexBuffer
+    {
+    public:
+        IndexBufferGLES2(RenderDeviceGLES2* device);
+        virtual ~IndexBufferGLES2();
+
+        virtual bool load(void* data, uint32_t size, Format format);
+        virtual bool update(void* data, uint32_t size, uint32_t offset);
+
+        virtual uint32_t size() const;
+        virtual Format format() const;
+
+    private:
+        friend class RenderDeviceGLES2;
+
+        void release();
+
+        RenderDeviceGLES2* mDevice;
+        uint32_t           mHandle {0u};
+        uint32_t           mSize {0u};
+        Format             mFormat {_16};
+    };
+
 private:
     bool applyVertexLayout();
     void applySamplerState(RDITexture& tex);
@@ -274,7 +313,8 @@ private:
     uint32_t mDepthFormat;
     int mVpX {0}, mVpY {0}, mVpWidth {1}, mVpHeight {1};
     int mScX {0}, mScY {0}, mScWidth {1}, mScHeight {1};
-    std::atomic<uint32_t> mBufferMemory  {0u};
+    std::atomic<uint32_t> mVertexBufferMemory {0u};
+    std::atomic<uint32_t> mIndexBufferMemory {0u};
     std::atomic<uint32_t> mTextureMemory {0u};
     int mDefaultFBO        {0};
     int mCurRenderBuffer   {0};
@@ -282,10 +322,9 @@ private:
     int mFbHeight          {0};
     int mOutputBufferIndex {0};
 
-    std::atomic<uint32_t>       mNumVertexLayouts {0u};
-    VertexLayout                mVertexLayouts[MaxNumVertexLayouts];
-    RDIObjects<RDIBuffer>       mBuffers;
-    RDIObjects<RDITexture>      mTextures;
+    std::atomic<uint32_t>  mNumVertexLayouts {0u};
+    VertexLayout           mVertexLayouts[MaxNumVertexLayouts];
+    RDIObjects<RDITexture> mTextures;
     RDIObjects<RDIRenderBuffer> mRenderBuffers;
 
     RDIVertBufSlot       mVertBufSlots[16];
@@ -294,8 +333,8 @@ private:
     RDIBlendState        mCurBlendState,        mNewBlendState;
     RDIDepthStencilState mCurDepthStencilState, mNewDepthStencilState;
     Shader *mPrevShader {nullptr}, *mCurShader {nullptr};
+    IndexBuffer *mCurIndexBuffer {nullptr}, *mNewIndexBuffer {nullptr};
     uint32_t mCurVertexLayout {0u}, mNewVertexLayout {0u};
-    uint32_t mCurIndexBuffer {0u},  mNewIndexBuffer {0u};
     uint32_t mIndexFormat {0u};
     uint32_t mActiveVertexAttribsMask {0u};
     uint32_t mPendingMask {0u};
