@@ -237,7 +237,7 @@ public:
     enum PendingMask : uint32_t
     {
         Viewport      = 1 << 0,
-        IndexBuffers   = 1 << 1,
+        IndexBuffers  = 1 << 1,
         VertexLayouts = 1 << 2,
         Textures      = 1 << 3,
         Scissor       = 1 << 4,
@@ -299,7 +299,7 @@ public:
 
     // Shaders
     virtual Shader* newShader() = 0;
-    virtual void bindShader(Shader* shaderID) = 0;
+    virtual void bind(Shader* shader) = 0;
     virtual const std::string& getShaderLog() = 0;
     virtual const char* getDefaultVSCode() = 0;
     virtual const char* getDefaultFSCode() = 0;

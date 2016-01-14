@@ -45,5 +45,5 @@ const char* Shader::defaultFSCode()
 
 void Shader::bind(Shader* shader)
 {
-    RenderDevice::instance().bindShader(shader);
+    RenderDevice::instance().bind(shader);
 }

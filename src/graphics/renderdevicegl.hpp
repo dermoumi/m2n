@@ -66,7 +66,7 @@ public:
 
     // Shaders
     Shader* newShader();
-    void bindShader(Shader* shaderID);
+    void bind(Shader* shader);
     const std::string& getShaderLog();
     const char* getDefaultVSCode();
     const char* getDefaultFSCode();
@@ -236,11 +236,11 @@ private:
         };
     };
 
-    class GlShader : public Shader
+    class ShaderGL : public Shader
     {
     public:
-        GlShader(RenderDeviceGL* device);
-        virtual ~GlShader();
+        ShaderGL(RenderDeviceGL* device);
+        virtual ~ShaderGL();
 
         virtual bool load(const char* vertexShader, const char* fragmentShader);
         virtual void setUniform(int location, uint8_t type, float* data, uint32_t count = 1);
@@ -257,11 +257,11 @@ private:
         RDIInputLayout  mInputLayouts[MaxNumVertexLayouts];
     };
 
-    class GlVertexBuffer : public VertexBuffer
+    class VertexBufferGL : public VertexBuffer
     {
     public:
-        GlVertexBuffer(RenderDeviceGL* device);
-        virtual ~GlVertexBuffer();
+        VertexBufferGL(RenderDeviceGL* device);
+        virtual ~VertexBufferGL();
 
         virtual bool load(void* data, uint32_t size, uint32_t stride);
         virtual bool update(void* data, uint32_t size, uint32_t offset);
@@ -280,11 +280,11 @@ private:
         uint32_t        mStride {0u};
     };
 
-    class GlIndexBuffer : public IndexBuffer
+    class IndexBufferGL : public IndexBuffer
     {
     public:
-        GlIndexBuffer(RenderDeviceGL* device);
-        virtual ~GlIndexBuffer();
+        IndexBufferGL(RenderDeviceGL* device);
+        virtual ~IndexBufferGL();
 
         virtual bool load(void* data, uint32_t size, Format format);
         virtual bool update(void* data, uint32_t size, uint32_t offset);

@@ -210,7 +210,7 @@ bool RenderDeviceGL::commitStates(uint32_t filter)
             if (mNewIndexBuffer != mCurIndexBuffer) {
                 glBindBuffer(
                     GL_ELEMENT_ARRAY_BUFFER,
-                    mNewIndexBuffer ? static_cast<GlIndexBuffer*>(mNewIndexBuffer)->mHandle : 0
+                    mNewIndexBuffer ? static_cast<IndexBufferGL*>(mNewIndexBuffer)->mHandle : 0
                 );
 
                 mCurIndexBuffer = mNewIndexBuffer;
@@ -679,12 +679,12 @@ uint32_t RenderDeviceGL::getTextureMemory() const
 
 Shader* RenderDeviceGL::newShader()
 {
-    return new GlShader(this);
+    return new ShaderGL(this);
 }
 
-void RenderDeviceGL::bindShader(Shader* shader)
+void RenderDeviceGL::bind(Shader* shader)
 {
-    glUseProgram(shader ? static_cast<GlShader*>(shader)->mHandle : 0);
+    glUseProgram(shader ? static_cast<ShaderGL*>(shader)->mHandle : 0);
 
     mCurShader = shader;
     mPendingMask |= VertexLayouts;
@@ -712,7 +712,7 @@ Shader* RenderDeviceGL::getCurrentShader() const
 
 VertexBuffer* RenderDeviceGL::newVertexBuffer()
 {
-    return new GlVertexBuffer(this);
+    return new VertexBufferGL(this);
 }
 
 uint32_t RenderDeviceGL::usedVertexBufferMemory() const
@@ -732,7 +732,7 @@ void RenderDeviceGL::bind(VertexBuffer* buffer, uint8_t slot, uint32_t offset)
 
 IndexBuffer* RenderDeviceGL::newIndexBuffer()
 {
-    return new GlIndexBuffer(this);
+    return new IndexBufferGL(this);
 }
 
 uint32_t RenderDeviceGL::usedIndexBufferMemory() const
@@ -1221,7 +1221,7 @@ bool RenderDeviceGL::applyVertexLayout()
 
         uint32_t newVertexAttribMask {0u};
 
-        GlShader* shader            = static_cast<GlShader*>(mCurShader);
+        ShaderGL* shader            = static_cast<ShaderGL*>(mCurShader);
         RDIInputLayout& inputLayout = shader->mInputLayouts[mNewVertexLayout-1];
 
         if (!inputLayout.valid) return false;
@@ -1234,7 +1234,7 @@ bool RenderDeviceGL::applyVertexLayout()
                 VertexLayoutAttrib& attrib = vl.attribs[i];
                 const auto& vbSlot = mVertBufSlots[attrib.vbSlot];
 
-                GlVertexBuffer* buffer = static_cast<GlVertexBuffer*>(vbSlot.vbObj);
+                VertexBufferGL* buffer = static_cast<VertexBufferGL*>(vbSlot.vbObj);
                 if (buffer) {
                     GLenum format = toVertexFormat[attrib.format];
                     glBindBuffer(GL_ARRAY_BUFFER, buffer->mHandle);
@@ -1437,7 +1437,7 @@ void RenderDeviceGL::resolveRenderBuffer(uint32_t rbObj)
     glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, mDefaultFBO);
 }
 
-RenderDeviceGL::GlShader::GlShader(RenderDeviceGL* device) :
+RenderDeviceGL::ShaderGL::ShaderGL(RenderDeviceGL* device) :
     mDevice(device)
 {
     for (uint32_t i = 0; i < MaxNumVertexLayouts; ++i) {
@@ -1445,12 +1445,12 @@ RenderDeviceGL::GlShader::GlShader(RenderDeviceGL* device) :
     }
 }
 
-RenderDeviceGL::GlShader::~GlShader()
+RenderDeviceGL::ShaderGL::~ShaderGL()
 {
     if (mHandle) glDeleteProgram(mHandle);
 }
 
-bool RenderDeviceGL::GlShader::load(const char* vertexShader, const char* fragmentShader)
+bool RenderDeviceGL::ShaderGL::load(const char* vertexShader, const char* fragmentShader)
 {
     int infoLogLength {0};
     int charsWritten  {0};
@@ -1569,7 +1569,7 @@ bool RenderDeviceGL::GlShader::load(const char* vertexShader, const char* fragme
     return true;
 }
 
-void RenderDeviceGL::GlShader::setUniform(int location, uint8_t type, float* data,
+void RenderDeviceGL::ShaderGL::setUniform(int location, uint8_t type, float* data,
     uint32_t count)
 {
     switch(type) {
@@ -1594,33 +1594,33 @@ void RenderDeviceGL::GlShader::setUniform(int location, uint8_t type, float* dat
     }
 }
 
-void RenderDeviceGL::GlShader::setSampler(int location, uint8_t unit)
+void RenderDeviceGL::ShaderGL::setSampler(int location, uint8_t unit)
 {
     glUniform1i(location, static_cast<int>(unit));
 }
 
-int RenderDeviceGL::GlShader::uniformLocation(const char* name) const
+int RenderDeviceGL::ShaderGL::uniformLocation(const char* name) const
 {
     return glGetUniformLocation(mHandle, name);
 }
 
-int RenderDeviceGL::GlShader::samplerLocation(const char* name) const
+int RenderDeviceGL::ShaderGL::samplerLocation(const char* name) const
 {
     return glGetUniformLocation(mHandle, name);
 }
 
-RenderDeviceGL::GlVertexBuffer::GlVertexBuffer(RenderDeviceGL* device) :
+RenderDeviceGL::VertexBufferGL::VertexBufferGL(RenderDeviceGL* device) :
     mDevice(device)
 {
     // Nothing else to do
 }
 
-RenderDeviceGL::GlVertexBuffer::~GlVertexBuffer()
+RenderDeviceGL::VertexBufferGL::~VertexBufferGL()
 {
     release();
 }
 
-bool RenderDeviceGL::GlVertexBuffer::load(void* data, uint32_t size, uint32_t stride)
+bool RenderDeviceGL::VertexBufferGL::load(void* data, uint32_t size, uint32_t stride)
 {
     release();
 
@@ -1635,7 +1635,7 @@ bool RenderDeviceGL::GlVertexBuffer::load(void* data, uint32_t size, uint32_t st
     return true;
 }
 
-bool RenderDeviceGL::GlVertexBuffer::update(void* data, uint32_t size, uint32_t offset)
+bool RenderDeviceGL::VertexBufferGL::update(void* data, uint32_t size, uint32_t offset)
 {
     if (offset + size > mSize) return false;
 
@@ -1650,35 +1650,35 @@ bool RenderDeviceGL::GlVertexBuffer::update(void* data, uint32_t size, uint32_t 
     return true;
 }
 
-uint32_t RenderDeviceGL::GlVertexBuffer::size() const
+uint32_t RenderDeviceGL::VertexBufferGL::size() const
 {
     return mSize;
 }
 
-uint32_t RenderDeviceGL::GlVertexBuffer::stride() const
+uint32_t RenderDeviceGL::VertexBufferGL::stride() const
 {
     return mStride;
 }
 
-void RenderDeviceGL::GlVertexBuffer::release()
+void RenderDeviceGL::VertexBufferGL::release()
 {
     glDeleteBuffers(1, &mHandle);
 
     mDevice->mVertexBufferMemory -= mSize;
 }
 
-RenderDeviceGL::GlIndexBuffer::GlIndexBuffer(RenderDeviceGL* device) :
+RenderDeviceGL::IndexBufferGL::IndexBufferGL(RenderDeviceGL* device) :
     mDevice(device)
 {
     // Nothing else to do
 }
 
-RenderDeviceGL::GlIndexBuffer::~GlIndexBuffer()
+RenderDeviceGL::IndexBufferGL::~IndexBufferGL()
 {
     release();
 }
 
-bool RenderDeviceGL::GlIndexBuffer::load(void* data, uint32_t size, Format format)
+bool RenderDeviceGL::IndexBufferGL::load(void* data, uint32_t size, Format format)
 {
     release();
 
@@ -1693,7 +1693,7 @@ bool RenderDeviceGL::GlIndexBuffer::load(void* data, uint32_t size, Format forma
     return true;
 }
 
-bool RenderDeviceGL::GlIndexBuffer::update(void* data, uint32_t size, uint32_t offset)
+bool RenderDeviceGL::IndexBufferGL::update(void* data, uint32_t size, uint32_t offset)
 {
     if (offset + size > mSize) return false;
 
@@ -1708,17 +1708,17 @@ bool RenderDeviceGL::GlIndexBuffer::update(void* data, uint32_t size, uint32_t o
     return true;
 }
 
-uint32_t RenderDeviceGL::GlIndexBuffer::size() const
+uint32_t RenderDeviceGL::IndexBufferGL::size() const
 {
     return mSize;
 }
 
-IndexBuffer::Format RenderDeviceGL::GlIndexBuffer::format() const
+IndexBuffer::Format RenderDeviceGL::IndexBufferGL::format() const
 {
     return mFormat;
 }
 
-void RenderDeviceGL::GlIndexBuffer::release()
+void RenderDeviceGL::IndexBufferGL::release()
 {
     glDeleteBuffers(1, &mHandle);
 
