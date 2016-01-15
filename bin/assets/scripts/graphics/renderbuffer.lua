@@ -50,13 +50,13 @@ ffi.cdef [[
 ]]
 
 function RenderBuffer.static.bind(buffer)
-    if buffer then buffer = buffer._cdata end
-    C.nxRenderBufferBind(buffer)
+    C.nxRenderBufferBind(buffer and buffer._cdata)
 
     return RenderBuffer
 end
 
 function RenderBuffer:initialize(width, height, depth, samples, numColBufs)
+    self._cdata = ffi.gc(C.nxRenderBufferNew(), C.nxRenderBufferRelease)
     self._textures = {}
 
     if width and height then
@@ -65,11 +65,8 @@ function RenderBuffer:initialize(width, height, depth, samples, numColBufs)
 end
 
 function RenderBuffer:release()
-    if not self._cdata then return end
-
-    C.nxRenderBufferRelease(ffi.gc(self._cdata, nil))
-    self._cdata = nil
     self._textures = {}
+    C.nxRenderBufferRelease(ffi.gc(self._cdata, nil))
 end
 
 function RenderBuffer:bind()
@@ -80,23 +77,16 @@ function RenderBuffer:bind()
 end
 
 function RenderBuffer:create(width, height, depth, samples, numColBufs)
-    self:release()
-
-    if depth == nil then depth = false end
-    samples = samples or Config.multisamplingLevel
-    numColBufs = numColBufs or 1
-
-    local handle = C.nxRenderBufferNew()
-    C.nxRenderBufferCreate(handle, 1, width, height, depth, numColBufs, samples)
-
-    self._cdata = ffi.gc(handle, C.nxRenderBufferRelease)
+    C.nxRenderBufferCreate(
+        self._cdata, 1, width, height, not not depth, numColBufs or 1,
+        samples or Config.multisamplingLevel
+    )
+    self._textures = {}
 
     return self
 end
 
 function RenderBuffer:texture(bufIndex)
-    if self._cdata == nil then return Texture:new() end
-
     if bufIndex == 'depth' then
         bufIndex = 32
     elseif not bufIndex then
