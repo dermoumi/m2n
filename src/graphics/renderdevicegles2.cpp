@@ -1658,7 +1658,7 @@ Texture::Format RenderDeviceGLES2::RenderBufferGLES2::format() const
 void RenderDeviceGLES2::RenderBufferGLES2::resolve()
 {
     // Only needed when using ANGLE_framebuffer_multisample (which uses fboMS)
-    if (mFboMS) return;
+    if (!mFboMS) return;
 
     glBindFramebuffer(GL_READ_FRAMEBUFFER_ANGLE, mFboMS);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER_ANGLE, mFbo);
