@@ -130,6 +130,10 @@ local function loadFunc(stagePtr, vm, gpu, proc, obj, name, params)
     if gpu then require('graphics').sync() end
 end
 
+local function isLoadable(str)
+    return type(str) == 'string' and str:match('.:.') and registeredTypes[str:match('[^:]+')]
+end
+
 local function addLoadingTask(screen, id)
     -- Check if task already exists
     for i, task in pairs(loadingTasks) do
@@ -265,7 +269,7 @@ function Cache.iteration()
                     local entries = (stage == 1) and task.params or subTask.entries
                     if entries then
                         for i, entry in ipairs(entries) do
-                            if type(entry) == 'string' and entry:match('.:.') then
+                            if isLoadable(entry) then
                                 params[#params+1] = cache(task.screen, entry, true)
                             elseif not depsChanged then
                                 params[#params+1] = entry
@@ -275,7 +279,7 @@ function Cache.iteration()
                         -- Pop IDs from the vm and repopulate it with instances
                         subTask.entries = {task.vm:pop(task.vm:top(), true)}
                         for i, entry in ipairs(subTask.entries) do
-                            if type(entry) == 'string' and entry:match('.:.') then
+                            if isLoadable(entry) then
                                 depsChanged = true
                                 local temporary = false
                                 if entry:match('^#.') then

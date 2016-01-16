@@ -52,11 +52,13 @@ ffi.cdef [[
 ]]
 
 function Shader.static.factory(task)
-    task:addTask('gpu', function(shader, filename)
+    task:addTask(true, function(shader, filename)
             local shaders = loadfile(filename)
-            if not shaders then return false end
+            if not shaders then return error('Unable to load shaders file: ' .. filename) end
 
-            local vs, fs = shaders()
+            return shaders()
+        end)
+        :addTask(function(shader, filename, vs, fs)
             shader:load(vs, fs)
         end)
 end

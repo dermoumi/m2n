@@ -36,5 +36,5 @@ return {
     textureFormat = 'rgba8',
 
     -- True to allow multi-threading on the GPU
-    noGpuMultithreading = false
+    noGpuMultithreading = true
 }
