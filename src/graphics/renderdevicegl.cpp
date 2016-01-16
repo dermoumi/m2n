@@ -1175,7 +1175,7 @@ bool RenderDeviceGL::RenderBufferGL::create(Texture::Format format, uint16_t wid
             glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, mFbo);
 
             // Create a color texture
-            TextureGL* tex = static_cast<TextureGL*>(mDevice->newTexture());
+            auto tex = static_cast<TextureGL*>(mDevice->newTexture());
             tex->create(Texture::_2D, format, width, height, 1, false, false, false);
             tex->setData(nullptr, 0, 0);
             tex->mRenderBuffer = this;
@@ -1233,7 +1233,7 @@ bool RenderDeviceGL::RenderBufferGL::create(Texture::Format format, uint16_t wid
         glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, mFbo);
 
         // Create a depth texture
-        TextureGL* tex = static_cast<TextureGL*>(mDevice->newTexture());
+        auto tex = static_cast<TextureGL*>(mDevice->newTexture());
         tex->create(Texture::_2D, Texture::DEPTH, width, height, 1, false, false, false);
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
@@ -1353,12 +1353,12 @@ void RenderDeviceGL::RenderBufferGL::release()
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, mDevice->mDefaultFBO);
 
     for (uint32_t i = 0; i < MaxColorAttachmentCount; ++i) {
-        if (mColTexs[i]) mColTexs[i] = nullptr;
         if (mColBufs[i]) glDeleteRenderbuffersEXT(1, &mColBufs[i]);
+        mColTexs[i] = nullptr;
     }
 
-    if (mDepthTex) mDepthTex = nullptr;
     if (mDepthBuf) glDeleteRenderbuffersEXT(1, &mDepthBuf);
+    mDepthTex = nullptr;
 
     if (mFbo) glDeleteFramebuffersEXT(1, &mFbo);
     if (mFboMS) glDeleteFramebuffersEXT(1, &mFboMS);
@@ -1379,7 +1379,7 @@ bool RenderDeviceGL::TextureGL::create(Type type, Format format, uint16_t width,
     uint16_t depth, bool hasMips, bool mipMaps, bool srgb)
 {
     if (mRenderBuffer) {
-        Log::error("Attemte to create a new texture over renderbuffer texture");
+        Log::error("Attempt to create a new texture over renderbuffer texture");
         return false;
     }
 
@@ -1496,7 +1496,7 @@ bool RenderDeviceGL::TextureGL::create(Type type, Format format, uint16_t width,
 void RenderDeviceGL::TextureGL::setData(const void* buffer, uint8_t slice, uint8_t level)
 {
     if (mRenderBuffer) {
-        Log::error("Attemting to alter data of a render buffer texture");
+        Log::error("Attempt to alter data of a render buffer texture");
         return;
     }
 
@@ -1820,11 +1820,11 @@ void RenderDeviceGL::TextureGL::applyState() const
     glTexParameteri(mGlType, GL_TEXTURE_WRAP_R, wrapModes[which]);
 
     if (mState & LEqual) {
-        glTexParameteri(mGlType, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
-        glTexParameteri(mGlType, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
     }
     else {
-        glTexParameteri(mGlType, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
     }
 }
 

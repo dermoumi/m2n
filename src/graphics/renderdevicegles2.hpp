@@ -53,25 +53,6 @@ public:
     // Vertex layouts
     uint32_t registerVertexLayout(uint8_t numAttribs, const VertexLayoutAttrib* attribs);
 
-    // Textures
-    uint32_t createTexture(TextureType type, int width, int height, unsigned int depth,
-        TextureFormat format, bool hasMips, bool genMips, bool sRGB);
-    void uploadTextureData(uint32_t texObj, int slice, int mipLevel, const void* pixels);
-    void uploadTextureSubData(uint32_t texObj, int slice, int mipLevel, unsigned int x,
-        unsigned int y, unsigned int z, unsigned int width, unsigned int height, unsigned int depth,
-        const void* pixels);
-    void destroyTexture(uint32_t texObj);
-    bool getTextureData(uint32_t texObj, int slice, int mipLevel, void* buffer);
-    uint32_t getTextureMemory() const;
-
-    // Shaders
-    Shader* newShader();
-    void bind(Shader* shader);
-    const std::string& getShaderLog();
-    const char* getDefaultVSCode();
-    const char* getDefaultFSCode();
-    Shader* getCurrentShader() const;
-    
     // Vertex buffers
     VertexBuffer* newVertexBuffer();
     uint32_t usedVertexBufferMemory() const;
@@ -82,6 +63,19 @@ public:
     uint32_t usedIndexBufferMemory() const;
     void bind(IndexBuffer* buffer);
 
+    // Textures
+    Texture* newTexture();
+    void bind(const Texture* texture, uint8_t slot);
+    uint32_t usedTextureMemory() const;
+
+    // Shaders
+    Shader* newShader();
+    void bind(Shader* shader);
+    const std::string& getShaderLog();
+    const char* getDefaultVSCode();
+    const char* getDefaultFSCode();
+    Shader* getCurrentShader() const;
+    
     // Renderbuffers
     RenderBuffer* newRenderBuffer();
     void bind(RenderBuffer* buffer);
@@ -90,7 +84,6 @@ public:
     void setViewport(int x, int y, int width, int height);
     void setScissorRect(int x, int y, int width, int height);
     void setVertexLayout(uint32_t vlObj);
-    void setTexture(uint32_t slot, uint32_t texObj, uint16_t samplerState);
 
     // Render states
     void setColorWriteMask(bool enabled);
@@ -131,32 +124,10 @@ private:
         int8_t attribIndices[16];
     };
 
-    struct RDITexture
-    {
-        uint32_t      glObj;
-        uint32_t      glFmt;
-        int           type;
-        TextureFormat format;
-        int           width;
-        int           height;
-        int           depth;
-        int           memSize;
-        uint32_t      samplerState;
-        bool          sRGB;
-        bool          hasMips;
-        bool          genMips;
-    };
-
     struct RDIVertBufSlot
     {
         VertexBuffer* vbObj;
         uint32_t offset;
-    };
-
-    struct RDITexSlot
-    {
-        uint32_t texObj;
-        uint32_t samplerState;
     };
 
     struct RDIRasterState
@@ -208,14 +179,14 @@ private:
     {
     public:
         ShaderGLES2(RenderDeviceGLES2* device);
-        virtual ~ShaderGLES2();
+        ~ShaderGLES2();
 
-        virtual bool load(const char* vertexShader, const char* fragmentShader);
-        virtual void setUniform(int location, uint8_t type, float* data, uint32_t count = 1);
-        virtual void setSampler(int location, uint8_t unit);
+        bool load(const char* vertexShader, const char* fragmentShader);
+        void setUniform(int location, uint8_t type, float* data, uint32_t count = 1);
+        void setSampler(int location, uint8_t unit);
 
-        virtual int uniformLocation(const char* name) const;
-        virtual int samplerLocation(const char* name) const;
+        int uniformLocation(const char* name) const;
+        int samplerLocation(const char* name) const;
 
     private:
         friend class RenderDeviceGLES2;
@@ -229,13 +200,13 @@ private:
     {
     public:
         VertexBufferGLES2(RenderDeviceGLES2* device);
-        virtual ~VertexBufferGLES2();
+        ~VertexBufferGLES2();
 
-        virtual bool load(void* data, uint32_t size, uint32_t stride);
-        virtual bool update(void* data, uint32_t size, uint32_t offset);
+        bool load(void* data, uint32_t size, uint32_t stride);
+        bool update(void* data, uint32_t size, uint32_t offset);
 
-        virtual uint32_t size() const;
-        virtual uint32_t stride() const;
+        uint32_t size() const;
+        uint32_t stride() const;
 
     private:
         friend class RenderDeviceGLES2;
@@ -252,13 +223,13 @@ private:
     {
     public:
         IndexBufferGLES2(RenderDeviceGLES2* device);
-        virtual ~IndexBufferGLES2();
+        ~IndexBufferGLES2();
 
-        virtual bool load(void* data, uint32_t size, Format format);
-        virtual bool update(void* data, uint32_t size, uint32_t offset);
+        bool load(void* data, uint32_t size, Format format);
+        bool update(void* data, uint32_t size, uint32_t offset);
 
-        virtual uint32_t size() const;
-        virtual Format format() const;
+        uint32_t size() const;
+        Format format() const;
 
     private:
         friend class RenderDeviceGLES2;
@@ -271,19 +242,82 @@ private:
         Format             mFormat {_16};
     };
 
+    class RenderBufferGLES2;
+    class TextureGLES2 : Texture
+    {
+    public:
+        TextureGLES2(RenderDeviceGLES2* device);
+        ~TextureGLES2();
+
+        bool create(Type type, Format format, uint16_t width, uint16_t height,
+            uint16_t depth, bool hasMips, bool mipMaps, bool srgb);
+        void setData(const void* buffer, uint8_t slice, uint8_t level);
+        void setSubData(const void* buffer, uint16_t x, uint16_t y, uint16_t z, uint16_t width,
+            uint16_t height, uint16_t depth, uint8_t slice, uint8_t level);
+        bool data(void* buffer, uint8_t slice, uint8_t level) const;
+        uint32_t bufferSize() const;
+
+        uint16_t width() const;
+        uint16_t height() const;
+        uint16_t depth() const;
+
+        void setFilter(Filter filter);
+        void setAnisotropyLevel(Anisotropy aniso);
+        void setRepeating(uint32_t repeating);
+        void setLessOrEqual(bool enable);
+
+        Filter filter() const;
+        Anisotropy anisotropyLevel() const;
+        uint32_t repeating() const;
+        bool lessOrEqual() const;
+
+        bool flipCoords() const;
+        Type type() const;
+        Format format() const;
+
+    private:
+        friend class RenderDeviceGLES2;
+        friend class RenderBufferGLES2;
+
+        void release();
+        void applyState() const;
+
+        RenderDeviceGLES2* mDevice;
+        uint32_t mHandle {0u};
+        uint32_t mGlFormat {0u};
+        uint32_t mGlType {0u};
+        Type mType {_2D};
+        Format mFormat {Unknown};
+        uint16_t mWidth {0u};
+        uint16_t mHeight {0u};
+        uint16_t mDepth {0u};
+        bool mSrgb {false};
+        bool mHasMips {true};
+        bool mMipMaps {true};
+        uint32_t mState {0u};
+        uint32_t mMemSize {0u};
+        RenderBufferGLES2* mRenderBuffer {nullptr};
+    };
+
+    struct TextureSlot
+    {
+        const TextureGLES2* texture {nullptr};
+        uint32_t            state {0u};
+    };
+
     class RenderBufferGLES2 : public RenderBuffer
     {
     public:
         RenderBufferGLES2(RenderDeviceGLES2* device);
-        virtual ~RenderBufferGLES2();
+        ~RenderBufferGLES2();
 
-        virtual bool create(Texture::Format format, uint16_t width, uint16_t height, bool depth,
+        bool create(Texture::Format format, uint16_t width, uint16_t height, bool depth,
             uint8_t colBufCount, uint8_t samples);
-        virtual Texture* texture(uint8_t index);
+        Texture* texture(uint8_t index);
 
-        virtual uint16_t width() const;
-        virtual uint16_t height() const;
-        virtual Texture::Format format() const;
+        uint16_t width() const;
+        uint16_t height() const;
+        Texture::Format format() const;
         // TODO: virtual void* data() const;
 
         static constexpr uint32_t MaxColorAttachmentCount = 4;
@@ -302,18 +336,16 @@ private:
         uint8_t mSamples {0u};
         Texture::Format mFormat;
 
-        uint32_t mDepthTex {0u};
+        std::shared_ptr<TextureGLES2> mDepthTex;
+        std::shared_ptr<TextureGLES2> mColTexs[MaxColorAttachmentCount];
         uint32_t mDepthBuf {0u};
         uint32_t mDepthBufMS {0u};
-        uint32_t mColTexs[MaxColorAttachmentCount];
         uint32_t mColBufs[MaxColorAttachmentCount];
 
-        std::shared_ptr<Texture> mTextures[5];
     };
 
 private:
     bool applyVertexLayout();
-    void applySamplerState(RDITexture& tex);
     void applyRenderStates();
 
 private:
@@ -331,10 +363,9 @@ private:
 
     std::atomic<uint32_t>  mNumVertexLayouts {0u};
     VertexLayout           mVertexLayouts[MaxNumVertexLayouts];
-    RDIObjects<RDITexture> mTextures;
 
     RDIVertBufSlot       mVertBufSlots[16];
-    RDITexSlot           mTexSlots[16];
+    TextureSlot          mTexSlots[16];
     RDIRasterState       mCurRasterState,       mNewRasterState;
     RDIBlendState        mCurBlendState,        mNewBlendState;
     RDIDepthStencilState mCurDepthStencilState, mNewDepthStencilState;
