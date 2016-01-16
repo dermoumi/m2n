@@ -36,7 +36,7 @@ static uint16_t maximumSize()
     RenderDevice::instance().getCapabilities(nullptr, &maxSize, nullptr, nullptr, nullptr, nullptr,
         nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
         nullptr);
-    return maxSize;
+    return static_cast<uint16_t>(maxSize);
 }
 
 void Texture::size(uint16_t& w, uint16_t& h, uint16_t& d) const

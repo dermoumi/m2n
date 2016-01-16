@@ -69,10 +69,10 @@ ffi.cdef [[
 
     NxAudioSource* nxAudioSourceCreate();
     void nxAudioSourceLoadFile(NxAudioSource*, const char*);
-    void nxAudioSourceLoadMemory(NxAudioSource*, uint8_t*, size_t);
+    void nxAudioSourceLoadMemory(NxAudioSource*, uint8_t*, uint32_t);
     double nxAudioSourceStaticLength(NxAudioSource*);
     void nxAudioSourceOpenFile(NxAudioSource*, const char*);
-    void nxAudioSourceOpenMemory(NxAudioSource*, uint8_t* buffer, size_t size);
+    void nxAudioSourceOpenMemory(NxAudioSource*, uint8_t*, uint32_t);
     double nxAudioSourceStreamLength(NxAudioSource*);
 ]]
 

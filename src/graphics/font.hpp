@@ -38,12 +38,12 @@ struct Glyph
     float top     {0.f};
     float width   {0.f};
     float height  {0.f};
-    uint32_t texLeft   {0};
-    uint32_t texTop    {0};
-    uint32_t texWidth  {0};
-    uint32_t texHeight {0};
+    uint16_t texLeft   {0u};
+    uint16_t texTop    {0u};
+    uint16_t texWidth  {0u};
+    uint16_t texHeight {0u};
 
-    uint32_t page {0};
+    uint32_t page {0u};
     bool valid {false};
 };
 

@@ -41,7 +41,7 @@ NX_EXPORT uint32_t nxKeyboardToScancode(uint32_t keysym)
 
 NX_EXPORT bool nxKeyboardModKeyDown(uint16_t mod)
 {
-    return (SDL_GetModState() & mod);
+    return (SDL_GetModState() & mod) != 0;
 }
 
 NX_EXPORT void nxKeyboardStartTextInput(int x, int y, int w, int h)

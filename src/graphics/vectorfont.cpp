@@ -384,7 +384,8 @@ Glyph VectorFont::loadGlyph(uint32_t codePoint, uint32_t charSize, bool bold) co
                 page = &mPages[charSize][i];
 
                 bool found = findGlyphRect(
-                    page, width + 2 * padding, height + 2 * padding,
+                    page, static_cast<uint16_t>(width + 2 * padding),
+                    static_cast<uint16_t>(height + 2 * padding),
                     glyph.texLeft, glyph.texTop, glyph.texWidth, glyph.texHeight
                 );
 
@@ -401,7 +402,8 @@ Glyph VectorFont::loadGlyph(uint32_t codePoint, uint32_t charSize, bool bold) co
 
                 // Find a good position for the new glyph into the texture
                 bool found = findGlyphRect(
-                    page, width + 2 * padding, height + 2 * padding,
+                    page, static_cast<uint16_t>(width + 2 * padding),
+                    static_cast<uint16_t>(height + 2 * padding),
                     glyph.texLeft, glyph.texTop, glyph.texWidth, glyph.texHeight
                 );
 
@@ -483,8 +485,8 @@ Glyph VectorFont::loadGlyph(uint32_t codePoint, uint32_t charSize, bool bold) co
     return glyph;
 }
 
-bool VectorFont::findGlyphRect(Page* page, uint32_t width, uint32_t height, uint32_t& coordsX,
-    uint32_t& coordsY, uint32_t& coordsW, uint32_t& coordsH) const
+bool VectorFont::findGlyphRect(Page* page, uint16_t width, uint16_t height, uint16_t& coordsX,
+    uint16_t& coordsY, uint16_t& coordsW, uint16_t& coordsH) const
 {
     // Find the line that fits well the glyph
     Row* currentRow = nullptr;
@@ -503,7 +505,7 @@ bool VectorFont::findGlyphRect(Page* page, uint32_t width, uint32_t height, uint
     }
 
     if (!currentRow) {
-        uint32_t rowHeight = height * 1.1;
+        uint16_t rowHeight = static_cast<uint16_t>(height * 1.1);
         while (
             page->nextRow + rowHeight >= page->texture->height()
             || width >= page->texture->width()
@@ -583,7 +585,7 @@ bool VectorFont::ensureSize(uint32_t charSize) const
     return result == FT_Err_Ok;
 }
 
-VectorFont::Row::Row(uint32_t rowTop, uint32_t rowHeight) :
+VectorFont::Row::Row(uint16_t rowTop, uint16_t rowHeight) :
     top(rowTop),
     height(rowHeight)
 {
@@ -594,18 +596,18 @@ VectorFont::Page::Page()
 {
     // Make sure that the texture is initialize by default
     Image image;
-    image.create(128, 128, 255, 255, 255, 0);
+    image.create(128u, 128u, 255u, 255u, 255u, 0u);
 
     // Reserve a 2x2 white space for texture underlines
     for (int x = 0; x < 2; ++x) {
         for (int y = 0; y < 2; ++y) {
-            image.setPixel(x, y, 255, 255, 255, 255);
+            image.setPixel(x, y, 255u, 255u, 255u, 255u);
         }
     }
 
     // Create texture
     texture = std::shared_ptr<Texture>(RenderDevice::instance().newTexture());
-    texture->create(Texture::_2D, Texture::RGBA8, 128, 128, 1, true, true, false);
+    texture->create(Texture::_2D, Texture::RGBA8, 128u, 128u, 1u, true, true, false);
     texture->setData(image.getPixelsPtr(), 0, 0);
 }
 

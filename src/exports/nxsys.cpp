@@ -53,7 +53,7 @@ NX_EXPORT void nxSysSleep(double s)
     #endif
 
     // Wait...
-    const unsigned long time = s * 1000;
+    const auto time = static_cast<unsigned long>(s * 1000);
     std::this_thread::sleep_for(std::chrono::milliseconds(time));
 
     #if defined(NX_SYSTEM_WINDOWS) || defined(NX_SYSTEM_WINCE)

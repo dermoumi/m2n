@@ -390,12 +390,12 @@ bool Filesystem::initialize(const char* arg0)
 
 bool Filesystem::mountDir(const std::string& dir, const std::string& point, bool append)
 {
-    return PHYSFS_mount(dir.data(), point.data(), append);
+    return PHYSFS_mount(dir.data(), point.data(), append) != 0;
 }
 
 bool Filesystem::mountArchive(const std::string& dir, const std::string& point, bool append)
 {
-    return PHYSFS_mount(dir.data(), point.data(), append);
+    return PHYSFS_mount(dir.data(), point.data(), append) != 0;
 }
 
 bool Filesystem::mountAssetsDir(const std::string& point, bool append)
@@ -409,13 +409,13 @@ bool Filesystem::mountAssetsDir(const std::string& point, bool append)
 
     #else
         std::string assetsDir = getBaseDir() + "assets";
-        return PHYSFS_mount(assetsDir.data(), point.data(), append);
+        return PHYSFS_mount(assetsDir.data(), point.data(), append) != 0;
     #endif
 }
 
 bool Filesystem::setWriteDir(const std::string& dir)
 {
-    return PHYSFS_setWriteDir(dir.data());
+    return PHYSFS_setWriteDir(dir.data()) != 0;
 }
 
 std::string Filesystem::getErrorMessage()

@@ -66,11 +66,11 @@ private:
     using GlyphTable = std::map<uint32_t, Glyph>;
     struct Row
     {
-        Row(uint32_t top, uint32_t height);
+        Row(uint16_t top, uint16_t height);
 
-        uint32_t top {0u};
-        uint32_t width {0u};
-        uint32_t height {0u};
+        uint16_t top {0u};
+        uint16_t width {0u};
+        uint16_t height {0u};
     };
 
     struct Page
@@ -80,15 +80,15 @@ private:
 
         GlyphTable               glyphs;
         std::shared_ptr<Texture> texture;
-        uint32_t                 nextRow {3u};
+        uint16_t                 nextRow {3u};
         std::vector<Row>         rows;
     };
 
 private:
     void cleanup();
     Glyph loadGlyph(uint32_t codePoint, uint32_t charSize, bool bold) const;
-    bool findGlyphRect(Page* page, uint32_t width, uint32_t height, uint32_t& coordsL,
-        uint32_t& coordsT, uint32_t& coordsR, uint32_t& coordsB) const;
+    bool findGlyphRect(Page* page, uint16_t width, uint16_t height, uint16_t& coordsL,
+        uint16_t& coordsT, uint16_t& coordsR, uint16_t& coordsB) const;
     bool ensureSize(uint32_t charSize) const;
 
 private:

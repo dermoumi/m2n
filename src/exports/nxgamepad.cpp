@@ -45,7 +45,7 @@ NX_EXPORT NxGamepad* nxGamepadOpen(int id)
         auto guid = SDL_JoystickGetDeviceGUID(id);
 
         std::string guidStr(64, '\0');
-        SDL_JoystickGetGUIDString(guid, &guidStr[0], guidStr.size());
+        SDL_JoystickGetGUIDString(guid, &guidStr[0], static_cast<int>(guidStr.size()));
         recentGUIDs[guidStr.data()] = true;
     }
 
@@ -59,7 +59,7 @@ NX_EXPORT void nxGamepadClose(NxGamepad* gamepad)
 
 NX_EXPORT bool nxGamepadButtonDown(NxGamepad* gamepad, int btn)
 {
-    return SDL_GameControllerGetButton(gamepad, static_cast<SDL_GameControllerButton>(btn - 1));
+    return SDL_GameControllerGetButton(gamepad, static_cast<SDL_GameControllerButton>(btn - 1)) != 0;
 }
 
 NX_EXPORT double nxGamepadGetAxis(NxGamepad* gamepad, int axis)
@@ -100,7 +100,7 @@ NX_EXPORT bool nxGamepadAddMappings(const char* data)
         recentGUIDs[guid] = true;
     }
 
-    SDL_RWops* rw = SDL_RWFromConstMem(data, strlen(data));
+    SDL_RWops* rw = SDL_RWFromConstMem(data, static_cast<int>(strlen(data)));
     return SDL_GameControllerAddMappingsFromRW(rw, 1) != -1;
 }
 

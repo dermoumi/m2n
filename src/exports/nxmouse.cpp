@@ -123,7 +123,7 @@ NX_EXPORT bool nxMouseGetRelativeMode()
 
 NX_EXPORT bool nxMouseIsButtonDown(int button)
 {
-    return SDL_GetMouseState(nullptr, nullptr) & SDL_BUTTON(button);
+    return (SDL_GetMouseState(nullptr, nullptr) & SDL_BUTTON(button)) != 0;
 }
 
 NX_EXPORT bool nxMouseSetGrab(bool /*enabled*/)

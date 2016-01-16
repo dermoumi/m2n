@@ -67,7 +67,7 @@ NX_EXPORT void nxAudioSourceLoadFile(NxAudioSource* source, const char* filename
     static_cast<SoLoud::Wav*>(source->handle)->loadFile(&file);
 }
 
-NX_EXPORT void nxAudioSourceLoadMemory(NxAudioSource* source, uint8_t* buffer, size_t size)
+NX_EXPORT void nxAudioSourceLoadMemory(NxAudioSource* source, uint8_t* buffer, uint32_t size)
 {
     delete source->file;
     source->file = nullptr;
@@ -93,7 +93,7 @@ NX_EXPORT void nxAudioSourceOpenFile(NxAudioSource* source, const char* filename
     static_cast<SoLoud::WavStream*>(source->handle)->loadFile(source->file);
 }
 
-NX_EXPORT void nxAudioSourceOpenMemory(NxAudioSource* source, uint8_t* buffer, size_t size)
+NX_EXPORT void nxAudioSourceOpenMemory(NxAudioSource* source, uint8_t* buffer, uint32_t size)
 {
     delete source->file;
     source->file = nullptr;

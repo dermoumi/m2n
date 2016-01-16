@@ -280,7 +280,7 @@ void RtlText::ensureGeometryUpdate() const
         );
         mVertices[it.first]->load(
             it.second.data(),
-            it.second.size() * sizeof(float),
+            static_cast<uint32_t>(it.second.size() * sizeof(float)),
             4 * sizeof(float)
         );
     }

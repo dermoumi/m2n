@@ -215,17 +215,17 @@ static NxEventType nextEvent(NxEvent* e, int (*func)(SDL_Event*))
         e->a = event.cdevice.which + 1;
         return NX_GamepadRemap;
     case SDL_FINGERDOWN:
-        e->a = event.tfinger.fingerId;
+        e->a = static_cast<double>(event.tfinger.fingerId);
         e->b = event.tfinger.x;
         e->c = event.tfinger.y;
         return NX_TouchBegan;
     case SDL_FINGERUP:
-        e->a = event.tfinger.fingerId;
+        e->a = static_cast<double>(event.tfinger.fingerId);
         e->b = event.tfinger.x;
         e->c = event.tfinger.y;
         return NX_TouchEnded;
     case SDL_FINGERMOTION:
-        e->a = event.tfinger.fingerId;
+        e->a = static_cast<double>(event.tfinger.fingerId);
         e->b = event.tfinger.x;
         e->c = event.tfinger.y;
         return NX_TouchMotion;

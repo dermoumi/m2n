@@ -50,7 +50,7 @@ NX_EXPORT void nxShaderSetUniform(NxShader* shader, int loc, uint8_t type, float
     return shader->setUniform(loc, type, data);
 }
 
-NX_EXPORT void nxShaderSetSampler(NxShader* shader, int loc, int unit)
+NX_EXPORT void nxShaderSetSampler(NxShader* shader, int loc, uint8_t unit)
 {
     return shader->setSampler(loc, unit);
 }

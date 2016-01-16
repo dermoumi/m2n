@@ -937,7 +937,7 @@ bool RenderDeviceGL::ShaderGL::load(const char* vertexShader, const char* fragme
             for (uint32_t k = 0; k < vl.numAttribs; ++k) {
                 if (vl.attribs[k].semanticName == name) {
                     auto loc = glGetAttribLocation(program, name);
-                    mInputLayouts[i].attribIndices[k] = loc;
+                    mInputLayouts[i].attribIndices[k] = static_cast<int8_t>(loc);
                     attribFound = true;
                 }
             }
@@ -1147,11 +1147,11 @@ bool RenderDeviceGL::RenderBufferGL::create(Texture::Format format, uint16_t wid
         return false;
     }
 
-    uint32_t maxSamples = 0;
+    uint8_t maxSamples = 0u;
     if (mDevice->mRTMultiSampling) {
         GLint value;
         glGetIntegerv(GL_MAX_SAMPLES_EXT, &value);
-        maxSamples = static_cast<uint32_t>(value);
+        maxSamples = static_cast<uint8_t>(value);
     }
     if (samples > maxSamples) {
         samples = maxSamples;
@@ -1525,8 +1525,8 @@ void RenderDeviceGL::TextureGL::setData(const void* buffer, uint8_t slice, uint8
     }
 
     // Calculate size of the next mipmap using "floor" convention
-    uint16_t w = std::max(mWidth >> level, 1);
-    uint16_t h = std::max(mHeight >> level, 1);
+    int w = std::max(mWidth >> level, 1);
+    int h = std::max(mHeight >> level, 1);
 
     if (mType == _2D || mType == Cube) {
         int target = (mType == _2D) ? GL_TEXTURE_2D : (GL_TEXTURE_CUBE_MAP_POSITIVE_X + slice);
@@ -1543,7 +1543,7 @@ void RenderDeviceGL::TextureGL::setData(const void* buffer, uint8_t slice, uint8
         }
     }
     else if (mType == _3D) {
-        uint16_t d = std::max(mDepth >> level, 1);
+        int d = std::max(mDepth >> level, 1);
 
         if (compressed) {
             glCompressedTexImage3D(
@@ -1652,7 +1652,23 @@ bool RenderDeviceGL::TextureGL::data(void* buffer, uint8_t slice, uint8_t level)
 {
     int target = (mType != Cube) ? GL_TEXTURE_2D : GL_TEXTURE_CUBE_MAP_POSITIVE_X + slice;
 
-    int fmt, type, compressed = 0;
+    int inputFormat = GL_RGBA;
+    int inputType = GL_UNSIGNED_BYTE;
+    bool compressed = false;
+
+    switch (mFormat) {
+    case RGBA8:
+        break;
+    case DXT1:
+    case DXT3:
+    case DXT5:
+        compressed = true;
+        break;  
+    default:
+        Log::error("Unable to get texture data: unsupported format");
+        return false;
+    }
+
     glActiveTexture(GL_TEXTURE15);
 
     int lastTexture;
@@ -1660,26 +1676,11 @@ bool RenderDeviceGL::TextureGL::data(void* buffer, uint8_t slice, uint8_t level)
 
     glBindTexture(mGlType, mHandle);
 
-    switch(mFormat) {
-    case RGBA8:
-        fmt = GL_RGBA;
-        type = GL_UNSIGNED_BYTE;
-        break;
-    case DXT1:
-    case DXT3:
-    case DXT5:
-        compressed = 1;
-        break;
-    default:
-        Log::error("Unable to get texture data: unsupported format");
-        return false;
-    };
-
     if (compressed) {
         glGetCompressedTexImage(target, level, buffer);
     }
     else {
-        glGetTexImage(target, level, fmt, type, buffer);
+        glGetTexImage(target, level, inputFormat, inputType, buffer);
     }
 
     glBindTexture(mGlType, lastTexture);
@@ -1766,7 +1767,7 @@ uint32_t RenderDeviceGL::TextureGL::repeating() const
 
 bool RenderDeviceGL::TextureGL::lessOrEqual() const
 {
-    return mState & LEqual;
+    return (mState & LEqual) != 0;
 }
 
 bool RenderDeviceGL::TextureGL::flipCoords() const

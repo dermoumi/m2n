@@ -32,7 +32,7 @@ NX_EXPORT const uint32_t* nxUnicodeUtf8To32(const char* str, uint32_t* size)
 {
     static std::u32string utf32;
     utf32 = Unicode::utf8To32(str);
-    *size = utf32.size();
+    *size = static_cast<uint32_t>(utf32.size());
     return reinterpret_cast<const uint32_t*>(utf32.data());
 }
 
@@ -40,6 +40,6 @@ NX_EXPORT const char* nxUnicodeUtf32To8(const uint32_t* str, uint32_t* size)
 {
     static std::string utf8;
     utf8 = Unicode::utf32To8(reinterpret_cast<const char32_t*>(str));
-    *size = utf8.size();
+    *size = static_cast<uint32_t>(utf8.size());
     return utf8.data();
 }

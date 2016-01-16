@@ -72,7 +72,7 @@ NX_EXPORT PHYSFS_File* nxFsOpenWrite(const char* fileName)
 
 NX_EXPORT bool nxFsFlush(PHYSFS_File* handle)
 {
-    return PHYSFS_flush(handle);
+    return PHYSFS_flush(handle) != 0;
 }
 
 NX_EXPORT void nxFsClose(PHYSFS_File* handle)
@@ -100,7 +100,7 @@ NX_EXPORT bool nxFsTell(PHYSFS_File* handle, size_t* position)
 
 NX_EXPORT bool nxFsSeek(PHYSFS_File* handle, size_t position)
 {
-    return PHYSFS_seek(handle, position);
+    return PHYSFS_seek(handle, position) != 0;
 }
 
 NX_EXPORT bool nxFsRead(PHYSFS_File* handle, void* buffer, size_t length, size_t* readBytes)
@@ -120,41 +120,41 @@ NX_EXPORT bool nxFsReadS8(PHYSFS_File* handle, int8_t* val)
 
 NX_EXPORT bool nxFsReadS16(PHYSFS_File* handle, int16_t* val)
 {
-    return PHYSFS_readSLE16(handle, val);
+    return PHYSFS_readSLE16(handle, val) != 0;
 }
 
 NX_EXPORT bool nxFsReadS32(PHYSFS_File* handle, int32_t* val)
 {
-    return PHYSFS_readSLE32(handle, val);
+    return PHYSFS_readSLE32(handle, val) != 0;
 }
 
 NX_EXPORT bool nxFsReadS64(PHYSFS_File* handle, int64_t* val)
 {
     static_assert(sizeof(int64_t) == sizeof(PHYSFS_sint64), "the size of int64_t is invalid");
 
-    return PHYSFS_readSLE64(handle, reinterpret_cast<PHYSFS_sint64*>(val));
+    return PHYSFS_readSLE64(handle, reinterpret_cast<PHYSFS_sint64*>(val)) != 0;
 }
 
 NX_EXPORT bool nxFsReadU8(PHYSFS_File* handle, uint8_t* val)
 {
-    return nxFsRead(handle, reinterpret_cast<char*>(val), 1, nullptr);
+    return nxFsRead(handle, reinterpret_cast<char*>(val), 1, nullptr) != 0;
 }
 
 NX_EXPORT bool nxFsReadU16(PHYSFS_File* handle, uint16_t* val)
 {
-    return PHYSFS_readULE16(handle, val);
+    return PHYSFS_readULE16(handle, val) != 0;
 }
 
 NX_EXPORT bool nxFsReadU32(PHYSFS_File* handle, uint32_t* val)
 {
-    return PHYSFS_readULE32(handle, val);
+    return PHYSFS_readULE32(handle, val) != 0;
 }
 
 NX_EXPORT bool nxFsReadU64(PHYSFS_File* handle, uint64_t* val)
 {
     static_assert(sizeof(uint64_t) == sizeof(PHYSFS_uint64), "the size of int64_t is invalid");
 
-    return PHYSFS_readULE64(handle, reinterpret_cast<PHYSFS_uint64*>(val));
+    return PHYSFS_readULE64(handle, reinterpret_cast<PHYSFS_uint64*>(val)) != 0;
 }
 
 NX_EXPORT bool nxFsReadFloat(PHYSFS_File* handle, double* val)
@@ -221,42 +221,42 @@ NX_EXPORT bool nxFsWrite(PHYSFS_File* handle, const void* buffer, size_t length,
 
 NX_EXPORT bool nxFsWriteS8(PHYSFS_File* handle, int8_t val)
 {
-    return nxFsWrite(handle, &val, 1u, nullptr);
+    return nxFsWrite(handle, &val, 1u, nullptr) != 0;
 }
 
 NX_EXPORT bool nxFsWriteS16(PHYSFS_File* handle, int16_t val)
 {
-    return PHYSFS_writeSLE16(handle, val);
+    return PHYSFS_writeSLE16(handle, val) != 0;
 }
 
 NX_EXPORT bool nxFsWriteS32(PHYSFS_File* handle, int32_t val)
 {
-    return PHYSFS_writeSLE32(handle, val);
+    return PHYSFS_writeSLE32(handle, val) != 0;
 }
 
 NX_EXPORT bool nxFsWriteS64(PHYSFS_File* handle, int64_t val)
 {
-    return PHYSFS_writeSLE64(handle, val);
+    return PHYSFS_writeSLE64(handle, val) != 0;
 }
 
 NX_EXPORT bool nxFsWriteU8(PHYSFS_File* handle, uint8_t val)
 {
-    return nxFsWrite(handle, &val, 1u, nullptr);
+    return nxFsWrite(handle, &val, 1u, nullptr) != 0;
 }
 
 NX_EXPORT bool nxFsWriteU16(PHYSFS_File* handle, uint16_t val)
 {
-    return PHYSFS_writeULE16(handle, val);
+    return PHYSFS_writeULE16(handle, val) != 0;
 }
 
 NX_EXPORT bool nxFsWriteU32(PHYSFS_File* handle, uint32_t val)
 {
-    return PHYSFS_writeULE32(handle, val);
+    return PHYSFS_writeULE32(handle, val) != 0;
 }
 
 NX_EXPORT bool nxFsWriteU64(PHYSFS_File* handle, uint64_t val)
 {
-    return PHYSFS_writeULE64(handle, val);
+    return PHYSFS_writeULE64(handle, val) != 0;
 }
 
 NX_EXPORT bool nxFsWriteFloat(PHYSFS_File* handle, double val)
@@ -270,7 +270,7 @@ NX_EXPORT bool nxFsWriteFloat(PHYSFS_File* handle, double val)
         uint32_t u;
     } u = {d2f(val)};
 
-    return nxFsWriteU32(handle, u.u);
+    return nxFsWriteU32(handle, u.u) != 0;
 }
 
 NX_EXPORT bool nxFsWriteDouble(PHYSFS_File* handle, double val)
@@ -283,10 +283,10 @@ NX_EXPORT bool nxFsWriteDouble(PHYSFS_File* handle, double val)
         uint64_t u;
     } u = {val};
 
-    return nxFsWriteU64(handle, u.u);
+    return nxFsWriteU64(handle, u.u) != 0;
 }
 
 NX_EXPORT bool nxFsWriteString(PHYSFS_File* handle, const char* str)
 {
-    return nxFsWrite(handle, str, strlen(str) + 1, nullptr);
+    return nxFsWrite(handle, str, strlen(str) + 1, nullptr) != 0;
 }

@@ -37,33 +37,48 @@
 #include <mutex>
 #include <memory>
 
-using NxWindow = SDL_Window;
-class GlContext
-{
-public:
-    GlContext(SDL_Window* window) {
-        mContext = SDL_GL_CreateContext(window);
-    }
-
-    ~GlContext() {
-        SDL_GL_DeleteContext(mContext);
-    }
-
-    void makeCurrent(SDL_Window* window) {
-        SDL_GL_MakeCurrent(window, mContext);
-    }
-
-private:
-    SDL_GLContext mContext;
-};
-
 static std::mutex contextMutex;
 
+using NxWindow = SDL_Window;
 static NxWindow* window {nullptr};
 static Image icon;
 
-static std::unique_ptr<GlContext> sharedContext;
-thread_local std::unique_ptr<GlContext> context;
+class GlContext
+{
+public:
+    GlContext() = default;
+
+
+    ~GlContext() {
+        release();
+    }
+
+    bool init(SDL_Window* win) {
+        mContext = SDL_GL_CreateContext(win);
+        return mContext != nullptr;
+    }
+
+    bool valid() const {
+        return mContext != nullptr;
+    }
+
+    void release() {
+        if (mContext) {
+            SDL_GL_DeleteContext(mContext);
+            mContext = nullptr;
+        }
+    }
+
+    void makeCurrent(SDL_Window* win) {
+        SDL_GL_MakeCurrent(win, mContext);
+    }
+
+private:
+    SDL_GLContext mContext {nullptr};
+};
+
+static GlContext sharedContext;
+thread_local GlContext context;
 
 NX_EXPORT NxWindow* nxWindowGet()
 {
@@ -74,8 +89,8 @@ NX_EXPORT void nxWindowClose()
 {
     if (!window) return;
 
-    context = nullptr;
-    sharedContext = nullptr;
+    context.release();
+    sharedContext.release();
     SDL_DestroyWindow(window);
     window = nullptr;
 }
@@ -149,15 +164,14 @@ NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, int
         window = SDL_CreateWindow(title, posX, posY, width, height, flags);
         if (!window) return nullptr;
 
-        sharedContext = std::unique_ptr<GlContext>(new GlContext(window));
-        if (!sharedContext) {
+        if (!sharedContext.init(window)) {
             SDL_DestroyWindow(window);
             window = nullptr;
             return nullptr;
         }
 
-        context = std::unique_ptr<GlContext>(new GlContext(window));
-        if (!context) {
+        if (!context.init(window)) {
+            sharedContext.release();
             SDL_DestroyWindow(window);
             window = nullptr;
             return nullptr;
@@ -204,10 +218,10 @@ NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, int
 
 NX_EXPORT void nxWindowEnsureContext()
 {
-    if (!context) {
-        std::lock_guard<std::mutex> lock(contextMutex);
-        sharedContext->makeCurrent(window);
-        context = std::unique_ptr<GlContext>(new GlContext(window));
+    std::lock_guard<std::mutex> lock(contextMutex);
+    if (!context.valid()) {
+        sharedContext.makeCurrent(window);
+        context.init(window);
     }
 }
 
@@ -312,7 +326,7 @@ NX_EXPORT int nxWindowGetFullscreen()
 NX_EXPORT bool nxWindowGetVisible()
 {
     auto flags = SDL_GetWindowFlags(window);
-    return (flags & (SDL_WINDOW_HIDDEN | SDL_WINDOW_MINIMIZED));
+    return (flags & (SDL_WINDOW_HIDDEN | SDL_WINDOW_MINIMIZED)) != 0;
 }
 
 NX_EXPORT const int* nxWindowGetDisplayModes(int displayIndex, size_t* count)
@@ -323,9 +337,9 @@ NX_EXPORT const int* nxWindowGetDisplayModes(int displayIndex, size_t* count)
         modes.clear();
     }
     else {
-        size_t displayCount = SDL_GetNumDisplayModes(displayIndex - 1);
+        int displayCount = SDL_GetNumDisplayModes(displayIndex - 1);
         modes.resize(displayCount * 2);
-        for (size_t i = 0u; i < displayCount; ++i) {
+        for (int i = 0; i < displayCount; ++i) {
             SDL_DisplayMode dm;
             if (SDL_GetDisplayMode(displayIndex - 1, i, &dm) != 0) {
                 modes.clear();

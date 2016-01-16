@@ -143,7 +143,7 @@ uint32_t* Text::vertexBufferIDs(uint32_t* count) const
 {
     ensureGeometryUpdate();
 
-    *count = mBufferIDs.size();
+    *count = static_cast<uint32_t>(mBufferIDs.size());
     return mBufferIDs.data();
 }
 
@@ -349,7 +349,7 @@ void Text::ensureGeometryUpdate() const
         );
         mVertices[it.first]->load(
             it.second.data(),
-            it.second.size() * sizeof(float),
+            static_cast<uint32_t>(it.second.size() * sizeof(float)),
             4 * sizeof(float)
         );
     }

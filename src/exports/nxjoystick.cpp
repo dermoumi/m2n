@@ -64,7 +64,7 @@ NX_EXPORT int nxJoystickHatCount(NxJoystick* joystick)
 
 NX_EXPORT bool nxJoystickGetButton(NxJoystick* joystick, int button)
 {
-    return SDL_JoystickGetButton(joystick, button - 1);
+    return SDL_JoystickGetButton(joystick, button - 1) != 0;
 }
 
 NX_EXPORT double nxJoystickGetAxis(NxJoystick* joystick, int axis)
@@ -74,7 +74,7 @@ NX_EXPORT double nxJoystickGetAxis(NxJoystick* joystick, int axis)
 
 NX_EXPORT bool nxJoystickGetBall(NxJoystick* joystick, int ball, int* position)
 {
-    return SDL_JoystickGetBall(joystick, ball - 1, &position[0], &position[1]);
+    return SDL_JoystickGetBall(joystick, ball - 1, &position[0], &position[1]) != 0;
 }
 
 NX_EXPORT uint8_t nxJoystickGetHat(NxJoystick* joystick, int hat)
@@ -93,7 +93,7 @@ NX_EXPORT const char* nxJoystickGetGUID(NxJoystick* joystick)
 
     guidStr.resize(64);
     auto guid = SDL_JoystickGetGUID(joystick);
-    SDL_JoystickGetGUIDString(guid, &guidStr[0], guidStr.size());
+    SDL_JoystickGetGUIDString(guid, &guidStr[0], static_cast<int>(guidStr.size()));
 
     return guidStr.data();
 }

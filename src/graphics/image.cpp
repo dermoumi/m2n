@@ -43,7 +43,7 @@ static int read(void* userdata, char* data, int size)
     auto* file = reinterpret_cast<PHYSFS_File*>(userdata);
     auto status = PHYSFS_readBytes(file, data, size);
 
-    return status;
+    return static_cast<int>(status);
 }
 
 static void skip(void* userdata, int size)

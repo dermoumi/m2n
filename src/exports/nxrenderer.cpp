@@ -132,7 +132,7 @@ NX_EXPORT void nxRendererSetFillMode(uint8_t fillMode)
 
 NX_EXPORT uint8_t nxRendererGetFillMode()
 {
-    return RenderDevice::instance().getFillMode();
+    return static_cast<uint8_t>(RenderDevice::instance().getFillMode());
 }
 
 NX_EXPORT void nxRendererSetCullMode(uint8_t cullMode)
@@ -142,7 +142,7 @@ NX_EXPORT void nxRendererSetCullMode(uint8_t cullMode)
 
 NX_EXPORT uint8_t nxRendererGetCullMode()
 {
-    return RenderDevice::instance().getCullMode();
+    return static_cast<uint8_t>(RenderDevice::instance().getCullMode());
 }
 
 NX_EXPORT void nxRendererSetScissorTest(bool enabled)
@@ -218,7 +218,7 @@ NX_EXPORT void nxRendererSetDepthFunc(uint8_t func)
 
 NX_EXPORT uint8_t nxRendererGetDepthFunc()
 {
-    return RenderDevice::instance().getDepthFunc();
+    return static_cast<uint8_t>(RenderDevice::instance().getDepthFunc());
 }
 
 NX_EXPORT void nxRendererSync()
