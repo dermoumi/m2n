@@ -69,19 +69,12 @@ function Texture2D:load(image, hasMips, mipMap)
     return self
 end
 
-function Texture2D:setData(data, a, b, c, d, e)
-    local x, y, width, height, mipLevel
-    if not b then
-        x, y, width, height, mipLevel = -1, -1, -1, -1, a
-    else
-        x, y, width, height, mipLevel = a, b, c, d, e
-    end
-
-    return Texture.setData(self, data, x, y, width, height, 1, mipLevel)
+function Texture2D:setSubData(data, x, y, width, height, level)
+    return Texture.setSubData(self, data, x, y, width, height, 1, level)
 end
 
-function Texture2D:data(mipLevel)
-    return Texture.data(self, 1, mipLevel)
+function Texture2D:data(level)
+    return Texture.data(self, 1, level)
 end
 
 return Texture2D

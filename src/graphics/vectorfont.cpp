@@ -317,7 +317,7 @@ float VectorFont::underlineThickness(uint32_t charSize) const
 
 const Texture* VectorFont::texture(uint32_t charSize, uint32_t index) const
 {
-    return &mPages[charSize][index].texture;
+    return mPages[charSize][index].texture.get();
 }
 
 void VectorFont::cleanup()
@@ -466,9 +466,9 @@ Glyph VectorFont::loadGlyph(uint32_t codePoint, uint32_t charSize, bool bold) co
                 }
             }
 
-            page->texture.setData(
-                &mPixelBuffer[0], glyph.texLeft, glyph.texTop, 0, glyph.texWidth, glyph.texHeight,
-                1, 0, 0
+            page->texture->setSubData(
+                &mPixelBuffer[0], glyph.texLeft, glyph.texTop, 0,
+                glyph.texWidth, glyph.texHeight, 1, 0, 0
             );
         }
     }
@@ -495,7 +495,7 @@ bool VectorFont::findGlyphRect(Page* page, uint32_t width, uint32_t height, uint
         if (ratio < 0.7f || ratio > 1.f) continue;
 
         // Check if there's enough horizontal space left in the row
-        if (width > page->texture.texWidth() - row.width) continue;
+        if (width > page->texture->width() - row.width) continue;
 
         // Make sure that the current row passed all the tests: we can select it
         currentRow = &row;
@@ -505,12 +505,15 @@ bool VectorFont::findGlyphRect(Page* page, uint32_t width, uint32_t height, uint
     if (!currentRow) {
         uint32_t rowHeight = height * 1.1;
         while (
-            page->nextRow + rowHeight >= page->texture.texHeight()
-            || width >= page->texture.texWidth()
+            page->nextRow + rowHeight >= page->texture->height()
+            || width >= page->texture->width()
         ) {
             // Not enough space: resize the texture if possible
-            uint16_t texWidth  = page->texture.texWidth();
-            uint16_t texHeight = page->texture.texHeight();
+            uint16_t texWidth  = page->texture->width();
+            uint16_t texHeight = page->texture->height();
+
+            // Hardcoded limit for font's max size because some graphics drivers
+            // *cough*intel*cough* report wrong maximum size on some systems
             uint16_t maxSize   = std::min<uint16_t>(4096u, Texture::maxSize());
 
             if (texWidth * 2 > maxSize || texHeight * 2 > maxSize) {
@@ -521,19 +524,21 @@ bool VectorFont::findGlyphRect(Page* page, uint32_t width, uint32_t height, uint
             // Make the texture twice as big
             uint32_t bufSize = texWidth * texHeight * 16;
             uint8_t* buffer = new uint8_t[bufSize];
-            page->texture.data(buffer, 0, 0);
+            page->texture->data(buffer, 0, 0);
 
             Image image;
             image.create(texWidth * 2, texHeight * 2, 255, 255, 255, 0);
             image.copy(buffer, 0, 0, texWidth, 0, 0, texWidth, texHeight, false);
 
             // page->texture = Texture();
-            auto ok = page->texture.create(0, 1, texWidth * 2, texHeight * 2, 1, true, true, false);
-            if (ok == 0) {
-                page->texture.setData(image.getPixelsPtr(), -1, -1, -1, -1, -1, -1, 0, 0);
+            auto ok = page->texture->create(
+                Texture::_2D, Texture::RGBA8, texWidth * 2, texHeight * 2, 1, true, true, false
+            );
+            if (ok) {
+                page->texture->setData(image.getPixelsPtr(), 0, 0);
             }
             else {
-                Log::error("Could not create a new font texture.");
+                Log::error("Could not create a new font texture");
                 return false;
             }
         }
@@ -599,14 +604,15 @@ VectorFont::Page::Page()
     }
 
     // Create texture
-    texture.create(0, 1, 128, 128, 1, true, true, false);
-    texture.setData(image.getPixelsPtr(), -1, -1, -1, -1, -1, -1, 0, 0);
+    texture = std::shared_ptr<Texture>(RenderDevice::instance().newTexture());
+    texture->create(Texture::_2D, Texture::RGBA8, 128, 128, 1, true, true, false);
+    texture->setData(image.getPixelsPtr(), 0, 0);
 }
 
 VectorFont::Page::Page(Page&& other)
 {
     std::swap(glyphs, other.glyphs);
-    std::swap(texture, other.texture);
     std::swap(rows, other.rows);
+    texture = other.texture;
     nextRow = other.nextRow;
 }

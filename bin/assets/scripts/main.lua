@@ -94,6 +94,43 @@ require('game.cache')
     .registerType('model', 'graphics.model')
     .registerType('scene', 'graphics.scenegraph')
 
+-- local view = require('graphics.camera2d'):new()
+
+-- local tex = require('graphics.texture')
+--     :new()
+--     :create('2d', 2, 2, 1, false, false)
+--     :setData(require('ffi').new('uint8_t[16]', {
+--             0, 0, 255, 255, 255, 255, 0, 255,
+--             255, 0, 0, 255, 0, 255, 255, 255
+--         }), 0, 0)
+--     :setData(require('ffi').new('uint8_t[4]', {
+--             0, 0, 255, 255
+--         }), 1, 1, 1, 1, 0, 0)
+
+-- local img = require('graphics.image')
+--     :new(2, 2, tex:data())
+--     :save('testimg.png')
+
+-- local sprite = require('graphics.sprite')
+--     :new(tex)
+--     :setPosition(400, 30)
+
+-- while Window.isOpen() do
+--     for e, a, b, c, d in Events.poll() do
+--         if e == 'quit' then
+--             Window.close()
+--             break
+--         end
+--     end
+
+--     Graphics.begin()
+--     view:clear(200, 200, 200)
+--     view:draw(sprite)
+--     Graphics.finish()
+
+--     Window.display()
+-- end
+
 -- Startup screen
 Screen.goTo('screen.title', true)
 

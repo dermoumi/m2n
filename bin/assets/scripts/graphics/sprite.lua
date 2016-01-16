@@ -70,7 +70,7 @@ function Sprite:setTexture(texture, keepSubrect)
     if type(texture) == 'string' or texture.class.name == 'graphics.image' then
         -- Make a texture out of the image
         texture = Texture2D:new(texture)
-    elseif texture:texType() ~= '2d' then
+    elseif texture:type() ~= '2d' then
         -- only accept 2D textures
         return self
     end

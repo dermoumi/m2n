@@ -78,10 +78,10 @@ private:
         Page();
         Page(Page&& other);
 
-        GlyphTable       glyphs;
-        Texture          texture;
-        uint32_t         nextRow {3u};
-        std::vector<Row> rows;
+        GlyphTable               glyphs;
+        std::shared_ptr<Texture> texture;
+        uint32_t                 nextRow {3u};
+        std::vector<Row>         rows;
     };
 
 private:

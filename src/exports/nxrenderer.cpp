@@ -115,11 +115,6 @@ NX_EXPORT void nxRendererSetVertexLayout(uint8_t vlObj)
     RenderDevice::instance().setVertexLayout(vlObj);
 }
 
-NX_EXPORT void nxRendererSetTexture(uint8_t slot, uint32_t texObj, uint16_t samplerState)
-{
-    RenderDevice::instance().setTexture(slot, texObj, samplerState);
-}
-
 NX_EXPORT void nxRendererSetColorWriteMask(bool enabled)
 {
     RenderDevice::instance().setColorWriteMask(enabled);

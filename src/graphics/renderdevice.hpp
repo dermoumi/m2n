@@ -28,6 +28,7 @@
 #pragma once
 #include "../config.hpp"
 #include "shader.hpp"
+#include "texture.hpp"
 #include "indexbuffer.hpp"
 #include "vertexbuffer.hpp"
 #include "renderbuffer.hpp"
@@ -35,73 +36,11 @@
 #include <cstring>
 #include <vector>
 #include <string>
-#include <mutex>
-
-// Container for different objects used by the device
-template <class T>
-class RDIObjects
-{
-public:
-    uint32_t add(const T& obj, bool copy = false)
-    {
-        std::lock_guard<std::mutex> lock(mMutex);
-
-        if (mFreeList.empty()) {
-            if (copy) {
-                mObjects.emplace_back();
-                memcpy(&mObjects.back(), &obj, sizeof(T));
-            }
-            else {
-                mObjects.push_back(obj);
-            }
-
-            return static_cast<uint32_t>(mObjects.size());
-        }
-        else {
-            auto index = mFreeList.back();
-            mFreeList.pop_back();
-            mObjects[index] = obj;
-            return index + 1;
-        }
-    }
-
-    void remove(uint32_t handle)
-    {
-        if (handle <= 0 || handle > mObjects.size()) return;
-        std::lock_guard<std::mutex> lock(mMutex);
-
-        mObjects[handle - 1] = T(); // Destruct and replace with an invalid object
-        mFreeList.push_back(handle - 1);
-    }
-
-    T& getRef(uint32_t handle)
-    {
-        std::lock_guard<std::mutex> lock(mMutex);
-
-        if (handle <= 0 || handle > mObjects.size()) {
-            static T invalidObj;
-            return invalidObj;
-        }
-
-        return mObjects[handle - 1];
-    }
-
-private:
-    std::vector<T>        mObjects;
-    std::vector<uint32_t> mFreeList;
-    std::mutex            mMutex;
-};
 
 // Base class for Render Devices
 class RenderDevice
 {
 public:
-    enum VertexFormat
-    {
-        VtxFloat,
-        VtxU8
-    };
-
     struct VertexLayoutAttrib
     {
         std::string semanticName;
@@ -117,8 +56,12 @@ public:
         VertexLayoutAttrib attribs[16];
     };
 
-    enum PrimType
-    {
+    enum VertexFormat {
+        VtxFloat,
+        VtxU8
+    };
+
+    enum PrimType {
         Points,
         Lines,
         LineStrip,
@@ -128,8 +71,7 @@ public:
         TriangleFan
     };
 
-    enum ShaderConstType
-    {
+    enum ShaderConstType {
         Float,
         Float2,
         Float3,
@@ -138,86 +80,18 @@ public:
         Float33
     };
 
-    enum TextureType
-    {
-        Tex2D,
-        Tex3D,
-        TexCube
-    };
-
-    enum TextureFormat
-    {
-        Unknown,
-        RGBA8,
-        DXT1,
-        DXT3,
-        DXT5,
-        RGBA16F,
-        RGBA32F,
-
-        PVRTCI_2BPP,
-        PVRTCI_A2BPP,
-        PVRTCI_4BPP,
-        PVRTCI_A4BPP,
-        ETC1,
-
-        DEPTH,
-        Count
-    };
-
-    enum SamplerState
-    {
-        FilterBilinear   = 0x0,
-        FilterTrilinear  = 0x0001,
-        FilterPoint      = 0x0002,
-        Aniso1           = 0x0,
-        Aniso2           = 0x0004,
-        Aniso4           = 0x0008,
-        Aniso8           = 0x0010,
-        Aniso16          = 0x0020,
-        AddrUClamp       = 0x0,
-        AddrUWrap        = 0x0040,
-        AddrUClampCol    = 0x0080,
-        AddrVClamp       = 0x0,
-        AddrVWrap        = 0x0100,
-        ADdrVClampCol    = 0x0200,
-        AddrWClamp       = 0x0,
-        AddrWWrap        = 0x0400,
-        AddrWClampCol    = 0x0800,
-        AddrClamp        = AddrUClamp | AddrVClamp | AddrWClamp,
-        AddrWrap         = AddrUWrap | AddrVWrap | AddrWWrap,
-        AddrClampCol     = AddrUClampCol | ADdrVClampCol | AddrWClampCol,
-        CompLEqual       = 0x1000,
-
-        FilterStart      = 0,
-        FilterMask       = FilterBilinear | FilterTrilinear | FilterPoint,
-        AnisoStart       = 2,
-        AnisoMask        = Aniso1 | Aniso2 | Aniso4 | Aniso8 | Aniso16,
-        AddrUStart       = 6,
-        AddrUMask        = AddrUClamp | AddrUWrap | AddrWClampCol,
-        AddrVStart       = 8,
-        AddrVMask        = AddrVClamp | AddrVWrap | ADdrVClampCol,
-        AddrWStart       = 10,
-        AddrWMask        = AddrWClamp | AddrWWrap | AddrWClampCol,
-        AddrStart        = 6,
-        AddrMask         = AddrClamp | AddrWrap | AddrClampCol
-    };
-
-    enum FillMode
-    {
+    enum FillMode {
         Solid,
         Wireframe
     };
 
-    enum CullMode
-    {
+    enum CullMode {
         Back,
         Front,
         None
     };
 
-    enum BlendFunc
-    {
+    enum BlendFunc {
         Zero,
         One,
         SrcAlpha,
@@ -225,8 +99,7 @@ public:
         DstColor
     };
 
-    enum DepthFunc
-    {
+    enum DepthFunc {
         LessEqual,
         Less,
         Equal,
@@ -235,18 +108,17 @@ public:
         Always
     };
 
-    enum PendingMask : uint32_t
-    {
+    enum PendingMask : uint32_t {
         Viewport      = 1 << 0,
         IndexBuffers  = 1 << 1,
         VertexLayouts = 1 << 2,
         Textures      = 1 << 3,
         Scissor       = 1 << 4,
-        RenderStates  = 1 << 5
+        RenderStates  = 1 << 5,
+        SamplerState  = 1 << 6
     };
 
-    enum ClearFlags : uint32_t
-    {
+    enum ClearFlags : uint32_t {
         ClrColorRT0 = 1 << 0,
         ClrColorRT1 = 1 << 1,
         ClrColorRT2 = 1 << 2,
@@ -286,17 +158,9 @@ public:
     virtual void bind(IndexBuffer* buffer) = 0;
 
     // Textures
-    uint32_t calcTextureSize(TextureFormat format, int width, int height, int depth);
-    virtual uint32_t createTexture(TextureType type, int width, int height, unsigned int depth,
-        TextureFormat format, bool hasMips, bool genMips, bool sRGB) = 0;
-    virtual void uploadTextureData(uint32_t texObj, int slice, int mipLevel,
-        const void* pixels) = 0;
-    virtual void uploadTextureSubData(uint32_t texObj, int slice, int mipLevel, unsigned int x,
-        unsigned int y, unsigned int z, unsigned int width, unsigned int height, unsigned int depth,
-        const void* pixels) = 0;
-    virtual void destroyTexture(uint32_t texObj) = 0;
-    virtual bool getTextureData(uint32_t texObj, int slice, int mipLevel, void* buffer) = 0;
-    virtual uint32_t getTextureMemory() const = 0;
+    virtual Texture* newTexture() = 0;
+    virtual void bind(const Texture* texture, uint8_t slot) = 0;
+    virtual uint32_t usedTextureMemory() const = 0;
 
     // Shaders
     virtual Shader* newShader() = 0;
@@ -314,7 +178,6 @@ public:
     virtual void setViewport(int x, int y, int width, int height) = 0;
     virtual void setScissorRect(int x, int y, int width, int height) = 0;
     virtual void setVertexLayout(uint32_t vlObj) = 0;
-    virtual void setTexture(uint32_t slot, uint32_t texObj, uint16_t samplerState) = 0;
 
     // Render states
     virtual void setColorWriteMask(bool enabled) = 0;

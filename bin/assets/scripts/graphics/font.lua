@@ -89,6 +89,12 @@ function Font:texture(charSize, index)
 
     local texture = Texture:allocate()
     texture._cdata = C.nxFontTexture(self._cdata, charSize, index or 0)
+    if not __done or __done < 6 then
+        local w, h = texture:size()
+        local image = require('graphics.image'):new(w, h, texture:data())
+        image:save("test_font.png")
+        __done = (__done or 0) + 1
+    end
     return texture
 end
 

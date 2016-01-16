@@ -28,6 +28,8 @@
 #include "texture.hpp"
 #include "renderdevice.hpp"
 
+#include <algorithm>
+
 static uint16_t maximumSize()
 {
     unsigned int maxSize;
@@ -37,191 +39,45 @@ static uint16_t maximumSize()
     return maxSize;
 }
 
-Texture::Texture(uint8_t type, uint8_t format, uint32_t handle, uint16_t width, uint16_t height,
-    uint16_t depth, uint32_t samplerState, bool rbTexture) :
-    mType(type), mFormat(format), mHandle(handle), mWidth(width), mHeight(height), mDepth(depth),
-    mSamplerState(samplerState), mRbTexture(rbTexture)
+void Texture::size(uint16_t& w, uint16_t& h, uint16_t& d) const
 {
-    // Nothing else to do
+    w = width();
+    h = height();
+    d = depth();
 }
 
-Texture::~Texture()
+uint32_t Texture::calcSize(Format format, uint32_t width, uint32_t height, uint32_t depth)
 {
-    if (mHandle && !mRbTexture) {
-        RenderDevice::instance().destroyTexture(mHandle);
+    switch(format)
+    {
+    case RGBA8:
+        return width * height * depth * 4;
+    case DXT1:
+        return std::max(width / 4, 1u) * std::max(height / 4u, 1u) * depth * 8;
+    case DXT3:
+        return std::max(width / 4, 1u) * std::max(height / 4u, 1u) * depth * 16;
+    case DXT5:
+        return std::max(width / 4, 1u) * std::max(height / 4u, 1u) * depth * 16;
+    case RGBA16F:
+        return width * height * depth * 8;
+    case RGBA32F:
+        return width * height * depth * 16;
+    case PVRTCI_2BPP:
+    case PVRTCI_A2BPP:
+        return (std::max(width, 16u) * std::max(height, 8u) * 2 + 7) / 8;
+    case PVRTCI_4BPP:
+    case PVRTCI_A4BPP:
+        return (std::max(width, 8u) * std::max(height, 8u) * 4 + 7) / 8;
+    case ETC1:
+        return std::max(width / 4, 1u) * std::max(height / 4, 1u) * depth * 8;
+    default:
+        return 0u;
     }
-}
-
-uint8_t Texture::create(uint8_t type, uint8_t format, uint16_t width, uint16_t height,
-    uint16_t depth, bool hasMips, bool mipMaps, bool sRGB)
-{
-    // Destroy current texture if any
-    if (mHandle && !mRbTexture) {
-        RenderDevice::instance().destroyTexture(mHandle);
-    }
-
-    mHandle = mType = mFormat = mWidth = mHeight = mDepth = mSamplerState = mRbTexture = 0;
-
-    // Make sure that the size is valid
-    if (width == 0 || height == 0 || depth == 0) return 1;
-
-    // Check maximum size
-    if (width > maxSize() || height > maxSize() || depth > maxSize()) return 2;
-
-    uint32_t handle = RenderDevice::instance().createTexture(
-        static_cast<RenderDevice::TextureType>(type), width, height, depth,
-        static_cast<RenderDevice::TextureFormat>(format), hasMips, mipMaps, sRGB
-    );
-
-    if (!handle) return 3;
-
-    mHandle       = handle;
-    mType         = type;
-    mFormat       = format;
-    mWidth        = width;
-    mHeight       = height;
-    mDepth        = depth;
-
-    return 0;
-}
-
-void Texture::setData(const void* buffer, int32_t x, int32_t y, int32_t z, int32_t width,
-    int32_t height, int32_t depth, uint8_t slice, uint8_t mipLevel)
-{
-    if (x < 0) {
-        RenderDevice::instance().uploadTextureData(mHandle, slice, mipLevel, buffer);
-    }
-    else {
-        RenderDevice::instance().uploadTextureSubData(
-            mHandle, slice, mipLevel, x, y, z, width, height, depth, buffer
-        );
-    }
-}
-
-bool Texture::data(void* buffer, uint8_t slice, uint8_t mipLevel) const
-{
-    return RenderDevice::instance().getTextureData(mHandle, slice, mipLevel, buffer);
-}
-
-uint32_t Texture::bufferSize() const
-{
-    return calcSize(mFormat, mWidth, mHeight, mDepth);
-}
-
-void Texture::size(uint16_t& width, uint16_t& height, uint16_t& depth) const
-{
-    width = mWidth;
-    height = mHeight;
-    depth = mDepth;
-}
-
-uint16_t Texture::texWidth() const
-{
-    return mWidth;
-}
-
-uint16_t Texture::texHeight() const
-{
-    return mHeight;
-}
-
-uint16_t Texture::texDepth() const
-{
-    return mDepth;
-}
-
-void Texture::setFilter(uint32_t filter)
-{
-    mSamplerState &= ~RenderDevice::FilterMask;
-    mSamplerState |= filter;
-}
-
-void Texture::setAnisotropyLevel(uint32_t aniso)
-{
-    mSamplerState &= ~RenderDevice::AnisoMask;
-    mSamplerState |= aniso;
-}
-
-void Texture::setRepeatingX(uint32_t repeating)
-{
-    mSamplerState &= ~RenderDevice::AddrUMask;
-    mSamplerState |= repeating;
-}
-
-void Texture::setRepeatingY(uint32_t repeating)
-{
-    mSamplerState &= ~RenderDevice::AddrVMask;
-    mSamplerState |= repeating;
-}
-
-void Texture::setRepeatingZ(uint32_t repeating)
-{
-    mSamplerState &= ~RenderDevice::AddrWMask;
-    mSamplerState |= repeating;
-}
-
-void Texture::setLessOrEqual(bool enabled)
-{
-    if (enabled) {
-        mSamplerState |= RenderDevice::CompLEqual;
-    }
-    else {
-        mSamplerState &= ~RenderDevice::CompLEqual;
-    }
-}
-
-uint32_t Texture::filter() const
-{
-    return mSamplerState & RenderDevice::FilterMask;
-}
-
-uint32_t Texture::anisotropyLevel() const
-{
-    return mSamplerState & RenderDevice::AnisoMask;
-}
-
-void Texture::repeating(uint32_t& x, uint32_t& y, uint32_t& z) const
-{
-    x = mSamplerState & RenderDevice::AddrUMask;
-    y = mSamplerState & RenderDevice::AddrVMask;
-    z = mSamplerState & RenderDevice::AddrWMask;
-}
-
-bool Texture::lessOrEqual() const
-{
-    return mSamplerState & RenderDevice::CompLEqual;
-}
-
-uint32_t Texture::nativeHandle() const
-{
-    return mHandle;
-}
-
-bool Texture::flipCoords() const
-{
-    return mRbTexture;
-}
-
-uint8_t Texture::texType() const
-{
-    return mType;
-}
-
-uint8_t Texture::texFormat() const
-{
-    return mFormat;
-}
-
-uint32_t Texture::calcSize(uint8_t format, uint16_t width, uint16_t height, uint16_t depth)
-{
-    return RenderDevice::instance().calcTextureSize(
-        static_cast<RenderDevice::TextureFormat>(format), width, height, depth
-    );
 }
 
 uint32_t Texture::usedMemory()
 {
-    return RenderDevice::instance().getTextureMemory();
+    return RenderDevice::instance().usedTextureMemory();
 }
 
 uint16_t Texture::maxSize()
@@ -230,12 +86,7 @@ uint16_t Texture::maxSize()
     return max;
 }
 
-void Texture::bind(const Texture* texture, uint8_t texSlot)
+void Texture::bind(const Texture* texture, uint8_t slot)
 {
-    if (!texture) {
-        RenderDevice::instance().setTexture(texSlot, 0, 0);
-    }
-    else {
-        RenderDevice::instance().setTexture(texSlot, texture->mHandle, texture->mSamplerState);
-    }
+    RenderDevice::instance().bind(texture, slot);
 }

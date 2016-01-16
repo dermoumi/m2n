@@ -27,12 +27,13 @@
 
 #include "../config.hpp"
 #include "../graphics/texture.hpp"
+#include "../graphics/renderdevice.hpp"
 
 using NxTexture = Texture;
 
 NX_EXPORT NxTexture* nxTextureNew()
 {
-    return new Texture();
+    return RenderDevice::instance().newTexture();
 }
 
 NX_EXPORT void nxTextureRelease(NxTexture* texture)
@@ -40,22 +41,30 @@ NX_EXPORT void nxTextureRelease(NxTexture* texture)
     delete texture;
 }
 
-NX_EXPORT uint8_t nxTextureCreate(NxTexture* texture, uint8_t type, uint8_t format, uint16_t width,
-    uint16_t height, uint16_t depth, bool hasMips, bool mipMaps, bool sRGB)
+NX_EXPORT bool nxTextureCreate(NxTexture* texture, uint8_t type, uint8_t format, uint16_t width,
+    uint16_t height, uint16_t depth, bool hasMips, bool mipMaps, bool srgb)
 {
-    return texture->create(type, format, width, height, depth, hasMips, mipMaps, sRGB);
+    return texture->create(
+        static_cast<Texture::Type>(type), static_cast<Texture::Format>(format),
+        width, height, depth, hasMips, mipMaps, srgb
+    );
 }
 
-NX_EXPORT void nxTextureSetData(NxTexture* texture, const void* buffer, int32_t x, int32_t y,
-    int32_t z, int32_t width, int32_t height, int32_t depth, uint8_t slice, uint8_t mipLevel)
+NX_EXPORT void nxTextureSetData(NxTexture* texture, const void* buffer, uint8_t slice,
+    uint8_t level)
 {
-    texture->setData(buffer, x, y, z, width, height, depth, slice, mipLevel);
+    texture->setData(buffer, slice, level);
 }
 
-NX_EXPORT bool nxTextureData(const NxTexture* texture, void* buffer, uint8_t slice,
-    uint8_t mipLevel)
+NX_EXPORT void nxTextureSetSubData(NxTexture* texture, const void* buffer, uint16_t x, uint16_t y,
+    uint16_t z, uint16_t width, uint16_t height, uint16_t depth, uint8_t slice, uint8_t level)
 {
-    return texture->data(buffer, slice, mipLevel);
+    texture->setSubData(buffer, x, y, z, width, height, depth, slice, level);
+}
+
+NX_EXPORT bool nxTextureData(const NxTexture* texture, void* buffer, uint8_t slice, uint8_t level)
+{
+    return texture->data(buffer, slice, level);
 }
 
 NX_EXPORT void nxTextureSize(const NxTexture* texture, uint16_t* sizePtr)
@@ -70,27 +79,17 @@ NX_EXPORT uint32_t nxTextureBufferSize(const NxTexture* texture)
 
 NX_EXPORT void nxTextureSetFilter(NxTexture* texture, uint32_t filter)
 {
-    texture->setFilter(filter);
+    texture->setFilter(static_cast<Texture::Filter>(filter));
 }
 
 NX_EXPORT void nxTextureSetAnisotropyLevel(NxTexture* texture, uint32_t aniso)
 {
-    texture->setAnisotropyLevel(aniso);
+    texture->setAnisotropyLevel(static_cast<Texture::Anisotropy>(aniso));
 }
 
-NX_EXPORT void nxTextureSetRepeatingX(NxTexture* texture, uint32_t repeating)
+NX_EXPORT void nxTextureSetRepeating(NxTexture* texture, uint32_t repeating)
 {
-    texture->setRepeatingX(repeating);
-}
-
-NX_EXPORT void nxTextureSetRepeatingY(NxTexture* texture, uint32_t repeating)
-{
-    texture->setRepeatingY(repeating);
-}
-
-NX_EXPORT void nxTextureSetRepeatingZ(NxTexture* texture, uint32_t repeating)
-{
-    texture->setRepeatingZ(repeating);
+    texture->setRepeating(repeating);
 }
 
 NX_EXPORT void nxTextureSetLessOrEqual(NxTexture* texture, bool enabled)
@@ -100,17 +99,17 @@ NX_EXPORT void nxTextureSetLessOrEqual(NxTexture* texture, bool enabled)
 
 NX_EXPORT uint32_t nxTextureFilter(const NxTexture* texture)
 {
-    return texture->filter();
+    return static_cast<uint32_t>(texture->filter());
 }
 
 NX_EXPORT uint32_t nxTextureAnisotropyLevel(const NxTexture* texture)
 {
-    return texture->anisotropyLevel();
+    return static_cast<uint32_t>(texture->anisotropyLevel());
 }
 
-NX_EXPORT void nxTextureRepeating(const NxTexture* texture, uint32_t* repeatingPtr)
+NX_EXPORT uint32_t nxTextureRepeating(const NxTexture* texture)
 {
-    texture->repeating(repeatingPtr[0], repeatingPtr[1], repeatingPtr[2]);
+    return texture->repeating();
 }
 
 NX_EXPORT bool nxTextureLessOrEqual(const NxTexture* texture)
@@ -125,12 +124,12 @@ NX_EXPORT bool nxTextureFlipCoords(const NxTexture* texture)
 
 NX_EXPORT uint8_t nxTextureType(const NxTexture* texture)
 {
-    return texture->texType();
+    return static_cast<uint8_t>(texture->type());
 }
 
 NX_EXPORT uint8_t nxTextureFormat(const NxTexture* texture)
 {
-    return texture->texFormat();
+    return static_cast<uint8_t>(texture->format());
 }
 
 NX_EXPORT uint32_t nxTextureUsedMemory()

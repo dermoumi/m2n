@@ -32,8 +32,7 @@
 class Texture
 {
 public:
-    enum Format
-    {
+    enum Format : uint8_t {
         Unknown,
         RGBA8,
         DXT1,
@@ -52,61 +51,92 @@ public:
         Count
     };
 
-    enum Type
-    {
-        _2D,
-        _3D,
-        _Cube
+    enum Type : uint8_t{
+        _2D = 0,
+        _3D = 1,
+        Cube = 2
+    };
+
+    enum Filter : uint32_t {
+        Bilinear  = 0,
+        Trilinear = 1,
+        Point     = 2,
+
+        _FilterStart = 0,
+        _FilterMask  = Bilinear | Trilinear | Point
+    };
+
+    enum Anisotropy : uint32_t {
+        _1  = 0x00,
+        _2  = 0x04,
+        _4  = 0x08,
+        _8  = 0x10,
+        _16 = 0x20,
+
+        _AnisotropyStart = 2,
+        _AnisotropyMask = _1 | _2 | _4 | _8 | _16
+    };
+
+    enum Repeating : uint32_t {
+        ClampX   = 0x000,
+        WrapX    = 0x040,
+        StretchX = 0x080,
+        ClampY   = 0x000,
+        WrapY    = 0x100,
+        StretchY = 0x200,
+        ClampZ   = 0x000,
+        WrapZ    = 0x400,
+        StretchZ = 0x800,
+        Clamp    = ClampX | ClampY | ClampZ,
+        Wrap     = WrapX | WrapY | WrapZ,
+        Stretch  = StretchX | StretchY | StretchZ,
+
+        _RepeatingStartX = 6,
+        _RepeatingMaskX  = ClampX | WrapX | StretchX,
+        _RepeatingStartY = 8,
+        _RepeatingMaskY  = ClampY | WrapY | StretchY,
+        _RepeatingStartZ = 10,
+        _RepeatingMaskZ  = ClampZ | WrapZ | StretchZ,
+        _RepeatingStart  = 6,
+        _RepeatingMask   = Clamp | Wrap | Stretch
+    };
+
+    enum Compare : uint32_t {
+        LEqual = 0x1000
     };
 
 public:
-    Texture() = default;
-    Texture(uint8_t type, uint8_t format, uint32_t handle, uint16_t width, uint16_t height,
-        uint16_t depth, uint32_t samplerState, bool rbTexture);
-    ~Texture();
+    virtual ~Texture() = default;
 
-    uint8_t create(uint8_t texType, uint8_t format, uint16_t width, uint16_t height, uint16_t depth,
-        bool hasMips, bool mipMaps, bool sRGB);
-    void setData(const void* buffer, int32_t x, int32_t y, int32_t z, int32_t width,
-        int32_t height, int32_t depth, uint8_t slice, uint8_t mipLevel);
-    bool data(void* buffer, uint8_t slice, uint8_t mipLevel) const;
-    uint32_t bufferSize() const;
+    virtual bool create(Type type, Format format, uint16_t width, uint16_t height,
+        uint16_t depth, bool hasMips, bool mipMaps, bool srgb) = 0;
+    virtual void setData(const void* buffer, uint8_t slice, uint8_t level) = 0;
+    virtual void setSubData(const void* buffer, uint16_t x, uint16_t y, uint16_t z, uint16_t width,
+        uint16_t height, uint16_t depth, uint8_t slice, uint8_t level) = 0;
+    virtual bool data(void* buffer, uint8_t slice, uint8_t level) const = 0;
+    virtual uint32_t bufferSize() const = 0;
 
-    void size(uint16_t& width, uint16_t& height, uint16_t& depth) const;
-    uint16_t texWidth() const;
-    uint16_t texHeight() const;
-    uint16_t texDepth() const;
+    virtual void size(uint16_t& width, uint16_t& height, uint16_t& depth) const;
+    virtual uint16_t width() const = 0;
+    virtual uint16_t height() const = 0;
+    virtual uint16_t depth() const = 0;
 
-    void setFilter(uint32_t filter);
-    void setAnisotropyLevel(uint32_t aniso);
-    void setRepeatingX(uint32_t repeating);
-    void setRepeatingY(uint32_t repeating);
-    void setRepeatingZ(uint32_t repeating);
-    void setLessOrEqual(bool enable);
+    virtual void setFilter(Filter filter) = 0;
+    virtual void setAnisotropyLevel(Anisotropy aniso) = 0;
+    virtual void setRepeating(uint32_t repeating) = 0;
+    virtual void setLessOrEqual(bool enable) = 0;
 
-    uint32_t filter() const;
-    uint32_t anisotropyLevel() const;
-    void repeating(uint32_t& x, uint32_t& y, uint32_t& z) const;
-    bool lessOrEqual() const;
+    virtual Filter filter() const = 0;
+    virtual Anisotropy anisotropyLevel() const = 0;
+    virtual uint32_t repeating() const = 0;
+    virtual bool lessOrEqual() const = 0;
 
-    uint32_t nativeHandle() const;
+    virtual bool flipCoords() const = 0;
+    virtual Type type() const = 0;
+    virtual Format format() const = 0;
 
-    bool flipCoords() const;
-    uint8_t texType() const;
-    uint8_t texFormat() const;
-
-    static uint32_t calcSize(uint8_t format, uint16_t width, uint16_t height, uint16_t depth);
+    static uint32_t calcSize(Format format, uint32_t width, uint32_t height, uint32_t depth);
     static uint32_t usedMemory();
     static uint16_t maxSize();
-    static void bind(const Texture* texture, uint8_t texSlot);
-
-private:
-    uint8_t  mType         {0u};
-    uint8_t  mFormat       {0u};
-    uint32_t mHandle       {0u};
-    uint16_t mWidth        {0u};
-    uint16_t mHeight       {0u};
-    uint16_t mDepth        {0u};
-    uint32_t mSamplerState {0u};
-    bool     mRbTexture    {0u};
+    static void bind(const Texture* texture, uint8_t slot);
 };
