@@ -269,19 +269,16 @@ void RtlText::ensureGeometryUpdate() const
     mBoundsH = maxY - minY;
 
     mVertices.clear();
-    mBufferIDs.clear();
     for (auto& it : buffers) {
         if (it.second.empty()) continue;
 
-        mBufferIDs.push_back(it.first);
-
-        mVertices[it.first] = std::shared_ptr<VertexBuffer>(
-            RenderDevice::instance().newVertexBuffer()
-        );
-        mVertices[it.first]->load(
+        auto buf = RenderDevice::instance().newVertexBuffer();
+        buf->load(
             it.second.data(),
             static_cast<uint32_t>(it.second.size() * sizeof(float)),
             4 * sizeof(float)
         );
+
+        mVertices[it.first] = std::shared_ptr<VertexBuffer>(buf);
     }
 }

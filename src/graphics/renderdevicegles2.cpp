@@ -1378,19 +1378,6 @@ bool RenderDeviceGLES2::TextureGLES2::create(Type type, Format format, uint16_t 
 
     if (mHandle) release();
 
-    if (width == 0 || height == 0) {
-        Log::error("Unable to create new texture: invalide size (%ux%u)", width, height);
-        return false;
-    }
-
-    if (
-        !mDevice->mTexNPOTSupported && ((width & (width-1)) || (height & (height-1)))
-    ) {
-        Log::error("Unable to create new texture: non-power-of-two textures are not supported by "
-            "GPU");
-        return false;
-    }
-
     if (
         !mDevice->mPVRTCISupported && (format == PVRTCI_2BPP || format == PVRTCI_A2BPP ||
         format == PVRTCI_4BPP || format == PVRTCI_A4BPP)
@@ -1398,13 +1385,26 @@ bool RenderDeviceGLES2::TextureGLES2::create(Type type, Format format, uint16_t 
         Log::error("PVRTCI texture formats are not supported by the GPU");
         return false;
     }
-
-    if (!mDevice->mTexETC1Supported && format == ETC1) {
+    else if (!mDevice->mTexETC1Supported && format == ETC1) {
         Log::error("ETC1 texture format is not supported by the GPU");
         return false;
     }
+    else if (!mDevice->mDXTSupported && (format == DXT1 || format == DXT3 || format == DXT5)) {
+        Log::error("S3TC/DXT texture formats are not supported by the GPU. "
+            "(Forgot to check for mobile?)");
+        return false;
+    }
 
-    if (
+    if (width == 0 || height == 0) {
+        Log::error("Unable to create new texture: invalide size (%ux%u)", width, height);
+        return false;
+    }
+    else if (!mDevice->mTexNPOTSupported && ((width & (width-1)) || (height & (height-1)))) {
+        Log::error("Unable to create new texture: non-power-of-two textures are not supported by "
+            "GPU");
+        return false;
+    }
+    else if (
         type == Cube &&
         (width > mDevice->mMaxCubeTextureSize || height > mDevice->mMaxCubeTextureSize)
     ) {
@@ -1415,12 +1415,6 @@ bool RenderDeviceGLES2::TextureGLES2::create(Type type, Format format, uint16_t 
     else if (width > maxSize() || height > maxSize()) {
         Log::error("Unable to create new texture: texture size (%ux%u) is bigger than maximum "
             "(%ux%u)", width, height, maxSize(), maxSize());
-        return false;
-    }
-
-    if (!mDevice->mDXTSupported && (format == DXT1 || format == DXT3 || format == DXT5)) {
-        Log::error("S3TC/DXT texture formats are not supported by the GPU. "
-            "(Forgot to check for mobile?)");
         return false;
     }
 
@@ -1462,6 +1456,12 @@ bool RenderDeviceGLES2::TextureGLES2::create(Type type, Format format, uint16_t 
         return false;
     }
 
+    glGenTextures(1, &mHandle);
+    if (mHandle == 0) {
+        Log::error("Unable to create new texture: could not generate GPU texture");
+        return false;
+    }
+
     mGlType = toTexType[type];
     mType = type;
     mFormat = format;
@@ -1470,12 +1470,6 @@ bool RenderDeviceGLES2::TextureGLES2::create(Type type, Format format, uint16_t 
     mSrgb = srgb;
     mHasMips = hasMips;
     mMipMaps = mipMaps;
-
-    glGenTextures(1, &mHandle);
-    if (mHandle == 0) {
-        Log::error("Unable to create new texture: could not generate GPU texture");
-        return false;
-    }
 
     glActiveTexture(GL_TEXTURE0);
 

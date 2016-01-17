@@ -1386,14 +1386,12 @@ bool RenderDeviceGL::TextureGL::create(Type type, Format format, uint16_t width,
         Log::error("Unable to create new texture: invalide size (%ux%u)", width, height);
         return false;
     }
-
-    if (!mDevice->mTexNPOTSupported && ((width & (width-1)) || (height & (height-1)))) {
+    else if (!mDevice->mTexNPOTSupported && ((width & (width-1)) || (height & (height-1)))) {
         Log::error("Unable to create new texture: non-power-of-two textures are not supported by "
             "GPU");
         return false;
     }
-
-    if (
+    else if (
         type == Cube &&
         (width > mDevice->mMaxCubeTextureSize || height > mDevice->mMaxCubeTextureSize)
     ) {
@@ -1446,6 +1444,12 @@ bool RenderDeviceGL::TextureGL::create(Type type, Format format, uint16_t width,
         return false;
     }
 
+    glGenTextures(1, &mHandle);
+    if (mHandle == 0) {
+        Log::error("Unable to create new texture: could not generate GPU texture");
+        return false;
+    }
+
     mGlType = toTexType[type];
     mType = type;
     mFormat = format;
@@ -1454,12 +1458,6 @@ bool RenderDeviceGL::TextureGL::create(Type type, Format format, uint16_t width,
     mSrgb = srgb;
     mHasMips = hasMips;
     mMipMaps = mipMaps;
-
-    glGenTextures(1, &mHandle);
-    if (mHandle == 0) {
-        Log::error("Unable to create new texture: could not generate GPU texture");
-        return false;
-    }
 
     glActiveTexture(GL_TEXTURE15);
 

@@ -84,12 +84,7 @@ NX_EXPORT void nxTextBounds(const Text* text, float* boundsPtr)
     text->bounds(boundsPtr[0], boundsPtr[1], boundsPtr[2], boundsPtr[3]);
 }
 
-NX_EXPORT NxVertexBuffer* nxTextVertexBuffer(const Text* text, uint32_t index)
+NX_EXPORT NxVertexBuffer* nxTextNextBuffer(const Text* text, uint32_t* index)
 {
-    return text->vertexBuffer(index);
-}
-
-NX_EXPORT uint32_t* nxTextVertexBufferIDs(const Text* text, uint32_t* count)
-{
-    return text->vertexBufferIDs(count);
+    return text->nextBuffer(index);
 }

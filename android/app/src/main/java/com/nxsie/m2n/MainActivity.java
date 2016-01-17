@@ -9,17 +9,38 @@ import android.content.res.AssetManager;
 public class MainActivity extends SDLActivity {
     private static AssetManager assetMgr;
 
-    protected void onCreate(Bundle savedInstanceState) {
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
 
         assetMgr = getApplicationContext().getAssets();
 
-        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
-            | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
-        );
+        setUpUiVisibility();
+    }
+
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+
+        setUpUiVisibility();
+    }
+
+    private void setUpUiVisibility()
+    {
+        int visibility =
+            View.SYSTEM_UI_FLAG_LAYOUT_STABLE          |
+            View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
+            View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN      |
+            View.SYSTEM_UI_FLAG_HIDE_NAVIGATION        |
+            View.SYSTEM_UI_FLAG_FULLSCREEN;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            visibility |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+        }
+
+        getWindow().getDecorView().setSystemUiVisibility(visibility);
     }
 
     public static boolean fsIsDirectory(String path)

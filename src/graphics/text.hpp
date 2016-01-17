@@ -67,8 +67,7 @@ public:
     void characterPosition(size_t index, float& x, float& y) const;
     void bounds(float& x, float& y, float& w, float& h) const;
 
-    VertexBuffer* vertexBuffer(uint32_t index) const;
-    uint32_t* vertexBufferIDs(uint32_t* count) const;
+    VertexBuffer* nextBuffer(uint32_t* index) const;
 
 protected:
     virtual void ensureGeometryUpdate() const;
@@ -77,8 +76,10 @@ protected:
     const Font*    mFont {nullptr};
     uint32_t       mCharSize {30u};
     uint8_t        mStyle {Regular};
-    mutable std::map<uint32_t, std::shared_ptr<VertexBuffer>> mVertices;
-    mutable std::vector<uint32_t> mBufferIDs;
+
+    using VertexMap = std::map<uint32_t, std::shared_ptr<VertexBuffer>>; 
+    mutable VertexMap::const_iterator mNextPointer;
+    mutable VertexMap mVertices;
     mutable float mBoundsX {0.f}, mBoundsY {0.f}, mBoundsW {0.f}, mBoundsH {0.f};
     mutable bool mNeedsUpdate {false};
 };

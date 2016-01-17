@@ -87,14 +87,17 @@ end
 function Font:texture(charSize, index)
     if self._cdata == nil then return Texture:new() end
 
+    if self._textures and self._textures[charSize] and self._textures[charSize][index] then
+        return self._textures[charSize][index]
+    end
+
+    if not self._textures then self._textures = {} end
+    if not self._textures[charSize] then self._textures[charSize] = {} end
+
     local texture = Texture:allocate()
     texture._cdata = C.nxFontTexture(self._cdata, charSize, index or 0)
-    if not __done or __done < 6 then
-        local w, h = texture:size()
-        local image = require('graphics.image'):new(w, h, texture:data())
-        image:save("test_font.png")
-        __done = (__done or 0) + 1
-    end
+    self._textures[charSize][index] = texture
+
     return texture
 end
 

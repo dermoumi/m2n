@@ -133,18 +133,17 @@ void Text::bounds(float& x, float& y, float& w, float& h) const
     h = mBoundsH;
 }
 
-VertexBuffer* Text::vertexBuffer(uint32_t index) const
-{
-    ensureGeometryUpdate();
-    return mVertices[index].get();
-}
-
-uint32_t* Text::vertexBufferIDs(uint32_t* count) const
+VertexBuffer* Text::nextBuffer(uint32_t* index) const
 {
     ensureGeometryUpdate();
 
-    *count = static_cast<uint32_t>(mBufferIDs.size());
-    return mBufferIDs.data();
+    if (mNextPointer == mVertices.cend()) {
+        mNextPointer = mVertices.cbegin();
+        return nullptr;
+    }
+
+    *index = mNextPointer->first;
+    return (mNextPointer++)->second.get();
 }
 
 void Text::ensureGeometryUpdate() const
@@ -338,19 +337,18 @@ void Text::ensureGeometryUpdate() const
     mBoundsH = maxY - minY;
 
     mVertices.clear();
-    mBufferIDs.clear();
     for (auto& it : buffers) {
         if (it.second.empty()) continue;
 
-        mBufferIDs.push_back(it.first);
-
-        mVertices[it.first] = std::shared_ptr<VertexBuffer>(
-            RenderDevice::instance().newVertexBuffer()
-        );
-        mVertices[it.first]->load(
+        auto buf = RenderDevice::instance().newVertexBuffer();
+        buf->load(
             it.second.data(),
             static_cast<uint32_t>(it.second.size() * sizeof(float)),
             4 * sizeof(float)
         );
+
+        mVertices[it.first] = std::shared_ptr<VertexBuffer>(buf);
     }
+
+    mNextPointer = mVertices.cbegin();
 }

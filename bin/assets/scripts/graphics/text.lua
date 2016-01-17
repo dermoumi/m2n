@@ -48,11 +48,11 @@ ffi.cdef [[
     void nxTextSetStyle(NxText*, uint8_t);
     void nxTextCharacterPosition(const NxText*, uint32_t, float*);
     void nxTextBounds(const NxText*, float*);
-    NxVertexBuffer* nxTextVertexBuffer(const NxText*, uint32_t);
-    uint32_t* nxTextVertexBufferIDs(const NxText*, uint32_t*);
+    NxVertexBuffer* nxTextNextBuffer(const NxText*, uint32_t*);
 ]]
 
-local bufCountPtr = ffi.new('uint32_t[1]')
+local indexPtr = ffi.new('uint32_t[1]')
+local vertexHelper = VertexBuffer:allocate()
 
 local toStyle = {
     regular       = 0,
@@ -80,7 +80,6 @@ function Text:initialize(str, font, charSize)
         :setSize(charSize or 30)
 
     self._style = 0
-    self._vertices = VertexBuffer:allocate()
 end
 
 function Text:release()
@@ -199,22 +198,21 @@ function Text:_render(camera)
         shader:setUniform('uColor', self:color(true, true))
         shader:setSampler('uTexture0', 0)
 
-        local bufferIDs = C.nxTextVertexBufferIDs(self._cdata, bufCountPtr)
-        for i = 0, bufCountPtr[0] - 1 do
-            local bufferID = bufferIDs[i];
+        repeat
+            vertexHelper._cdata = C.nxTextNextBuffer(self._cdata, indexPtr)
+            if vertexHelper._cdata == nil then break end
 
-            self._vertices._cdata = C.nxTextVertexBuffer(self._cdata, bufferID)
-            self._vertices:bind()
+            vertexHelper:bind()
             C.nxRendererSetVertexLayout(Text._vertexLayout())
+            
+            local texture = self._font:texture(self._charSize, indexPtr[0])
+            texture:bind()
 
-            local texture = self._font:texture(self._charSize, bufferID)
-            texture:bind(0)
+            shader:setUniform('uTexSize', texture:size())
 
-            local texW, texH = texture:size()
-            shader:setUniform('uTexSize', texW, texH)
+            C.nxRendererDraw(4, 0, vertexHelper:count())
+        until false
 
-            C.nxRendererDraw(4, 0, self._vertices:count())
-        end
     end
 end
 
