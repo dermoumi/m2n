@@ -50,10 +50,8 @@ thread_local const char* defaultShaderFS =
 
 thread_local GLenum toVertexFormat[] = {GL_FLOAT, GL_UNSIGNED_BYTE};
 thread_local GLenum toIndexFormat[]  = {GL_UNSIGNED_SHORT, GL_UNSIGNED_INT};
-thread_local GLenum toTexType[]      = {GL_TEXTURE_2D, GL_TEXTURE_3D_OES, GL_TEXTURE_CUBE_MAP};
-thread_local GLenum toTexBinding[]   = {
-    GL_TEXTURE_BINDING_2D, GL_TEXTURE_BINDING_3D_OES, GL_TEXTURE_BINDING_CUBE_MAP
-};
+thread_local GLenum toTexType[]      = {GL_TEXTURE_2D, GL_TEXTURE_CUBE_MAP};
+thread_local GLenum toTexBinding[]   = {GL_TEXTURE_BINDING_2D, GL_TEXTURE_BINDING_CUBE_MAP};
 thread_local GLenum toPrimType[]     = {
     GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_LINE_LOOP, GL_TRIANGLES, GL_TRIANGLE_STRIP,
     GL_TRIANGLE_FAN
@@ -1159,7 +1157,7 @@ bool RenderDeviceGLES2::RenderBufferGLES2::create(Texture::Format format, uint16
 
             // Create a color texture
             auto tex = static_cast<TextureGLES2*>(mDevice->newTexture());
-            tex->create(Texture::_2D, format, width, height, 1, false, false, false);
+            tex->create(Texture::_2D, format, width, height, false, false, false);
             tex->setData(nullptr, 0, 0);
             tex->mRenderBuffer = this;
             mColTexs[i] = std::shared_ptr<TextureGLES2>(tex);
@@ -1226,7 +1224,7 @@ bool RenderDeviceGLES2::RenderBufferGLES2::create(Texture::Format format, uint16
         else {
             // Create a depth texture
             auto tex = static_cast<TextureGLES2*>(mDevice->newTexture());
-            tex->create(Texture::_2D, Texture::DEPTH, width, height, 1, false, false, false);
+            tex->create(Texture::_2D, Texture::DEPTH, width, height, false, false, false);
             if (glExt::EXT_shadow_samplers) {
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE_EXT, GL_NONE);
             }
@@ -1371,7 +1369,7 @@ RenderDeviceGLES2::TextureGLES2::~TextureGLES2()
 }
 
 bool RenderDeviceGLES2::TextureGLES2::create(Type type, Format format, uint16_t width,
-    uint16_t height, uint16_t depth, bool hasMips, bool mipMaps, bool srgb)
+    uint16_t height, bool hasMips, bool mipMaps, bool srgb)
 {
     if (mRenderBuffer) {
         Log::error("Attempt to create a new texture over renderbuffer texture");
@@ -1380,14 +1378,13 @@ bool RenderDeviceGLES2::TextureGLES2::create(Type type, Format format, uint16_t 
 
     if (mHandle) release();
 
-    if (width == 0 || height == 0 || depth == 0) {
-        Log::error("Unable to create new texture: invalide size (%ux%ux%u)", width, height, depth);
+    if (width == 0 || height == 0) {
+        Log::error("Unable to create new texture: invalide size (%ux%u)", width, height);
         return false;
     }
 
     if (
-        !mDevice->mTexNPOTSupported &&
-        ((width & (width-1)) || (height & (height-1)) || (depth & (depth-1)))
+        !mDevice->mTexNPOTSupported && ((width & (width-1)) || (height & (height-1)))
     ) {
         Log::error("Unable to create new texture: non-power-of-two textures are not supported by "
             "GPU");
@@ -1407,11 +1404,6 @@ bool RenderDeviceGLES2::TextureGLES2::create(Type type, Format format, uint16_t 
         return false;
     }
 
-    if (!mDevice->mTex3DSupported && type == _3D) {
-        Log::error("3D Textures are not supported by the GPU");
-        return false;
-    }
-
     if (
         type == Cube &&
         (width > mDevice->mMaxCubeTextureSize || height > mDevice->mMaxCubeTextureSize)
@@ -1420,9 +1412,9 @@ bool RenderDeviceGLES2::TextureGLES2::create(Type type, Format format, uint16_t 
             "(%ux%u)", width, height, mDevice->mMaxCubeTextureSize, mDevice->mMaxCubeTextureSize);
         return false;
     }
-    else if (width > maxSize() || height > maxSize() || depth > maxSize()) {
-        Log::error("Unable to create new texture: texture size (%ux%ux%u) is bigger than maximum "
-            "(%ux%ux%u)", width, height, depth, maxSize(), maxSize(), maxSize());
+    else if (width > maxSize() || height > maxSize()) {
+        Log::error("Unable to create new texture: texture size (%ux%u) is bigger than maximum "
+            "(%ux%u)", width, height, maxSize(), maxSize());
         return false;
     }
 
@@ -1475,7 +1467,6 @@ bool RenderDeviceGLES2::TextureGLES2::create(Type type, Format format, uint16_t 
     mFormat = format;
     mWidth = width;
     mHeight = height;
-    mDepth = depth;
     mSrgb = srgb;
     mHasMips = hasMips;
     mMipMaps = mipMaps;
@@ -1500,7 +1491,7 @@ bool RenderDeviceGLES2::TextureGLES2::create(Type type, Format format, uint16_t 
     glBindTexture(mGlType, lastTexture);
 
     // Calculate memory requirements
-    mMemSize = calcSize(format, width, height, depth);
+    mMemSize = calcSize(format, width, height);
     if (hasMips || mipMaps) mMemSize += static_cast<int>(mMemSize / 3.f + 0.5f);
     if (type == Cube) mMemSize *= 6;
     mDevice->mTextureMemory += mMemSize;
@@ -1552,37 +1543,20 @@ void RenderDeviceGLES2::TextureGLES2::setData(const void* buffer, uint8_t slice,
     uint16_t w = std::max(mWidth >> level, 1);
     uint16_t h = std::max(mHeight >> level, 1);
 
-    if (mType == _2D || mType == Cube) {
-        int target = (mType == _2D) ? GL_TEXTURE_2D : (GL_TEXTURE_CUBE_MAP_POSITIVE_X + slice);
+    int target = (mType == _2D) ? GL_TEXTURE_2D : (GL_TEXTURE_CUBE_MAP_POSITIVE_X + slice);
 
-        if (compressed) {
-            glCompressedTexImage2D(
-                target, level, mGlFormat, w, h, 0, calcSize(mFormat, w, h, 1), buffer
-            );
-        }
-        else {
-            glTexImage2D(
-                target, level, mGlFormat, w, h, 0, inputFormat, inputType, buffer
-            );
-        }
+    if (compressed) {
+        glCompressedTexImage2D(
+            target, level, mGlFormat, w, h, 0, calcSize(mFormat, w, h), buffer
+        );
     }
-    else if (mType == _3D) {
-        uint16_t d = std::max(mDepth >> level, 1);
-
-        if (compressed) {
-            glCompressedTexImage3DOES(
-                GL_TEXTURE_3D_OES, level, mGlFormat, w, h, d, 0, calcSize(mFormat, w, h, d),
-                buffer
-            );
-        }
-        else {
-            glTexImage3DOES(
-                GL_TEXTURE_3D_OES, level, mGlFormat, w, h, d, 0, inputFormat, inputType, buffer
-            );
-        }
+    else {
+        glTexImage2D(
+            target, level, mGlFormat, w, h, 0, inputFormat, inputType, buffer
+        );
     }
 
-    if (mHasMips && (mType != Cube || slice == 5)) {
+    if (mHasMips && (mType == _2D || slice == 5)) {
         // Note: cube map mips are only generated when the last side is uploaded
         glGenerateMipmap(mGlType);
     }
@@ -1590,8 +1564,8 @@ void RenderDeviceGLES2::TextureGLES2::setData(const void* buffer, uint8_t slice,
     glBindTexture(mGlType, lastTexture);
 }
 
-void RenderDeviceGLES2::TextureGLES2::setSubData(const void* buffer, uint16_t x, uint16_t y, uint16_t z,
-    uint16_t width, uint16_t height, uint16_t depth, uint8_t slice, uint8_t level)
+void RenderDeviceGLES2::TextureGLES2::setSubData(const void* buffer, uint16_t x, uint16_t y,
+    uint16_t width, uint16_t height, uint8_t slice, uint8_t level)
 {
     if (mRenderBuffer) {
         Log::error("Attemting to alter data of a render buffer texture");
@@ -1601,9 +1575,8 @@ void RenderDeviceGLES2::TextureGLES2::setSubData(const void* buffer, uint16_t x,
     // Calculate size of the next mipmap using "floor" convention
     int w = std::max(mWidth >> level, 1);
     int h = std::max(mHeight >> level, 1);
-    int d = std::max(mDepth >> level, 1);
 
-    if (x + width > w || y + height > h || (mType == _3D && z + depth > d)) {
+    if (x + width > w || y + height > h) {
         Log::error("Attempting to update portion out of texture boundaries");
         return;
     }
@@ -1641,35 +1614,18 @@ void RenderDeviceGLES2::TextureGLES2::setSubData(const void* buffer, uint16_t x,
             break;
     }
 
-    if (mType == _2D || mType == Cube) {
-        int target = (mType == _2D) ? GL_TEXTURE_2D : (GL_TEXTURE_CUBE_MAP_POSITIVE_X + slice);
+    int target = (mType == _2D) ? GL_TEXTURE_2D : (GL_TEXTURE_CUBE_MAP_POSITIVE_X + slice);
 
-        if (compressed) {
-            glCompressedTexSubImage2D(
-                target, level, x, y, width, height, mGlFormat,
-                calcSize(mFormat, width, height, 1), buffer
-            );
-        }
-        else {
-            glTexSubImage2D(target, level, x, y, width, height, inputFormat, inputType, buffer);
-        }
+    if (compressed) {
+        glCompressedTexSubImage2D(
+            target, level, x, y, width, height, mGlFormat, calcSize(mFormat, width, height), buffer
+        );
     }
-    else if (mType == _3D) {
-        if (compressed) {
-            glCompressedTexSubImage3DOES(
-                GL_TEXTURE_3D_OES, level, x, y, z, width, height, depth,
-                mGlFormat, calcSize(mFormat, width, height, d), buffer
-            );
-        }
-        else {
-            glTexSubImage3DOES(
-                GL_TEXTURE_3D_OES, level, x, y, z, width, height, depth, inputFormat, inputType, 
-                buffer
-            );
-        }
+    else {
+        glTexSubImage2D(target, level, x, y, width, height, inputFormat, inputType, buffer);
     }
 
-    if (mHasMips && (mType != Cube || slice == 5)) {
+    if (mHasMips && (mType == _2D || slice == 5)) {
         // Note: cube map mips are only generated when the last side is uploaded
         glGenerateMipmap(mGlType);
     }
@@ -1679,10 +1635,8 @@ void RenderDeviceGLES2::TextureGLES2::setSubData(const void* buffer, uint16_t x,
 
 bool RenderDeviceGLES2::TextureGLES2::data(void* buffer, uint8_t slice, uint8_t level) const
 {
-    if (mGlFormat != RGBA8 || mType == _3D) {
-        // Can only retrieve RGBA8 2D data
-        return false;
-    }
+    // Can only retrieve RGBA8 data
+    if (mGlFormat != RGBA8) return false;
 
     int target = (mType == _2D) ? GL_TEXTURE_2D : GL_TEXTURE_CUBE_MAP_POSITIVE_X + slice;
 
@@ -1704,7 +1658,7 @@ bool RenderDeviceGLES2::TextureGLES2::data(void* buffer, uint8_t slice, uint8_t 
 
 uint32_t RenderDeviceGLES2::TextureGLES2::bufferSize() const
 {
-    return calcSize(mFormat, mWidth, mHeight, mDepth);
+    return calcSize(mFormat, mWidth, mHeight);
 }
 
 uint16_t RenderDeviceGLES2::TextureGLES2::width() const
@@ -1715,11 +1669,6 @@ uint16_t RenderDeviceGLES2::TextureGLES2::width() const
 uint16_t RenderDeviceGLES2::TextureGLES2::height() const
 {
     return mHeight;
-}
-
-uint16_t RenderDeviceGLES2::TextureGLES2::depth() const
-{
-    return mDepth;
 }
 
 void RenderDeviceGLES2::TextureGLES2::setFilter(Filter filter)
@@ -1832,11 +1781,6 @@ void RenderDeviceGLES2::TextureGLES2::applyState() const
 
     which = (mState & _RepeatingMaskY) >> _RepeatingStartY;
     glTexParameteri(mGlType, GL_TEXTURE_WRAP_T, wrapModes[which]);
-
-    if (mDevice->mTex3DSupported) {
-        which = (mState & _RepeatingMaskZ) >> _RepeatingStartZ;
-        glTexParameteri(mGlType, GL_TEXTURE_WRAP_R_OES, wrapModes[which]);
-    }
 
     if (mDevice->mTexShadowSamplers) {
         if (mState & LEqual) {
