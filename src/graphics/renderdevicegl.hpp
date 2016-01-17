@@ -250,16 +250,15 @@ private:
         ~TextureGL();
 
         bool create(Type type, Format format, uint16_t width, uint16_t height,
-            uint16_t depth, bool hasMips, bool mipMaps, bool srgb);
+            bool hasMips, bool mipMaps, bool srgb);
         void setData(const void* buffer, uint8_t slice, uint8_t level);
-        void setSubData(const void* buffer, uint16_t x, uint16_t y, uint16_t z, uint16_t width,
-            uint16_t height, uint16_t depth, uint8_t slice, uint8_t level);
+        void setSubData(const void* buffer, uint16_t x, uint16_t y, uint16_t width,
+            uint16_t height, uint8_t slice, uint8_t level);
         bool data(void* buffer, uint8_t slice, uint8_t level) const;
         uint32_t bufferSize() const;
 
         uint16_t width() const;
         uint16_t height() const;
-        uint16_t depth() const;
 
         void setFilter(Filter filter);
         void setAnisotropyLevel(Anisotropy aniso);
@@ -290,7 +289,6 @@ private:
         Format mFormat {Unknown};
         uint16_t mWidth {0u};
         uint16_t mHeight {0u};
-        uint16_t mDepth {0u};
         bool mSrgb {false};
         bool mHasMips {true};
         bool mMipMaps {true};

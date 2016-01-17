@@ -20,7 +20,7 @@ return [[
         uniform vec2 uUnit;
 
         const float edgeThresh = 0.03;
-        const float edgeForce = 0.3;
+        const float edgeForce  = 0.275;
 
         const float near = 0.100;
         const float far  = 100.0;

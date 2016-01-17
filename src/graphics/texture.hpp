@@ -52,9 +52,8 @@ public:
     };
 
     enum Type : uint8_t{
-        _2D = 0,
-        _3D = 1,
-        Cube = 2
+        _2D,
+        Cube
     };
 
     enum Filter : uint32_t {
@@ -84,19 +83,14 @@ public:
         ClampY   = 0x000,
         WrapY    = 0x100,
         StretchY = 0x200,
-        ClampZ   = 0x000,
-        WrapZ    = 0x400,
-        StretchZ = 0x800,
-        Clamp    = ClampX | ClampY | ClampZ,
-        Wrap     = WrapX | WrapY | WrapZ,
-        Stretch  = StretchX | StretchY | StretchZ,
+        Clamp    = ClampX | ClampY,
+        Wrap     = WrapX | WrapY,
+        Stretch  = StretchX | StretchY,
 
         _RepeatingStartX = 6,
         _RepeatingMaskX  = ClampX | WrapX | StretchX,
         _RepeatingStartY = 8,
         _RepeatingMaskY  = ClampY | WrapY | StretchY,
-        _RepeatingStartZ = 10,
-        _RepeatingMaskZ  = ClampZ | WrapZ | StretchZ,
         _RepeatingStart  = 6,
         _RepeatingMask   = Clamp | Wrap | Stretch
     };
@@ -109,17 +103,16 @@ public:
     virtual ~Texture() = default;
 
     virtual bool create(Type type, Format format, uint16_t width, uint16_t height,
-        uint16_t depth, bool hasMips, bool mipMaps, bool srgb) = 0;
+        bool hasMips, bool mipMaps, bool srgb) = 0;
     virtual void setData(const void* buffer, uint8_t slice, uint8_t level) = 0;
-    virtual void setSubData(const void* buffer, uint16_t x, uint16_t y, uint16_t z, uint16_t width,
-        uint16_t height, uint16_t depth, uint8_t slice, uint8_t level) = 0;
+    virtual void setSubData(const void* buffer, uint16_t x, uint16_t y, uint16_t width,
+        uint16_t height, uint8_t slice, uint8_t level) = 0;
     virtual bool data(void* buffer, uint8_t slice, uint8_t level) const = 0;
     virtual uint32_t bufferSize() const = 0;
 
-    virtual void size(uint16_t& width, uint16_t& height, uint16_t& depth) const;
+    virtual void size(uint16_t& width, uint16_t& height) const;
     virtual uint16_t width() const = 0;
     virtual uint16_t height() const = 0;
-    virtual uint16_t depth() const = 0;
 
     virtual void setFilter(Filter filter) = 0;
     virtual void setAnisotropyLevel(Anisotropy aniso) = 0;
@@ -135,7 +128,7 @@ public:
     virtual Type type() const = 0;
     virtual Format format() const = 0;
 
-    static uint32_t calcSize(Format format, uint32_t width, uint32_t height, uint32_t depth);
+    static uint32_t calcSize(Format format, uint32_t width, uint32_t height);
     static uint32_t usedMemory();
     static uint16_t maxSize();
     static void bind(const Texture* texture, uint8_t slot);

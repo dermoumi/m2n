@@ -42,11 +42,11 @@ NX_EXPORT void nxTextureRelease(NxTexture* texture)
 }
 
 NX_EXPORT bool nxTextureCreate(NxTexture* texture, uint8_t type, uint8_t format, uint16_t width,
-    uint16_t height, uint16_t depth, bool hasMips, bool mipMaps, bool srgb)
+    uint16_t height, bool hasMips, bool mipMaps, bool srgb)
 {
     return texture->create(
         static_cast<Texture::Type>(type), static_cast<Texture::Format>(format),
-        width, height, depth, hasMips, mipMaps, srgb
+        width, height, hasMips, mipMaps, srgb
     );
 }
 
@@ -57,9 +57,9 @@ NX_EXPORT void nxTextureSetData(NxTexture* texture, const void* buffer, uint8_t 
 }
 
 NX_EXPORT void nxTextureSetSubData(NxTexture* texture, const void* buffer, uint16_t x, uint16_t y,
-    uint16_t z, uint16_t width, uint16_t height, uint16_t depth, uint8_t slice, uint8_t level)
+    uint16_t width, uint16_t height, uint8_t slice, uint8_t level)
 {
-    texture->setSubData(buffer, x, y, z, width, height, depth, slice, level);
+    texture->setSubData(buffer, x, y, width, height, slice, level);
 }
 
 NX_EXPORT bool nxTextureData(const NxTexture* texture, void* buffer, uint8_t slice, uint8_t level)
@@ -69,7 +69,7 @@ NX_EXPORT bool nxTextureData(const NxTexture* texture, void* buffer, uint8_t sli
 
 NX_EXPORT void nxTextureSize(const NxTexture* texture, uint16_t* sizePtr)
 {
-    texture->size(sizePtr[0], sizePtr[1], sizePtr[2]);
+    texture->size(sizePtr[0], sizePtr[1]);
 }
 
 NX_EXPORT uint32_t nxTextureBufferSize(const NxTexture* texture)

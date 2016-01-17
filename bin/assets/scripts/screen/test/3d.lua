@@ -121,7 +121,7 @@ function ScreenTest3D:render()
         .enableDepthMask(true)
         -- .setFillMode('wireframe')
 
-    self.camera:clear(0, 0, 0)
+    self.camera:clear(200, 200, 200, 255)
 
     self.camera:draw(self.scene)
 
@@ -134,7 +134,6 @@ function ScreenTest3D:render()
         :setSampler('uDepthBuf0', 1)
         :setUniform('uUnit', ux, uy)
 
-    self:view():clear(200, 200, 200)
     self:view():drawFsQuad(self.rb:texture(), 1280, 720, true, self.depthShader)
     -- self:view():drawFsQuad(self.rb:texture(), 1280, 720, true)
         :draw(self.text)

@@ -39,29 +39,28 @@ static uint16_t maximumSize()
     return static_cast<uint16_t>(maxSize);
 }
 
-void Texture::size(uint16_t& w, uint16_t& h, uint16_t& d) const
+void Texture::size(uint16_t& w, uint16_t& h) const
 {
     w = width();
     h = height();
-    d = depth();
 }
 
-uint32_t Texture::calcSize(Format format, uint32_t width, uint32_t height, uint32_t depth)
+uint32_t Texture::calcSize(Format format, uint32_t width, uint32_t height)
 {
     switch(format)
     {
     case RGBA8:
-        return width * height * depth * 4;
+        return width * height * 4;
     case DXT1:
-        return std::max(width / 4, 1u) * std::max(height / 4u, 1u) * depth * 8;
+        return std::max(width / 4, 1u) * std::max(height / 4u, 1u) * 8;
     case DXT3:
-        return std::max(width / 4, 1u) * std::max(height / 4u, 1u) * depth * 16;
+        return std::max(width / 4, 1u) * std::max(height / 4u, 1u) * 16;
     case DXT5:
-        return std::max(width / 4, 1u) * std::max(height / 4u, 1u) * depth * 16;
+        return std::max(width / 4, 1u) * std::max(height / 4u, 1u) * 16;
     case RGBA16F:
-        return width * height * depth * 8;
+        return width * height * 8;
     case RGBA32F:
-        return width * height * depth * 16;
+        return width * height * 16;
     case PVRTCI_2BPP:
     case PVRTCI_A2BPP:
         return (std::max(width, 16u) * std::max(height, 8u) * 2 + 7) / 8;
@@ -69,7 +68,7 @@ uint32_t Texture::calcSize(Format format, uint32_t width, uint32_t height, uint3
     case PVRTCI_A4BPP:
         return (std::max(width, 8u) * std::max(height, 8u) * 4 + 7) / 8;
     case ETC1:
-        return std::max(width / 4, 1u) * std::max(height / 4, 1u) * depth * 8;
+        return std::max(width / 4, 1u) * std::max(height / 4, 1u) * 8;
     default:
         return 0u;
     }

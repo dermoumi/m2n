@@ -469,8 +469,8 @@ Glyph VectorFont::loadGlyph(uint32_t codePoint, uint32_t charSize, bool bold) co
             }
 
             page->texture->setSubData(
-                &mPixelBuffer[0], glyph.texLeft, glyph.texTop, 0,
-                glyph.texWidth, glyph.texHeight, 1, 0, 0
+                &mPixelBuffer[0], glyph.texLeft, glyph.texTop,
+                glyph.texWidth, glyph.texHeight, 0, 0
             );
         }
     }
@@ -529,12 +529,12 @@ bool VectorFont::findGlyphRect(Page* page, uint16_t width, uint16_t height, uint
             page->texture->data(buffer, 0, 0);
 
             Image image;
-            image.create(texWidth * 2, texHeight * 2, 255, 255, 255, 0);
+            image.create(texWidth * 2, texHeight * 2, 255u, 255u, 255u, 0u);
             image.copy(buffer, 0, 0, texWidth, 0, 0, texWidth, texHeight, false);
 
             // page->texture = Texture();
             auto ok = page->texture->create(
-                Texture::_2D, Texture::RGBA8, texWidth * 2, texHeight * 2, 1, true, true, false
+                Texture::_2D, Texture::RGBA8, texWidth * 2, texHeight * 2, true, true, false
             );
             if (ok) {
                 page->texture->setData(image.getPixelsPtr(), 0, 0);
@@ -607,7 +607,7 @@ VectorFont::Page::Page()
 
     // Create texture
     texture = std::shared_ptr<Texture>(RenderDevice::instance().newTexture());
-    texture->create(Texture::_2D, Texture::RGBA8, 128u, 128u, 1u, true, true, false);
+    texture->create(Texture::_2D, Texture::RGBA8, 128u, 128u, true, true, false);
     texture->setData(image.getPixelsPtr(), 0, 0);
 }
 
