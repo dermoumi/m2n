@@ -26,12 +26,12 @@
 --]]
 
 local Material    = require 'graphics.material'
-local SceneObject = require 'graphics.sceneobject'
+local SceneDesc = require 'graphics.scenedesc'
 
-local MeshDesc = SceneObject:subclass 'graphics.meshdesc'
+local MeshDesc = SceneDesc:subclass 'graphics.meshdesc'
 
 function MeshDesc:initialize()
-    SceneObject.initialize(self, 'mesh')
+    SceneDesc.initialize(self, 'mesh')
 end
 
 function MeshDesc:setGeometry(geom, start, count)
@@ -53,7 +53,7 @@ function MeshDesc:makeEntity(entity)
     entity.geometry, entity.start, entity.count, entity.material =
         self.geometry, self.start, self.count, self.material or Material:new()
 
-    return SceneObject.makeEntity(self, entity)
+    return SceneDesc.makeEntity(self, entity)
 end
 
 function MeshDesc:_validate()

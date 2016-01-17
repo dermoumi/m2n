@@ -54,7 +54,7 @@ function ScreenTest3D:entered()
 
     self.player = self.scene:lookupName('player') or Scene:new()
 
-    self.camera = self.scene:lookupName('main_camera') or require('graphics.cameraentity'):new()
+    self.camera = self.scene:lookupName('main_camera') or require('graphics.camera'):new()
         :attachTo('main_camera', self.player)
 
     self.camera:setRenderbuffer(self.rb)

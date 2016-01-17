@@ -25,17 +25,17 @@
     For more information, please refer to <http://unlicense.org>
 --]]
 
-local SceneObject = require 'graphics.sceneobject'
+local SceneDesc = require 'graphics.scenedesc'
 
-local ModelDesc = SceneObject:subclass 'graphics.modeldesc'
+local ModelDesc = SceneDesc:subclass 'graphics.modeldesc'
 
 function ModelDesc:initialize()
-    SceneObject.initialize(self, 'model')
+    SceneDesc.initialize(self, 'model')
 end
 
 function ModelDesc:makeEntity(entity)
     entity = entity or require('graphics.model'):new()
-    return SceneObject.makeEntity(self, entity)
+    return SceneDesc.makeEntity(self, entity)
 end
 
 return ModelDesc

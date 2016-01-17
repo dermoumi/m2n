@@ -25,12 +25,12 @@
     For more information, please refer to <http://unlicense.org>
 --]]
 
-local SceneObject = require 'graphics.sceneobject'
+local SceneDesc = require 'graphics.scenedesc'
 
-local CameraDesc = SceneObject:subclass 'graphics.cameradesc'
+local CameraDesc = SceneDesc:subclass 'graphics.cameradesc'
 
 function CameraDesc:initialize()
-    SceneObject.initialize(self, 'camera')
+    SceneDesc.initialize(self, 'camera')
 end
 
 function CameraDesc:makeEntity(entity)
@@ -50,7 +50,7 @@ function CameraDesc:makeEntity(entity)
         entity:setPerspective(self.fov or 70, aspect, self.near or 0.1, self.far or -100)
     end
 
-    return SceneObject.makeEntity(self, entity)
+    return SceneDesc.makeEntity(self, entity)
 end
 
 return CameraDesc
