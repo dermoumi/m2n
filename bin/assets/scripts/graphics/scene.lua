@@ -27,22 +27,42 @@
 
 local Entity3D = require 'graphics.entity3d'
 
-local MeshEntity = Entity3D:subclass 'graphics.meshentity'
+local Scene = Entity3D:subclass 'graphics.scene'
 
-function MeshEntity:initialize()
-    Entity3D.initialize(self, 'mesh')
+function Scene:initialize(a)
+    self.drawables, self.lights = {}, {}
+
+    if type(a) == 'string' then
+        Entity3D.initialize(self, a)
+    else
+        Entity3D.initialize(self, 'scene')
+        if a then self:load(a) end
+    end
 end
 
-function MeshEntity:canAttach()
-    return false
+function Scene:load(graph)
+    return graph:makeEntity(self)
 end
 
-function MeshEntity:setMesh(mesh)
-    return mesh:makeEntity(self)
+function Scene:attached(node)
+    if node.type == 'scene' or node.type == 'model' then
+        self.drawables[node] = true
+    elseif node.type == 'light' then
+        self.lights[node] = true
+    end
 end
 
-function MeshEntity:_draw()
-    -- Nothing to do
+function Scene:detached(node)
+    self.drawables[node] = nil
+    self.lights[node] = nil
 end
 
-return MeshEntity
+function Scene:_draw(camera, context)
+    self:_render(camera, context)
+
+    for drawable in pairs(self.drawables) do
+        camera:draw(drawable, context)
+    end
+end
+
+return Scene

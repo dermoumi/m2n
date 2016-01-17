@@ -25,32 +25,150 @@
     For more information, please refer to <http://unlicense.org>
 --]]
 
-local SceneObject = require 'graphics.sceneobject'
+local Graphics     = require 'graphics'
+local Window       = require 'window'
+local Matrix       = require 'util.matrix'
+local Scene        = require 'graphics.scene'
+local Renderbuffer = require 'graphics.renderbuffer'
 
-local Camera = SceneObject:subclass 'graphics.camera'
+local Camera = Scene:subclass 'graphics.camera'
 
-function Camera:initialize()
-    SceneObject.initialize(self, 'camera')
+local ffi = require 'ffi'
+local C   = ffi.C
+
+function Camera:initialize(a, b, c, d, e, f)
+    Scene.initialize(self, 'camera')
+    self:setViewport()
+
+    if e then
+        self:setOrtho(a, b, c, d, e, f)
+    else
+        self:setPerspective(a, b, c, d)
+    end
 end
 
-function Camera:makeEntity(entity)
-    entity = entity or require('graphics.cameraentity'):new()
+function Camera:_markDirty()
+    Scene._markDirty(self)
+    self._projection = nil
+    self._invProjection = nil
 
-    local aspect = self.aspect
+    return self
+end
+
+function Camera:setView(left, right, bottom, top, near, far)
+    self._left, self._right, self._bottom, self._top, self._near, self._far =
+        left, right, bottom, top, near, far
+
+    return self:_markDirty()
+end
+
+function Camera:setPerspective(fov, aspect, near, far)
+    fov, near, far = fov or 70, near or 0.1, far or -100
     if not aspect then
-        local sizeX, sizeY = require('window').size()
-        aspect = sizeX / sizeY
-    end
-    if self.orthoScale then
-        entity:setOrtho(
-            -self.orthoScale * aspect, self.orthoScale * aspect, self.orthoScale,
-            -self.orthoScale, self.near or 0.1, self.far or -100
-        )
-    else
-        entity:setPerspective(self.fov or 70, aspect, self.near or 0.1, self.far or -100)
+        local w, h = Window.size()
+        aspect = w/h
     end
 
-    return SceneObject.makeEntity(self, entity)
+    self._fov, self._aspect, self._perspective = fov, aspect, true
+
+    local ymax = near * math.tan(fov/180)
+    local xmax = ymax * aspect
+    return self:setView(-xmax, xmax, -ymax, ymax, near, far)
+end
+
+function Camera:setOrtho(left, right, bottom, top, near, far)
+    self._fov, self._aspect, self._perspective = nil, nil, false
+
+    if left then
+        return self:setView(left, right, bottom, top, near or 1, far or -1)
+    else
+        local w, h = Window.size()
+        return self:setView(-w/h, w/h, 1, -1, 1, -1)
+    end
+end
+
+function Camera:setViewport(left, top, width, height)
+    if not left then
+        left, top, width, height = 0, 0, Window.size()
+    elseif not width then
+        left, top, width, height = 0, 0, left, top
+    end
+
+    self._vpX, self._vpY, self._vpW, self._vpH = left, top, width, height
+
+    return self
+end
+
+function Camera:setRenderbuffer(rb)
+    self._rb = rb
+
+    return self
+end
+
+function Camera:viewport()
+    return self._vpX, self._vpY, self._vpW, self._vpH
+end
+
+function Camera:renderbuffer()
+    return self._rb
+end
+
+function Camera:view()
+    return self._left, self._right, self._bottom, self._top, self._near, self._far
+end
+
+function Camera:isPerspective()
+    return self._perspective, self._fov, self._aspect, self._near, self._far
+end
+
+function Camera:projection()
+    if not self._projection then
+        local func = self._perspective and Matrix.fromFrustum or Matrix.fromOrtho
+        self._projection = func(
+                self._left, self._right, self._bottom, self._top, self._near, self._far
+            )
+            :combine(self:matrix(true):inverse())
+    end
+
+    return self._projection
+end
+
+function Camera:invProjection()
+    if not self._invProjection then
+        self._invProjection = self:projection():inverse()
+    end
+
+    return self._invProjection
+end
+
+function Camera:clear(r, g, b, a, depth, col0, col1, col2, col3, clearDepth)
+    self:apply()
+
+    -- Make sure the values are valid
+    if r == nil then r, g, b = 0, 0, 0 end
+    if col0 == nil then col0, col1, col2, col3 = true, true, true, true end
+    if clearDepth == nil then clearDepth = true end
+
+    C.nxRendererClear(
+        r, g, b, a or 0, depth or 1.0, col0, col1, col2, col3, clearDepth
+    )
+
+    return self
+end
+
+function Camera:apply()
+    C.nxRendererSetViewport(self._vpX, self._vpY, self._vpW, self._vpH)
+    Renderbuffer.bind(self._rb)
+
+    return self
+end
+
+function Camera:draw(drawable, context)
+    self:apply()
+
+    drawable:_draw(self, context)
+
+    return self
 end
 
 return Camera

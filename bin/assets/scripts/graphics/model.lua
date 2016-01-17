@@ -25,17 +25,50 @@
     For more information, please refer to <http://unlicense.org>
 --]]
 
-local SceneObject = require 'graphics.sceneobject'
+local ffi         = require 'ffi'
+local Graphics    = require 'graphics'
+local Scene       = require 'graphics.scene'
 
-local Model = SceneObject:subclass 'graphics.model'
+local Model = Scene:subclass 'graphics.model'
 
-function Model:initialize()
-    SceneObject.initialize(self, 'model')
+function Model:initialize(model)
+    Scene.initialize(self, 'model')
+    self.meshes = {}
+    if model then self:setModel(model) end
 end
 
-function Model:makeEntity(entity)
-    entity = entity or require('graphics.modelentity'):new()
-    return SceneObject.makeEntity(self, entity)
+function Model:setModel(model)
+    return model:makeEntity(self)
+end
+
+function Model:attached(node)
+    Scene.attached(self, node)
+    if node.type == 'mesh' then
+        local table = self.meshes[node.geometry]
+        if not table then
+            table = {}
+            self.meshes[node.geometry] = table
+        end
+
+        table[#table+1] = node
+    end
+end
+
+function Model:_render(camera, context)
+    local proj, renderFunc = camera:projection(), nil
+    for geometry, meshTable in pairs(self.meshes) do
+        if geometry:_apply() then
+            renderFunc = geometry._indexBuffer
+                and ffi.C.nxRendererDrawIndexed
+                or ffi.C.nxRendererDraw
+
+            for i, mesh in pairs(meshTable) do
+                if mesh.material and mesh.material:_apply(proj, mesh:matrix(true), context) then
+                    renderFunc(4, mesh.start, mesh.count)
+                end
+            end
+        end
+    end
 end
 
 return Model

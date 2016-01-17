@@ -25,24 +25,32 @@
     For more information, please refer to <http://unlicense.org>
 --]]
 
-local Entity3D = require 'graphics.entity3d'
+local SceneObject = require 'graphics.sceneobject'
 
-local Mesh = Entity3D:subclass 'graphics.mesh'
+local CameraDesc = SceneObject:subclass 'graphics.cameradesc'
 
-function Mesh:initialize()
-    Entity3D.initialize(self, 'mesh')
+function CameraDesc:initialize()
+    SceneObject.initialize(self, 'camera')
 end
 
-function Mesh:canAttach()
-    return false
+function CameraDesc:makeEntity(entity)
+    entity = entity or require('graphics.camera'):new()
+
+    local aspect = self.aspect
+    if not aspect then
+        local sizeX, sizeY = require('window').size()
+        aspect = sizeX / sizeY
+    end
+    if self.orthoScale then
+        entity:setOrtho(
+            -self.orthoScale * aspect, self.orthoScale * aspect, self.orthoScale,
+            -self.orthoScale, self.near or 0.1, self.far or -100
+        )
+    else
+        entity:setPerspective(self.fov or 70, aspect, self.near or 0.1, self.far or -100)
+    end
+
+    return SceneObject.makeEntity(self, entity)
 end
 
-function Mesh:setMesh(mesh)
-    return mesh:makeEntity(self)
-end
-
-function Mesh:_draw()
-    -- Nothing to do
-end
-
-return Mesh
+return CameraDesc

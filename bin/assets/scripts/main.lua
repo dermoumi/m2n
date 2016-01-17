@@ -91,8 +91,8 @@ require('game.cache')
     .registerType('geom', 'graphics.geometry')
     .registerType('shader', 'graphics.shader')
     .registerType('material', 'graphics.material')
-    .registerType('model', 'graphics.model')
-    .registerType('scene', 'graphics.scenegraph')
+    .registerType('model', 'graphics.modeldesc')
+    .registerType('scene', 'graphics.scenedesc')
 
 -- local view = require('graphics.camera2d'):new()
 

@@ -25,44 +25,17 @@
     For more information, please refer to <http://unlicense.org>
 --]]
 
-local Entity3D = require 'graphics.entity3d'
+local SceneObject = require 'graphics.sceneobject'
 
-local SceneEntity = Entity3D:subclass 'graphics.sceneentity'
+local ModelDesc = SceneObject:subclass 'graphics.modeldesc'
 
-function SceneEntity:initialize(a)
-    self.drawables, self.lights = {}, {}
-
-    if type(a) == 'string' then
-        Entity3D.initialize(self, a)
-    else
-        Entity3D.initialize(self, 'scene')
-        if a then self:load(a) end
-    end
+function ModelDesc:initialize()
+    SceneObject.initialize(self, 'model')
 end
 
-function SceneEntity:load(graph)
-    return graph:makeEntity(self)
+function ModelDesc:makeEntity(entity)
+    entity = entity or require('graphics.model'):new()
+    return SceneObject.makeEntity(self, entity)
 end
 
-function SceneEntity:attached(node)
-    if node.type == 'scene' or node.type == 'model' then
-        self.drawables[node] = true
-    elseif node.type == 'light' then
-        self.lights[node] = true
-    end
-end
-
-function SceneEntity:detached(node)
-    self.drawables[node] = nil
-    self.lights[node] = nil
-end
-
-function SceneEntity:_draw(camera, context)
-    self:_render(camera, context)
-
-    for drawable in pairs(self.drawables) do
-        camera:draw(drawable, context)
-    end
-end
-
-return SceneEntity
+return ModelDesc

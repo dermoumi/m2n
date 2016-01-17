@@ -30,19 +30,16 @@ local Mouse        = require 'window.mouse'
 local Window       = require 'window'
 local Graphics     = require 'graphics'
 local Geometry     = require 'graphics.geometry'
-local ModelEntity  = require 'graphics.modelentity'
-local Model        = require 'graphics.model'
 local Material     = require 'graphics.material'
 local Entity3D     = require 'graphics.entity3d'
 local Screen       = require 'screen'
-local SceneEntity  = require 'graphics.sceneentity'
-local Mesh         = require 'graphics.mesh'
+local Scene        = require 'graphics.scene'
 local RenderBuffer = require 'graphics.renderbuffer'
 
 local ScreenTest3D = Screen:subclass 'screen.test.3d'
 
 function ScreenTest3D:initialize()
-    self.sceneGraph = self:cache('scene:assets/scenes/Scene.scene')
+    self.sceneDesc = self:cache('scene:assets/scenes/Scene.scene')
     self.depthShader = self:cache('shader:assets/shaders/outline.shader')
 end
 
@@ -53,9 +50,9 @@ function ScreenTest3D:entered()
         :new('', require 'game.font', 14)
         :setPosition(10, 10)
 
-    self.scene = SceneEntity:new(self.sceneGraph)
+    self.scene = Scene:new(self.sceneDesc)
 
-    self.player = self.scene:lookupName('player') or require('graphics.sceneentity'):new()
+    self.player = self.scene:lookupName('player') or Scene:new()
 
     self.camera = self.scene:lookupName('main_camera') or require('graphics.cameraentity'):new()
         :attachTo('main_camera', self.player)
@@ -63,10 +60,10 @@ function ScreenTest3D:entered()
     self.camera:setRenderbuffer(self.rb)
         :setViewport(0, 0, 1281, 721)
 
-    self.cube = self.scene:lookupName('cube') or require('graphics.modelentity'):new()
+    self.cube = self.scene:lookupName('cube') or require('graphics.model'):new()
     -- self.cube:setPosition(0, 0, -3)
 
-    self.subMesh = self.scene:lookupName('sphere') or require('graphics.modelentity'):new()
+    self.subMesh = self.scene:lookupName('sphere') or require('graphics.model'):new()
 
     self.camVelX, self.camVelY, self.camVelZ, self.camSpeed = 0, 0, 0, 4
     self.camSensitivity = 0.001

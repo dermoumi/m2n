@@ -25,50 +25,41 @@
     For more information, please refer to <http://unlicense.org>
 --]]
 
-local ffi         = require 'ffi'
-local Graphics    = require 'graphics'
-local SceneEntity = require 'graphics.sceneentity'
+local Material    = require 'graphics.material'
+local SceneObject = require 'graphics.sceneobject'
 
-local ModelEntity = SceneEntity:subclass 'graphics.modelentity'
+local MeshDesc = SceneObject:subclass 'graphics.meshdesc'
 
-function ModelEntity:initialize(model)
-    SceneEntity.initialize(self, 'model')
-    self.meshes = {}
-    if model then self:setModel(model) end
+function MeshDesc:initialize()
+    SceneObject.initialize(self, 'mesh')
 end
 
-function ModelEntity:setModel(model)
-    return model:makeEntity(self)
+function MeshDesc:setGeometry(geom, start, count)
+    self.geometry = geom
+    self.start = start or 0
+    self.count = count or (geom._indexBuffer and geom:indexCount() or geom:vertexCount())
+
+    return self
 end
 
-function ModelEntity:attached(node)
-    SceneEntity.attached(self, node)
-    if node.type == 'mesh' then
-        local table = self.meshes[node.geometry]
-        if not table then
-            table = {}
-            self.meshes[node.geometry] = table
-        end
-
-        table[#table+1] = node
-    end
+function MeshDesc:setMaterial(material)
+    self.material = material
+    return self
 end
 
-function ModelEntity:_render(camera, context)
-    local proj, renderFunc = camera:projection(), nil
-    for geometry, meshTable in pairs(self.meshes) do
-        if geometry:_apply() then
-            renderFunc = geometry._indexBuffer
-                and ffi.C.nxRendererDrawIndexed
-                or ffi.C.nxRendererDraw
+function MeshDesc:makeEntity(entity)
+    entity = entity or require('graphics.mesh'):new()
 
-            for i, mesh in pairs(meshTable) do
-                if mesh.material and mesh.material:_apply(proj, mesh:matrix(true), context) then
-                    renderFunc(4, mesh.start, mesh.count)
-                end
-            end
-        end
-    end
+    entity.geometry, entity.start, entity.count, entity.material =
+        self.geometry, self.start, self.count, self.material or Material:new()
+
+    return SceneObject.makeEntity(self, entity)
 end
 
-return ModelEntity
+function MeshDesc:_validate()
+    self.start = self.start or 0
+    self.count = self.count or
+        (self.geometry._indexBuffer and self.geometry:indexCount() or self.geometry:vertexCount())
+end
+
+return MeshDesc

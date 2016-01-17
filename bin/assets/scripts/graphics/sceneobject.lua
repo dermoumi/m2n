@@ -109,14 +109,14 @@ function SceneObject.static.factory(task)
 
                         local kind, newObj = param:sub(3), nil
                         if kind == 'model' then
-                            newObj = require('graphics.model'):new()
+                            newObj = require('graphics.modeldesc'):new()
                         elseif kind == 'mesh' then
-                            newObj = require('graphics.mesh'):new()
+                            newObj = require('graphics.meshdesc'):new()
                         elseif kind == 'camera' then
-                            newObj = require('graphics.camera'):new()
+                            newObj = require('graphics.cameradesc'):new()
                         else
                             -- Anything else can be a scene node... really...
-                            newObj = require('graphics.scenegraph'):new()
+                            newObj = require('graphics.scenedesc'):new()
                         end
 
                         stack[#stack]:attach(key, newObj)
