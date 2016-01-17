@@ -25,9 +25,9 @@
     For more information, please refer to <http://unlicense.org>
 --]]
 
-local class    = require 'class'
-local Cache    = require 'game.cache'
-local Camera2D = require 'graphics.camera2d'
+local class = require 'class'
+local Cache = require 'game.cache'
+local View  = require 'graphics.view'
 
 local Screen = class 'screen'
 
@@ -275,7 +275,7 @@ end
 
 function Screen:view()
     if not self.__view then
-        self.__view = Camera2D:new()
+        self.__view = View:new()
     end
 
     return self.__view

@@ -31,45 +31,45 @@ local Matrix       = require 'util.matrix'
 local Window       = require 'window'
 local class        = require 'class'
 
-local Camera2D = class 'graphics.camera2d'
+local View = class 'graphics.view'
 
 local ffi = require 'ffi'
 local C   = ffi.C
 
-function Camera2D:initialize(x, y, width, height)
+function View:initialize(x, y, width, height)
     self:setViewport()
     self:reset(x, y, width, height)
 end
 
-function Camera2D:_markDirty()
+function View:_markDirty()
     self._projection = nil
     self._invProjection = nil
 
     return self
 end
 
-function Camera2D:setCenter(x, y)
+function View:setCenter(x, y)
     self._centerX = x
     self._centerY = y
 
     return self:_markDirty()
 end
 
-function Camera2D:setSize(width, height)
+function View:setSize(width, height)
     self._width = width
     self._height = height
 
     return self:_markDirty()
 end
 
-function Camera2D:setRotation(rad)
+function View:setRotation(rad)
     self._rotation = rad % (math.pi * 2)
     if self._rotation < 0 then self._rotation = self._rotation + math.pi * 2 end
 
     return self:_markDirty()
 end
 
-function Camera2D:reset(x, y, width, height)
+function View:reset(x, y, width, height)
     local winWidth, winHeight = Window:size()
 
     x = x or 0
@@ -86,24 +86,24 @@ function Camera2D:reset(x, y, width, height)
     return self:_markDirty()
 end
 
-function Camera2D:center()
+function View:center()
     return self._centerX, self._centerY
 end
 
-function Camera2D:size()
+function View:size()
     return self._width, self._height
 end
 
-function Camera2D:rotation()
+function View:rotation()
     return self._rotation
 end
 
-function Camera2D:zoom(factor, factor2)
+function View:zoom(factor, factor2)
     local w, h = self:size()
     self:setSize(w * factor, h * factor2)
 end
 
-function Camera2D:setViewport(left, top, width, height)
+function View:setViewport(left, top, width, height)
     if not left then
         left, top, width, height = 0, 0, Window.size()
     elseif not width then
@@ -115,21 +115,21 @@ function Camera2D:setViewport(left, top, width, height)
     return self
 end
 
-function Camera2D:setRenderbuffer(rb)
+function View:setRenderbuffer(rb)
     self._rb = rb
 
     return self
 end
 
-function Camera2D:viewport()
+function View:viewport()
     return self._vpX, self._vpY, self._vpW, self._vpH
 end
 
-function Camera2D:renderbuffer()
+function View:renderbuffer()
     return self._rb
 end
 
-function Camera2D:projection()
+function View:projection()
     if not self._projection then
         -- Projection components
         local cos, sin =
@@ -151,7 +151,7 @@ function Camera2D:projection()
     return self._projection
 end
 
-function Camera2D:invProjection()
+function View:invProjection()
     if not self._invProjection then
         self._invProjection = self:projection():inverse()
     end
@@ -159,7 +159,7 @@ function Camera2D:invProjection()
     return self._invProjection
 end
 
-function Camera2D:draw(drawable, context)
+function View:draw(drawable, context)
     self:apply()
 
     drawable:_draw(self, context)
@@ -167,21 +167,21 @@ function Camera2D:draw(drawable, context)
     return self
 end
 
-function Camera2D:drawFsQuad(texture, width, height, flipped, shader)
+function View:drawFsQuad(texture, width, height, flipped, shader)
     self:apply()
     Graphics.drawFsQuad(texture, width, height, flipped, shader)
 
     return self
 end
 
-function Camera2D:fillFsQuad(r, g, b, a, blendMode, shader)
+function View:fillFsQuad(r, g, b, a, blendMode, shader)
     self:apply()
     Graphics.fillFsQuad(r, g, b, a, blendMode, shader)
 
     return self
 end
 
-function Camera2D:clear(r, g, b, a, depth, col0, col1, col2, col3, clearDepth)
+function View:clear(r, g, b, a, depth, col0, col1, col2, col3, clearDepth)
     self:apply()
 
     -- Make sure the values are valid
@@ -196,7 +196,7 @@ function Camera2D:clear(r, g, b, a, depth, col0, col1, col2, col3, clearDepth)
     return self
 end
 
-function Camera2D:apply()
+function View:apply()
     C.nxRendererSetViewport(self._vpX, self._vpY, self._vpW, self._vpH)
     Renderbuffer.bind(self._rb)
 
@@ -206,4 +206,4 @@ function Camera2D:apply()
     return self
 end
 
-return Camera2D
+return View
