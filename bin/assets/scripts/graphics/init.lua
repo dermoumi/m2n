@@ -307,12 +307,18 @@ function Renderer.defaultTexture()
     return defaultTexture
 end
 
-function Renderer.drawFsQuad(texture, width, height, flipped, shader)
+function Renderer.drawFsQuad(texture, width, height, shader)
+    -- Render buffers' case
+    if type(texture.texture) == 'function' then
+        texture = texture:texture()
+    end
+
+    local texW, texH = texture:size()
     if width and height then
-        local texW, texH = texture:size()
         width, height = texW / width, texH / height
     else
-        width, height = 1, 1
+        local winW, winH = require('window').size()
+        width, height = texW / winW, texH / winH
     end
 
     texture:bind(0)
@@ -326,7 +332,7 @@ function Renderer.drawFsQuad(texture, width, height, flipped, shader)
     shader:setSampler('uTexture0', 0)
 
     C.nxRendererSetVertexLayout(vertexLayouts[1])
-    if flipped then
+    if texture:flipCoords() then
         vbFlippedFsQuad:bind()
     else
         vbFsQuad:bind()

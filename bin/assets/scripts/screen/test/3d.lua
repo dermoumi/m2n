@@ -35,6 +35,7 @@ local Entity3D     = require 'graphics.entity3d'
 local Screen       = require 'screen'
 local Scene        = require 'graphics.scene'
 local RenderBuffer = require 'graphics.renderbuffer'
+local Util         = require 'util'
 
 local ScreenTest3D = Screen:subclass 'screen.test.3d'
 
@@ -44,8 +45,6 @@ function ScreenTest3D:initialize()
 end
 
 function ScreenTest3D:entered()
-    self.rb = RenderBuffer:new(2048, 1024, true)
-
     self.text = require('graphics.text')
         :new('', require 'game.font', 14)
         :setPosition(10, 10)
@@ -56,9 +55,6 @@ function ScreenTest3D:entered()
 
     self.camera = self.scene:lookupName('main_camera') or require('graphics.camera'):new()
         :attachTo('main_camera', self.player)
-
-    self.camera:setRenderbuffer(self.rb)
-        :setViewport(0, 0, 1281, 721)
 
     self.cube = self.scene:lookupName('cube') or require('graphics.model'):new()
     -- self.cube:setPosition(0, 0, -3)
@@ -131,7 +127,7 @@ function ScreenTest3D:render()
         :setSampler('uDepthBuf0', 1)
         :setUniform('uUnit', ux, uy)
 
-    self:view():drawFsQuad(self.rb:texture(), 1280, 720, true, self.depthShader)
+    self:view():drawFsQuad(self.rb, nil, nil, self.depthShader)
     -- self:view():drawFsQuad(self.rb:texture(), 1280, 720, true)
         :draw(self.text)
 end
@@ -177,6 +173,15 @@ end
 function ScreenTest3D:mousemotion(x, y, xRel, yRel)
     self.player:rotate(0, -xRel * self.camSensitivity, 0)
     self.camera:rotate(-yRel * self.camSensitivity, 0, 0)
+end
+
+function ScreenTest3D:resized(width, height)
+    local potW, potH = Util.pot(width, height)
+    -- print('resized', width, height, potW, potH)
+    self.rb = RenderBuffer:new(potW, potH, true)
+
+    self.camera:setRenderbuffer(self.rb)
+        :setViewport(0, 0, width + 1, height + 1)
 end
 
 function ScreenTest3D:updateParent()

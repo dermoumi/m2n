@@ -101,6 +101,7 @@ function Screen:__entered()
 
     self.__isLoading = true
     self:entered()
+    if self.resized then self:resized(require('window').size()) end
     self.__isLoading = false
 
     if not Screen.lastScreen() or Screen.lastScreen():isTransitioning() then

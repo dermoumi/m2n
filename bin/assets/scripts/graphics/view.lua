@@ -167,9 +167,9 @@ function View:draw(drawable, context)
     return self
 end
 
-function View:drawFsQuad(texture, width, height, flipped, shader)
+function View:drawFsQuad(texture, width, height, shader)
     self:apply()
-    Graphics.drawFsQuad(texture, width, height, flipped, shader)
+    Graphics.drawFsQuad(texture, width, height, shader)
 
     return self
 end
