@@ -19,8 +19,8 @@ return [[
         varying vec2 vTexCoords;
         uniform vec2 uUnit;
 
-        const float edgeThresh = 0.05;
-        const float edgeForce = 0.4;
+        const float edgeThresh = 0.03;
+        const float edgeForce = 0.3;
 
         const float near = 0.100;
         const float far  = 100.0;

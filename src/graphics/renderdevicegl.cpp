@@ -346,21 +346,21 @@ void RenderDeviceGL::drawIndexed(PrimType primType, uint32_t firstIndex, uint32_
 void RenderDeviceGL::beginRendering()
 {
     // Get the currently bound frame buffer object.
-    glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &mDefaultFBO);
+    // glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &mDefaultFBO);
 
-    mCurIndexBuffer = reinterpret_cast<IndexBuffer*>(1u); mNewIndexBuffer = nullptr;
-    mCurVertexLayout = 1;                                 mNewVertexLayout = 0;
+    // mCurIndexBuffer = reinterpret_cast<IndexBuffer*>(1u); mNewIndexBuffer = nullptr;
+    // mCurVertexLayout = 1;                                 mNewVertexLayout = 0;
     mCurRasterState.hash = 0xFFFFFFFFu;                   mNewRasterState.hash = 0u;
     mCurBlendState.hash = 0xFFFFFFFFu;                    mNewBlendState.hash = 0u;
     mCurDepthStencilState.hash = 0xFFFFFFFFu;             mCurDepthStencilState.hash = 0u;
 
     setColorWriteMask(true);
-    mVertexBufUpdated = true;
-    commitStates();
+    // mVertexBufUpdated = true;
+    // commitStates();
 
     // Bind buffers
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, mDefaultFBO);
+    // glBindBuffer(GL_ARRAY_BUFFER, 0);
+    // glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, mDefaultFBO);
 }
 
 void RenderDeviceGL::finishRendering()

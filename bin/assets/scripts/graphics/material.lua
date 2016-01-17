@@ -154,11 +154,6 @@ function Material:_apply(projMat, transMat, context)
         i = i + 1
     end
 
-    if i == 0 then
-        Graphics.defaultTexture():bind(0)
-        self._shader:setSampler('uTexture0', 0)
-    end
-
     return true
 end
 
