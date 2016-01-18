@@ -37,7 +37,7 @@ end
 function MeshDesc:setGeometry(geom, start, count)
     self.geometry = geom
     self.start = start or 0
-    self.count = count or (geom._indexBuffer and geom:indexCount() or geom:vertexCount())
+    self.count = count or ((geom._indexBuffer and geom:indexCount() or geom:vertexCount()) - start)
 
     return self
 end
@@ -58,8 +58,13 @@ end
 
 function MeshDesc:_validate()
     self.start = self.start or 0
-    self.count = self.count or
-        (self.geometry._indexBuffer and self.geometry:indexCount() or self.geometry:vertexCount())
+    if not self.count then
+        if self.geometry._indexBuffer then
+            self.count = self.geometry:indexCount() - self.start
+        else
+            self.count = self.geometry:vertexCount() - self.start
+        end
+    end
 end
 
 return MeshDesc
