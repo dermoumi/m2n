@@ -317,6 +317,12 @@ function Screen:onEvent(e, a, b, c, d)
     return eventFunc(self, a, b, c, d)
 end
 
+function Screen:resized(width, height)
+    self:view()
+        :reset(0, 0, width, height)
+        :setViewport(0, 0, width, height)
+end
+
 function Screen:processParent()
     return false
 end

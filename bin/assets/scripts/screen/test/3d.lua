@@ -179,16 +179,14 @@ function ScreenTest3D:mousemotion(x, y, xRel, yRel)
 end
 
 function ScreenTest3D:resized(width, height)
+    Screen.resized(self, width, height)
+
     local potW, potH = Util.pot(width, height)
     self.rb = RenderBuffer:new(potW, potH, true)
 
     self.camera:setRenderbuffer(self.rb)
         :setPerspective(70, width/height, .1, 100)
         :setViewport(0, 0, width + 1, height + 1)
-
-    self:view()
-        :reset(0, 0, width, height)
-        :setViewport(0, 0, width, height)
 end
 
 function ScreenTest3D:updateParent()
