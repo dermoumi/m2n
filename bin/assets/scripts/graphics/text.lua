@@ -151,12 +151,12 @@ function Text:string(u32)
 
     if u32 then
         if not self._u32string then
-            self._u32string = Unicode.utf8To32(self._str)
+            self._u32string = Unicode.utf8To32(self._string)
         end
         return self._u32string
     else
         if not self._string then
-            self._string = Unicode.utf32To8(self._str)
+            self._string = Unicode.utf32To8(self._u32string)
         end
         return self._string
     end

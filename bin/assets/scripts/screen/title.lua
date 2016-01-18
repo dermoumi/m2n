@@ -73,8 +73,8 @@ function ScreenTitle:entered()
         :setPosition(1200, 90)
         :setColor(255, 128, 0, 255)
 
-    print(require('util.arabic').len(self.rtlText:string(true)))
-
+    print(self.rtlText:string())
+    
     self.textCursor = require('graphics.shape')
         .plainRectangle(2, GameFont:lineSpacing(self.rtlText:size()))
         :setPosition(self.text:position())
