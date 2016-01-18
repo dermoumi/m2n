@@ -207,30 +207,24 @@ bool RenderDeviceGLES2::commitStates(uint32_t filter)
         }
 
         // Bind textures and update sampler state
-        if (mask & (Textures | SamplerState)) {
+        if (mask & Textures) {
             for (uint8_t i = 0; i < mMaxTextureUnits; ++i) {
                 glActiveTexture(GL_TEXTURE0 + i);
                 auto& slot = mTexSlots[i];
 
-                if (mask & Textures) {
-                    if (!slot.texture) {
-                        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-                        glBindTexture(GL_TEXTURE_3D_OES, 0);
-                        glBindTexture(GL_TEXTURE_2D, 0);
-                    }
-                    else {
-                        glBindTexture(slot.texture->mGlType, slot.texture->mHandle);
-                    }
+                if (!slot.texture) {
+                    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+                    glBindTexture(GL_TEXTURE_3D_OES, 0);
+                    glBindTexture(GL_TEXTURE_2D, 0);
                 }
-
-                // Apply sampler state
-                if (slot.texture && (mask & SamplerState || slot.texture->mState != slot.state)) {
+                else {
+                    glBindTexture(slot.texture->mGlType, slot.texture->mHandle);
                     slot.texture->applyState();
                     slot.state = slot.texture->mState;
                 }
             }
 
-            mPendingMask &= ~(Textures | SamplerState);
+            mPendingMask &= ~Textures;
         }
 
         // Bind vertex buffers
@@ -1671,7 +1665,7 @@ void RenderDeviceGLES2::TextureGLES2::setFilter(Filter filter)
         mState &= ~_FilterMask;
         mState |= filter;
 
-        mDevice->mPendingMask |= SamplerState;
+        mDevice->mPendingMask |= Textures;
     }
 }
 
@@ -1681,7 +1675,7 @@ void RenderDeviceGLES2::TextureGLES2::setAnisotropyLevel(Anisotropy aniso)
         mState &= ~_AnisotropyMask;
         mState |= aniso;
 
-        mDevice->mPendingMask |= SamplerState;
+        mDevice->mPendingMask |= Textures;
     }
 }
 
@@ -1691,7 +1685,7 @@ void RenderDeviceGLES2::TextureGLES2::setRepeating(uint32_t repeating)
         mState &= ~_RepeatingMask;
         mState |= repeating;
 
-        mDevice->mPendingMask |= SamplerState;
+        mDevice->mPendingMask |= Textures;
     }
 }
 
@@ -1699,11 +1693,11 @@ void RenderDeviceGLES2::TextureGLES2::setLessOrEqual(bool enabled)
 {
     if (enabled && !(mState & LEqual)) {
         mState |= LEqual;
-        mDevice->mPendingMask |= SamplerState;
+        mDevice->mPendingMask |= Textures;
     }
     else if (!enabled && (mState & LEqual)) {
         mState &= ~LEqual;
-        mDevice->mPendingMask |= SamplerState;
+        mDevice->mPendingMask |= Textures;
     }
 }
 

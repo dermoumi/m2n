@@ -56,28 +56,10 @@ function ScreenTitle:entered()
     self.text = require('graphics.text')
         :new('', GameFont, 14)
         :setPosition(10, 10)
-        -- :setColor(255, 128, 0)
-
-    -- local tex = require('graphics.texture'):new():create('2d', 1, 4, 1, false, false)
-    -- tex:setData(require('ffi').new('uint8_t[16]', {
-    --         0, 0, 255, 255, 255, 255, 0, 255,
-    --         255, 0, 0, 255, 0, 255, 255, 255
-    --     }), false, false)
-    -- local img = require('graphics.image'):new(2, 2, tex:data())
-    -- img:save('testimg.png')
-
+        
     self.sprite = require('graphics.sprite')
         :new(self.texture)
         :setPosition(400, 30)
-
-    -- self.shape = require('graphics.shape')
-    --     :new()
-    --     :setVertexData('trianglestrip', true, {
-    --             100, 0, 255, 0, 255, 255, 0, 0,
-    --             0, 0, 255, 255, 0, 255, 0, 0,
-    --             0, 100, 0, 255, 255, 255, 0, 0
-    --         })
-    --     :setPosition(100, 100)
 end
 
 function ScreenTitle:update(dt)
@@ -91,7 +73,6 @@ function ScreenTitle:render()
     self:view()
         :draw(self.text)
         :draw(self.sprite)
-        -- :draw(self.shape)
 end
 
 function ScreenTitle:keydown(scancode, keyCode, repeated)

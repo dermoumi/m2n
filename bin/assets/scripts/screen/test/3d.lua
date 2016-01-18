@@ -128,7 +128,6 @@ function ScreenTest3D:render()
         :setUniform('uUnit', ux, uy)
 
     self:view():drawFsQuad(self.rb, nil, nil, self.depthShader)
-    -- self:view():drawFsQuad(self.rb:texture(), 1280, 720, true)
         :draw(self.text)
 end
 
@@ -151,6 +150,10 @@ function ScreenTest3D:keydown(scancode, keyCode, repeated)
         self.camVelY = self.camSpeed
     elseif scancode == 'tab' then
         self.lockOn = not self.lockOn
+    elseif scancode == '8' then
+        self.rb:texture():setFilter 'bilinear'
+    elseif scancode == '9' then
+        self.rb:texture():setFilter 'nearest'
     end
 end
 
@@ -177,11 +180,15 @@ end
 
 function ScreenTest3D:resized(width, height)
     local potW, potH = Util.pot(width, height)
-    -- print('resized', width, height, potW, potH)
     self.rb = RenderBuffer:new(potW, potH, true)
 
     self.camera:setRenderbuffer(self.rb)
+        :setPerspective(70, width/height, .1, 100)
         :setViewport(0, 0, width + 1, height + 1)
+
+    self:view()
+        :reset(0, 0, width, height)
+        :setViewport(0, 0, width, height)
 end
 
 function ScreenTest3D:updateParent()

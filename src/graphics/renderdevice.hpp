@@ -114,8 +114,7 @@ public:
         VertexLayouts = 1 << 2,
         Textures      = 1 << 3,
         Scissor       = 1 << 4,
-        RenderStates  = 1 << 5,
-        SamplerState  = 1 << 6
+        RenderStates  = 1 << 5
     };
 
     enum ClearFlags : uint32_t {

@@ -57,9 +57,7 @@ local argsCount = vm:pcall(function()
 local settings, err = vm:pop(argsCount, true)
 
 -- Create window
-Window.create("m2n", 800, 600, {
-    vsync = true
-})
+Window.create("m2n", 1280, 720, {vsync = true})
 
 -- Initialize renderer
 Graphics.init()
