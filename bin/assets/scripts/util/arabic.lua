@@ -45,30 +45,30 @@ local Harakat = {
     [ 0x0610 ] = true, [ 0x0611 ] = true, [ 0x0612 ] = true, [ 0x0613 ] = true,
     [ 0x0614 ] = true, [ 0x0615 ] = true, [ 0x0616 ] = true, [ 0x0617 ] = true,
     [ 0x0618 ] = true, [ 0x0619 ] = true, [ 0x061A ] = true, [ 0x061B ] = true,
-    [ 0x061E ] = true, [ 0x061F ] = true, [ 0x0621 ] = true, [ 0x063B ] = true,
-    [ 0x063C ] = true, [ 0x063D ] = true, [ 0x063E ] = true, [ 0x063F ] = true,
-    [ 0x0640 ] = true, [ 0x064B ] = true, [ 0x064C ] = true, [ 0x064D ] = true,
-    [ 0x064E ] = true, [ 0x064F ] = true, [ 0x0650 ] = true, [ 0x0651 ] = true,
-    [ 0x0652 ] = true, [ 0x0653 ] = true, [ 0x0654 ] = true, [ 0x0655 ] = true,
-    [ 0x0656 ] = true, [ 0x0657 ] = true, [ 0x0658 ] = true, [ 0x0659 ] = true,
-    [ 0x065A ] = true, [ 0x065B ] = true, [ 0x065C ] = true, [ 0x065D ] = true,
-    [ 0x065E ] = true, [ 0x0660 ] = true, [ 0x066A ] = true, [ 0x066B ] = true,
-    [ 0x066C ] = true, [ 0x066F ] = true, [ 0x0670 ] = true, [ 0x0672 ] = true,
-    [ 0x06D4 ] = true, [ 0x06D5 ] = true, [ 0x06D6 ] = true, [ 0x06D7 ] = true,
-    [ 0x06D8 ] = true, [ 0x06D9 ] = true, [ 0x06DA ] = true, [ 0x06DB ] = true,
-    [ 0x06DC ] = true, [ 0x06DF ] = true, [ 0x06E0 ] = true, [ 0x06E1 ] = true,
-    [ 0x06E2 ] = true, [ 0x06E3 ] = true, [ 0x06E4 ] = true, [ 0x06E5 ] = true,
-    [ 0x06E6 ] = true, [ 0x06E7 ] = true, [ 0x06E8 ] = true, [ 0x06E9 ] = true,
-    [ 0x06EA ] = true, [ 0x06EB ] = true, [ 0x06EC ] = true, [ 0x06ED ] = true,
-    [ 0x06EE ] = true, [ 0x06EF ] = true, [ 0x06D6 ] = true, [ 0x06D7 ] = true,
-    [ 0x06D8 ] = true, [ 0x06D9 ] = true, [ 0x06DA ] = true, [ 0x06DB ] = true,
-    [ 0x06DC ] = true, [ 0x06DD ] = true, [ 0x06DE ] = true, [ 0x06DF ] = true,
-    [ 0x06F0 ] = true, [ 0x06FD ] = true, [ 0xFE70 ] = true, [ 0xFE71 ] = true,
-    [ 0xFE72 ] = true, [ 0xFE73 ] = true, [ 0xFE74 ] = true, [ 0xFE75 ] = true,
-    [ 0xFE76 ] = true, [ 0xFE77 ] = true, [ 0xFE78 ] = true, [ 0xFE79 ] = true,
-    [ 0xFE7A ] = true, [ 0xFE7B ] = true, [ 0xFE7C ] = true, [ 0xFE7D ] = true,
-    [ 0xFE7E ] = true, [ 0xFE7F ] = true, [ 0xFC5E ] = true, [ 0xFC5F ] = true,
-    [ 0xFC60 ] = true, [ 0xFC61 ] = true, [ 0xFC62 ] = true, [ 0xFC63 ] = true
+    [ 0x061E ] = true, [ 0x061F ] = true, [ 0x063B ] = true, [ 0x063C ] = true,
+    [ 0x063D ] = true, [ 0x063E ] = true, [ 0x063F ] = true, [ 0x0640 ] = true,
+    [ 0x064B ] = true, [ 0x064C ] = true, [ 0x064D ] = true, [ 0x064E ] = true,
+    [ 0x064F ] = true, [ 0x0650 ] = true, [ 0x0651 ] = true, [ 0x0652 ] = true,
+    [ 0x0653 ] = true, [ 0x0654 ] = true, [ 0x0655 ] = true, [ 0x0656 ] = true,
+    [ 0x0657 ] = true, [ 0x0658 ] = true, [ 0x0659 ] = true, [ 0x065A ] = true,
+    [ 0x065B ] = true, [ 0x065C ] = true, [ 0x065D ] = true, [ 0x065E ] = true,
+    [ 0x0660 ] = true, [ 0x066A ] = true, [ 0x066B ] = true, [ 0x066C ] = true,
+    [ 0x066F ] = true, [ 0x0670 ] = true, [ 0x0672 ] = true, [ 0x06D4 ] = true,
+    [ 0x06D5 ] = true, [ 0x06D6 ] = true, [ 0x06D7 ] = true, [ 0x06D8 ] = true,
+    [ 0x06D9 ] = true, [ 0x06DA ] = true, [ 0x06DB ] = true, [ 0x06DC ] = true,
+    [ 0x06DF ] = true, [ 0x06E0 ] = true, [ 0x06E1 ] = true, [ 0x06E2 ] = true,
+    [ 0x06E3 ] = true, [ 0x06E4 ] = true, [ 0x06E5 ] = true, [ 0x06E6 ] = true,
+    [ 0x06E7 ] = true, [ 0x06E8 ] = true, [ 0x06E9 ] = true, [ 0x06EA ] = true,
+    [ 0x06EB ] = true, [ 0x06EC ] = true, [ 0x06ED ] = true, [ 0x06EE ] = true,
+    [ 0x06EF ] = true, [ 0x06D6 ] = true, [ 0x06D7 ] = true, [ 0x06D8 ] = true,
+    [ 0x06D9 ] = true, [ 0x06DA ] = true, [ 0x06DB ] = true, [ 0x06DC ] = true,
+    [ 0x06DD ] = true, [ 0x06DE ] = true, [ 0x06DF ] = true, [ 0x06F0 ] = true,
+    [ 0x06FD ] = true, [ 0xFE70 ] = true, [ 0xFE71 ] = true, [ 0xFE72 ] = true,
+    [ 0xFE73 ] = true, [ 0xFE74 ] = true, [ 0xFE75 ] = true, [ 0xFE76 ] = true,
+    [ 0xFE77 ] = true, [ 0xFE78 ] = true, [ 0xFE79 ] = true, [ 0xFE7A ] = true,
+    [ 0xFE7B ] = true, [ 0xFE7C ] = true, [ 0xFE7D ] = true, [ 0xFE7E ] = true,
+    [ 0xFE7F ] = true, [ 0xFC5E ] = true, [ 0xFC5F ] = true, [ 0xFC60 ] = true,
+    [ 0xFC61 ] = true, [ 0xFC62 ] = true, [ 0xFC63 ] = true
 }
 
 local Glyphs = {
@@ -482,7 +482,8 @@ local function reshapeSentence(sentence)
     return reshapeWords(getWords(sentence))
 end
 
-local function reshape(str, utf8)
+local meta = {}
+function meta:__call(str, utf8)
     if type(str) == 'string' then
         str = require('util.unicode').utf8To32(str)
     end
@@ -522,4 +523,16 @@ local function reshape(str, utf8)
     return utf8 and require('util.unicode').utf32To8(str) or str
 end
 
-return reshape
+
+local arabic = {}
+setmetatable(arabic, meta)
+
+function arabic.len(str)
+    local count = 0
+    for i, v in ipairs(str) do
+        if not Harakat[v] and v ~= 0 then count = count + 1 end
+    end
+    return count
+end
+
+return arabic

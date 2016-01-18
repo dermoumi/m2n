@@ -74,6 +74,18 @@ function Shape.static._vertexLayout(hasColor)
     return Graphics.vertexLayout(hasColor and 2 or 1)
 end
 
+function Shape.static.plainRectangle(width, height)
+    return require('graphics.shape'):new()
+        :setVertexData('triangles', false, {
+                width, 0,      1, 0,
+                0,     0,      0, 0,
+                0,     height, 0, 1,
+                width, height, 1, 1,
+                width, 0,      1, 0,
+                0,     height, 0, 1
+            })
+end
+
 function Shape:initialize()
     Entity2D.initialize(self)
 end

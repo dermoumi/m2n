@@ -73,16 +73,10 @@ function ScreenTitle:entered()
         :setPosition(1200, 90)
         :setColor(255, 128, 0, 255)
 
-    self.textCursor = require('graphics.shape'):new()
-        :setVertexData('triangles', false, {
-                1, 0, 0, 0,
-                0, 0, 0, 0,
-                0, 1, 0, 0,
-                1, 1, 0, 0,
-                1, 0, 0, 0,
-                0, 1, 0, 0
-            })
-        :setScaling(2, GameFont:lineSpacing(self.text:size()))
+    print(require('util.arabic').len(self.rtlText:string(true)))
+
+    self.textCursor = require('graphics.shape')
+        .plainRectangle(2, GameFont:lineSpacing(self.rtlText:size()))
         :setPosition(self.text:position())
         :setColor(0, 0, 255)
 
@@ -94,7 +88,6 @@ function ScreenTitle:update(dt)
     local x, y = self.rtlText:position()
     local charX, charY = self.rtlText:characterPosition(self.cursorPos)
     self.textCursor:setPosition(x + charX, y + charY)
-        :setScaling(2, GameFont:lineSpacing(self.rtlText:size()))
 end
 
 function ScreenTitle:render()
