@@ -182,7 +182,6 @@ NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, int
         // try to change whatever settings we can and leave it at that
         SDL_SetWindowTitle(window, title);
         SDL_SetWindowPosition(window, posX, posY);
-        SDL_SetWindowSize(window, width, height);
 
         SDL_SetWindowBordered(window, borderless ? SDL_FALSE : SDL_TRUE);
 
@@ -197,6 +196,8 @@ NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, int
             SDL_SetWindowDisplayMode(window, &closest);
         }
         SDL_SetWindowFullscreen(window, fullscreenFlags);
+        
+        SDL_SetWindowSize(window, width, height);
     }
 
     SDL_SetWindowMinimumSize(window, minWidth, minHeight);
