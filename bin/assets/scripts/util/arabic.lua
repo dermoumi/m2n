@@ -184,21 +184,18 @@ end
 
 local function getLamAlef(candidateAlef, candidateLam, isEndOfWord)
     local shift = isEndOfWord and 3 or 2
-    local reshapedAlefLam
 
     if candidateLam == OriginalLam then
         if candidateAlef == OriginalAlfUpperMdd then
-            reshapedAlefLam = LamAlefGlyphs[1][shift]
+            return LamAlefGlyphs[1][shift]
         elseif candidateAlef == OriginalAlfUpperHamza then
-            reshapedAlefLam = LamAlefGlyphs[2][shift]
+            return LamAlefGlyphs[2][shift]
         elseif candidateAlef == OriginalAlf then
-            reshapedAlefLam = LamAlefGlyphs[3][shift]
+            return LamAlefGlyphs[3][shift]
         elseif candidateAlef == OriginalAlfLowerHamza then
-            reshapedAlefLam = LamAlefGlyphs[4][shift]
+            return LamAlefGlyphs[4][shift]
         end
     end
-
-    return reshapedAlefLam
 end
 
 local function replaceShadda(unshapedWord)
@@ -235,9 +232,11 @@ local function replaceLamAlef(unshapedWord)
     local currLetter, prevLetter = 0, 0
     for i = 1, #letters - 1 do
         currLetter = letters[i]
+
         if not Harakat[currLetter] and currLetter ~= OriginalLam then
             prevLetter = currLetter
         end
+
         if currLetter == OriginalLam then
             local candidateLam = currLetter
             local lamPosition = i
@@ -247,7 +246,7 @@ local function replaceLamAlef(unshapedWord)
                 harakatPosition = harakatPosition + 1
             end
 
-            if harakatPosition < #letters then
+            if harakatPosition <= #letters then
                 local lamAlef
                 if getGlyphType(prevLetter) > 2 then
                     lamAlef = getLamAlef(letters[harakatPosition], candidateLam, false)

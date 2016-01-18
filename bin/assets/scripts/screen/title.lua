@@ -66,9 +66,9 @@ function ScreenTitle:entered()
         :setSize(30)
         :setString('يَجِبُ Test عَلَى الإنْسَانِ أن يَكُونَ أمِيْنَاً وَصَادِقَاً \nمَعَ ' ..
             'نَفْسِهِ وَمَعَ أَهْلِهِ وَجِيْرَانِهِ وَأَنْ يَبْذُلَ كُلَّ \nجُهْد' ..
-            'ٍ فِي إِعْلاءِ شَأْنِ الوَطَنِ وَأَنْ يَعْمَلَ عَلَى مَا\n يَجْلِبُ ال' ..
+            'ٍ فِي إِعْلاءِ شَأْنِ الوَطَنِ وَأَنْ يَعْمَلَ عَلَى مَا \nيَجْلِبُ ال' ..
             'سَّعَادَةَ لِلنَّاسِ . ولَن يَتِمَّ لَهُ ذلِك إِلا بِأَنْ \nيُقَدِّمَ' ..
-            ' المَنْفَعَةَ العَامَّةَ عَلَى المَنْفَعَةِ الخَاصَّةِ وَهذَا\n مِثَالٌ ل'..
+            ' المَنْفَعَةَ العَامَّةَ عَلَى المَنْفَعَةِ الخَاصَّةِ وَهذَا \nمِثَالٌ ل'..
             'ِلتَّضْحِيَةِ .', true)
         :setPosition(1200, 90)
         :setColor(255, 128, 0, 255)
@@ -82,16 +82,19 @@ function ScreenTitle:entered()
                 1, 0, 0, 0,
                 0, 1, 0, 0
             })
-        :setScaling(2, self.text:size())
+        :setScaling(2, GameFont:lineSpacing(self.text:size()))
         :setPosition(self.text:position())
+        :setColor(0, 0, 255)
+
+    self.cursorPos = 0
 end
 
 function ScreenTitle:update(dt)
     self.text:setString('Current FPS: %i', Window.currentFPS())
     local x, y = self.rtlText:position()
-    local charX, charY = self.rtlText:characterPosition(5)
+    local charX, charY = self.rtlText:characterPosition(self.cursorPos)
     self.textCursor:setPosition(x + charX, y + charY)
-        :setScaling(2, self.rtlText:size())
+        :setScaling(2, GameFont:lineSpacing(self.rtlText:size()))
 end
 
 function ScreenTitle:render()
@@ -129,6 +132,10 @@ function ScreenTitle:keydown(scancode, keyCode, repeated)
             'ok',
             'cancel'
         }))
+    elseif scancode == 'up' then
+        if self.cursorPos ~= 0 then self.cursorPos = self.cursorPos - 1 end
+    elseif scancode == 'down' then
+        self.cursorPos = self.cursorPos + 1
     end
 end
 
