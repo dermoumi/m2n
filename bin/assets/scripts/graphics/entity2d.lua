@@ -139,6 +139,22 @@ function Entity2D:origin(absolute)
     return self._originX, self._originY
 end
 
+function Entity2D:move(x, y)
+    return self:setPosition(self._posX + x, self._posY)
+end
+
+function Entity2D:rotate(rad)
+    return self:setRotation(self._rotation + rad)
+end
+
+function Entity2D:scale(x, y)
+    return self:setScaling(self._scaleX * x, self._scaleY * y)
+end
+
+function Entity2D:offset(x, y)
+    return self:setOrigin(self._originX + x, self._originY + y)
+end
+
 function Entity2D:color(normalize, absolute)
     local r, g, b, a = self._colR, self._colG, self._colB, self._colA
 

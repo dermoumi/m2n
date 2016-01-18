@@ -64,7 +64,7 @@ function ScreenTitle:entered()
     self.rtlText = require('graphics.rtltext'):new()
         :setFont(GameFont)
         :setSize(30)
-        :setString('يَجِبُ Test عَلَى الإنْسَانِ أن يَكُونَ أمِيْنَاً وَصَادِقَاً \nمَعَ ' ..
+        :setString('يَجِبُ عَلَى الإنْسَانِ أن يَكُونَ أمِيْنَاً وَصَادِقَاً \nمَعَ ' ..
             'نَفْسِهِ وَمَعَ أَهْلِهِ وَجِيْرَانِهِ وَأَنْ يَبْذُلَ كُلَّ \nجُهْد' ..
             'ٍ فِي إِعْلاءِ شَأْنِ الوَطَنِ وَأَنْ يَعْمَلَ عَلَى مَا \nيَجْلِبُ ال' ..
             'سَّعَادَةَ لِلنَّاسِ . ولَن يَتِمَّ لَهُ ذلِك إِلا بِأَنْ \nيُقَدِّمَ' ..
@@ -72,9 +72,14 @@ function ScreenTitle:entered()
             'ِلتَّضْحِيَةِ .', true)
         :setPosition(1200, 90)
         :setColor(255, 128, 0, 255)
+        
+    local x, y, w, h = self.rtlText:bounds()
+    local textX, textY = self.rtlText:position()
+    self.textBoundaries = require('graphics.shape')
+        .plainRectangle(w, h)
+        :setPosition(x + textX, y + textY)
+        :setColor(0, 255, 255, 128)
 
-    print(self.rtlText:string())
-    
     self.textCursor = require('graphics.shape')
         .plainRectangle(2, GameFont:lineSpacing(self.rtlText:size()))
         :setPosition(self.text:position())
@@ -97,6 +102,7 @@ function ScreenTitle:render()
     self:view()
         :draw(self.text)
         :draw(self.sprite)
+        :draw(self.textBoundaries)
         :draw(self.rtlText)
         :draw(self.textCursor)
 end
