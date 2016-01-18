@@ -37,37 +37,6 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image/stb_image_write.h>
 
-// stb_image callbacks that operate on a BinaryFile
-static int read(void* userdata, char* data, int size)
-{
-    auto* file = reinterpret_cast<PHYSFS_File*>(userdata);
-    auto status = PHYSFS_readBytes(file, data, size);
-
-    return static_cast<int>(status);
-}
-
-static void skip(void* userdata, int size)
-{
-    auto* file = static_cast<PHYSFS_File*>(userdata);
-
-    auto pos = PHYSFS_tell(file);
-    if (pos < 0) PHYSFS_seek(file, 0);
-    else         PHYSFS_seek(file, pos + size);
-}
-
-static int eof(void* userdata)
-{
-    auto* file = static_cast<PHYSFS_File*>(userdata);
-
-    auto pos = PHYSFS_tell(file);
-    if (pos < 0) return 1;
-
-    auto size = PHYSFS_fileLength(file);
-    if (size < 0) return 1;
-
-    return pos >= size;
-}
-
 void Image::create(unsigned int width, unsigned int height, uint8_t r, uint8_t g, uint8_t b,
     uint8_t a)
 {
@@ -118,10 +87,19 @@ void Image::create(unsigned int width, unsigned int height, const uint8_t* pixel
 bool Image::open(const std::string& filename)
 {
     PHYSFS_File* file = PHYSFS_openRead(filename.data());
-    if (file) return open(file, true);
+    if (!file) return false;
 
-    Log::error("Failed to load image: %s", filename.data());
-    return false;
+    PHYSFS_sint64 len = PHYSFS_fileLength(file);
+    if (len < 0) return false;
+
+    uint8_t* buf = new uint8_t[len];
+    if (!PHYSFS_readBytes(file, buf, len)) {
+        delete[] buf;
+        return false;
+    }
+
+    // Log::error("Failed to load image: " + filename);
+    return open(buf, static_cast<size_t>(len));
 }
 
 bool Image::open(const void* data, size_t size)
@@ -158,54 +136,8 @@ bool Image::open(const void* data, size_t size)
     }
 
     // Error failed to load the image
-    Log::error("Failed to load image from memory. Reason: %s", stbi_failure_reason());
+    Log::error(std::string("Failed to load image from memory: ") + stbi_failure_reason());
 
-    return false;
-}
-
-bool Image::open(PHYSFS_File* file, bool closeFile)
-{
-    // Clear the array (just in case)
-    mPixels.clear();
-    mWidth  = 0u;
-    mHeight = 0u;
-
-    // Make sure that the stream's reading position is a the beginning
-    if (!PHYSFS_seek(file, 0)) {
-        Log::error("Failed to load image from file handle");
-        return false;
-    }
-
-    // Setup the stb_image callbacks
-    stbi_io_callbacks callbacks;
-    callbacks.read = &read;
-    callbacks.skip = &skip;
-    callbacks.eof  = &eof;
-
-    // Load the imagee and get a pointer to the pixels in memory
-    int width, height, channels;
-    unsigned char* ptr = stbi_load_from_callbacks(&callbacks, file, &width, &height, &channels,
-        STBI_rgb_alpha);
-    if (ptr && width & height) {
-        // Assign the image properties
-        mWidth = width;
-        mHeight = height;
-
-        // Copy the loaded pixels to the pixel buffer
-        mPixels.resize(width * height * 4);
-        memcpy(&mPixels[0], ptr, mPixels.size());
-
-        // Free the loaded pixels (they are now in our own pixel buffer)
-        stbi_image_free(ptr);
-
-        // Close the file if needed
-        if (closeFile) PHYSFS_close(file);
-
-        return true;
-    }
-
-    // Error, failed to load the image
-    Log::error("Failed to load image from file handle. Reason: %s", stbi_failure_reason());
     return false;
 }
 

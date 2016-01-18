@@ -49,50 +49,24 @@ function ScreenTitle:initialize(firstRun)
         })
     end
 
-    self.texture = self:cache('tex2d:assets/pasrien.png')
+    self.logoTexture = self:cache('tex2d:assets/textures/logo.png')
 end
 
 function ScreenTitle:entered()
-    self.text = require('graphics.text')
+    self.fps = require('graphics.text')
         :new('', GameFont, 14)
         :setPosition(10, 10)
-        
-    self.sprite = require('graphics.sprite')
-        :new(self.texture)
-        :setPosition(400, 30)
 
-    self.rtlText = require('graphics.rtltext'):new()
-        :setFont(GameFont)
-        :setSize(30)
-        :setString('يَجِبُ عَلَى الإنْسَانِ أن يَكُونَ أمِيْنَاً وَصَادِقَاً \nمَعَ ' ..
-            'نَفْسِهِ وَمَعَ أَهْلِهِ وَجِيْرَانِهِ وَأَنْ يَبْذُلَ كُلَّ \nجُهْد' ..
-            'ٍ فِي إِعْلاءِ شَأْنِ الوَطَنِ وَأَنْ يَعْمَلَ عَلَى مَا \nيَجْلِبُ ال' ..
-            'سَّعَادَةَ لِلنَّاسِ . ولَن يَتِمَّ لَهُ ذلِك إِلا بِأَنْ \nيُقَدِّمَ' ..
-            ' المَنْفَعَةَ العَامَّةَ عَلَى المَنْفَعَةِ الخَاصَّةِ وَهذَا \nمِثَالٌ ل'..
-            'ِلتَّضْحِيَةِ .', true)
-        :setPosition(1200, 90)
-        :setColor(255, 128, 0, 255)
-        
-    local x, y, w, h = self.rtlText:bounds()
-    local textX, textY = self.rtlText:position()
-    self.textBoundaries = require('graphics.shape')
-        .plainRectangle(w, h)
-        :setPosition(x + textX, y + textY)
-        :setColor(0, 255, 255, 128)
+    local logoW, logoH = self.logoTexture:size()
+    self.logoTexture:setFilter('nearest')
 
-    self.textCursor = require('graphics.shape')
-        .plainRectangle(2, GameFont:lineSpacing(self.rtlText:size()))
-        :setPosition(self.text:position())
-        :setColor(0, 0, 255)
-
-    self.cursorPos = 0
+    self.logo = require('graphics.sprite')
+        :new(self.logoTexture)
+        :setOrigin(logoW/3, logoH/3)
 end
 
 function ScreenTitle:update(dt)
-    self.text:setString('Current FPS: %i', Window.currentFPS())
-    local x, y = self.rtlText:position()
-    local charX, charY = self.rtlText:characterPosition(self.cursorPos)
-    self.textCursor:setPosition(x + charX, y + charY)
+    self.fps:setString('Current FPS: %i', Window.currentFPS())
 end
 
 function ScreenTitle:render()
@@ -100,41 +74,35 @@ function ScreenTitle:render()
         :clear()
 
     self:view()
-        :draw(self.text)
-        :draw(self.sprite)
-        :draw(self.textBoundaries)
-        :draw(self.rtlText)
-        :draw(self.textCursor)
+        :draw(self.fps)
+        :draw(self.logo)
+end
+
+function ScreenTitle:resized(width, height)
+    Screen.resized(self, width, height)
+
+    self.logo:setPosition(width/2, height/3)
+    if width >= 1920 and height >= 1080 then
+        self.logo:setScaling(math.floor(width/960), math.floor(height/540))
+    else
+        self.logo:setScaling(1, 1)
+    end
 end
 
 function ScreenTitle:keydown(scancode, keyCode, repeated)
-    if scancode == '2' then
-        self:performTransition(Screen.push, 'screen.test.3d')
-    elseif scancode == 'f10' then
+    if scancode == 'f10' then
         Window.create('m2n-', 1280, 720, {})
     elseif scancode == 'f11' then
         Window.create('m2n-', 1920, 1080, {fullscreen = true, msaa = 4})
     elseif scancode == 'f12' then
         Window.create('m2n-', 1024, 720, {fullscreen = true, msaa = 8})
-    elseif scancode == 'f9' then
-        if Keyboard.modKeyDown('ctrl') then
-            collectgarbage('collect')
-        else
-            print('Lua usage: ' .. tostring(collectgarbage('count') * 1024))
-        end
+    elseif scancode == '2' then
+        self:performTransition(Screen.push, 'screen.test.3d')
     elseif scancode == '\\' then
         self:performTransition(Screen.goTo, 'screen.title')
     elseif scancode == 'p' then
         self:performTransition(Screen.push, 'screen.title')
-    elseif scancode == 'return' then
-        print(Window.showMessageBox('test', 'helloworld!', {
-            'ok',
-            'cancel'
-        }))
-    elseif scancode == 'up' then
-        if self.cursorPos ~= 0 then self.cursorPos = self.cursorPos - 1 end
-    elseif scancode == 'down' then
-        self.cursorPos = self.cursorPos + 1
+        return false
     end
 end
 
