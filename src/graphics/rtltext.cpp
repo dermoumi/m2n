@@ -55,6 +55,48 @@ static bool isHarakat(uint32_t haraka)
     return harakat.find(haraka) != harakat.end();
 }
 
+void RtlText::characterPosition(size_t index, float& x, float& y) const
+{
+    // Initialize the positions to 0
+    x = y = 0.f;
+
+    // Make sure that we have a valid font
+    if (!mFont) return;
+
+    // Adjust the index if it's out of range
+    if (index > mString.size()) index = mString.size();
+
+    // Precompute stuff
+    bool bold = (mStyle & Bold) != 0;
+    float hspace = static_cast<float>(mFont->glyph(U' ', mCharSize, bold).advance);
+    float vspace = static_cast<float>(mFont->lineSpacing(mCharSize));
+
+    // Compute the position
+    uint32_t prevChar {0u};
+    for (size_t i = 0; i < index; ++i) {
+        uint32_t currChar = mString[i];
+
+        if (isHarakat(currChar)) {
+            index++;
+            continue;
+        }
+
+        // Apply the kerning offset
+        x -= static_cast<float>(mFont->kerning(currChar, prevChar, mCharSize));
+        prevChar = currChar;
+
+        // Handle special characters
+        switch (currChar) {
+            case U' ':  x -= hspace;        continue;
+            case U'\t': x -= hspace * 4;    continue;
+            case U'\n': x = 0; y += vspace; continue;
+        }
+
+        // For regular characters, add the advance offset of the glyph
+        x -= static_cast<float>(mFont->glyph(currChar, mCharSize, bold).advance);
+    }
+}
+
 void RtlText::ensureGeometryUpdate() const
 {
     // mNextPointer = mVertices.cbegin();

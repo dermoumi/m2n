@@ -61,11 +61,10 @@ function ScreenTitle:entered()
         :new(self.texture)
         :setPosition(400, 30)
 
-    self.rtlText = require('graphics.rtltext')
-        :new()
+    self.rtlText = require('graphics.rtltext'):new()
         :setFont(GameFont)
         :setSize(30)
-        :setString('يَجِبُ عَلَى الإنْسَانِ أن يَكُونَ أمِيْنَاً وَصَادِقَاً \nمَعَ ' ..
+        :setString('يَجِبُ Test عَلَى الإنْسَانِ أن يَكُونَ أمِيْنَاً وَصَادِقَاً \nمَعَ ' ..
             'نَفْسِهِ وَمَعَ أَهْلِهِ وَجِيْرَانِهِ وَأَنْ يَبْذُلَ كُلَّ \nجُهْد' ..
             'ٍ فِي إِعْلاءِ شَأْنِ الوَطَنِ وَأَنْ يَعْمَلَ عَلَى مَا\n يَجْلِبُ ال' ..
             'سَّعَادَةَ لِلنَّاسِ . ولَن يَتِمَّ لَهُ ذلِك إِلا بِأَنْ \nيُقَدِّمَ' ..
@@ -73,10 +72,26 @@ function ScreenTitle:entered()
             'ِلتَّضْحِيَةِ .', true)
         :setPosition(1200, 90)
         :setColor(255, 128, 0, 255)
+
+    self.textCursor = require('graphics.shape'):new()
+        :setVertexData('triangles', false, {
+                1, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 1, 0, 0,
+                1, 1, 0, 0,
+                1, 0, 0, 0,
+                0, 1, 0, 0
+            })
+        :setScaling(2, self.text:size())
+        :setPosition(self.text:position())
 end
 
 function ScreenTitle:update(dt)
     self.text:setString('Current FPS: %i', Window.currentFPS())
+    local x, y = self.rtlText:position()
+    local charX, charY = self.rtlText:characterPosition(5)
+    self.textCursor:setPosition(x + charX, y + charY)
+        :setScaling(2, self.rtlText:size())
 end
 
 function ScreenTitle:render()
@@ -87,6 +102,7 @@ function ScreenTitle:render()
         :draw(self.text)
         :draw(self.sprite)
         :draw(self.rtlText)
+        :draw(self.textCursor)
 end
 
 function ScreenTitle:keydown(scancode, keyCode, repeated)

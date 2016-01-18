@@ -32,6 +32,7 @@ class RtlText : public Text
 {
 public:
     virtual ~RtlText() = default;
+    void characterPosition(size_t index, float& x, float& y) const;
 
 protected:
     virtual void ensureGeometryUpdate() const;

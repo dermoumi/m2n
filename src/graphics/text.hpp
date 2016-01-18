@@ -64,8 +64,8 @@ public:
     uint32_t characterSize() const;
     uint8_t style() const;
 
-    void characterPosition(size_t index, float& x, float& y) const;
-    void bounds(float& x, float& y, float& w, float& h) const;
+    virtual void characterPosition(size_t index, float& x, float& y) const;
+    virtual void bounds(float& x, float& y, float& w, float& h) const;
 
     VertexBuffer* nextBuffer(uint32_t* index) const;
 
