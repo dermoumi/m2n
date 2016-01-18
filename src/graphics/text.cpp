@@ -148,6 +148,8 @@ VertexBuffer* Text::nextBuffer(uint32_t* index) const
 
 void Text::ensureGeometryUpdate() const
 {
+    // mNextPointer = mVertices.cbegin();
+
     // If geometry is already up-to-date, do nothing
     if (!mNeedsUpdate) return;
 
@@ -159,6 +161,7 @@ void Text::ensureGeometryUpdate() const
 
     // No font or no string: nothing to draw
     if (!mFont || mString.empty()) {
+        mNextPointer = mVertices.cbegin();
         return;
     }
 

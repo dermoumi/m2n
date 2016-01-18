@@ -28,6 +28,7 @@
 local Entity2D     = require 'graphics.entity2d'
 local VertexBuffer = require 'graphics.vertexbuffer'
 local Text         = require 'graphics.text'
+local Arabic       = require 'util.arabic'
 
 local RtlText = Text:subclass('graphics.rtltext')
 -- RtlText:include(Entity2D)
@@ -50,6 +51,10 @@ function RtlText:initialize(str, font, charSize)
         
     self._style = 0
     self._vertices = VertexBuffer:allocate()
+end
+
+function RtlText:setString(str, isArabic)
+    return Text.setString(self, isArabic and Arabic(str) or str)
 end
 
 return RtlText

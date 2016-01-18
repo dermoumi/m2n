@@ -60,6 +60,19 @@ function ScreenTitle:entered()
     self.sprite = require('graphics.sprite')
         :new(self.texture)
         :setPosition(400, 30)
+
+    self.rtlText = require('graphics.rtltext')
+        :new()
+        :setFont(GameFont)
+        :setSize(30)
+        :setString('يَجِبُ عَلَى الإنْسَانِ أن يَكُونَ أمِيْنَاً وَصَادِقَاً \nمَعَ ' ..
+            'نَفْسِهِ وَمَعَ أَهْلِهِ وَجِيْرَانِهِ وَأَنْ يَبْذُلَ كُلَّ \nجُهْد' ..
+            'ٍ فِي إِعْلاءِ شَأْنِ الوَطَنِ وَأَنْ يَعْمَلَ عَلَى مَا\n يَجْلِبُ ال' ..
+            'سَّعَادَةَ لِلنَّاسِ . ولَن يَتِمَّ لَهُ ذلِك إِلا بِأَنْ \nيُقَدِّمَ' ..
+            ' المَنْفَعَةَ العَامَّةَ عَلَى المَنْفَعَةِ الخَاصَّةِ وَهذَا\n مِثَالٌ ل'..
+            'ِلتَّضْحِيَةِ .', true)
+        :setPosition(1200, 90)
+        :setColor(255, 128, 0, 255)
 end
 
 function ScreenTitle:update(dt)
@@ -73,6 +86,7 @@ function ScreenTitle:render()
     self:view()
         :draw(self.text)
         :draw(self.sprite)
+        :draw(self.rtlText)
 end
 
 function ScreenTitle:keydown(scancode, keyCode, repeated)

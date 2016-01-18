@@ -57,6 +57,8 @@ static bool isHarakat(uint32_t haraka)
 
 void RtlText::ensureGeometryUpdate() const
 {
+    // mNextPointer = mVertices.cbegin();
+
     // If geometry is already up-to-date, do nothing
     if (!mNeedsUpdate) return;
 
@@ -68,6 +70,7 @@ void RtlText::ensureGeometryUpdate() const
 
     // No font or no string: nothing to draw
     if (!mFont || mString.empty()) {
+        mNextPointer = mVertices.cbegin();
         return;
     }
 
@@ -281,4 +284,6 @@ void RtlText::ensureGeometryUpdate() const
 
         mVertices[it.first] = std::shared_ptr<VertexBuffer>(buf);
     }
+
+    mNextPointer = mVertices.cbegin();
 }
