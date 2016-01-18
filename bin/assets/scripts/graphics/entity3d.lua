@@ -70,7 +70,9 @@ function Entity3D:lodLevel(eyeX, eyeY, eyeZ)
 end
 
 function Entity3D:setPosition(x, y, z)
-    self._posX, self._posY, self._posZ = x, y, z
+    if x then self._posX = x end
+    if y then self._posY = y end
+    if z then self._posZ = z end
 
     return self:_markDirty()
 end
@@ -82,7 +84,9 @@ function Entity3D:setRotation(x, y, z, w)
 end
 
 function Entity3D:setScaling(x, y, z)
-    self._scaleX, self._scaleY, self._scaleZ = x, y, z
+    if x then self._scaleX = x end
+    if y then self._scaleY = y end
+    if z then self._scaleZ = z end
 
     return self:_markDirty()
 end

@@ -64,13 +64,15 @@ function Entity2D:detachedFrom(node)
 end
 
 function Entity2D:setPosition(x, y)
-    self._posX, self._posY = x, y
+    if x then self._posX = x end
+    if y then self._posY = y end
 
     return self:_markDirty()
 end
 
 function Entity2D:setScaling(x, y)
-    self._scaleX, self._scaleY = x, y
+    if x then self._scaleX = x end
+    if y then self._scaleY = y end
 
     return self:_markDirty()
 end
@@ -82,16 +84,17 @@ function Entity2D:setRotation(rad)
 end
 
 function Entity2D:setOrigin(x, y)
-    self._originX, self._originY = x, y
+    if x then self._originX = x end
+    if y then self._originY = y end
 
     return self:_markDirty()
 end
 
 function Entity2D:setColor(r, g, b, a)
-    self._colR = r/255
-    self._colG = g/255
-    self._colB = b/255
-    self._colA = a and a/255 or 1
+    if r then self._colR = r/255 end
+    if g then self._colG = g/255 end
+    if b then self._colB = b/255 end
+    if a then self._colA = a/255 end
 
     return self
 end
@@ -109,7 +112,7 @@ function Entity2D:position(absolute)
     return self._posX, self._posY
 end
 
-function Entity2D:scaling()
+function Entity2D:scaling(absolute)
     if absoulte and self.parent then
         local x, y = self.parent:scaling(true)
         return self._scaleX * x, self._scaleY * y
@@ -118,7 +121,7 @@ function Entity2D:scaling()
     return self._scaleX, self._scaleY
 end
 
-function Entity2D:rotation()
+function Entity2D:rotation(absolute)
     if absolute and self.parent then
         local rot = self.parent:rotation(true)
         return self._rotation + rot
@@ -127,7 +130,7 @@ function Entity2D:rotation()
     return self._rotation
 end
 
-function Entity2D:origin()
+function Entity2D:origin(absolute)
     if absolute and self.parent then
         local x, y, z = self.parent:matrix(true):apply(self._originX, self._originY, 0)
         return x, y
