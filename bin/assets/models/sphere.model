@@ -1,7 +1,9 @@
 return {
 	['solidcolor'] = {
 		'mesh',
-		geometry = 'geom:assets/geometry/sphere_solidcolor.geom',
+		start = 0,
+		count = 336,
+		geometry = 'geom:assets/geometry/sphere.geom',
 		material = 'material:assets/materials/solidcolor.mat'
 	}
 }

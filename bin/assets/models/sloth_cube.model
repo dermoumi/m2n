@@ -1,7 +1,9 @@
 return {
 	['sloth'] = {
 		'mesh',
-		geometry = 'geom:assets/geometry/sloth_cube_sloth.geom',
+		start = 0,
+		count = 36,
+		geometry = 'geom:assets/geometry/sloth_cube.geom',
 		material = 'material:assets/materials/sloth.mat'
 	}
 }

@@ -66,6 +66,10 @@ class ExportM2N(bpy.types.Operator, ExportHelper):
         ),
         default = 'DEF'
     )
+    splitMeshFiles = BoolProperty(
+        name = 'Split mesh files',
+        default = False
+    )
 
     def objCommon(self, obj, noTransformation = False):
         strings = []
@@ -144,13 +148,18 @@ class ExportM2N(bpy.types.Operator, ExportHelper):
 
     def modelToStr(self, name, model):
         matStrings = []
+        vertOffset = 0
         for material in model:
-            geomName = name + '_' + material
+            vertCount = len(model[material])
+            geomName = name + '_' + material if self.splitMeshFiles else name
             matStrings.append(
                 "['" + material + "'] = {\n\t'mesh',\n\t" +
-                "geometry = " + (geometryNameFormat % (self.ns + geomName)) + ",\n\t"
+                "start = " + str(vertOffset) + ",\n\t" +
+                "count = " + str(vertCount) + ",\n\t" +
+                "geometry = " + (geometryNameFormat % (self.ns + geomName)) + ",\n\t" +
                 "material = " + (materialNameFormat % (self.ns + material)) + "\n}"
             )
+            if not self.splitMeshFiles: vertOffset += vertCount
         return '{\n\t' + ',\n'.join(matStrings).replace('\n', '\n\t') + '\n}'
 
     def pngFilename(self, filename):
@@ -246,22 +255,38 @@ class ExportM2N(bpy.types.Operator, ExportHelper):
     def writeGeomVTN(self, directory):
         for name in self.models:
             model = self.models[name]
-            for material in model:
-                geomName = name + '_' + material
-                filepath = directory + '/' + geomName + '.geom'
-                vertList = model[material]
+            if self.splitMeshFiles:
+                for material in model:
+                    geomName = name + '_' + material
+                    filepath = directory + '/' + geomName + '.geom'
+                    vertList = model[material]
 
-                out = open(filepath, "wb")
+                    out = open(filepath, "wb")
+                    out.write(pack('<6sB', str.encode('M2N1.0'), 0))
+                    out.write(pack('<II', len(vertList) * 32, 0))
+
+                    for vert in vertList:
+                        pos = vert['position']
+                        tc0 = vert['texCoords0']
+                        nrm = vert['normal']
+
+                        out.write(pack('<8f', pos[0], pos[1], pos[2], tc0[0], tc0[1], nrm[0], nrm[1], nrm[2]))
+
+                    out.close()
+            else:
+                vertCount = 0
+                for material in model:
+                    vertCount += len(model[material])
+                out = open(directory + '/' + name + '.geom', "wb")
                 out.write(pack('<6sB', str.encode('M2N1.0'), 0))
-                out.write(pack('<II', len(vertList) * 32, 0))
+                out.write(pack('<II', vertCount * 32, 0))
+                for material in model:
+                    for vert in model[material]:
+                        pos = vert['position']
+                        tc0 = vert['texCoords0']
+                        nrm = vert['normal']
 
-                for vert in vertList:
-                    pos = vert['position']
-                    tc0 = vert['texCoords0']
-                    nrm = vert['normal']
-
-                    out.write(pack('<8f', pos[0], pos[1], pos[2], tc0[0], tc0[1], nrm[0], nrm[1], nrm[2]))
-
+                        out.write(pack('<8f', pos[0], pos[1], pos[2], tc0[0], tc0[1], nrm[0], nrm[1], nrm[2]))
                 out.close()
 
     def write(self, filename):

@@ -1,7 +1,16 @@
 return {
 	['sloth'] = {
 		'mesh',
-		geometry = 'geom:assets/geometry/Torus_sloth.geom',
+		start = 0,
+		count = 3336,
+		geometry = 'geom:assets/geometry/Torus.geom',
 		material = 'material:assets/materials/sloth.mat'
+	},
+	['solidcolor'] = {
+		'mesh',
+		start = 3336,
+		count = 120,
+		geometry = 'geom:assets/geometry/Torus.geom',
+		material = 'material:assets/materials/solidcolor.mat'
 	}
 }
