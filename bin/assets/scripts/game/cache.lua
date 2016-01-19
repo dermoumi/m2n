@@ -296,7 +296,6 @@ function Cache.iteration()
                     end
 
                     if not depsChanged then
-                        -- TODO: Re-implement gpu-multithreading (on non-android devices)
                         local gpu = subTask.threaded == 'gpu' and not Config.noGpuMultithreading
                         if subTask.threaded == true or gpu then
                             Thread:new(

@@ -145,15 +145,15 @@ local fromYRepeating = {
     [0x200] = 'stretchy'
 }
 
-local toRepeating = { -- TODO: fix values
+local toRepeating = {
     clamp   = 0,
-    wrap    = 1344,
-    stretch = 2688
+    wrap    = 320,
+    stretch = 640
 }
 local fromRepeating = {
-    [0]    = 'clamp',
-    [1344] = 'wrap',
-    [2688] = 'stretch'
+    [0]   = 'clamp',
+    [320] = 'wrap',
+    [640] = 'stretch'
 }
 
 function Texture.static.usedMemory()
