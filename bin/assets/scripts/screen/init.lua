@@ -157,7 +157,7 @@ function Screen:__onEvent(e, a, b, c, d)
     if not self:isTransitioning() then
         if self:onEvent(e, a, b, c, d) == false then
             return false
-        elseif self:updateParent() and self.parent then
+        elseif self:bubbleEvents() and self.parent then
             return self.parent:__onEvent(e, a, b, c, d)
         end
     end
@@ -333,6 +333,10 @@ end
 
 function Screen:renderParent()
     return self:processParent()
+end
+
+function Screen:bubbleEvents()
+    return false
 end
 
 return Screen

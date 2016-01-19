@@ -116,6 +116,7 @@ function ScreenTest3D:render()
 
     self.camera:clear(200, 200, 200, 255)
 
+    -- Graphics.setBlendMode('alpha')
     self.camera:draw(self.scene)
 
     -- Graphics.setFillMode('solid')

@@ -62,7 +62,7 @@ function ScreenTitle:entered()
 
     self.logo = require('graphics.sprite')
         :new(self.logoTexture)
-        :setOrigin(logoW/3, logoH/3)
+        :setOrigin(logoW/2, logoH/3)
 end
 
 function ScreenTitle:update(dt)
@@ -72,10 +72,12 @@ end
 function ScreenTitle:render()
     self:view()
         :clear()
-
-    self:view()
         :draw(self.fps)
         :draw(self.logo)
+
+    if self ~= Screen.currentScreen() then
+        self:view():fillFsQuad(0, 0, 0, 230)
+    end
 end
 
 function ScreenTitle:resized(width, height)
@@ -87,6 +89,14 @@ function ScreenTitle:resized(width, height)
     else
         self.logo:setScaling(1, 1)
     end
+end
+
+function ScreenTitle:openMenu()
+    Screen.push('screen.title.menu')
+end
+
+function ScreenTitle:mousedown(x, y, button)
+    self:openMenu()
 end
 
 function ScreenTitle:keydown(scancode, keyCode, repeated)
@@ -103,12 +113,14 @@ function ScreenTitle:keydown(scancode, keyCode, repeated)
     elseif scancode == 'p' then
         self:performTransition(Screen.push, 'screen.title')
         return false
+    else
+        self:openMenu()
     end
 end
 
 function ScreenTitle:touchdown(id, posX, posY)
     if id == 2 then
-        self:performTransition(Screen.push, 'screen.test.3d')
+        self:openMenu()
     end
 end
 

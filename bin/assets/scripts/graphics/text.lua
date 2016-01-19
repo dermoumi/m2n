@@ -181,11 +181,19 @@ function Text:characterPosition(index)
     return posPtr[0], posPtr[1]
 end
 
-function Text:bounds()
-    local boundsPtr = ffi.new('float[4]')
-    C.nxTextBounds(self._cdata, boundsPtr)
+function Text:bounds(transformed, absolute)
+    local ptr = ffi.new('float[4]')
+    C.nxTextBounds(self._cdata, ptr)
 
-    return boundsPtr[0], boundsPtr[1], boundsPtr[2], boundsPtr[3]
+    if not transformed then
+        return ptr[0], ptr[1], ptr[2], ptr[3]
+    else
+        local x1, y1 = self:matrix(absolute):apply(ptr[0], ptr[1], 0)
+        local x2, y2 = self:matrix(absolute):apply(ptr[0]+ptr[2], ptr[1]+ptr[3], 0)
+
+        x1, y1, x2, y2 = math.min(x1, x2), math.min(y1, y2), math.max(x1, x2), math.max(y1, y2)
+        return x1, y1, x2-x1, y2-y1
+    end
 end
 
 function Text:_render(camera)
