@@ -97,7 +97,7 @@ NX_EXPORT void nxWindowClose()
 
 NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, int fullscreen,
     int display, bool vsync, bool resizable, bool borderless, int minWidth, int minHeight,
-    bool highDpi, int refreshRate, int posX, int posY, int depthBits, int stencilBits, int msaa)
+    bool highDpi, int refreshRate, int posX, int posY, int depthBits, int stencilBits)
 {
     // Get a valid display number
     display = std::max(0, std::min(display-1, SDL_GetNumVideoDisplays()-1));
@@ -148,9 +148,6 @@ NX_EXPORT NxWindow* nxWindowCreate(const char* title, int width, int height, int
 
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE,   depthBits);
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, stencilBits);
-
-        SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, msaa ? 1 : 0);
-        SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, msaa);
 
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, NX_GL_MAJOR);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, NX_GL_MINOR);
@@ -274,14 +271,6 @@ NX_EXPORT void nxWindowGetFlags(int* flagsPtr)
     // Depth and stencil bits
     if (SDL_GL_GetAttribute(SDL_GL_DEPTH_SIZE, &flagsPtr[11]) != 0) flagsPtr[11] = 0;
     if (SDL_GL_GetAttribute(SDL_GL_STENCIL_SIZE, &flagsPtr[12]) != 0) flagsPtr[12] = 0;
-
-    // MSAA
-    int msaaEnabled = 0;
-    if (SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &msaaEnabled) != 0) msaaEnabled = 0;
-
-    if (!msaaEnabled || SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &flagsPtr[13]) != 0) {
-        flagsPtr[13] = 0;
-    }
 }
 
 NX_EXPORT bool nxWindowGetDesktopSize(int displayIndex, int* sizePtr)

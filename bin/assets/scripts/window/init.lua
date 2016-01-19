@@ -38,7 +38,7 @@ ffi.cdef [[
 
     NxWindow* nxWindowGet();
     bool nxWindowCreate(const char*, int, int, int, int, bool, bool, bool, int, int, bool, int, int,
-        int, int, int, int);
+        int, int, int);
     void nxWindowClose();
     void nxWindowDisplay();
     void nxWindowGetFlags(int*);
@@ -121,7 +121,6 @@ local function checkFlags(flags)
     if flags.y == nil              then flags.y = 'undefined' end
     if flags.depthbits == nil      then flags.depthbits = 24 end
     if flags.stencilbits == nil    then flags.stencilbits = 8 end
-    if flags.msaa == nil           then flags.msaa = 0 end
 
     -- Windowed mode and fullscreen don't mix up well
     if not flags.fullscreen then flags.vsync = false end
@@ -152,8 +151,7 @@ function Window.create(title, width, height, flags)
         posX,
         posY,
         flags.depthbits,
-        flags.stencilbits,
-        flags.msaa
+        flags.stencilbits
     )
 
     if window == nil then
@@ -227,7 +225,7 @@ end
 
 function Window.flags()
     local flags = {}
-    local flagsPtr = ffi.new('int[14]')
+    local flagsPtr = ffi.new('int[13]')
 
     C.nxWindowGetFlags(flagsPtr)
 
@@ -245,7 +243,6 @@ function Window.flags()
     flags.y              = ToPosType[tonumber(flagsPtr[10])] or tonumber(flagsPtr[10])
     flags.depthbits      = tonumber(flagsPtr[11])
     flags.stencilbits    = tonumber(flagsPtr[12])
-    flags.msaa           = tonumber(flagsPtr[13]) -- To be removed eventually
 
     return flags
 end
