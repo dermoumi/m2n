@@ -41,7 +41,6 @@ NX_EXPORT NxGamepad* nxGamepadOpen(int id)
 {
     NxGamepad* gamepad = SDL_GameControllerOpen(id - 1);
     if (gamepad) {
-        // TODO add GUID for recentGUIDs
         auto guid = SDL_JoystickGetDeviceGUID(id);
 
         std::string guidStr(64, '\0');

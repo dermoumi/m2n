@@ -316,7 +316,6 @@ private:
         uint16_t width() const;
         uint16_t height() const;
         Texture::Format format() const;
-        // TODO: virtual void* data() const;
 
         static constexpr uint32_t MaxColorAttachmentCount = 4;
 

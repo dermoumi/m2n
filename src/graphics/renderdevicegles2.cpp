@@ -1467,7 +1467,6 @@ bool RenderDeviceGLES2::TextureGLES2::create(Type type, Format format, uint16_t 
 
     glActiveTexture(GL_TEXTURE0);
 
-    // TODO: Add texture mutex lock here
     int lastTexture;
     glGetIntegerv(toTexBinding[mType], &lastTexture);
 

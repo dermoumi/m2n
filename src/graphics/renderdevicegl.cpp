@@ -1455,7 +1455,6 @@ bool RenderDeviceGL::TextureGL::create(Type type, Format format, uint16_t width,
 
     glActiveTexture(GL_TEXTURE15);
 
-    // TODO: Add texture mutex lock here
     int lastTexture;
     glGetIntegerv(toTexBinding[mType], &lastTexture);
 
