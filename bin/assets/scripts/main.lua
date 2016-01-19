@@ -91,6 +91,17 @@ require('game.cache')
     .registerType('model', 'graphics.modeldesc')
     .registerType('scene', 'graphics.scenedesc')
 
+-- Register default input
+local keyboardInput = require('game.input.keyboard'):new({
+    up = 'up',
+    left = 'left',
+    right = 'right',
+    down = 'down',
+    escape = 'back'
+})
+
+require('game.input').registerInput(keyboardInput)
+
 -- Startup screen
 Screen.goTo('screen.title', true)
 

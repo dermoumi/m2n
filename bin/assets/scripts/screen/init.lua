@@ -28,6 +28,7 @@
 local class = require 'class'
 local Cache = require 'game.cache'
 local View  = require 'graphics.view'
+local Input = require 'game.input'
 
 local Screen = class 'screen'
 
@@ -119,6 +120,7 @@ function Screen:__update(dt)
     end
 
     self:update(dt)
+    Input.updateState()
 end
 
 function Screen:__fixedUpdate(dt)
@@ -155,6 +157,7 @@ end
 
 function Screen:__onEvent(e, a, b, c, d)
     if not self:isTransitioning() then
+        Input.processEvent(e, a, b, c, d)
         if self:onEvent(e, a, b, c, d) == false then
             return false
         elseif self:bubbleEvents() and self.parent then

@@ -28,6 +28,7 @@
 local Screen = require 'screen'
 local Text = require 'graphics.text'
 local GameFont = require 'game.font'
+local Input = require 'game.input'
 
 local TitleMenu = Screen:subclass 'screen.title.menu'
 
@@ -58,6 +59,22 @@ function TitleMenu:entered()
 end
 
 function TitleMenu:update(dt)
+    if Input.get():pressed('escape') then
+        self:returnBack()
+    elseif Input.get():pressed('up') then
+        if not self.currentItem or self.currentItem == 1 then
+            self.currentItem = #self.items
+        else
+            self.currentItem = self.currentItem - 1
+        end
+    elseif Input.get():pressed('down') then
+        if not self.currentItem or self.currentItem == #self.items then
+            self.currentItem = 1
+        else
+            self.currentItem = self.currentItem + 1
+        end
+    end
+
     if self.currentItem ~= self.lastItem then
         for i, item in ipairs(self.items) do
             if self.currentItem == i then
@@ -106,24 +123,6 @@ function TitleMenu:mousedown(x, y, button)
         self.items[self.currentItem].callback()
     else
         self:returnBack()
-    end
-end
-
-function TitleMenu:keydown(scancode)
-    if scancode == 'escape' then
-        self:returnBack()
-    elseif scancode == 'up' then
-        if not self.currentItem or self.currentItem == 1 then
-            self.currentItem = #self.items
-        else
-            self.currentItem = self.currentItem - 1
-        end
-    elseif scancode == 'down' then
-        if not self.currentItem or self.currentItem == #self.items then
-            self.currentItem = 1
-        else
-            self.currentItem = self.currentItem + 1
-        end
     end
 end
 
