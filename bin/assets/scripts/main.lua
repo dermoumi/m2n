@@ -97,7 +97,8 @@ local keyboardInput = require('game.input.keyboard'):new({
     left = 'left',
     right = 'right',
     down = 'down',
-    escape = 'back'
+    escape = 'back',
+    ['return'] = 'accept'
 })
 
 require('game.input').registerInput(keyboardInput)

@@ -59,22 +59,6 @@ function TitleMenu:entered()
 end
 
 function TitleMenu:update(dt)
-    if Input.get():pressed('escape') then
-        self:returnBack()
-    elseif Input.get():pressed('up') then
-        if not self.currentItem or self.currentItem == 1 then
-            self.currentItem = #self.items
-        else
-            self.currentItem = self.currentItem - 1
-        end
-    elseif Input.get():pressed('down') then
-        if not self.currentItem or self.currentItem == #self.items then
-            self.currentItem = 1
-        else
-            self.currentItem = self.currentItem + 1
-        end
-    end
-
     if self.currentItem ~= self.lastItem then
         for i, item in ipairs(self.items) do
             if self.currentItem == i then
@@ -84,6 +68,24 @@ function TitleMenu:update(dt)
             end
         end
         self.lastItem = self.currentItem
+    end
+
+    if Input.pressed('up') then
+        if not self.currentItem or self.currentItem == 1 then
+            self.currentItem = #self.items
+        else
+            self.currentItem = self.currentItem - 1
+        end
+    elseif Input.pressed('down') then
+        if not self.currentItem or self.currentItem == #self.items then
+            self.currentItem = 1
+        else
+            self.currentItem = self.currentItem + 1
+        end
+    elseif Input.pressed('back') then
+        self:returnBack()
+    elseif Input.pressed('accept') then
+        self:choose()
     end
 end
 
@@ -120,7 +122,7 @@ end
 
 function TitleMenu:mousedown(x, y, button)
     if self.currentItem then
-        self.items[self.currentItem].callback()
+        self:choose()
     else
         self:returnBack()
     end
@@ -144,6 +146,10 @@ end
 
 function TitleMenu:returnBack()
     Screen.back()
+end
+
+function TitleMenu:choose()
+    self.items[self.currentItem].callback()
 end
 
 return TitleMenu

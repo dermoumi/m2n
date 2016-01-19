@@ -31,11 +31,17 @@ local Input = class 'game.input'
 local inputs = {}
 
 function Input.static.registerInput(input, id)
-    inputs[id or 'default'] = input
+    inputs[id or 1] = input
 end
 
 function Input.static.get(id)
-    return inputs[id or 'default']
+    return inputs[id or 1]
+end
+
+function Input.static.reset()
+    for i, input in pairs(inputs) do
+        input:reset()
+    end
 end
 
 function Input.static.processEvent(e, a, b, c, d)
@@ -50,7 +56,32 @@ function Input.static.updateState()
     end
 end
 
+function Input.static.down(...)
+    for i, input in pairs(inputs) do
+        if input:down(...) then return true end
+    end
+    return false
+end
+
+function Input.static.pressed(...)
+    for i, input in pairs(inputs) do
+        if input:pressed(...) then return true end
+    end
+    return false
+end
+
+function Input.static.released(...)
+    for i, input in pairs(inputs) do
+        if input:released(...) then return true end
+    end
+    return false
+end
+
 function Input:initialize()
+    self:reset()
+end
+
+function Input:reset()
     self.lastState = {}
     self.state = {}
     self.nextState = {}
