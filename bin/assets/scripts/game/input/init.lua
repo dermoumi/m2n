@@ -98,9 +98,9 @@ end
 function Input:down(a, b, ...)
     if b then
         for i, key in ipairs{a, b, ...} do
-            if not self.state[key] then return false end
+            if self.state[key] then return true end
         end
-        return true
+        return false
     else
         return self.state[a]
     end
@@ -109,9 +109,9 @@ end
 function Input:pressed(a, b, ...)
     if b then
         for i, key in ipairs{a, b, ...} do
-            if not self.state[key] or self.lastState[key] then return false end
+            if self.state[key] and not self.lastState[key] then return true end
         end
-        return true
+        return false
     else
         return self.state[a] and not self.lastState[a]
     end
@@ -120,9 +120,9 @@ end
 function Input:released(a, b, ...)
     if b then
         for i, key in ipairs{a, b, ...} do
-            if self.state[key] or not self.lastState[key] then return false end
+            if not self.state[key] and self.lastState[key] then return true end
         end
-        return true
+        return false
     else
         return not self.state[a] and self.lastState[a]
     end
