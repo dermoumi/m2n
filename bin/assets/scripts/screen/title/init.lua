@@ -25,13 +25,12 @@
     For more information, please refer to <http://unlicense.org>
 --]]
 
-local Log      = require 'util.log'
-local Mouse    = require 'window.mouse'
-local Graphics = require 'graphics'
-local Window   = require 'window'
-local Screen   = require 'screen'
-local GameFont = require 'game.font'
-local Keyboard = require 'window.keyboard'
+local Log       = require 'util.log'
+local Graphics  = require 'graphics'
+local Window    = require 'window'
+local Screen    = require 'screen'
+local GameFont  = require 'game.font'
+local GameState = require 'game.state'
 
 local ScreenTitle = Screen:subclass('screen.title')
 
@@ -50,6 +49,12 @@ function ScreenTitle:initialize(firstRun)
     end
 
     self.logoTexture = self:cache('tex2d:assets/textures/logo.png')
+
+    -- Check for saved games
+    local states = GameState.list()
+    if #states > 0 then
+        GameState.current = self:cache('state:' .. states[1])
+    end
 end
 
 function ScreenTitle:entered()

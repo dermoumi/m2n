@@ -27,33 +27,42 @@
 
 local Screen = require 'screen'
 local Text = require 'graphics.text'
-local GameFont = require 'game.font'
 local Input = require 'game.input'
+local GameFont = require 'game.font'
+local GameState = require 'game.state'
 
 local TitleMenu = Screen:subclass 'screen.title.menu'
 
 function TitleMenu:entered()
-    local newGame = {
-        text = Text:new('Start Game', GameFont, 60),
+    self.items = {}
+
+    if GameState.current then
+        self.items[#self.items+1] = {
+            text = Text:new('Continue', GameFont, 48),
+            callback = function() print('continue') end
+        }    
+    end
+
+    self.items[#self.items+1] = {
+        text = Text:new('New Game', GameFont, 48),
         callback = function() print('newgame') end
     }
 
-    local settings = {
+    self.items[#self.items+1] = {
         text = Text:new('Settings', GameFont, 48),
         callback = function() print('settings') end
     }
 
-    local credits = {
+    self.items[#self.items+1] = {
         text = Text:new('Credits', GameFont, 48),
         callback = function() print('credits') end
     }
 
-    local quit = {
+    self.items[#self.items+1] = {
         text = Text:new('Quit', GameFont, 48),
         callback = function() require('window').close() end
     }
 
-    self.items = {newGame, settings, credits, quit}
     self.currentItem = 1
     self.lastItem = nil
 end

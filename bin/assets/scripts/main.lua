@@ -90,6 +90,7 @@ require('game.cache')
     .registerType('material', 'graphics.material')
     .registerType('model', 'graphics.modeldesc')
     .registerType('scene', 'graphics.scenedesc')
+    .registerType('state', 'game.state')
 
 -- Register default input
 local keyboardInput = require('game.input.keyboard'):new({
