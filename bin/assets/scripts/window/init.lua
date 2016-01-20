@@ -163,7 +163,7 @@ function Window.create(title, width, height, flags)
     hasFocus, hasMouseFocus       = true, true
 
     framerateLimit   = flags.vsync and 0 or originalFramerateLimit
-    lastTime         = System.getTime()
+    lastTime         = System.time()
 
     -- Initial mouse focus is impossible with SDL < 2.0.4 (need to get global position)
     -- local Mouse = require 'window.mouse'
@@ -197,9 +197,9 @@ function Window.display()
     end
 
     -- Waiting out left time of the frame
-    System.sleep(framerateLimit == 0 and 0 or lastTime - System.getTime() + framerateLimit)
+    System.sleep(framerateLimit == 0 and 0 or lastTime - System.time() + framerateLimit)
 
-    local currTime = System.getTime()
+    local currTime = System.time()
     elapsedTime = currTime - lastTime
     lastTime = currTime
 end

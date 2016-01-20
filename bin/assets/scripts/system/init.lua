@@ -25,7 +25,7 @@
     For more information, please refer to <http://unlicense.org>
 --]]
 
-local Nx = {}
+local System = {}
 
 local ffi = require 'ffi'
 local C = ffi.C
@@ -39,17 +39,17 @@ ffi.cdef [[
 -- Constants
 local platform = ffi.string(C.nxSysGetPlatform()):lower()
 
-function Nx.sleep(t)
+function System.sleep(t)
     C.nxSysSleep(t)
 
-    return Nx
+    return System
 end
 
-function Nx.getTime()
+function System.time()
     return C.nxSysGetTime()
 end
 
-function Nx.platform(a, b, ...)
+function System.platform(a, b, ...)
     if not a then return platform end
     if not b then return platform == a end
 
@@ -60,4 +60,4 @@ function Nx.platform(a, b, ...)
     return false
 end
 
-return Nx
+return System

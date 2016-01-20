@@ -32,15 +32,15 @@ local ffi    = require 'ffi'
 local Timer = class 'system.timer'
 
 function Timer:initialize()
-    self._cdata = ffi.new('double[1]', {System.getTime()})
+    self._cdata = ffi.new('double[1]', {System.time()})
 end
 
 function Timer:elapsedTime()
-    return System.getTime() - self._cdata[0]
+    return System.time() - self._cdata[0]
 end
 
 function Timer:reset()
-    self._cdata[0] = System.getTime()
+    self._cdata[0] = System.time()
 end
 
 return Timer
