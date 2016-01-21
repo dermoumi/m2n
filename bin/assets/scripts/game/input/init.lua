@@ -28,116 +28,50 @@
 local class = require 'class'
 local Input = class 'game.input'
 
-local inputs = {}
+firstInput = nil
 
-function Input.static.registerInput(input, id)
-    inputs[id or 1] = input
+function Input.static.register(input)
+    print('registering', firstInput, input)
+    if firstInput then
+        firstInput.next = input
+        input.prev = firstInput
+    else
+        firstInput = input
+    end
 end
 
-function Input.static.get(id)
-    return inputs[id or 1]
-end
-
-function Input.static.reset()
-    for i, input in pairs(inputs) do
-        input:reset()
+function Input.static.unregister(input)
+    if firstInput == input then
+        firstInput = input.next
+        firstInput.prev = nil
+    else
+        input.prev.next = input.next
+        if input.next then
+            input.next.prev = input.prev
+        end
     end
 end
 
 function Input.static.processEvent(e, a, b, c, d)
-    for i, input in pairs(inputs) do
-        input:processEvent(e, a, b, c, d)
+    if firstInput then
+        firstInput:process(function(e, a, b, c, d)
+            require('screen').currentScreen():__onEvent(e, a, b, c, d)
+        end, e, a, b, c, d)
     end
 end
 
-function Input.static.updateState()
-    for i, input in pairs(inputs) do
-        input:updateState()
-    end
+function Input:process(cb, e, a, b, c, d)
+    if self.next then self.next:processEvent(cb, e, a, b, c, d) end
+
+    -- Nothing else to do?
 end
 
-function Input.static.down(...)
-    for i, input in pairs(inputs) do
-        if input:down(...) then return true end
-    end
+function Input:down(button)
     return false
 end
 
-function Input.static.pressed(...)
-    for i, input in pairs(inputs) do
-        if input:pressed(...) then return true end
-    end
-    return false
-end
-
-function Input.static.released(...)
-    for i, input in pairs(inputs) do
-        if input:released(...) then return true end
-    end
-    return false
-end
-
-function Input:initialize()
-    self:reset()
-end
-
-function Input:reset()
-    self.lastState = {}
-    self.state = {}
-    self.nextState = {}
-end
-
-function Input:updateState()
-    self.lastState = self.state
-    self.state = {}
-    for i in pairs(self.nextState) do
-        self.state[i] = true
-    end
-end
-
-function Input:down(a, b, ...)
-    if b then
-        for i, key in ipairs{a, b, ...} do
-            if self.state[key] then return true end
-        end
-        return false
-    else
-        return self.state[a]
-    end
-end
-
-function Input:pressed(a, b, ...)
-    if b then
-        for i, key in ipairs{a, b, ...} do
-            if self.state[key] and not self.lastState[key] then return true end
-        end
-        return false
-    else
-        return self.state[a] and not self.lastState[a]
-    end
-end
-
-function Input:released(a, b, ...)
-    if b then
-        for i, key in ipairs{a, b, ...} do
-            if not self.state[key] and self.lastState[key] then return true end
-        end
-        return false
-    else
-        return not self.state[a] and self.lastState[a]
-    end
-end
-
-function Input:clicked(id, x, y, w, h)
-    return false
-end
-
-function Input:moved(id)
-    return false
-end
-
-function Input:processEvent(e, a, b, c, d)
-    -- Nothing to do
+function Input:position(stick)
+    return 0, 0
 end
 
 return Input

@@ -98,11 +98,18 @@ local keyboardInput = require('game.input.keyboard'):new({
     left = 'left',
     right = 'right',
     down = 'down',
+    w = 'up',
+    a = 'left',
+    d = 'right',
+    s = 'down',
     escape = 'back',
+    space = 'accept',
+    e = 'accept',
     ['return'] = 'accept'
 })
 
-require('game.input').registerInput(keyboardInput)
+print('input?', keyboardInput)
+require('game.input').register(keyboardInput)
 
 -- Startup screen
 Screen.goTo('screen.title', true)

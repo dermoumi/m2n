@@ -38,28 +38,28 @@ function TitleMenu:entered()
 
     if GameState.current then
         self.items[#self.items+1] = {
-            text = Text:new('Continue', GameFont, 48),
+            text = Text:new('Continue', GameFont, 32),
             callback = function() print('continue') end
         }    
     end
 
     self.items[#self.items+1] = {
-        text = Text:new('New Game', GameFont, 48),
+        text = Text:new('New Game', GameFont, 32),
         callback = function() print('newgame') end
     }
 
     self.items[#self.items+1] = {
-        text = Text:new('Settings', GameFont, 48),
+        text = Text:new('Settings', GameFont, 32),
         callback = function() print('settings') end
     }
 
     self.items[#self.items+1] = {
-        text = Text:new('Credits', GameFont, 48),
+        text = Text:new('Credits', GameFont, 32),
         callback = function() print('credits') end
     }
 
     self.items[#self.items+1] = {
-        text = Text:new('Quit', GameFont, 48),
+        text = Text:new('Quit', GameFont, 32),
         callback = function() require('window').close() end
     }
 
@@ -78,39 +78,18 @@ function TitleMenu:update(dt)
         end
         self.lastItem = self.currentItem
     end
-
-    if Input.pressed('up') then
-        if not self.currentItem or self.currentItem == 1 then
-            self.currentItem = #self.items
-        else
-            self.currentItem = self.currentItem - 1
-        end
-    elseif Input.pressed('down') then
-        if not self.currentItem or self.currentItem == #self.items then
-            self.currentItem = 1
-        else
-            self.currentItem = self.currentItem + 1
-        end
-    elseif Input.pressed('back') then
-        self:returnBack()
-    elseif Input.pressed('accept') then
-        self:choose()
-    end
 end
 
 function TitleMenu:resized(width, height)
     Screen.resized(self, width, height)
 
-    local padding, menuH = math.floor(height/30), 0
-    for i, item in ipairs(self.items) do
-        menuH = menuH + item.text:size() + padding
-    end
+    local padding = math.floor(self.items[1].text:size()/2)
+    local menuH = #self.items * self.items[1].text:size() + (#self.items-1)*padding
 
     local yOffset = 0
     for i, item in ipairs(self.items) do
-        local x, y, w = item.text:bounds()
         item.text:setPosition(
-            width/2 - w/2,
+            20,
             height/2 - menuH/2 + yOffset
         )
         yOffset = yOffset + item.text:size() + padding
@@ -146,6 +125,26 @@ function TitleMenu:render()
     -- Render menu
     for i, item in ipairs(self.items) do
         self:view():draw(item.text)
+    end
+end
+
+function TitleMenu:buttondown(button)
+    if button == 'up' then
+        if not self.currentItem or self.currentItem == 1 then
+            self.currentItem = #self.items
+        else
+            self.currentItem = self.currentItem - 1
+        end
+    elseif button == 'down' then
+        if not self.currentItem or self.currentItem == #self.items then
+            self.currentItem = 1
+        else
+            self.currentItem = self.currentItem + 1
+        end
+    elseif button == 'back' then
+        self:returnBack()
+    elseif button == 'accept' then
+        self:choose()
     end
 end
 

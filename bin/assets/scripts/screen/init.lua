@@ -108,8 +108,6 @@ function Screen:__entered()
     if not Screen.lastScreen() or Screen.lastScreen():isTransitioning() then
         self:performTransition()
     end
-
-    Input.reset()
 end
 
 function Screen:__update(dt)
@@ -122,7 +120,6 @@ function Screen:__update(dt)
     end
 
     self:update(dt)
-    Input.updateState()
 end
 
 function Screen:__fixedUpdate(dt)

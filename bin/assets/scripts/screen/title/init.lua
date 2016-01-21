@@ -48,8 +48,6 @@ function ScreenTitle:initialize(firstRun)
         })
     end
 
-    self.logoTexture = self:cache('tex2d:assets/textures/logo.png')
-
     -- Check for saved games
     local states = GameState.list()
     if #states > 0 then
@@ -58,50 +56,19 @@ function ScreenTitle:initialize(firstRun)
 end
 
 function ScreenTitle:entered()
-    self.fps = require('graphics.text')
-        :new('', GameFont, 14)
-        :setPosition(10, 10)
-
-    local logoW, logoH = self.logoTexture:size()
-    self.logoTexture:setFilter('nearest')
-
-    self.logo = require('graphics.sprite')
-        :new(self.logoTexture)
-        :setOrigin(logoW/2, logoH/3)
+    Screen.push('screen.title.menu')
 end
 
 function ScreenTitle:update(dt)
-    self.fps:setString('Current FPS: %i', Window.currentFPS())
+
 end
 
 function ScreenTitle:render()
-    self:view()
-        :clear()
-        :draw(self.fps)
-        :draw(self.logo)
+    self:view():clear()
 
     if self ~= Screen.currentScreen() then
         self:view():fillFsQuad(0, 0, 0, 230)
     end
-end
-
-function ScreenTitle:resized(width, height)
-    Screen.resized(self, width, height)
-
-    self.logo:setPosition(width/2, height/3)
-    if width >= 1920 and height >= 1080 then
-        self.logo:setScaling(math.floor(width/960), math.floor(height/540))
-    else
-        self.logo:setScaling(1, 1)
-    end
-end
-
-function ScreenTitle:openMenu()
-    Screen.push('screen.title.menu')
-end
-
-function ScreenTitle:mousedown(x, y, button)
-    self:openMenu()
 end
 
 function ScreenTitle:keydown(scancode, keyCode, repeated)
@@ -118,14 +85,6 @@ function ScreenTitle:keydown(scancode, keyCode, repeated)
     elseif scancode == 'p' then
         self:performTransition(Screen.push, 'screen.title')
         return false
-    else
-        self:openMenu()
-    end
-end
-
-function ScreenTitle:touchdown(id, posX, posY)
-    if id == 2 then
-        self:openMenu()
     end
 end
 
