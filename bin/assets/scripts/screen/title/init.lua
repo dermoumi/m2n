@@ -71,21 +71,4 @@ function ScreenTitle:render()
     end
 end
 
-function ScreenTitle:keydown(scancode, keyCode, repeated)
-    if scancode == 'f10' then
-        Window.create('m2n-', 1280, 720, {})
-    elseif scancode == 'f11' then
-        Window.create('m2n-', 1920, 1080, {fullscreen = true})
-    elseif scancode == 'f12' then
-        Window.create('m2n-', 1024, 720, {fullscreen = true})
-    elseif scancode == '2' then
-        self:performTransition(Screen.push, 'screen.test.3d')
-    elseif scancode == '\\' then
-        self:performTransition(Screen.goTo, 'screen.title')
-    elseif scancode == 'p' then
-        self:performTransition(Screen.push, 'screen.title')
-        return false
-    end
-end
-
 return ScreenTitle

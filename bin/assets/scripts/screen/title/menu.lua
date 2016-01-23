@@ -65,6 +65,10 @@ function TitleMenu:entered()
 
     self.currentItem = 1
     self.lastItem = nil
+
+    if Screen.lastScreen() and Screen.lastScreen():isLoading() then
+        self:performTransition()
+    end
 end
 
 function TitleMenu:update(dt)
@@ -88,10 +92,7 @@ function TitleMenu:resized(width, height)
 
     local yOffset = 0
     for i, item in ipairs(self.items) do
-        item.text:setPosition(
-            20,
-            height/2 - menuH/2 + yOffset
-        )
+        item.text:setPosition(40, height/2 - menuH/2 + yOffset)
         yOffset = yOffset + item.text:size() + padding
     end
 end

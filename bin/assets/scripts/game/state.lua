@@ -26,6 +26,8 @@
 --]]
 
 local class = require 'class'
+local FileSystem = require 'filesystem'
+
 local State = class 'state'
 
 function State.static.factory(task, filename)
@@ -33,8 +35,7 @@ function State.static.factory(task, filename)
 end
 
 function State.static.list()
-    -- TODO: look up saved game states
-    return {}
+    return FileSystem.enumerateFiles('userdata/states/')
 end
 
 function State.static.load(name)

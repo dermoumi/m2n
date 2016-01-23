@@ -143,6 +143,9 @@ local fromDepthFunc = {
 function Renderer.init()
     if not C.nxRendererInit() then return error('Unable to initialize renderer') end
 
+    -- Clear screen to black
+    C.nxRendererClear(0, 0, 0, 0, 1.0, true, true, true, true, true)
+
     -- Initialize vertex layouts
     vertexLayouts[1] = C.nxRendererRegisterVertexLayout(2, ffi.new('NxVertexLayoutAttrib[2]', {
         {'aPosition',  0, 2, 0, 0},

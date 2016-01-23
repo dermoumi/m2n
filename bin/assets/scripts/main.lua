@@ -102,9 +102,12 @@ local keyboardInput = require('game.input.keyboard'):new({
     a = 'left',
     d = 'right',
     s = 'down',
-    escape = 'back',
+    escape = 'pause',
     space = 'accept',
     e = 'accept',
+    tab = 'back',
+    q = 'auxilary',
+    shift = 'shift',
     ['return'] = 'accept'
 })
 
