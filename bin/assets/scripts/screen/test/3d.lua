@@ -121,14 +121,15 @@ function ScreenTest3D:render()
 
     -- Graphics.setFillMode('solid')
     local ux, uy = self.rb:size()
-    ux, uy = 1/ux, 1/uy
+    ux, uy = .5/ux, .5/uy
 
     self.rb:texture('depth'):bind(1)
     self.depthShader:bind()
         :setSampler('uDepthBuf0', 1)
         :setUniform('uUnit', ux, uy)
 
-    self:view():drawFsQuad(self.rb, nil, nil, self.depthShader)
+    local rbW, rbH = Window.size()
+    self:view():drawFsQuad(self.rb, rbW/2, rbH/2, self.depthShader)
         :draw(self.text)
 end
 
@@ -180,14 +181,18 @@ function ScreenTest3D:mousemotion(x, y, xRel, yRel)
 end
 
 function ScreenTest3D:resized(width, height)
-    Screen.resized(self, width, height)
+    self:view()
+        :reset(0, 0, width/2, height/2)
+        :setViewport(0, 0, width, height)
 
-    local potW, potH = Util.pot(width, height)
+    local potW, potH = Util.pot(width/2, height/2)
     self.rb = RenderBuffer:new(potW, potH, true)
+    self.rb:texture():setFilter('nearest')
+    self.rb:texture('depth'):setFilter('nearest')
 
     self.camera:setRenderbuffer(self.rb)
         :setPerspective(70, width/height, .1, 100)
-        :setViewport(0, 0, width + 1, height + 1)
+        :setViewport(0, 0, width/2 + 1, height/2 + 1)
 end
 
 function ScreenTest3D:updateParent()

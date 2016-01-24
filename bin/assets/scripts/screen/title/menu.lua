@@ -45,7 +45,7 @@ function TitleMenu:entered()
 
     self.items[#self.items+1] = {
         text = Text:new('New Game', GameFont, 32),
-        callback = function() print('newgame') end
+        callback = function() self:performTransition(Screen.push, 'screen.test.3d')  end
     }
 
     self.items[#self.items+1] = {
