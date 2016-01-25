@@ -123,5 +123,4 @@ function KeyboardInput:position(stick)
     end
 end
 
-print('pls', KeyboardInput, KeyboardInput.new, KeyboardInput:new())
 return KeyboardInput

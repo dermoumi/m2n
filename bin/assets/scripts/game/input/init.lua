@@ -31,7 +31,6 @@ local Input = class 'game.input'
 firstInput = nil
 
 function Input.static.register(input)
-    print('registering', firstInput, input)
     if firstInput then
         firstInput.next = input
         input.prev = firstInput

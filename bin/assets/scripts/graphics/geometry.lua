@@ -53,7 +53,11 @@ function Geometry.static.factory(task)
             local success = true
 
             local file = require('filesystem.inputfile'):new(filename)
-                :onError(function() success = false end)
+                :onError(function(err)
+                        local Log = require 'util.log'
+                        Log.error('Unable to load geometry file: ' .. err)
+                        success = false
+                    end)
 
             local headGuard = ffi.string(file:read(6), 6)
             if headGuard == 'M2N1.0' then

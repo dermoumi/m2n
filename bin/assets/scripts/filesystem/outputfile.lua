@@ -35,8 +35,6 @@ local C = ffi.C
 ffi.cdef[[
     typedef struct PHYSFS_File PHYSFS_File;
 
-    const char* nxFsGetError();
-
     PHYSFS_File* nxFsOpenWrite(const char*);
     bool nxFsFlush(PHYSFS_File*);
     void nxFsClose(PHYSFS_File*);
