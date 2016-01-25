@@ -172,17 +172,17 @@ function Renderer.init()
         uniform mat4 uTransMat;
         uniform mat4 uProjMat;
         varying vec2 vTexCoords;
+        uniform vec2 uTexSize;
         void main() {
-            vTexCoords  = aTexCoords;
+            vTexCoords  = aTexCoords / uTexSize;
             gl_Position = uProjMat * uTransMat * vec4(aPosition, 0.0, 1.0);
         }
     ]], [[
         uniform sampler2D uTexture0;
-        uniform vec2 uTexSize;
         uniform vec4 uColor;
         varying vec2 vTexCoords;
         void main() {
-            gl_FragColor = texture2D(uTexture0, vTexCoords / uTexSize) * uColor;
+            gl_FragColor = texture2D(uTexture0, vTexCoords) * uColor;
         }
     ]])
     --
@@ -194,19 +194,19 @@ function Renderer.init()
         uniform mat4 uProjMat;
         varying vec2 vTexCoords;
         varying vec4 vColor;
+        uniform vec2 uTexSize;
         void main() {
-            vTexCoords  = aTexCoords;
+            vTexCoords  = aTexCoords / uTexSize;
             vColor      = aColor;
             gl_Position = uProjMat * uTransMat * vec4(aPosition, 0.0, 1.0);
         }
     ]], [[
         uniform sampler2D uTexture0;
-        uniform vec2 uTexSize;
         uniform vec4 uColor;
         varying vec2 vTexCoords;
         varying vec4 vColor;
         void main() {
-            gl_FragColor = texture2D(uTexture0, vTexCoords / uTexSize) * uColor * vColor;
+            gl_FragColor = texture2D(uTexture0, vTexCoords) * uColor * vColor;
         }
     ]])
     --

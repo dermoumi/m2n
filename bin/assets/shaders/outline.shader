@@ -1,3 +1,5 @@
+local gles2 = require('system').platform('android', 'ios')
+
 return [[
         attribute vec2 aPosition;
         attribute vec2 aTexCoords;
@@ -9,7 +11,7 @@ return [[
             vTexCoords  = aTexCoords / uTexSize;
             gl_Position = uProjMat * uTransMat * vec4(aPosition, 0.0, 1.0);
         }
-    ]], [[
+    ]], ([[
         // Based on Toon Lines shader by Jose I. Romero (cyborg_ar)
         // http://blenderartists.org/forum/showthread.php?172282-cartoon-in-GE/page2
         uniform sampler2D uTexture0;
@@ -64,11 +66,11 @@ return [[
             vec4 texcol = texture2D(uTexture0, vTexCoords);
             if (colDifForce > edgeThresh) {
                 gl_FragColor = uColor * vec4(texcol.xyz*edgeForce, 1.0);
-                gl_FragDepth = areaMn;
+                %s
             }
             else {
                 gl_FragColor = uColor * texcol;
-                gl_FragDepth = texture2D(uDepthBuf0, vTexCoords).x;
+                %s
             }
         }
-    ]]
+    ]]):format(gles2 and '' or 'gl_FragDepth = areaMn;', gles2 and '' or 'gl_FragDepth = texture2D(uDepthBuf0, vTexCoords).x;')

@@ -141,8 +141,16 @@ function ScreenTest3D:render()
         .enableDepthMask(true)
 
     self.camera:setRenderbuffer()
+        :clear(0, 0, 0, 0, 1, false, false, false, false, true)
         :setViewport(0, 0, width, height)
-        :draw(self.cube)
+
+    if require('system').platform('android', 'ios') then
+        Graphics.enableColorWriteMask(true)
+        self.camera:draw(self.scene)
+        Graphics.enableColorWriteMask(false)
+    end
+
+    self.camera:draw(self.cube)
         
     self:view():draw(self.text)
 end
