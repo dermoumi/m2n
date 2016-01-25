@@ -93,7 +93,7 @@ require('game.cache')
     .registerType('state', 'game.state')
 
 -- Register default input
-require('game.input').register(require('game.input.keyboard'):new({
+require('game.input').register('game.input.keyboard', {
     up = 'up',
     left = 'left',
     right = 'right',
@@ -109,7 +109,7 @@ require('game.input').register(require('game.input.keyboard'):new({
     q = 'auxilary',
     shift = 'shift',
     ['return'] = 'accept'
-}))
+})
 
 -- Startup screen
 Screen.goTo('screen.title', true)

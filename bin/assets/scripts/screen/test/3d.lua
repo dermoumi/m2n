@@ -56,11 +56,10 @@ function ScreenTest3D:entered()
     self.camera = self.scene:lookupName('main_camera') or require('graphics.camera'):new()
         :attachTo('main_camera', self.player)
 
-    self.cube = self.scene:lookupName('cube') or require('graphics.model'):new()
-    self.cube:detach()
+    self.cube = (self.scene:lookupName('cube') or require('graphics.model'):new()):detach()
     -- self.cube:setPosition(0, 0, -3)
 
-    self.subMesh = self.scene:lookupName('sphere') or require('graphics.model'):new()
+    self.subMesh = self.cube:lookupName('sphere') or require('graphics.model'):new()
 
     self.camVelX, self.camVelY, self.camVelZ, self.camSpeed = 0, 0, 0, 4
     self.camSensitivity = 0.001
@@ -118,18 +117,16 @@ function ScreenTest3D:render()
     Graphics.setBlendMode('none')
 
     local width, height = Window.size()
-    local rbW, rbH = width/2, height/2
 
-    self:view():clear(0, 0, 0, 255, 1, true, true, true, true, true)
+    self:view():clear(0, 0, 0, 255)
 
     self.camera:setRenderbuffer(self.rb)
         :clear(200, 200, 200, 255)
-        :setViewport(0, 0, rbW, rbH)
+        :setViewport(0, 0, width, height)
         :draw(self.scene)
 
     -- Graphics.setFillMode('solid')
-    local ux, uy = self.rb:size()
-    ux, uy = .5/ux, .5/uy
+    local ux, uy = .6/width, .6/height
 
     self.rb:texture('depth'):bind(1)
     self.depthShader:bind()
@@ -138,7 +135,7 @@ function ScreenTest3D:render()
 
     -- Graphics.enableDepthTest(false)
     --     .enableDepthMask(false)
-    self:view():drawFsQuad(self.rb, rbW, rbH, self.depthShader)
+    self:view():drawFsQuad(self.rb, nil, nil, self.depthShader)
 
     Graphics.setBlendMode('alpha')
         .setDepthFunc('lequal')
@@ -201,16 +198,16 @@ end
 
 function ScreenTest3D:resized(width, height)
     self:view()
-        :reset(0, 0, width/2, height/2)
+        :reset(0, 0, width, height)
         :setViewport(0, 0, width, height)
 
-    local potW, potH = Util.pot(width/2, height/2)
+    local potW, potH = Util.pot(width, height)
     self.rb = RenderBuffer:new(potW, potH, true)
     self.rb:texture():setFilter('nearest')
     self.rb:texture('depth'):setFilter('nearest')
 
     self.camera:setRenderbuffer(self.rb)
-        :setViewport(0, 0, width/2 + 1, height/2 + 1)
+        :setViewport(0, 0, width + 1, height + 1)
         :setPerspective(70, width/height, .1, 100)
 end
 

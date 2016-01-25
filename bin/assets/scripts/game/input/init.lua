@@ -30,7 +30,11 @@ local Input = class 'game.input'
 
 firstInput = nil
 
-function Input.static.register(input)
+function Input.static.register(input, ...)
+    if type(input) == 'string' then
+        return Input.register(require(input):new(...))
+    end
+
     if firstInput then
         firstInput.next = input
         input.prev = firstInput
