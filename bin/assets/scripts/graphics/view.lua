@@ -200,8 +200,8 @@ function View:apply()
     C.nxRendererSetViewport(self._vpX, self._vpY, self._vpW, self._vpH)
     Renderbuffer.bind(self._rb)
 
-    Graphics.enableDepthTest(false)
-        .enableDepthMask(false)
+    -- Graphics.enableDepthTest(false)
+    --     .enableDepthMask(false)
 
     return self
 end

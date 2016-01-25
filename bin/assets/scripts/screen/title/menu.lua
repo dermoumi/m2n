@@ -112,8 +112,6 @@ end
 function TitleMenu:mousedown(x, y, button)
     if self.currentItem then
         self:choose()
-    else
-        self:returnBack()
     end
 end
 
@@ -142,9 +140,7 @@ function TitleMenu:buttondown(button)
         else
             self.currentItem = self.currentItem + 1
         end
-    elseif button == 'back' then
-        self:returnBack()
-    elseif button == 'accept' then
+    elseif button == 'accept' and self.currentItem then
         self:choose()
     end
 end

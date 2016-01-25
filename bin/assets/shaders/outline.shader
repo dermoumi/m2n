@@ -44,7 +44,7 @@ return [[
             sample[1] = vec4(depth(vTexCoords + vec2( 0.0,     -uUnit.y)));
             sample[2] = vec4(depth(vTexCoords + vec2( uUnit.x, -uUnit.y)));
             sample[3] = vec4(depth(vTexCoords + vec2(-uUnit.x,  0.0)));
-            sample[4] = vec4(depth(vTexCoords + vec2( 0.0,      0.0)));
+            sample[4] = vec4(depth(vTexCoords));
             sample[5] = vec4(depth(vTexCoords + vec2( uUnit.x,  0.0)));
             sample[6] = vec4(depth(vTexCoords + vec2(-uUnit.x,  uUnit.y)));
             sample[7] = vec4(depth(vTexCoords + vec2( 0.0,      uUnit.y)));
@@ -66,6 +66,7 @@ return [[
             //we do not want to mess with transparency, so leave alpha alone
             //edgeForce can be changed below to make outline more transparent or opaque
             // ? : is the same as if else
+            gl_FragDepth = texture2D(uDepthBuf0, vTexCoords / uTexSize).x;
             gl_FragColor = colDifForce > edgeThresh ?
                 vec4(vec3(texcol*edgeForce), 1.0) * uColor :
                 vec4(texcol) * uColor;

@@ -57,6 +57,7 @@ function ScreenTest3D:entered()
         :attachTo('main_camera', self.player)
 
     self.cube = self.scene:lookupName('cube') or require('graphics.model'):new()
+    self.cube:detach()
     -- self.cube:setPosition(0, 0, -3)
 
     self.subMesh = self.scene:lookupName('sphere') or require('graphics.model'):new()
@@ -114,10 +115,17 @@ function ScreenTest3D:render()
         .enableDepthMask(true)
         -- .setFillMode('wireframe')
 
-    self.camera:clear(200, 200, 200, 255)
+    Graphics.setBlendMode('none')
 
-    -- Graphics.setBlendMode('alpha')
-    self.camera:draw(self.scene)
+    local width, height = Window.size()
+    local rbW, rbH = width/2, height/2
+
+    self:view():clear(0, 0, 0, 255, 1, true, true, true, true, true)
+
+    self.camera:setRenderbuffer(self.rb)
+        :clear(200, 200, 200, 255)
+        :setViewport(0, 0, rbW, rbH)
+        :draw(self.scene)
 
     -- Graphics.setFillMode('solid')
     local ux, uy = self.rb:size()
@@ -128,9 +136,20 @@ function ScreenTest3D:render()
         :setSampler('uDepthBuf0', 1)
         :setUniform('uUnit', ux, uy)
 
-    local rbW, rbH = Window.size()
-    self:view():drawFsQuad(self.rb, rbW/2, rbH/2, self.depthShader)
-        :draw(self.text)
+    -- Graphics.enableDepthTest(false)
+    --     .enableDepthMask(false)
+    self:view():drawFsQuad(self.rb, rbW, rbH, self.depthShader)
+
+    Graphics.setBlendMode('alpha')
+        .setDepthFunc('lequal')
+        .enableDepthTest(true)
+        .enableDepthMask(true)
+
+    self.camera:setRenderbuffer()
+        :setViewport(0, 0, width, height)
+        :draw(self.cube)
+        
+    self:view():draw(self.text)
 end
 
 function ScreenTest3D:keydown(scancode, keyCode, repeated)
@@ -191,8 +210,8 @@ function ScreenTest3D:resized(width, height)
     self.rb:texture('depth'):setFilter('nearest')
 
     self.camera:setRenderbuffer(self.rb)
-        :setPerspective(70, width/height, .1, 100)
         :setViewport(0, 0, width/2 + 1, height/2 + 1)
+        :setPerspective(70, width/height, .1, 100)
 end
 
 function ScreenTest3D:updateParent()
