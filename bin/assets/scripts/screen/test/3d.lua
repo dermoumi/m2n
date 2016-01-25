@@ -126,12 +126,10 @@ function ScreenTest3D:render()
         :draw(self.scene)
 
     -- Graphics.setFillMode('solid')
-    local ux, uy = .6/width, .6/height
-
     self.rb:texture('depth'):bind(1)
     self.depthShader:bind()
         :setSampler('uDepthBuf0', 1)
-        :setUniform('uUnit', ux, uy)
+        :setUniform('uUnit', 0.75/width, 0.75/height)
 
     -- Graphics.enableDepthTest(false)
     --     .enableDepthMask(false)

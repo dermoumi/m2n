@@ -25,50 +25,17 @@
     For more information, please refer to <http://unlicense.org>
 --]]
 
-local Log       = require 'util.log'
-local Graphics  = require 'graphics'
-local Window    = require 'window'
-local Screen    = require 'screen'
-local GameFont  = require 'game.font'
-local GameState = require 'game.state'
+local Screen = require 'screen'
+local Credits = Screen:subclass('screen.credits')
 
-local ScreenTitle = Screen:subclass('screen.title')
+function Credits:render()
+    self:view():clear(255, 0, 0)
+end
 
-function ScreenTitle:initialize(firstRun)
-    if firstRun then
-        local caps = Graphics.getCapabilities()
-
-        Log.info('GPU Capabilities:')
-        for i, v in pairs(caps) do
-            Log.info('%s: %s', i, v)
-        end
-
-        self:setPreloadParams({
-            message = 'INITIALIZING %i%%'
-        })
-    end
-
-    -- Check for saved games
-    local states = GameState.list()
-    if #states > 0 then
-        GameState.current = self:cache('state:' .. states[1])
+function Credits:buttondown(button)
+    if button == 'back' or button == 'pause' then
+        self:performTransition(Screen.back)
     end
 end
 
-function ScreenTitle:entered()
-    Screen.push('screen.test.3d')
-end
-
-function ScreenTitle:update(dt)
-
-end
-
-function ScreenTitle:render()
-    self:view():clear()
-
-    if self ~= Screen.currentScreen() then
-        self:view():fillFsQuad(0, 0, 0, 230)
-    end
-end
-
-return ScreenTitle
+return Credits
