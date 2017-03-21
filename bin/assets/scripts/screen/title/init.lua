@@ -56,7 +56,7 @@ function ScreenTitle:initialize(firstRun)
 end
 
 function ScreenTitle:entered()
-    Screen.push('screen.test.3d')
+    Screen.push('screen.title.menu')
 end
 
 function ScreenTitle:update(dt)
